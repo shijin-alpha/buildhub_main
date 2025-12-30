@@ -1,0 +1,782 @@
+/* Architect Dashboard - Responsive Project Details */
+
+/* Base responsive styles */
+.expanded-details {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Project Overview - Responsive Grid */
+.project-overview .compact-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* Detailed Requirements - Responsive Grid */
+.detailed-requirements .requirements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+/* Images Gallery - Responsive Grid */
+.images-section .site-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.images-section .room-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+/* Floor Plans - Responsive Grid */
+.floor-plans .floors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* Material Preferences - Responsive Tags */
+.material-preferences .materials-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+  .project-overview .compact-info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  
+  .detailed-requirements .requirements-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  
+  .images-section .site-images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .expanded-details {
+    padding: 16px;
+    margin-top: 16px;
+  }
+  
+  .project-overview .compact-info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+  }
+  
+  .detailed-requirements .requirements-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .images-section .site-images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+  
+  .floor-plans .floors-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .material-preferences .materials-container {
+    gap: 6px;
+  }
+  
+  .material-preferences .materials-container span {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .expanded-details {
+    padding: 12px;
+    margin-top: 12px;
+  }
+  
+  .project-overview .compact-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .images-section .site-images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .images-section .room-images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+/* Hover effects and transitions */
+.image-card {
+  transition: all 0.2s ease;
+}
+
+.image-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.requirement-card {
+  transition: all 0.2s ease;
+}
+
+.requirement-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Compact info cards */
+.info-card {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.info-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.accepted {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.action-buttons .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Scrollable content */
+.scrollable-content {
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Responsive text sizing - Improved readability */
+@media (max-width: 768px) {
+  .expanded-details h4 {
+    font-size: 18px !important;
+  }
+  
+  .expanded-details h5 {
+    font-size: 16px !important;
+  }
+  
+  .expanded-details .info-card {
+    padding: 12px 14px;
+  }
+  
+  .expanded-details .requirement-card {
+    padding: 12px 14px;
+  }
+  
+  .expanded-details .info-card div {
+    font-size: 15px !important;
+  }
+  
+  .expanded-details .requirement-card div {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .expanded-details h4 {
+    font-size: 16px !important;
+  }
+  
+  .expanded-details h5 {
+    font-size: 15px !important;
+  }
+  
+  .expanded-details .info-card {
+    padding: 10px 12px;
+  }
+  
+  .expanded-details .requirement-card {
+    padding: 10px 12px;
+  }
+  
+  .expanded-details .info-card div {
+    font-size: 14px !important;
+  }
+  
+  .expanded-details .requirement-card div {
+    font-size: 13px !important;
+  }
+}
+
+/* Minimum font sizes for accessibility */
+.expanded-details {
+  font-size: 14px;
+}
+
+.expanded-details h4 {
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.expanded-details h5 {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.expanded-details .info-card div {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.expanded-details .requirement-card div {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Better contrast for readability */
+.expanded-details .info-card {
+  color: #1f2937;
+}
+
+.expanded-details .requirement-card {
+  color: #374151;
+}
+
+/* Improved button text sizing */
+.action-buttons .btn {
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+@media (max-width: 768px) {
+  .action-buttons .btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}
+
+/* Material tags improved sizing */
+.material-preferences .materials-container span {
+  font-size: 14px;
+  padding: 6px 14px;
+}
+
+@media (max-width: 768px) {
+  .material-preferences .materials-container span {
+    font-size: 13px;
+    padding: 5px 12px;
+  }
+}
+
+/* Layout Card Content - Neat UI Styling */
+.layout-card-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: visible;
+}
+
+/* Header Section */
+.layout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.layout-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge.pending {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.badge.accepted {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.badge.rejected {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Homeowner Details */
+.homeowner-details {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.homeowner-details h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.homeowner-details h4::before {
+  content: "👤";
+  font-size: 1.2rem;
+}
+
+.homeowner-details p {
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.homeowner-details strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Request Details */
+.request-details {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.request-details h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #059669;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.request-details h4::before {
+  content: "📋";
+  font-size: 1.2rem;
+}
+
+.request-details p {
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.request-details strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Requirements Section */
+.requirements-section {
+  margin-top: 12px;
+}
+
+.requirements-section strong {
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Technical Details Section */
+.technical-details-section {
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.technical-details-display {
+  width: 100%;
+}
+
+.technical-header {
+  margin-bottom: 20px;
+}
+
+.technical-header h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.technical-header h3::before {
+  content: "🏗️";
+  font-size: 1.4rem;
+}
+
+.technical-header p {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.technical-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.technical-sidebar {
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.section-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  color: #374151;
+  text-align: left;
+  width: 100%;
+}
+
+.section-nav-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.2);
+  transform: translateX(4px);
+}
+
+.section-icon {
+  font-size: 1.1rem;
+}
+
+.section-title {
+  font-weight: 500;
+}
+
+.technical-content {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.technical-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-item {
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.detail-item h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.detail-item p {
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.dimensions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dimension-item {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.dimension-item strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* File Links */
+.file-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn::before {
+  content: "📄";
+  font-size: 0.9rem;
+}
+
+/* Review Section */
+.review-section {
+  background: rgba(107, 114, 128, 0.05);
+  border: 1px solid rgba(107, 114, 128, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.review-section h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-section h4::before {
+  content: "⭐";
+  font-size: 1.2rem;
+}
+
+.muted {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Hide Details Button */
+.btn-secondary {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(107, 114, 128, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-secondary::before {
+  content: "👁️";
+}
+
+/* Hover effects for sections */
+.homeowner-details:hover,
+.request-details:hover,
+.technical-details-section:hover,
+.review-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Responsive Design for Layout Cards */
+@media (max-width: 768px) {
+  .layout-card-content {
+    padding: 16px;
+  }
+
+  .layout-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .technical-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .technical-sidebar {
+    order: 2;
+  }
+
+  .technical-content {
+    order: 1;
+  }
+
+  .section-nav-item {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .file-links {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-card-content {
+    padding: 12px;
+  }
+
+  .homeowner-details,
+  .request-details,
+  .technical-details-section,
+  .review-section {
+    padding: 12px;
+  }
+
+  .technical-layout {
+    gap: 12px;
+  }
+
+  .technical-content {
+    padding: 16px;
+  }
+}

@@ -1,0 +1,109 @@
+/* Contractor selection modal – enhanced spacing and card style */
+.form-content.contractor-modal {
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	background: linear-gradient(180deg, #ffffff, #f8fafc);
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	box-shadow: 0 12px 32px rgba(2,6,23,0.18);
+}
+
+.form-content.contractor-modal .form-header {
+	padding-bottom: 8px;
+	border-bottom: 1px solid #eef2f7;
+}
+
+.form-content.contractor-modal .filters-row {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.form-content.contractor-modal .filters-row input[type="text"] {
+	border: 1px solid #e5e7eb;
+	border-radius: 10px;
+	padding: 10px 12px;
+	background: #fff;
+}
+
+.form-content.contractor-modal .filters-row button {
+	border-radius: 10px;
+	padding: 10px 14px;
+}
+
+.form-content.contractor-modal .contractors-list {
+	flex: 1 1 0%;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 8px;
+}
+
+.form-content.contractor-modal .contractors-list .item-list {
+	display: grid;
+	gap: 16px;
+	padding-right: 4px;
+}
+
+.form-content.contractor-modal .contractors-list .list-item {
+	padding: 16px;
+	border-radius: 12px;
+	border: 1px solid #e5e7eb;
+	background: #ffffff;
+	box-shadow: 0 2px 8px rgba(2,6,23,0.06);
+}
+
+.form-content.contractor-modal .item-content .item-title {
+	margin-bottom: 6px;
+}
+
+.form-content.contractor-modal .item-content .detail-grid {
+	margin-top: 8px;
+	row-gap: 6px;
+}
+
+.form-content.contractor-modal .item-content .rating-row {
+	margin-top: 8px;
+}
+
+.form-content.contractor-modal .form-group textarea,
+.form-content.contractor-modal .form-group input[type="text"],
+.form-content.contractor-modal .form-group input[type="number"] {
+	border: 1px solid #e5e7eb;
+	border-radius: 10px;
+	padding: 10px 12px;
+	background: #fff;
+}
+
+.form-content.contractor-modal .form-group .floor-grid,
+.form-content.contractor-modal .form-group > div[style*="grid-template-columns"] {
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+	gap: 10px !important;
+}
+
+.form-content.contractor-modal .modal-footer {
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid #eef2f7;
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.form-content.contractor-modal .modal-footer .btn {
+	border-radius: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+

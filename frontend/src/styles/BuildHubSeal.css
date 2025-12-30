@@ -1,0 +1,215 @@
+/* BuildHub Estimation Seal Styles */
+.buildhub-seal {
+  display: inline-block;
+  position: relative;
+}
+
+.seal-container {
+  position: relative;
+  display: inline-block;
+}
+
+.seal-border {
+  position: relative;
+  background: linear-gradient(135deg, #1e40af, #1d4ed8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+}
+
+.seal-inner {
+  position: relative;
+  background: linear-gradient(135deg, #1e40af, #1d4ed8);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.seal-text {
+  color: white;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.seal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.building-icon {
+  position: relative;
+  width: 20px;
+  height: 16px;
+  color: white;
+}
+
+.building-pediment {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 6px solid white;
+}
+
+.building-frieze {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 2px;
+  background: white;
+}
+
+.building-columns {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1px;
+  align-items: flex-end;
+}
+
+.column {
+  width: 2px;
+  height: 6px;
+  background: white;
+  border-radius: 0.5px;
+}
+
+.building-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 2px;
+  background: white;
+  border-radius: 1px;
+}
+
+/* Size variations */
+.seal-small .seal-border {
+  width: 60px;
+  height: 60px;
+}
+
+.seal-small .seal-text {
+  font-size: 6px;
+}
+
+.seal-small .building-icon {
+  width: 16px;
+  height: 12px;
+}
+
+.seal-small .building-pediment {
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 4px solid white;
+}
+
+.seal-small .building-frieze {
+  width: 12px;
+  height: 1px;
+}
+
+.seal-small .building-base {
+  width: 14px;
+  height: 1px;
+}
+
+.seal-medium .seal-border {
+  width: 80px;
+  height: 80px;
+}
+
+.seal-medium .seal-text {
+  font-size: 8px;
+}
+
+.seal-medium .building-icon {
+  width: 20px;
+  height: 16px;
+}
+
+.seal-large .seal-border {
+  width: 120px;
+  height: 120px;
+}
+
+.seal-large .seal-text {
+  font-size: 10px;
+}
+
+.seal-large .building-icon {
+  width: 28px;
+  height: 22px;
+}
+
+.seal-large .building-pediment {
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 8px solid white;
+}
+
+.seal-large .building-frieze {
+  width: 24px;
+  height: 3px;
+}
+
+.seal-large .building-base {
+  width: 26px;
+  height: 3px;
+}
+
+.seal-large .building-columns {
+  gap: 2px;
+}
+
+.seal-large .column {
+  width: 3px;
+  height: 8px;
+}
+
+/* Hover effects */
+.buildhub-seal:hover .seal-border {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
+  transition: all 0.3s ease;
+}
+
+/* Print styles */
+@media print {
+  .buildhub-seal {
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .seal-border {
+    background: #1e40af !important;
+  }
+  
+  .seal-inner {
+    background: #1e40af !important;
+  }
+}
+
+
+

@@ -1,0 +1,99 @@
+/* Neat card UI for inbox items */
+.card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 10px 24px rgba(2,6,23,0.06); overflow: hidden; }
+.card + .card { margin-top: 14px; }
+.card-header { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid #eef2f7; background: linear-gradient(180deg,#fafafa 0%,#fff 100%); }
+.card-title { font-size: 1rem; font-weight: 700; color:#0f172a; }
+.card-header .muted { color:#64748b; }
+.card-body { padding:16px; display:grid; grid-template-columns:160px 1fr; gap:14px; }
+
+/* Status badges */
+.status-badge { display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:600; border:1px solid transparent; }
+.status-badge.accepted { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+.status-badge.pending { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+.status-badge.rejected { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
+/* Details blocks */
+details { border:1px solid #eef2f7; border-radius:10px; background:#fcfcfd; padding:10px 12px; }
+details + details { margin-top:10px; }
+details summary { cursor:pointer; list-style:none; user-select:none; font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px; }
+details summary::-webkit-details-marker { display:none; }
+details[open] summary { color:#2563eb; }
+details > div { margin-top:10px; background:#fafafa; border:1px dashed #e5e7eb; border-radius:10px; padding:12px; }
+
+/* Technical grid */
+.details-grid, .tech-grid { display:grid; grid-template-columns:1fr 2fr; gap:6px 12px; }
+.details-section-title { font-weight:700; margin:6px 0; text-transform:capitalize; color:#111827; }
+
+/* Preview image */
+.card-body img { width:160px; height:120px; object-fit:cover; border-radius:10px; border:1px solid #eee; box-shadow:0 6px 18px rgba(2,6,23,0.05); }
+
+/* Extend estimate-form (already present) */
+.estimate-form { margin-top:12px; padding:18px; border-radius:14px; border:1px solid #e5e7eb; background:#ffffff; box-shadow:0 12px 28px rgba(2,6,23,0.07); display:grid; gap:14px; }
+.estimate-form .section-title { margin-top:2px; }
+.estimate-form input, .estimate-form textarea { border:1px solid #e5e7eb; border-radius:10px; background:#fff; padding:10px 12px; }
+.estimate-form input:hover, .estimate-form textarea:hover { border-color:#cbd5e1; }
+.estimate-form input:focus, .estimate-form textarea:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,0.15); }
+.estimate-form .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.estimate-form .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.estimate-form .grid-4 { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:10px; }
+.estimate-line { background:#fafafa; border:1px solid #eaecef; border-radius:10px; padding:10px; box-shadow:0 2px 6px rgba(15,23,42,0.04); }
+.estimate-line + .estimate-line { margin-top:8px; }
+.estimate-line input { background:#fff; }
+.estimate-form .totals { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.estimate-form .grand-total { grid-column:1 / -1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; font-weight:700; color:#0f172a; }
+.estimate-form .actions { display:flex; justify-content:flex-end; gap:10px; margin-top:6px; padding-top:8px; border-top:1px solid #eef2f7; }
+
+/* Buttons */
+.btn { border-radius:10px; }
+.btn-primary { background:#2563eb; border:1px solid #1d4ed8; }
+.btn-primary:hover { background:#1d4ed8; }
+.btn-secondary { background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }
+.btn-secondary:hover { background:#e5e7eb; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .card-body { grid-template-columns: 1fr; }
+  .estimate-form .grid-2,
+  .estimate-form .grid-3,
+  .estimate-form .totals { grid-template-columns: 1fr; }
+}
+/* Estimate form - shared spacious UI */
+.estimate-form {
+  margin-top: 16px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  display: grid;
+  gap: 16px;
+}
+.estimate-form .section-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 8px 0 4px 0; }
+.estimate-form .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.estimate-form .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.estimate-form input,
+.estimate-form textarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.estimate-form textarea { resize: vertical; min-height: 96px; }
+.estimate-form input[readonly], .estimate-form textarea[readonly] { background: #f9fafb; }
+.estimate-form input:focus, .estimate-form textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+.estimate-form label { display: block; font-weight: 600; color: #374151; margin: 6px 0 6px; }
+.estimate-form .muted { color: #6b7280; font-size: 0.9rem; }
+.estimate-form .totals { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.estimate-form .grand-total { grid-column: 1 / -1; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; }
+.estimate-form .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #eef2f7; }
+@media (max-width: 1024px) {
+  .estimate-form { padding: 16px; }
+  .estimate-form .grid-2 { grid-template-columns: 1fr; }
+  .estimate-form .grid-3 { grid-template-columns: 1fr; }
+  .estimate-form .totals { grid-template-columns: 1fr; }
+}
+

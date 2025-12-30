@@ -1,0 +1,309 @@
+/* Construction Progress Update Styles */
+
+.construction-progress-update {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.progress-update-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.progress-update-header h3 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.progress-update-header p {
+  color: #6c757d;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.progress-update-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.form-group label .required {
+  color: #dc3545;
+  margin-left: 4px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background: #fff;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.percentage-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.percentage-input input {
+  flex: 1;
+  padding-right: 40px;
+}
+
+.percentage-symbol {
+  position: absolute;
+  right: 16px;
+  color: #6c757d;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.project-info-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px 0;
+}
+
+.project-info-card h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.project-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.project-info-grid div {
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.file-input {
+  padding: 12px !important;
+  border: 2px dashed #007bff !important;
+  background: #f8f9ff !important;
+  cursor: pointer;
+}
+
+.file-input:hover {
+  border-color: #0056b3 !important;
+  background: #e6f3ff !important;
+}
+
+.file-input-help {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.photo-preview {
+  margin-top: 15px;
+}
+
+.photo-preview h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.photo-item {
+  position: relative;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.photo-thumbnail {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+}
+
+.remove-photo-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.remove-photo-btn:hover {
+  background: rgba(220, 53, 69, 1);
+}
+
+.photo-name {
+  padding: 8px;
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-align: center;
+  word-break: break-word;
+  background: #fff;
+}
+
+.location-status {
+  margin: 15px 0;
+}
+
+.location-info {
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-info.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.location-info.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.location-info:not(.success):not(.warning) {
+  background: #e2e3e5;
+  color: #383d41;
+  border: 1px solid #d6d8db;
+}
+
+.form-actions {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.submit-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .construction-progress-update {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .progress-update-header h3 {
+    font-size: 1.5rem;
+  }
+
+  .project-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  .photo-thumbnail {
+    height: 80px;
+  }
+
+  .submit-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+    min-width: 150px;
+  }
+}
+
+/* Animation for form submission */
+@keyframes submitPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.submit-btn.submitting {
+  animation: submitPulse 1s infinite;
+}

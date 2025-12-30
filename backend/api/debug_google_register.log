@@ -1,0 +1,288 @@
+2025-08-15T08:24:15+02:00 | POST: Array
+(
+    [firstName] => SHIJIN
+    [lastName] => THOMAS
+    [email] => thomasshijin12@gmail.com
+    [role] => homeowner
+    [password] => 0.oadiexlhze!A1
+)
+ | FILES: Array
+(
+)
+
+2025-08-15T08:26:17+02:00 | POST: Array
+(
+    [firstName] => Shijin
+    [lastName] => Thomas
+    [email] => shijinthomas1501@gmail.com
+    [role] => architect
+    [password] => .y8ppuz7sdkk!A1
+)
+ | FILES: Array
+(
+    [portfolio] => Array
+        (
+            [name] => shijin resume.pdf
+            [full_path] => shijin resume.pdf
+            [type] => application/pdf
+            [tmp_name] => C:\xampp\tmp\php5BC6.tmp
+            [error] => 0
+            [size] => 117376
+        )
+
+)
+
+2025-08-15T08:59:14+02:00 | POST: Array
+(
+    [firstName] => Shijin
+    [lastName] => Thomas
+    [email] => shijinthomas248@gmail.com
+    [role] => architect
+    [password] => .4t6piofugnh!A1
+)
+ | FILES: Array
+(
+    [portfolio] => Array
+        (
+            [name] => shijin resume.pdf
+            [full_path] => shijin resume.pdf
+            [type] => application/pdf
+            [tmp_name] => C:\xampp\tmp\php848B.tmp
+            [error] => 0
+            [size] => 117376
+        )
+
+)
+
+2025-08-15T09:06:40+02:00 | POST: Array
+(
+    [firstName] => Shijin
+    [lastName] => Thomas
+    [email] => shijinthomas248@gmail.com
+    [role] => architect
+    [password] => .x8ot7i14rbj!A1
+)
+ | FILES: Array
+(
+    [portfolio] => Array
+        (
+            [name] => shijin resume.pdf
+            [full_path] => shijin resume.pdf
+            [type] => application/pdf
+            [tmp_name] => C:\xampp\tmp\php5462.tmp
+            [error] => 0
+            [size] => 117376
+        )
+
+)
+
+2025-08-15T09:36:53+02:00 | POST: Array
+(
+    [firstName] => Shijin
+    [lastName] => Thomas
+    [email] => shijinthomas1501@gmail.com
+    [role] => contractor
+    [password] => .y5h1tib7dad!A1
+)
+ | FILES: Array
+(
+    [license] => Array
+        (
+            [name] => shijin resume.pdf
+            [full_path] => shijin resume.pdf
+            [type] => application/pdf
+            [tmp_name] => C:\xampp\tmp\phpFF17.tmp
+            [error] => 0
+            [size] => 117376
+        )
+
+)
+
+2025-08-15T10:40:44+02:00 | POST: Array
+(
+    [firstName] => Shijin
+    [lastName] => Thomas
+    [email] => shijinthomas248@gmail.com
+    [role] => contractor
+    [password] => .9m5w1x6g6uj!A1
+)
+ | FILES: Array
+(
+    [license] => Array
+        (
+            [name] => license.jpeg
+            [full_path] => license.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php71B8.tmp
+            [error] => 0
+            [size] => 975503
+        )
+
+)
+
+2025-08-15T12:05:34+02:00 | POST: Array
+(
+    [firstName] => Shijin
+    [lastName] => Thomas
+    [email] => shijinthomas1501@gmail.com
+    [role] => architect
+    [password] => .s7ogp486d5h!A1
+)
+ | FILES: Array
+(
+    [portfolio] => Array
+        (
+            [name] => port.jpg
+            [full_path] => port.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php1DE1.tmp
+            [error] => 0
+            [size] => 107426
+        )
+
+)
+
+2025-08-18T09:53:32+02:00 | POST: Array
+(
+    [firstName] => KIRAN SHIBU THOMAS
+    [lastName] => MCA2024-2026
+    [email] => kiranshibuthomas2026@mca.ajce.in
+    [role] => contractor
+    [password] => 0.c3fhft9opt!A1
+)
+ | FILES: Array
+(
+    [license] => Array
+        (
+            [name] => license_20.jpeg
+            [full_path] => license_20.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php468E.tmp
+            [error] => 0
+            [size] => 975503
+        )
+
+)
+
+2025-08-18T11:52:59+02:00 | POST: Array
+(
+    [firstName] => Shijin
+    [lastName] => Thomas
+    [email] => shijinthomas1501@gmail.com
+    [role] => contractor
+    [password] => 0.yngyik7tz4!A1
+)
+ | FILES: Array
+(
+    [license] => Array
+        (
+            [name] => license_20.jpeg
+            [full_path] => license_20.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpA640.tmp
+            [error] => 0
+            [size] => 975503
+        )
+
+)
+
+2025-08-18T11:57:50+02:00 | POST: Array
+(
+    [firstName] => Fathima
+    [lastName] => Shibu
+    [email] => fathima470077@gmail.com
+    [role] => architect
+    [password] => .fkhk3m9gncg!A1
+)
+ | FILES: Array
+(
+    [portfolio] => Array
+        (
+            [name] => license_20.jpeg
+            [full_path] => license_20.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php1515.tmp
+            [error] => 0
+            [size] => 975503
+        )
+
+)
+
+2025-08-19T09:01:06+02:00 | POST: Array
+(
+    [firstName] => APARNA K SANTHOSH
+    [lastName] => MCA2024-2026
+    [email] => aparnaksanthosh2026@mca.ajce.in
+    [role] => architect
+    [password] => 0.bhh16n76va!A1
+)
+ | FILES: Array
+(
+    [portfolio] => Array
+        (
+            [name] => license_20.jpeg
+            [full_path] => license_20.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php9C00.tmp
+            [error] => 0
+            [size] => 975503
+        )
+
+)
+
+2025-08-29T15:10:02+02:00 | POST: Array
+(
+    [firstName] => Shijin
+    [lastName] => Thomas
+    [email] => shijinthomas248@gmail.com
+    [role] => contractor
+    [password] => 0.9d4qvt0d0j!A1
+)
+ | FILES: Array
+(
+    [license] => Array
+        (
+            [name] => license_20.jpeg
+            [full_path] => license_20.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php85B7.tmp
+            [error] => 0
+            [size] => 975503
+        )
+
+)
+
+2025-09-14T11:11:33+02:00 | POST: Array
+(
+    [firstName] => shijin
+    [lastName] => thomas
+    [email] => thomasshijin3@gmail.com
+    [role] => architect
+    [password] => 0.oir2g3630r!A1
+)
+ | FILES: Array
+(
+    [portfolio] => Array
+        (
+            [name] => license.jpeg
+            [full_path] => license.jpeg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpEA17.tmp
+            [error] => 0
+            [size] => 975503
+        )
+
+)
+
+2025-09-28T11:11:23+02:00 | POST: Array
+(
+    [firstName] => SHIJIN
+    [lastName] => THOMAS
+    [email] => thomasshijin6@gmail.com
+    [role] => homeowner
+    [password] => 0.907kavtgw3!A1
+)
+ | FILES: Array
+(
+)
+

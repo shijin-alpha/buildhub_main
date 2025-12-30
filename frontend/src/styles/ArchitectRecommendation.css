@@ -1,0 +1,441 @@
+/* Architect Recommendation Engine Styles */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-actions .btn {
+  margin: 0;
+}
+
+.ai-recommendations-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.ai-recommendations-section h4 {
+  color: #1e293b;
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.recommended-architects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.recommended-architect-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.recommended-architect-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.architect-info h5 {
+  color: #1e293b;
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.architect-info .specialization {
+  color: #3b82f6;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.architect-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.match-score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.score-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* Style selection grid */
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.style-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.style-option:hover {
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+.style-option.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.style-icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.style-label {
+  font-weight: 500;
+}
+
+.get-recommendations-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.get-recommendations-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.get-recommendations-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Recommendation engine container */
+.architect-recommendation-engine {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  border: 1px solid #e2e8f0;
+}
+
+.recommendation-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.recommendation-header h3 {
+  color: #1e293b;
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+}
+
+.recommendation-header p {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.style-selection h4 {
+  color: #374151;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+}
+
+.recommendations-section h4 {
+  color: #1e293b;
+  margin: 24px 0 16px 0;
+  font-size: 1.2rem;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 16px;
+}
+
+.recommendation-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.architect-info h5 {
+  color: #1e293b;
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+}
+
+.specialization {
+  color: #3b82f6;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.architect-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.match-score {
+  text-align: center;
+}
+
+.score-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.score-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.match-reasons h6 {
+  color: #374151;
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.match-reasons ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.match-reasons li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.8rem;
+}
+
+.reason-preference {
+  color: #374151;
+}
+
+.reason-strength {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.recommendation-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+/* Green color for AI Architect Finder button */
+.w-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.w-green:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+/* Style Preferences Grid in Request Form */
+.style-preferences-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.style-preference-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  min-height: 80px;
+  justify-content: center;
+}
+
+.style-preference-option:hover {
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.style-preference-option.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1e40af;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.style-preference-option .style-icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.style-preference-option .style-label {
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* Inline AI Recommendations in Request Form */
+.ai-recommendations-inline {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.ai-recommendations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ai-recommendations-header h5 {
+  color: #1e293b;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.recommended-architects-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.recommended-architect-inline {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+
+.recommended-architect-inline:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.recommended-architect-inline .architect-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recommended-architect-inline .architect-info h6 {
+  color: #1e293b;
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.recommended-architect-inline .architect-info .specialization {
+  color: #3b82f6;
+  font-weight: 500;
+  margin: 0 0 4px 0;
+  font-size: 0.8rem;
+}
+
+.recommended-architect-inline .architect-stats {
+  display: flex;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.recommended-architect-inline .match-score {
+  display: flex;
+  align-items: center;
+}
+
+.recommended-architect-inline .score-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-align: center;
+  min-width: 40px;
+}

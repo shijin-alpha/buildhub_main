@@ -1,0 +1,612 @@
+[
+  {
+    "id": "plot_size",
+    "question_variants": ["what is plot size", "how to measure plot size", "plot size meaning", "what to write in plot size", "plot dimensions help"],
+    "answer": "Plot size is width × depth of your land. Example: 10 × 20 meters. If you only know area, give it in sqm or sqft."
+  },
+  {
+    "id": "measure_plot",
+    "question_variants": ["how do i measure my plot", "how to measure my land", "take plot measurement", "measure plot in meters", "measure land in feet"],
+    "answer": "Measure the front edge (width) and the depth from front to back. Use meters if possible. If you use feet, say 'ft'."
+  },
+  {
+    "id": "area_units",
+    "question_variants": ["should i use sqft or sqm", "area unit to enter", "sqft vs sqm", "which unit for area", "how to write area"],
+    "answer": "Use meters or feet. For area, give sqft or sqm. I can convert if you tell me the unit."
+  },
+  {
+    "id": "budget_total",
+    "question_variants": ["how to enter budget", "total budget help", "overall construction budget", "construction cost total", "budget in lakhs"],
+    "answer": "Enter your total construction budget in INR. Example: ₹2,500,000. If you prefer lakhs or crores, tell me and I’ll convert."
+  },
+  {
+    "id": "budget_per_sqft",
+    "question_variants": ["per sqft rate", "cost per square foot", "price per sqft", "construction rate per sqft", "what is per sq ft budget"],
+    "answer": "Per sqft budget is your target cost per square foot. Example: ₹1,800/sqft. Use this if you know your area and target quality."
+  },
+  {
+    "id": "timeline",
+    "question_variants": ["how long construction takes", "project timeline", "build time", "construction duration", "how many months to build"],
+    "answer": "A typical home takes about 8–14 months. We’ll refine after design, permits, and site conditions."
+  },
+  {
+    "id": "floors_allowed",
+    "question_variants": ["how many floors allowed", "floors i can build", "g plus 1 meaning", "can i build g+2", "number of floors possible"],
+    "answer": "Floors depend on local rules and soil. Many homes allow G+1 or G+2. We’ll confirm after reviewing your location."
+  },
+  {
+    "id": "parking",
+    "question_variants": ["car parking size", "parking space needed", "how much space for car park", "parking width", "parking requirement"],
+    "answer": "Reserve about 10–12 ft width for one car near the entry. Tell me if you need two cars."
+  },
+  {
+    "id": "setbacks",
+    "question_variants": ["what are setbacks", "how much setback", "side space required", "front setback requirement", "leaving space from boundary"],
+    "answer": "Leave required setbacks per your local bylaws. Commonly 3–5 ft on sides and a clear front/back. Exact rules vary by location."
+  },
+  {
+    "id": "vastu",
+    "question_variants": ["do you follow vastu", "vastu compliance", "vastu tips", "can plan as per vastu", "vastu friendly design"],
+    "answer": "We can keep basic Vastu-friendly suggestions if you want them. Tell me your preference and priorities."
+  },
+  {
+    "id": "soil_test",
+    "question_variants": ["do i need soil test", "soil testing required", "what is soil test", "when to do soil test", "ground test needed"],
+    "answer": "A soil test checks bearing capacity and water table. It’s recommended before structural design for safety."
+  },
+  {
+    "id": "water_source",
+    "question_variants": ["water source info", "borewell or municipal", "water supply question", "where is water coming from", "do you need water details"],
+    "answer": "Share if you have borewell or municipal water so we can plan plumbing, sump, and filtration correctly."
+  },
+  {
+    "id": "electricity_load",
+    "question_variants": ["electricity load needed", "power requirement", "how much electrical load", "sanctioned load", "ac power requirement"],
+    "answer": "Mention expected load (ACs, heaters, EV charger) to size wiring, panels, and backup safely."
+  },
+  {
+    "id": "rainwater",
+    "question_variants": ["rainwater harvesting", "rainwater pit", "collect rain water", "harvesting system", "do we plan rainwater"],
+    "answer": "Rainwater harvesting stores roof water into a pit or tank. It saves water and supports compliance."
+  },
+  {
+    "id": "greywater",
+    "question_variants": ["greywater reuse", "reuse bathroom water", "recycle sink water", "grey water system", "water reuse option"],
+    "answer": "Greywater reuse treats sink/shower water for gardening or flushing. It reduces fresh water use."
+  },
+  {
+    "id": "roof_type",
+    "question_variants": ["flat roof or slope", "roof type choice", "which roof is better", "rcc roof meaning", "slope roof option"],
+    "answer": "Flat RCC roofs are common and give terrace space. Sloped roofs help rain runoff and change the look."
+  },
+  {
+    "id": "basement",
+    "question_variants": ["can i add basement", "basement cost", "is basement possible", "basement requirements", "basement waterproofing"],
+    "answer": "Basements need waterproofing, drainage, and may increase cost. We must check soil and bylaws first."
+  },
+  {
+    "id": "balcony",
+    "question_variants": ["balcony size", "how deep balcony", "balcony requirement", "balcony depth", "balcony railing height"],
+    "answer": "Balconies work well at 4–6 ft depth. Keep safe railing height per code and proper drainage."
+  },
+  {
+    "id": "ventilation",
+    "question_variants": ["ventilation tips", "cross ventilation", "air flow in house", "how to ventilate rooms", "ventilation requirement"],
+    "answer": "Plan windows on opposite sides for cross-ventilation. Keep vents in kitchens and baths for moisture control."
+  },
+  {
+    "id": "sunlight",
+    "question_variants": ["sunlight planning", "how to get light", "avoid harsh sun", "natural light tips", "sunlight direction"],
+    "answer": "Orient living spaces to get morning light and avoid harsh west sun. Use shading on west/south if needed."
+  },
+  {
+    "id": "orientation",
+    "question_variants": ["which facing plot", "east facing benefits", "north facing home", "plot orientation", "house facing direction"],
+    "answer": "North or east entries are common preferences, but we can adapt to your plot and bylaws."
+  },
+  {
+    "id": "materials",
+    "question_variants": ["what materials used", "construction material", "brick or block", "material options", "which blocks to use"],
+    "answer": "We typically use standard bricks/blocks and RCC. If you want alternatives like AAC or laterite, tell me."
+  },
+  {
+    "id": "eco_friendly",
+    "question_variants": ["eco friendly options", "green building tips", "sustainable choices", "low carbon options", "environment friendly design"],
+    "answer": "Options include flyash bricks, solar, rainwater harvesting, efficient plumbing, and low-VOC paints."
+  },
+  {
+    "id": "smart_home",
+    "question_variants": ["smart home ready", "home automation", "smart switches", "smart lighting", "smart security"],
+    "answer": "We can plan smart switches, basic automation, Wi-Fi coverage, and camera points if you want them."
+  },
+  {
+    "id": "security",
+    "question_variants": ["home security", "security system", "cctv plan", "door camera", "how to secure house"],
+    "answer": "Include a main door camera, motion lights, and window grills where needed. Plan wiring early."
+  },
+  {
+    "id": "number_bedrooms",
+    "question_variants": ["how many bedrooms", "bedroom count", "beds needed", "3bhk meaning", "add extra bedroom"],
+    "answer": "Pick your bedroom count (1–5+). We’ll place them for privacy, light, and easy access."
+  },
+  {
+    "id": "bathrooms",
+    "question_variants": ["how many bathrooms", "bathroom count", "common bathroom needed", "attach bathroom", "toilet per floor"],
+    "answer": "Attach baths to bedrooms and add one common bath near living/dining. Ensure ventilation and anti-skid floors."
+  },
+  {
+    "id": "pooja_room",
+    "question_variants": ["pooja room needed", "prayer room", "puja space", "where to place pooja", "pooja room size"],
+    "answer": "A compact pooja room can be in the living or near the kitchen. We’ll align it to your preference."
+  },
+  {
+    "id": "study_room",
+    "question_variants": ["study room size", "study area", "where to keep study", "study space design", "kid study room"],
+    "answer": "A small study needs good light, ventilation, and a desk with storage. Quiet location helps focus."
+  },
+  {
+    "id": "home_office",
+    "question_variants": ["home office setup", "work from home room", "office space at home", "silent work area", "study or office"],
+    "answer": "Home office needs a stable desk, chair, storage, and noise control. We can add sound-soft finishes."
+  },
+  {
+    "id": "parents_room",
+    "question_variants": ["room for parents", "elderly room", "ground floor bedroom", "parents bedroom location", "age friendly room"],
+    "answer": "A ground-floor bedroom helps elderly access. Add a no-step bathroom and wider doors if needed."
+  },
+  {
+    "id": "kids_room",
+    "question_variants": ["kids bedroom", "children room design", "kid friendly room", "kids study space", "kids room storage"],
+    "answer": "Kids’ rooms need storage, study desk, safe finishes, and good light. We can plan soft flooring if you like."
+  },
+  {
+    "id": "guest_room",
+    "question_variants": ["guest room needed", "do i need guest bedroom", "guest bed space", "guest room size", "extra bedroom for guests"],
+    "answer": "A guest room can double as a study with a sofa-cum-bed. Add a nearby bath for comfort."
+  },
+  {
+    "id": "storage",
+    "question_variants": ["storage options", "where to keep storage", "loft storage", "store room needed", "wardrobe planning"],
+    "answer": "Plan wardrobes, lofts, and a small store if space allows. Early planning hides clutter."
+  },
+  {
+    "id": "kitchen_type",
+    "question_variants": ["open or closed kitchen", "kitchen style", "island kitchen", "which kitchen type", "semi open kitchen"],
+    "answer": "Choose open or closed kitchen. If space allows, add an island. Ventilation and chimney placement matter."
+  },
+  {
+    "id": "kitchen_utility",
+    "question_variants": ["utility area", "kitchen utility", "dirty kitchen", "scullery", "washing area near kitchen"],
+    "answer": "A utility next to the kitchen helps with washing, drying, and heavy cooking. Keep good ventilation."
+  },
+  {
+    "id": "dining",
+    "question_variants": ["dining location", "where to place dining", "dining near kitchen", "dining space size", "dining layout"],
+    "answer": "Place dining near kitchen and living for easy movement. Ensure light and space for a 4–6 seat table."
+  },
+  {
+    "id": "living_room",
+    "question_variants": ["living room design", "hall plan", "living room size", "where to place living", "living light"],
+    "answer": "Keep the living room bright with seating for family and guests. Plan TV wall, power, and airflow."
+  },
+  {
+    "id": "tv_unit",
+    "question_variants": ["tv wall design", "tv unit placement", "where to keep tv", "tv wiring", "tv cabinet"],
+    "answer": "TV walls need power and data points, proper height, and ventilation for devices. Plan storage if needed."
+  },
+  {
+    "id": "stairs",
+    "question_variants": ["stair size", "staircase type", "stair width", "stairs requirement", "where to place stairs"],
+    "answer": "Straight or L-shaped stairs need about 10–12 ft run and 3–4 ft width. Add handrails and anti-skid steps."
+  },
+  {
+    "id": "lift",
+    "question_variants": ["can i add lift", "home lift size", "lift requirement", "lift shaft size", "lift option"],
+    "answer": "A small home lift needs roughly 5×5 ft shaft plus machine space. It adds cost; we can provision now."
+  },
+  {
+    "id": "wheelchair",
+    "question_variants": ["wheelchair access", "accessible home", "step free entry", "wider doors needed", "barrier free design"],
+    "answer": "Provide a ramp, wider doors (~900mm), and a no-step bathroom for wheelchair-friendly access."
+  },
+  {
+    "id": "terrace_garden",
+    "question_variants": ["terrace garden", "roof garden", "plants on terrace", "garden on roof", "terrace waterproofing"],
+    "answer": "For a terrace garden, ensure waterproofing, drainage, and protection layers. Plan water and power points."
+  },
+  {
+    "id": "solar",
+    "question_variants": ["solar panels", "rooftop solar", "add solar", "solar readiness", "solar power option"],
+    "answer": "Solar needs clear roof area and sun. We’ll plan conduit, inverter space, and panel layout later."
+  },
+  {
+    "id": "generator",
+    "question_variants": ["generator backup", "genset space", "power backup generator", "diesel generator", "where to keep generator"],
+    "answer": "Generators need ventilated space and follow local norms. We’ll plan exhaust, fuel access, and clearances."
+  },
+  {
+    "id": "inverter",
+    "question_variants": ["inverter backup", "ups system", "battery backup", "where to keep inverter", "inverter space"],
+    "answer": "An inverter/UPS needs a safe spot with battery ventilation. We’ll size it based on your load."
+  },
+  {
+    "id": "appliances",
+    "question_variants": ["appliances list", "where to place fridge", "washing machine spot", "appliance planning", "kitchen appliances"],
+    "answer": "List heavy appliances (fridge, washer, dishwasher, oven) so we plan power points, water, and space."
+  },
+  {
+    "id": "paint",
+    "question_variants": ["which paint", "paint suggestion", "low voc paint", "washable paint", "paint type for interior"],
+    "answer": "Low-VOC, washable interior paints reduce odor and are easy to clean. We’ll pick finishes per room."
+  },
+  {
+    "id": "flooring",
+    "question_variants": ["flooring options", "which tiles", "wooden floor", "anti skid tiles", "flooring for bathroom"],
+    "answer": "Common: vitrified tiles for most rooms, anti-skid tiles for baths, wooden or laminate for bedrooms if you like."
+  },
+  {
+    "id": "photo_upload",
+    "question_variants": ["how many photos", "photo upload help", "what photos to add", "upload site photos", "pictures needed"],
+    "answer": "Upload 3–5 clear photos: front, inside, left/right sides. Need tips on taking photos?"
+  },
+  {
+    "id": "plot_irregular",
+    "question_variants": ["my plot is not a rectangle what to do", "irregular shaped plot how to enter", "plot is irregular shape", "what if plot has odd shape"],
+    "answer": "Give the maximum width and maximum depth and upload photos. Mark unusual shapes in 'site constraints' so designers can adapt."
+  },
+  {
+    "id": "plot_area_only",
+    "question_variants": ["i only know area", "what if i have only area", "how to give area only", "i have area in sqm"],
+    "answer": "If you only know area, give it as sqm or sqft (e.g., 180 sqm). We can calculate width/depth if you provide one dimension."
+  },
+  {
+    "id": "budget_meaning",
+    "question_variants": ["what does budget mean here", "what is budget for construction", "how to enter budget", "budget means what"],
+    "answer": "Budget is the money you plan to spend on construction. Example: 25L–35L means ₹2,500,000–₹3,500,000. Specify total or per-sqft."
+  },
+  {
+    "id": "budget_single_number",
+    "question_variants": ["i only know one number 30L is that ok", "i have 30L only", "is one number ok for budget", "just 30 lakh is fine?"],
+    "answer": "A single number is okay; we will use it as your target. If possible, give a small range (e.g., 30–35L) for more flexible proposals."
+  },
+  {
+    "id": "budget_include_furniture",
+    "question_variants": ["should budget include furniture", "include fittings in budget", "do i add furniture cost", "should i add cupboards and tiles"],
+    "answer": "Budget usually means civil work and finishes. If you want furniture and fittings included, say 'turnkey' or list extras explicitly."
+  },
+  {
+    "id": "budget_type",
+    "question_variants": ["is this per sqft or total", "budget per sqft or total cost", "do i give cost per square foot", "per sqft budget question"],
+    "answer": "Tell us whether you mean total project cost or cost per sqft. Both are accepted; specify which you prefer for accurate suggestions."
+  },
+  {
+    "id": "budget_city_variation",
+    "question_variants": ["do prices change by city", "material prices differ by location", "will cost vary in my city", "city affects budget?"],
+    "answer": "Yes — material and labor costs vary by city. Tell us your city for more realistic estimates."
+  },
+  {
+    "id": "floors_number",
+    "question_variants": ["how many floors should i choose", "number of storeys", "how many floors do i want", "g+1 or g+2 example"],
+    "answer": "Pick the usable storeys you want (1 = ground only, 2 = ground + 1). Common small homes are 1–3 floors."
+  },
+  {
+    "id": "floors_basement_terrace",
+    "question_variants": ["include basement or terrace as floor", "does garage count as floor", "basement count in floors", "is terrace a floor"],
+    "answer": "Only count habitable storeys as floors. Basements or terraces are not typically counted as floors for this field."
+  },
+  {
+    "id": "future_expansion",
+    "question_variants": ["future expansion stairs lift provision", "reserve space for future lift", "plan for future floors", "want provision for expansion"],
+    "answer": "If you may expand later, mention it. Architects can reserve space for future stairs or structural provisions for a lift."
+  },
+  {
+    "id": "rooms_bhk",
+    "question_variants": ["how many bedrooms bhk question", "what is 3bhk", "number of bedrooms", "3 BHK meaning"],
+    "answer": "3BHK means 3 bedrooms + hall + kitchen. Also tell how many bathrooms and any special rooms you want."
+  },
+  {
+    "id": "special_rooms",
+    "question_variants": ["need pooja room or study", "any special rooms like guest or study", "want a parents room on ground", "need home office or pooja"],
+    "answer": "List special rooms needed (pooja, study/home office, guest room, parents' room on ground). Architects will include them in the layout."
+  },
+  {
+    "id": "dining_location",
+    "question_variants": ["dining near kitchen or living", "where should dining be", "dining adjacent to kitchen?", "dining location preferences"],
+    "answer": "Tell whether dining should be near the kitchen or the living area. Architects will arrange circulation accordingly."
+  },
+  {
+    "id": "power_needs",
+    "question_variants": ["power needs acs heater ev charging", "electrical load requirements", "need ev charger or inverter", "power backup planning"],
+    "answer": "Mention major power needs (AC count, EV charging, heating). Also state whether backup (inverter/generator) is required."
+  },
+  {
+    "id": "accessibility",
+    "question_variants": ["need ramp or wider doors", "accessibility requirements", "wheelchair access needed", "no-step bath or ramp"],
+    "answer": "If accessibility is needed, say so (ramp, wider doors, no-step bath). We will include these in the design."
+  },
+  {
+    "id": "materials_preferences",
+    "question_variants": ["material preferences aac or brick", "preferred flooring paint choices", "want low-voc paint", "material and finish choices"],
+    "answer": "List material and finish preferences (AAC/brick, flooring type, low-VOC paint). Architects will suggest suitable options."
+  },
+  {
+    "id": "photos_required",
+    "question_variants": ["can i upload site photos", "how many photos to upload", "what photos to take", "photo requirements for plot"],
+    "answer": "Please upload 3–5 clear photos: front street view, inside plot, and both sides/back. Wide-angle, non-blurry images help most."
+  },
+  {
+    "id": "rainwater_greywater",
+    "question_variants": ["need rainwater harvesting", "want greywater reuse", "water recycling options", "harvest rainwater"],
+    "answer": "If you want rainwater harvesting or greywater reuse, say 'yes' so the architect can plan collection and reuse systems."
+  },
+  {
+    "id": "backup_power",
+    "question_variants": ["need inverter or generator planning", "backup power required", "inverter or generator", "power backup options"],
+    "answer": "Indicate backup preference: inverter, generator, both, or none. This affects load planning and space allocation."
+  },
+  {
+    "id": "setback_entry_width",
+    "question_variants": ["entry is only 3 feet wide is that a problem", "narrow access 3 ft", "small entry width concerns", "how to handle narrow entry"],
+    "answer": "Narrow access can make construction and vehicle entry harder. Mention it — we will adapt designs and logistics accordingly."
+  },
+  {
+    "id": "neighbour_walls",
+    "question_variants": ["neighbors have high walls does that matter", "high boundary walls issue", "boundary walls affect design", "neighbor boundary impact"],
+    "answer": "High neighbor walls affect daylight and ventilation. Note this so architects plan windows and light wells appropriately."
+  },
+  {
+    "id": "document_list",
+    "question_variants": ["what documents are required", "which documents to upload", "documents needed for request", "what files do i need"],
+    "answer": "For initial design, photos, a site sketch, and title copy are sufficient. Approvals and plans are requested later if needed."
+  },
+  {
+    "id": "upload_docs",
+    "question_variants": ["how to upload documents", "where to upload files", "document upload instructions", "uploading pdfs and images"],
+    "answer": "Use the secure upload option and choose clear images or PDFs. Avoid sharing bank details in uploads."
+  },
+  {
+    "id": "portfolio_meaning",
+    "question_variants": ["what is portfolio", "architect portfolio meaning", "portfolio shows what", "what is portfolio in profile"],
+    "answer": "Portfolio contains previous project images architects upload to show style and experience. View to check their past work."
+  },
+  {
+    "id": "verification_process",
+    "question_variants": ["how does verification work", "contractor verification process", "are contractors verified", "how admin verifies"],
+    "answer": "Admin reviews contractor/architect documents and marks them verified before they appear as verified professionals on the platform."
+  },
+  {
+    "id": "blurry_documents",
+    "question_variants": ["my document is blurry what to do", "blurry scan of title deed", "document not clear", "rescan document"],
+    "answer": "Retake a clear photo or scan. Blurry or low-quality documents delay verification and approval."
+  },
+  {
+    "id": "after_submit",
+    "question_variants": ["what happens after i submit", "after submission what next", "how does process continue", "what to expect after submit"],
+    "answer": "After submitting, architects and contractors will see your request. You will receive proposals and can select one to proceed."
+  },
+  {
+    "id": "proposal_time",
+    "question_variants": ["how long to get proposals", "proposal turnaround time", "when will i get estimates", "time for contractor replies"],
+    "answer": "Initial proposals usually arrive within 3–7 days, depending on location and request complexity."
+  },
+  {
+    "id": "edit_after_submit",
+    "question_variants": ["can i edit after submitting", "edit request later", "change details after submit", "modify request after send"],
+    "answer": "You can edit the request while it is open. After a contractor is assigned, some fields may be locked to protect the agreement."
+  },
+  {
+    "id": "save_draft",
+    "question_variants": ["can i save draft", "save and continue later", "save request and return", "draft option"],
+    "answer": "Yes — use Save Draft to complete the request later. Your partially-filled data will be preserved."
+  },
+  {
+    "id": "convert_units",
+    "question_variants": ["convert 30x40 ft to meters", "convert feet to meters", "what is 30 feet in meters", "ft to m conversion"],
+    "answer": "1 foot ≈ 0.3048 meters. Example: 30 ft ≈ 9.14 m. Ask 'convert' and we will change units for you."
+  },
+  {
+    "id": "lakh_crore",
+    "question_variants": ["what does 25L mean", "meaning of 25 lakh", "how many rupees is 1 crore", "25 lakh in rupees"],
+    "answer": "25L = 25 lakhs = ₹2,500,000. 1 Cr = 1 crore = ₹10,000,000. You can use L and Cr or full numbers."
+  },
+  {
+    "id": "decimals_input",
+    "question_variants": ["how to write decimals", "enter decimals like 10.5", "decimal format for meters", "use dot for decimals"],
+    "answer": "Use a period (.) for decimals, e.g., 10.5 meters. Commas are optional, but numbers are easier without commas."
+  },
+  {
+    "id": "escalation_architect",
+    "question_variants": ["i need to talk to an architect", "can i get an architect consult", "connect me to architect", "need professional advice"],
+    "answer": "I can explain the form, but for legal or structural advice we should connect you to an architect. Do you want to request a consult?"
+  },
+  {
+    "id": "urgent_request",
+    "question_variants": ["my case is urgent what to do", "urgent project help", "need fast proposals", "how to mark urgent"],
+    "answer": "Mark your request 'urgent' or request a callback. We will highlight it to contractors for faster proposals."
+  },
+  {
+    "id": "site_visit",
+    "question_variants": ["can someone visit the site", "site visit possible", "arrange site visit", "site inspection by architect"],
+    "answer": "Yes — after you select a contractor you can request a site visit. We can help arrange and coordinate the visit."
+  },
+  {
+    "id": "legal_structural",
+    "question_variants": ["is this legally allowed", "is structure safe", "can you certify this", "building code compliance"],
+    "answer": "I can clarify form questions, but I cannot provide legal or structural certification. For that, we should connect you to a qualified architect or engineer."
+  },
+  {
+    "id": "callback_request",
+    "question_variants": ["how do i get a callback", "request callback", "call me back", "schedule a callback"],
+    "answer": "Provide a convenient time and phone number and we will request a callback from support or an architect. Would you like to provide details now?"
+  },
+  {
+    "id": "how_to_create_request",
+    "question_variants": ["how to create request", "how to submit request", "create new request", "submit construction request", "how to start request"],
+    "answer": "Click 'Create New Request' on your dashboard. Fill in plot details, budget, rooms needed, and upload site photos. Our architects will review and send proposals."
+  },
+  {
+    "id": "dashboard_navigation",
+    "question_variants": ["how to use dashboard", "navigate dashboard", "dashboard help", "where is my dashboard", "dashboard features"],
+    "answer": "Your dashboard shows active requests, project status, messages, and proposals. Use the sidebar to navigate between sections like 'My Requests', 'Projects', and 'Messages'."
+  },
+  {
+    "id": "upload_documents",
+    "question_variants": ["how to upload documents", "upload site photos", "add documents", "document upload", "photo upload help"],
+    "answer": "Click 'Upload Documents' in your request form. You can upload site photos, property documents, or reference images. Supported formats: JPG, PNG, PDF. Max 10MB per file."
+  },
+  {
+    "id": "view_proposals",
+    "question_variants": ["how to see proposals", "view architect proposals", "check proposals", "where are proposals", "proposal status"],
+    "answer": "Go to 'My Requests' → Click on your request → View 'Proposals' tab. You'll see architect profiles, designs, quotes, and timelines. Compare and select the best one."
+  },
+  {
+    "id": "select_architect",
+    "question_variants": ["how to choose architect", "select architect", "pick contractor", "choose proposal", "accept proposal"],
+    "answer": "Review proposals carefully. Check architect ratings, portfolio, price, and timeline. Click 'Accept Proposal' on your preferred choice. You can message architects before deciding."
+  },
+  {
+    "id": "message_architect",
+    "question_variants": ["how to message architect", "contact architect", "chat with architect", "send message", "talk to architect"],
+    "answer": "Go to 'Messages' or click 'Message' on any proposal. You can ask questions, share requirements, or discuss modifications before accepting a proposal."
+  },
+  {
+    "id": "track_project",
+    "question_variants": ["track project progress", "project status", "construction progress", "project updates", "how to monitor project"],
+    "answer": "Visit 'My Projects' to see real-time updates. Architects share progress photos, milestone completions, and next steps. You'll get notifications for major updates."
+  },
+  {
+    "id": "payment_process",
+    "question_variants": ["how to make payment", "payment process", "pay architect", "payment methods", "when to pay"],
+    "answer": "Payments are milestone-based for your safety. Pay only after each phase completion and your approval. We support UPI, bank transfer, and cards through secure payment gateway."
+  },
+  {
+    "id": "edit_request",
+    "question_variants": ["edit my request", "modify request", "change request details", "update request", "can i edit request"],
+    "answer": "You can edit requests before architect selection. Go to 'My Requests' → Click 'Edit'. After architect selection, discuss changes directly with your architect."
+  },
+  {
+    "id": "request_status",
+    "question_variants": ["request status", "what is my request status", "check request status", "request progress", "status meaning"],
+    "answer": "Request statuses: 'Open' (receiving proposals), 'In Review' (architects reviewing), 'Proposals Received' (ready to select), 'Assigned' (architect selected), 'In Progress' (construction started)."
+  },
+  {
+    "id": "cancel_request",
+    "question_variants": ["cancel request", "delete request", "remove request", "cancel project", "how to cancel"],
+    "answer": "You can cancel open requests anytime. Go to 'My Requests' → Click 'Cancel Request'. For assigned projects, discuss with your architect about cancellation terms."
+  },
+  {
+    "id": "architect_verification",
+    "question_variants": ["are architects verified", "architect verification", "how to check architect credentials", "verified architects", "architect background check"],
+    "answer": "All our architects are verified. Look for the 'Verified' badge. We check licenses, experience, and past work. You can also see ratings and reviews from previous clients."
+  },
+  {
+    "id": "portfolio_viewing",
+    "question_variants": ["how to see architect portfolio", "view architect work", "architect previous projects", "portfolio gallery", "architect examples"],
+    "answer": "Click on any architect's profile to see their portfolio. Browse through photos of completed projects, design styles, and specializations to find the right match."
+  },
+  {
+    "id": "pricing_transparency",
+    "question_variants": ["pricing details", "cost breakdown", "what is included in price", "pricing transparency", "hidden costs"],
+    "answer": "All proposals include detailed cost breakdowns. No hidden charges. Price includes design, materials, labor, and supervision. Additional costs like permits are clearly mentioned."
+  },
+  {
+    "id": "timeline_expectations",
+    "question_variants": ["project timeline", "how long will it take", "construction duration", "project completion time", "timeline accuracy"],
+    "answer": "Timelines vary by project size and complexity. Typical homes: 8-14 months. Architects provide realistic timelines with milestone dates. Weather and approvals may cause minor delays."
+  },
+  {
+    "id": "quality_assurance",
+    "question_variants": ["quality control", "quality assurance", "construction quality", "quality checks", "quality guarantee"],
+    "answer": "We ensure quality through regular inspections, milestone approvals, and architect supervision. You approve each phase before payment. Any issues are resolved before proceeding."
+  },
+  {
+    "id": "support_help",
+    "question_variants": ["customer support", "help center", "contact support", "get help", "support team"],
+    "answer": "Need help? Use this chat assistant, visit our Help Center, or contact support at support@buildhub.com. We're here Monday-Saturday, 9 AM-7 PM."
+  },
+  {
+    "id": "notification_settings",
+    "question_variants": ["notification settings", "email notifications", "sms alerts", "turn off notifications", "notification preferences"],
+    "answer": "Manage notifications in 'Settings' → 'Notifications'. Choose email, SMS, or app notifications for proposals, messages, project updates, and payments."
+  },
+  {
+    "id": "profile_update",
+    "question_variants": ["update profile", "edit profile", "change profile details", "profile settings", "account settings"],
+    "answer": "Go to 'Profile' → 'Edit Profile' to update your name, phone, email, and address. Keep your contact details current for smooth communication."
+  },
+  {
+    "id": "document_verification",
+    "question_variants": ["document verification", "verify documents", "document approval", "document status", "why documents needed"],
+    "answer": "We verify property documents to ensure legal compliance. Upload clear photos of title deed, survey settlement, and approvals. Verification takes 1-2 business days."
+  },
+  {
+    "id": "multiple_requests",
+    "question_variants": ["multiple requests", "create multiple requests", "several projects", "more than one request", "multiple properties"],
+    "answer": "Yes, you can create multiple requests for different properties or projects. Each request is managed separately with its own proposals and timeline."
+  },
+  {
+    "id": "budget_flexibility",
+    "question_variants": ["budget flexibility", "change budget", "budget range", "flexible budget", "budget adjustment"],
+    "answer": "You can specify a budget range (e.g., ₹25-30 lakhs) for flexibility. Architects will propose within your range. You can discuss budget adjustments during planning."
+  },
+  {
+    "id": "design_changes",
+    "question_variants": ["design changes", "modify design", "change design", "design revisions", "design modifications"],
+    "answer": "Minor design changes are usually free during planning phase. Major changes may affect cost and timeline. Discuss all changes with your architect before construction starts."
+  },
+  {
+    "id": "material_selection",
+    "question_variants": ["material selection", "choose materials", "material options", "material quality", "material brands"],
+    "answer": "Your architect will recommend materials based on your budget and preferences. You can choose specific brands or upgrade materials. All material costs are transparently shared."
+  },
+  {
+    "id": "site_visit",
+    "question_variants": ["site visit", "architect site visit", "site inspection", "site survey", "when will architect visit"],
+    "answer": "After you select an architect, they'll schedule a site visit within 3-5 days. This helps finalize design, check soil conditions, and plan construction logistics."
+  },
+  {
+    "id": "permits_approvals",
+    "question_variants": ["building permits", "approvals needed", "government approvals", "permit process", "approval timeline"],
+    "answer": "Your architect handles building permits and approvals. Timeline varies by location (2-8 weeks). Permit costs are separate and clearly mentioned in proposals."
+  },
+  {
+    "id": "construction_supervision",
+    "question_variants": ["construction supervision", "site supervision", "architect supervision", "project monitoring", "site visits by architect"],
+    "answer": "Your architect provides regular site supervision, quality checks, and progress monitoring. They visit 2-3 times per week and share updates with photos."
+  },
+  {
+    "id": "warranty_guarantee",
+    "question_variants": ["warranty", "guarantee", "construction warranty", "defect liability", "post construction support"],
+    "answer": "We provide 1-year warranty on construction defects. Structural issues are covered for 5 years. Your architect provides post-completion support for any issues."
+  },
+  {
+    "id": "cost_escalation",
+    "question_variants": ["cost escalation", "price increase", "additional costs", "cost overrun", "budget exceed"],
+    "answer": "Fixed-price contracts protect you from cost escalation. Any additional work requires your written approval with cost details. Material price changes are discussed upfront."
+  },
+  {
+    "id": "project_delay",
+    "question_variants": ["project delay", "construction delay", "timeline delay", "delayed project", "what if project is delayed"],
+    "answer": "Delays can happen due to weather, approvals, or material availability. Your architect keeps you informed and adjusts timeline. Penalty clauses protect your interests."
+  },
+  {
+    "id": "change_architect",
+    "question_variants": ["change architect", "switch architect", "replace architect", "different architect", "architect not good"],
+    "answer": "If unsatisfied, you can discuss concerns with support. We'll mediate or help you switch architects if needed. Your project continuity and satisfaction are our priority."
+  },
+  {
+    "id": "referral_program",
+    "question_variants": ["referral program", "refer friends", "referral bonus", "earn rewards", "friend referral"],
+    "answer": "Refer friends and earn rewards! Both you and your friend get benefits when they complete a project. Check 'Referrals' section for current offers and your referral code."
+  },
+  {
+    "id": "mobile_app",
+    "question_variants": ["mobile app", "app download", "buildhub app", "mobile version", "smartphone app"],
+    "answer": "Download our mobile app for easy project tracking, messaging, and updates on the go. Available on Google Play Store and Apple App Store. Search 'BuildHub'."
+  },
+  {
+    "id": "security_privacy",
+    "question_variants": ["data security", "privacy policy", "data protection", "secure platform", "information safety"],
+    "answer": "Your data is secure with us. We use encryption, secure servers, and follow privacy laws. We never share your personal information without consent. Read our Privacy Policy for details."
+  }
+]

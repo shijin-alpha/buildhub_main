@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BuildHub ML API Test</title>
+</head>
+<body>
+    <h1>BuildHub ML API Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testMLAPI() {
+            const results = document.getElementById('results');
+            
+            // Test data
+            const testData = {
+                plot_size: 2000,
+                budget: 3000000,
+                num_floors: 2
+            };
+            
+            try {
+                // Test validation
+                console.log('Testing ML validation...');
+                const response = await fetch('api/ml_rules_engine.php?action=validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                console.log('Validation result:', result);
+                
+                results.innerHTML = `
+                    <h2>ML API Test Results</h2>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                results.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run test when page loads
+        testMLAPI();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

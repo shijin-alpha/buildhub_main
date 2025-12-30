@@ -1,0 +1,2563 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../styles/ModernDashboard.css';
+import '../styles/HomeownerDashboard.css';
+import '../styles/BlueGlassTheme.css';
+import '../styles/SoftSidebar.css';
+import '../styles/Widgets.css';
+import '../styles/ReviewSection.css';
+import './WidgetColors.css';
+import SearchableDropdown from './SearchableDropdown';
+import { indianCities } from '../data/indianCities';
+import { badgeClass, formatStatus } from '../utils/status';
+import { ProjectProgressChart, ProjectTimeline, BudgetTracker } from './widgets/ProjectTrackingWidgets';
+import NotificationSystem from './widgets/NotificationSystem';
+import DesignGallery from './widgets/DesignGallery';
+import NeatJsonCard from './NeatJsonCard';
+
+const HomeownerDashboard = () => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [receivedDesigns, setReceivedDesigns] = useState([]);
+  const [comments, setComments] = useState({}); // designId -> list
+  const [commentDrafts, setCommentDrafts] = useState({}); // designId -> text
+  const [commentRatings, setCommentRatings] = useState({}); // designId -> 1..5
+  const [user, setUser] = useState(null);
+  const [layoutRequests, setLayoutRequests] = useState([]);
+  const [myProjects, setMyProjects] = useState([]);
+  const [layoutLibrary, setLayoutLibrary] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showLibraryModal, setShowLibraryModal] = useState(false);
+  const [selectedLibraryLayout, setSelectedLibraryLayout] = useState(null);
+  // Request form data state used for customization and submissions
+  const [requestData, setRequestData] = useState({
+    plot_size: '',
+    budget_range: '',
+    plot_shape: '',
+    num_floors: '',
+    topography: '',
+    development_laws: '',
+    family_needs: '',
+    rooms: '',
+    aesthetic: '',
+    location: '',
+    timeline: '',
+    requirements: '',
+    selected_layout_id: null,
+    layout_type: 'custom'
+  });
+  const [previewLayout, setPreviewLayout] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showDesignDetails, setShowDesignDetails] = useState({}); // designId -> boolean
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [showArchitectModal, setShowArchitectModal] = useState(false);
+  const [sidebarProfileOpen, setSidebarProfileOpen] = useState(false);
+
+  // Architect assignment state
+  const [architects, setArchitects] = useState([]);
+  const [archLoading, setArchLoading] = useState(false);
+  const [archError, setArchError] = useState('');
+  const [archSearch, setArchSearch] = useState('');
+  const [archSpec, setArchSpec] = useState('');
+  const [archMinExp, setArchMinExp] = useState('');
+  const [archStepDone, setArchStepDone] = useState(false);
+  const [selectedRequestForAssign, setSelectedRequestForAssign] = useState(null);
+  const [selectedArchitectId, setSelectedArchitectId] = useState([]);
+  const [assignMessage, setAssignMessage] = useState('');
+
+  // Support / Help modal state
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [supportForm, setSupportForm] = useState({ subject: '', category: 'general', message: '' });
+  const [supportLoading, setSupportLoading] = useState(false);
+  const [supportIssues, setSupportIssues] = useState([]);
+  const [selectedIssue, setSelectedIssue] = useState(null);
+  const [issueReplies, setIssueReplies] = useState([]);
+  const [showReportsList, setShowReportsList] = useState(false);
+
+  // 3D computed plan from finalized design (fallback to placeholder)
+  const [computed3DRooms, setComputed3DRooms] = useState([]);
+  const [computed3DWalls, setComputed3DWalls] = useState([]);
+
+  // Contractor selection state
+  const [showContractorModal, setShowContractorModal] = useState(false);
+  const [contractors, setContractors] = useState([]);
+  const [contractorLoading, setContractorLoading] = useState(false);
+  const [contractorError, setContractorError] = useState('');
+  const [selectedContractor, setSelectedContractor] = useState(null);
+  const [contractorMessage, setContractorMessage] = useState('');
+  const [sendingToContractor, setSendingToContractor] = useState(false);
+
+  // Profile dropdown outside-click handler (top header)
+  const profileRef = useRef(null);
+  const sidebarProfileRef = useRef(null);
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileMenuOpen(false);
+      }
+      if (sidebarProfileRef.current && !sidebarProfileRef.current.contains(e.target)) {
+        setSidebarProfileOpen(false);
+      }
+    };
+    const onKey = (e) => { if (e.key === 'Escape') { setProfileMenuOpen(false); setSidebarProfileOpen(false); } };
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDocClick); document.removeEventListener('keydown', onKey); };
+  }, []);
+
+  useEffect(() => {
+    // Get user data from session
+    const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+    setUser(userData);
+
+    import('../utils/session').then(({ preventCache, verifyServerSession }) => {
+      preventCache();
+      (async () => {
+        const serverAuth = await verifyServerSession();
+        if (!userData.id || userData.role !== 'homeowner' || !serverAuth) {
+          sessionStorage.removeItem('user');
+          localStorage.removeItem('bh_user');
+          navigate('/login', { replace: true });
+          return;
+        }
+        fetchMyRequests();
+        fetchMyProjects();
+        fetchLayoutLibrary();
+        fetchReceivedDesigns();
+      })();
+    });
+  }, []);
+
+  // Support helpers
+  const loadSupportIssues = async () => {
+    try {
+      const res = await fetch('/buildhub/backend/api/support/get_issues.php', { credentials: 'include' });
+      const json = await res.json();
+      if (json.success) {
+        setSupportIssues(json.issues || []);
+      }
+    } catch {}
+  };
+
+  const openIssueThread = async (issueId) => {
+    try {
+      const res = await fetch(`/buildhub/backend/api/support/get_issues.php?issue_id=${issueId}`, { credentials: 'include' });
+      const json = await res.json();
+      if (json.success) {
+        setSelectedIssue(json.issue);
+        setIssueReplies(json.replies || []);
+      }
+    } catch {}
+  };
+
+  const submitSupportIssue = async () => {
+    if (!supportForm.subject.trim() || !supportForm.message.trim()) return;
+    setSupportLoading(true);
+    try {
+      const res = await fetch('/buildhub/backend/api/support/create_issue.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(supportForm)
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSupportForm({ subject: '', category: 'general', message: '' });
+        setSuccess('Issue reported to admin');
+        await loadSupportIssues();
+        if (json.issue_id) {
+          await openIssueThread(json.issue_id);
+        } else {
+          // If no id returned, default to list view
+          setSelectedIssue(null);
+        }
+      } else {
+        setError(json.message || 'Failed to submit issue');
+      }
+    } catch {
+      setError('Network error submitting issue');
+    } finally {
+      setSupportLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try { await fetch('/buildhub/backend/api/logout.php', { method: 'POST', credentials: 'include' }); } catch {}
+    localStorage.removeItem('bh_user');
+    sessionStorage.removeItem('user');
+    navigate('/login', { replace: true });
+  };
+
+  const fetchMyRequests = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/buildhub/backend/api/homeowner/get_my_requests.php');
+      const result = await response.json();
+      if (result.success) {
+        const reqs = Array.isArray(result.requests) ? result.requests : [];
+        setLayoutRequests(reqs.filter(r => r.status !== 'deleted'));
+      }
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMyProjects = async () => {
+    try {
+      const response = await fetch('/buildhub/backend/api/homeowner/get_my_projects.php');
+      const result = await response.json();
+      if (result.success) {
+        setMyProjects(result.projects || []);
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
+
+  // Persistently remove a request (soft-delete via backend)
+  const removeRequest = async (requestId) => {
+    if (!requestId) return;
+    try {
+      const res = await fetch('/buildhub/backend/api/homeowner/delete_request.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ layout_request_id: requestId })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setLayoutRequests(prev => prev.filter(r => r.id !== requestId));
+        setSuccess('Request removed');
+      } else {
+        setError(json.message || 'Failed to remove request');
+      }
+    } catch (e) {
+      setError('Error removing request');
+    }
+  };
+
+  const fetchLayoutLibrary = async () => {
+    try {
+      const response = await fetch('/buildhub/backend/api/homeowner/get_layout_library.php');
+      const result = await response.json();
+      if (result.success) {
+        setLayoutLibrary(result.layouts || []);
+      }
+    } catch (error) {
+      console.error('Error fetching layout library:', error);
+    }
+  };
+
+  const fetchReceivedDesigns = async () => {
+    try {
+      const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+        credentials: 'include'
+      });
+      const result = await response.json();
+      if (result.success) {
+        const designs = result.designs || [];
+        setReceivedDesigns(designs);
+        const finalized = designs.find(d => d.status === 'finalized');
+        if (finalized) {
+          hydrate3DFromDesign(finalized);
+        } else {
+          setComputed3DRooms(defaultRooms());
+          setComputed3DWalls(defaultWalls());
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching designs:', e);
+    }
+  };
+
+  // Helpers for file type checks used in library previews
+  const isImageUrl = (url) => /\.(png|jpe?g|gif|webp|bmp|svg|heic)$/i.test(url || '');
+  const isPdfUrl = (url) => /\.(pdf)$/i.test(url || '');
+
+  const handleDeleteDesign = async (designId) => {
+    if (!designId) return;
+    if (!window.confirm('Delete this design? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/buildhub/backend/api/homeowner/delete_design.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ design_id: designId })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setReceivedDesigns(prev => prev.filter(d => d.id !== designId));
+      } else {
+        setError(json.message || 'Failed to delete design');
+      }
+    } catch (e) {
+      setError('Error deleting design');
+    }
+  };
+
+  const updateSelection = async (designId, action) => {
+    try {
+      const res = await fetch('/buildhub/backend/api/homeowner/update_design_selection.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ design_id: designId, action })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSuccess(action === 'finalize' ? 'Design finalized' : action === 'shortlist' ? 'Added to shortlist' : 'Removed from shortlist');
+        await fetchReceivedDesigns();
+        // Removed auto-switch to 3D tab
+      } else {
+        setError(json.message || 'Failed to update selection');
+      }
+    } catch (e) {
+      setError('Error updating selection');
+    }
+  };
+
+  const fetchComments = async (designId) => {
+    try {
+      const res = await fetch(`/buildhub/backend/api/comments/get_comments.php?design_id=${designId}`);
+      const json = await res.json();
+      if (json.success) setComments(prev => ({ ...prev, [designId]: json.comments }));
+    } catch {}
+  };
+
+  const postComment = async (designId) => {
+    const text = (commentDrafts[designId] || '').trim();
+    const rating = Number(commentRatings[designId] || 0);
+    if (!text) return;
+    try {
+      // 1) Post design comment
+      const res = await fetch('/buildhub/backend/api/comments/post_comment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ design_id: designId, message: text })
+      });
+      const json = await res.json();
+
+      // 2) Also post a review with optional rating
+      const design = receivedDesigns.find(d => d.id === designId);
+      if (design?.architect_id) {
+        try {
+          await fetch('/buildhub/backend/api/reviews/post_review.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ architect_id: design.architect_id, design_id: designId, rating: rating > 0 ? rating : 5, comment: text })
+          });
+        } catch {}
+      }
+
+      if (json.success) {
+        setCommentDrafts(prev => ({ ...prev, [designId]: '' }));
+        setCommentRatings(prev => ({ ...prev, [designId]: 0 }));
+        fetchComments(designId);
+        setSuccess('Comment & review posted');
+        // Re-hydrate 3D if commenting on finalized design
+        const isFinal = (receivedDesigns.find(d => d.id === designId)?.status === 'finalized');
+        if (isFinal) hydrate3DFromDesign(receivedDesigns.find(d => d.id === designId));
+      } else {
+        setError(json.message || 'Failed to post comment');
+      }
+    } catch {
+      setError('Error posting comment');
+    }
+  };
+
+  // Architect directory + assignment
+  const fetchArchitects = async (params = {}) => {
+    setArchLoading(true);
+    setArchError('');
+    try {
+      const q = new URLSearchParams({
+        ...(params.search ? { search: params.search } : {}),
+        ...(params.specialization ? { specialization: params.specialization } : {}),
+        ...(params.min_experience ? { min_experience: params.min_experience } : {}),
+        ...(params.layout_request_id ? { layout_request_id: params.layout_request_id } : {}),
+      }).toString();
+      const response = await fetch(`/buildhub/backend/api/homeowner/get_architects.php${q ? `?${q}` : ''}`, { credentials: 'include' });
+      // If backend supports status filter, ensure approved only by default
+      // else we will filter client-side below
+      const result = await response.json();
+      if (result.success) {
+        setArchitects(result.architects || []);
+      } else {
+        setArchError(result.message || 'Failed to load architects');
+      }
+    } catch (e) {
+      setArchError('Error loading architects');
+    } finally {
+      setArchLoading(false);
+    }
+  };
+
+  // Contractor directory + selection
+  const fetchContractors = async (params = {}) => {
+    setContractorLoading(true);
+    setContractorError('');
+    try {
+      const q = new URLSearchParams({
+        ...(params.search ? { search: params.search } : {}),
+        ...(params.specialization ? { specialization: params.specialization } : {}),
+        ...(params.min_experience ? { min_experience: params.min_experience } : {}),
+      }).toString();
+      const response = await fetch(`/buildhub/backend/api/homeowner/get_contractors.php${q ? `?${q}` : ''}`, { credentials: 'include' });
+      const result = await response.json();
+      if (result.success) {
+        setContractors(result.contractors || []);
+      } else {
+        setContractorError(result.message || 'Failed to load contractors');
+      }
+    } catch (e) {
+      setContractorError('Error loading contractors');
+    } finally {
+      setContractorLoading(false);
+    }
+  };
+
+  const openArchitectModal = (request) => {
+    setSelectedRequestForAssign(request);
+    setSelectedArchitectId(null);
+    setAssignMessage('');
+    setShowArchitectModal(true);
+    // Pass layout_request_id so backend can mark already assigned architects
+    fetchArchitects({ status: 'approved', search: archSearch, specialization: archSpec, min_experience: archMinExp, layout_request_id: request?.id });
+  };
+
+  const openContractorModal = (layout) => {
+    setSelectedLibraryLayout(layout);
+    setSelectedContractor(null);
+    setContractorMessage('');
+    setShowContractorModal(true);
+    fetchContractors();
+  };
+
+  const sendToContractor = async () => {
+    if (!selectedContractor || !selectedLibraryLayout) {
+      setError('Please select a contractor');
+      return;
+    }
+
+    setSendingToContractor(true);
+    try {
+      const response = await fetch('/buildhub/backend/api/homeowner/send_to_contractor.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          layout_id: selectedLibraryLayout.id,
+          contractor_id: selectedContractor.id,
+          homeowner_id: user?.id
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Show success message in the UI
+        setSuccess(`Layout sent to ${result.contractor_name} successfully!`);
+        setShowContractorModal(false);
+        setSelectedContractor(null);
+        setContractorMessage('');
+        setSelectedLibraryLayout(null);
+        // Refresh the requests to show the new entry
+        fetchMyRequests();
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => setSuccess(''), 5000);
+      } else {
+        setError(result.message || 'Failed to send to contractor');
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+    } finally {
+      setSendingToContractor(false);
+    }
+  };
+
+  // Map a finalized design (images/PDF or JSON-like description) to a simple 3D plan.
+  // Priority: 1) JSON in description; 2) filename keywords; 3) defaults.
+  const hydrate3DFromDesign = (design) => {
+    const fallbackRooms = defaultRooms();
+    const fallbackWalls = defaultWalls();
+
+    // 1) Try JSON in description (e.g., your example payload)
+    const desc = (design?.description || '').trim();
+    if (desc.startsWith('{') || desc.startsWith('[')) {
+      try {
+        const attrs = JSON.parse(desc);
+        const fromAttrs = computePlanFromAttributes(attrs);
+        if (fromAttrs && Array.isArray(fromAttrs.rooms) && Array.isArray(fromAttrs.walls)) {
+          setComputed3DRooms(fromAttrs.rooms.length ? fromAttrs.rooms : fallbackRooms);
+          setComputed3DWalls(fromAttrs.walls.length ? fromAttrs.walls : fallbackWalls);
+          return;
+        }
+      } catch (_) { /* ignore and fallback */ }
+    }
+
+    // 1b) Try JSON from layout_json field (preferred)
+    if (design?.layout_json) {
+      try {
+        const attrs = JSON.parse(design.layout_json);
+        const fromAttrs = computePlanFromAttributes(attrs);
+        if (fromAttrs && Array.isArray(fromAttrs.rooms) && Array.isArray(fromAttrs.walls)) {
+          setComputed3DRooms(fromAttrs.rooms.length ? fromAttrs.rooms : fallbackRooms);
+          setComputed3DWalls(fromAttrs.walls.length ? fromAttrs.walls : fallbackWalls);
+          return;
+        }
+      } catch (_) { /* ignore and fallback */ }
+    }
+
+    // 2) Heuristic via filenames
+    const files = Array.isArray(design?.files) ? design.files : [];
+    if (!files.length) {
+      setComputed3DRooms(fallbackRooms);
+      setComputed3DWalls(fallbackWalls);
+      return;
+    }
+
+    const names = files.map(f => (f.original || f.stored || '').toLowerCase());
+    const has = (kw) => names.some(n => n.includes(kw));
+
+    const rooms = [];
+    if (has('living')) rooms.push({ name: 'Living Room', position: [-1.4,0,1.0], size: [2.8,2.0], color: '#eef6ff' });
+    if (has('kitchen')) rooms.push({ name: 'Kitchen', position: [1.5,0,1.0], size: [2.4,2.0], color: '#fff6e9' });
+    if (has('bed') || has('master')) rooms.push({ name: 'Bedroom', position: [-1.6,0,-1.0], size: [2.6,1.8], color: '#f3e8ff' });
+    if (has('bath') || has('toilet') || has('wc')) rooms.push({ name: 'Bath', position: [1.2,0,-1.0], size: [2.0,1.2], color: '#fdecec' });
+    if (has('hall') || has('corridor') || has('foyer')) rooms.push({ name: 'Hallway', position: [1.2,0,-2.1], size: [2.0,0.6], color: '#ecfdf5' });
+
+    const finalRooms = rooms.length ? rooms : fallbackRooms;
+    const walls = [
+      { position: [0, 0.175, 2.25], rotation: [0,0,0], length: 6.2 },
+      { position: [0, 0.175, -2.25], rotation: [0,0,0], length: 6.2 },
+      { position: [-3.1, 0.175, 0], rotation: [0, Math.PI/2, 0], length: 4.5 },
+      { position: [3.1, 0.175, 0], rotation: [0, Math.PI/2, 0], length: 4.5 },
+      { position: [0.15, 0.175, 0], rotation: [0, Math.PI/2, 0], length: 4.2 },
+      { position: [-0.25, 0.175, -2.0], rotation: [0,0,0], length: 4.0 },
+      { position: [2.2, 0.175, -1.6], rotation: [0, Math.PI/2, 0], length: 1.8 },
+    ];
+
+    setComputed3DRooms(finalRooms);
+    setComputed3DWalls(walls);
+  };
+
+  // Empty default rooms/walls to be populated with real data from API
+  const defaultRooms = () => ([]);
+  const defaultWalls = () => ([]);
+
+  // Compute plan from attributes or structured JSON
+  const computePlanFromAttributes = (attrs) => {
+    // If structured rooms present, map them precisely
+    if (attrs && Array.isArray(attrs.rooms)) {
+      const scale = Number(attrs.scale || 1);
+      const rooms = attrs.rooms.map((r, idx) => ({
+        name: r.name || `Room ${idx+1}`,
+        position: [Number(r.x || 0) * scale, 0, Number(r.z || 0) * scale],
+        size: [Number(r.width || 2) * scale, Number(r.depth || 2) * scale],
+        color: r.color || undefined,
+      }));
+      const walls = Array.isArray(attrs.walls) ? attrs.walls.map((w) => ({
+        position: [Number(w.x || 0) * scale, 0.175, Number(w.z || 0) * scale],
+        rotation: [0, degToRad(Number(w.rotation || 0)), 0],
+        length: Number(w.length || 2) * scale,
+        thickness: Number(w.thickness || 0.06) * (scale > 0 ? scale : 1),
+        height: Number(w.height || 0.35) * (scale > 0 ? scale : 1),
+      })) : [];
+      return { rooms, walls };
+    }
+
+    // Fallback: infer from high-level attributes (e.g., "3 bhk")
+    const roomsText = (attrs?.rooms || '').toString().toLowerCase();
+    const is3Bhk = roomsText.includes('3') || roomsText.includes('3bhk') || roomsText.includes('3-bhk');
+
+    const style = (attrs?.aesthetic || '').toString().toLowerCase();
+    const modern = style.includes('modern');
+
+    // Return empty rooms and walls until real data is available from API
+     return { rooms: defaultRooms(), walls: defaultWalls() };
+  };
+
+  const degToRad = (deg) => (deg * Math.PI) / 180;
+
+  const handleAssignArchitect = async () => {
+    if (!selectedRequestForAssign) {
+      setArchError('No request selected');
+      return;
+    }
+    // Collect selected architect IDs (multi-select)
+    const selectedIds = Array.isArray(selectedArchitectId)
+      ? selectedArchitectId
+      : (selectedArchitectId ? [selectedArchitectId] : []);
+    if (selectedIds.length === 0) {
+      setArchError('Please select at least one architect');
+      return;
+    }
+    try {
+      setArchLoading(true);
+      // Guard: require layout_request_id
+      if (!selectedRequestForAssign?.id) {
+        setArchError('Please select a request first');
+        setArchLoading(false);
+        return;
+      }
+      const response = await fetch('/buildhub/backend/api/homeowner/assign_architect.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          layout_request_id: selectedRequestForAssign.id,
+          architect_ids: selectedIds,
+          message: assignMessage
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        setSuccess('Request sent to selected architect(s)');
+        setShowArchitectModal(false);
+        setSelectedRequestForAssign(null);
+        setSelectedArchitectId(null);
+      } else {
+        setArchError(result.message || 'Failed to send request');
+      }
+    } catch (e) {
+      setArchError('Error sending request');
+    } finally {
+      setArchLoading(false);
+    }
+  };
+
+  const handleRequestSubmit = async (e) => {
+    e.preventDefault();
+    if (!requestData.plot_size || !requestData.budget_range || !requestData.requirements) {
+      setError('Please fill all required fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch('/buildhub/backend/api/homeowner/submit_request.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // If architect(s) selected, assign immediately
+        const selIds = Array.isArray(selectedArchitectId) ? selectedArchitectId : (selectedArchitectId ? [selectedArchitectId] : []);
+        if (selIds.length > 0) {
+          try {
+            await fetch('/buildhub/backend/api/homeowner/assign_architect.php', {
+              method: 'POST', 
+              headers: { 'Content-Type': 'application/json' }, 
+              credentials: 'include',
+              body: JSON.stringify({
+                layout_request_id: result.request_id,
+                architect_ids: selIds,
+                message: assignMessage || 'Custom design request from dashboard'
+              })
+            });
+          } catch (e) { /* ignore assignment errors here */ }
+        }
+        setSuccess(`Your layout request has been submitted successfully! ${selIds.length > 0 ? 'It has been assigned to the selected architect(s).' : 'You can assign it to architects from the Requests tab.'}`);
+        setShowRequestForm(false);
+        setSelectedArchitectId(null);
+        setAssignMessage('');
+        setRequestData({
+          plot_size: '',
+          plot_shape: '',
+          topography: '',
+          development_laws: '',
+          family_needs: '',
+          rooms: '',
+          budget_range: '',
+          aesthetic: '',
+          requirements: '',
+          location: '',
+          timeline: '',
+          selected_layout_id: null,
+          layout_type: 'custom'
+        });
+        fetchMyRequests();
+      } else {
+        setError('Failed to submit request: ' + result.message);
+      }
+    } catch (error) {
+      setError('Error submitting request');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectFromLibrary = (layout) => {
+    setSelectedLibraryLayout(layout);
+    setRequestData({
+      ...requestData,
+      selected_layout_id: layout.id,
+      layout_type: 'library'
+    });
+    setShowLibraryModal(false);
+    navigate(`/homeowner/request?selected_layout_id=${layout.id}&layout_type=library`);
+  };
+
+  const renderDashboard = () => (
+    <div>
+      {/* Hero – UrbanEye-like purple banner */}
+      <div className="hero-card">
+        <div className="hero-content">
+          <div>
+            <h1>Welcome back, {user?.first_name || 'Homeowner'}! <span role="img" aria-label="wave">👋</span></h1>
+            <p>Plan and track your home project. Request designs, review proposals, and manage progress.</p>
+          </div>
+          <div className="hero-actions"></div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="stats-grid">
+        <div className="stat-card w-blue">
+          <div className="stat-content">
+            <div className="stat-icon requests">📋</div>
+            <div className="stat-info">
+              <h3>{layoutRequests.length}</h3>
+              <p>Layout Requests</p>
+            </div>
+          </div>
+        </div>
+        <div className="stat-card w-green">
+          <div className="stat-content">
+            <div className="stat-icon projects">🏗️</div>
+            <div className="stat-info">
+              <h3>{myProjects.length}</h3>
+              <p>Active Projects</p>
+            </div>
+          </div>
+        </div>
+        <div className="stat-card w-purple">
+          <div className="stat-content">
+            <div className="stat-icon library">📚</div>
+            <div className="stat-info">
+              <h3>{layoutLibrary.length}</h3>
+              <p>Available Layouts</p>
+            </div>
+          </div>
+        </div>
+        <div className="stat-card w-orange">
+          <div className="stat-content">
+            <div className="stat-icon completed">✅</div>
+            <div className="stat-info">
+              <h3>{layoutRequests.filter(r => r.status === 'approved').length}</h3>
+              <p>Approved Requests</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="section-card">
+        <div className="section-header">
+          <h2>Quick Actions</h2>
+          <p>Get started with your construction project</p>
+        </div>
+        <div className="section-content">
+          <div className="quick-actions float-grid stagger-children">
+            <button 
+              className="float-rect w-blue"
+              onClick={() => navigate('/homeowner/request')}
+            >
+              <div className="fr-icon">📐</div>
+              <div className="fr-title">Request Custom Design</div>
+              <div className="fr-sub">Get professional architectural designs for your plot</div>
+            </button>
+            <button 
+              className="float-rect w-purple"
+              onClick={() => setShowLibraryModal(true)}
+            >
+              <div className="fr-icon">📚</div>
+              <div className="fr-title">Browse Layout Library</div>
+              <div className="fr-sub">Choose from pre-designed layouts and customize them</div>
+            </button>
+            <button 
+              className="float-rect w-orange"
+              onClick={() => setActiveTab('requests')}
+            >
+              <div className="fr-icon">👁️</div>
+              <div className="fr-title">View My Requests</div>
+              <div className="fr-sub">Track the status of your layout requests</div>
+            </button>
+            <button 
+              className="float-rect w-green"
+              onClick={() => setActiveTab('projects')}
+            >
+              <div className="fr-icon">🏠</div>
+              <div className="fr-title">Manage Projects</div>
+              <div className="fr-sub">Monitor your ongoing construction projects</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Project Progress Tracking */}
+      <div className="section-card">
+        <div className="section-header">
+          <h2>Project Progress</h2>
+          <p>Track the progress of your active projects</p>
+        </div>
+        <div className="section-content">
+          <div className="widgets-grid">
+            <div className="widget-container">
+              <div className="widget-header">
+                <h3 className="widget-title">Progress Overview</h3>
+                <div className="widget-actions">
+                  <button className="icon-btn" title="Refresh" onClick={fetchMyProjects}>↻</button>
+                </div>
+              </div>
+              <ProjectProgressChart projects={myProjects} />
+            </div>
+            <div className="widget-container">
+              <div className="widget-header">
+                <h3 className="widget-title">Budget Tracker</h3>
+                <div className="widget-actions">
+                  <button className="icon-btn" title="View Details">👁️</button>
+                </div>
+              </div>
+              <BudgetTracker projects={myProjects} />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Recent Activity */}
+      <div className="section-header">
+        <h2>Recent Activity</h2>
+        <p>Latest updates on your requests and projects</p>
+      </div>
+      <div className="section-content">
+        <div className="item-list">
+          {layoutRequests.slice(0, 5).map(request => {
+            const derivedStatus = (Number(request?.accepted_count) > 0 || request?.status === 'approved' || request?.status === 'accepted') ? 'accepted' : request?.status;
+            const icon = derivedStatus === 'accepted' ? '✅' : derivedStatus === 'rejected' ? '❌' : '⏳';
+            return (
+              <div key={request.id} className="list-item">
+                <div className="item-icon">{icon}</div>
+                <div className="item-content">
+                  <h4 className="item-title">Layout Request - {request.plot_size}</h4>
+                  <p className="item-subtitle">Budget: {request.budget_range}</p>
+                  <p className="item-meta">Submitted: {new Date(request.created_at).toLocaleDateString()}</p>
+                </div>
+                <div className="item-actions">
+                  <span className={`status-badge ${badgeClass(derivedStatus)}`}>
+                    {formatStatus(derivedStatus)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+          {layoutRequests.length === 0 && (
+            <div className="empty-state">
+              <div className="empty-icon">📋</div>
+              <h3>No Requests Yet</h3>
+              <p>Start by submitting your first layout request!</p>
+              <div className="empty-actions">
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => setShowRequestForm(true)}
+                >
+                  Request Custom Design
+                </button>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => setShowLibraryModal(true)}
+                >
+                  Browse Library
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderRequests = () => (
+    <div>
+      <div className="main-header">
+        <div className="header-content">
+          <div>
+            <h1>My Layout Requests</h1>
+            <p>Track your architectural design requests and their progress</p>
+          </div>
+          <div className="header-actions">
+            <button 
+              className="btn btn-secondary"
+              onClick={() => setShowLibraryModal(true)}
+            >
+              📚 Browse Library
+            </button>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowRequestForm(true)}
+            >
+              + Custom Request
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="section-card">
+        <div className="section-header">
+          <h2>Request History</h2>
+          <p>All your submitted layout requests</p>
+        </div>
+        <div className="section-content">
+          {loading ? (
+            <div className="loading">Loading requests...</div>
+          ) : layoutRequests.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📭</div>
+              <h3>No Requests Yet</h3>
+              <p>Submit your first layout request to get started!</p>
+              <div className="empty-actions">
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => navigate('/homeowner/request')}
+                >
+                  Request Custom Design
+                </button>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => setShowLibraryModal(true)}
+                >
+                  Browse Library
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="item-list">
+              {layoutRequests.map(request => (
+                <RequestItem
+                  key={request.id}
+                  request={request}
+                  onAssignArchitect={() => openArchitectModal(request)}
+                  onRemove={() => removeRequest(request.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderReceivedDesigns = () => (
+    <div>
+      <div className="main-header">
+        <div className="header-content">
+          <div>
+            <h1>Received Designs</h1>
+            <p>Review designs, shortlist your favorites, and finalize one</p>
+          </div>
+          <button className="btn btn-secondary" onClick={fetchReceivedDesigns}>↻ Refresh</button>
+        </div>
+      </div>
+
+      <div className="section-card">
+        <div className="section-header">
+          <h2>All Designs (Legacy View)</h2>
+          <p>Designs sent by architects directly or for your requests</p>
+        </div>
+        <div className="section-content">
+          {receivedDesigns.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">🎨</div>
+              <h3>No Designs Yet</h3>
+              <p>Assigned architects will send designs here for your review.</p>
+            </div>
+          ) : (
+            <div className="item-list">
+              {receivedDesigns.map(d => (
+                <div key={d.id} className="list-item">
+                  <div className="item-icon">{d.status === 'finalized' ? '🏁' : d.status === 'shortlisted' ? '⭐' : '🎨'}</div>
+                  <div className="item-content" style={{flex:1}}>
+                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:10}}>
+                      <div>
+                        <h4 className="item-title" style={{margin:0}}>{d.design_title}</h4>
+                        <p className="item-subtitle" style={{margin:'2px 0 0 0'}}>By {d.architect?.name || 'Architect'} • {new Date(d.created_at).toLocaleString()}</p>
+                        <button className="btn btn-secondary" style={{marginTop:6}} onClick={() => setShowDesignDetails(prev => ({...prev, [d.id]: !prev[d.id]}))}>
+                          {showDesignDetails[d.id] ? 'Hide Details' : 'View Details'}
+                        </button>
+                        {showDesignDetails[d.id] && (
+                          <div className="details-panel">
+                            <div className="details-grid">
+                              <div><strong>Sent By:</strong> {d.architect?.name || 'Architect'}</div>
+                              <div><strong>Architect Email:</strong> {d.architect?.email || '-'}</div>
+                              <div><strong>Design ID:</strong> {d.id}</div>
+                              {d.layout_request_id ? (
+                                <div><strong>Request ID:</strong> {d.layout_request_id}</div>
+                              ) : (
+                                <div><strong>Request:</strong> Direct upload</div>
+                              )}
+                              <div><strong>Status:</strong> <span className={`status-chip ${d.status}`}>{d.status}</span></div>
+                              <div><strong>Uploaded:</strong> {new Date(d.created_at).toLocaleString()}</div>
+                            </div>
+                            {d.description && (
+                              <div className="description-section">
+                                <strong>Description:</strong>
+                                <div className="description-content">
+                                  <NeatJsonCard raw={d.description} title="Requirements" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <button className="btn btn-danger" onClick={() => handleDeleteDesign(d.id)}>🗑️ Delete</button>
+                    </div>
+                    <p className="item-meta" style={{marginTop:6}}>
+                      Status: <span className={`status-badge ${d.status}`}>{d.status}</span>
+                    </p>
+
+                    {/* Files grid */}
+                    <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px', marginTop:'10px'}}>
+                      {/* Prefer special tags if present */}
+                      {(() => {
+                        const files = Array.isArray(d.files) ? d.files : [];
+                        const preview = files.find(x => x.tag === 'preview') || files.find(x => /preview|thumb|cover/i.test(x.original || ''));
+                        const layout = files.find(x => x.tag === 'layout') || files.find(x => /layout|plan|floor|design/i.test(x.original || ''));
+                        const others = files.filter(x => x !== preview && x !== layout);
+                        const toCards = [preview, layout, ...others].filter(Boolean);
+                        return toCards.map((f, idx) => {
+                          const href = f.path || `/buildhub/backend/uploads/designs/${f.stored || f.original}`;
+                          const ext = (f.ext || '').toLowerCase();
+                          const isImage = ['jpg','jpeg','png','gif','webp','svg','heic'].includes(ext);
+                          const label = f.tag === 'preview' ? 'Preview' : f.tag === 'layout' ? 'Layout' : undefined;
+                          return (
+                            <div key={idx} className="file-card" style={{cursor:'default'}}>
+                              {isImage ? (
+                                <img src={href} alt={f.original} style={{width:'100%', height:120, objectFit:'cover', borderRadius:6}} onClick={() => setViewer({ open: true, src: href, title: f.original || f.stored })} />
+                              ) : (
+                                <div className="file-thumb" style={{height:120, display:'flex', alignItems:'center', justifyContent:'center', background:'#f5f5f7', borderRadius:6}}>
+                                  <span style={{fontSize:'2rem'}}>📄</span>
+                                </div>
+                              )}
+                              <div className="file-name" style={{fontSize:'0.85rem', marginTop:6, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}} title={f.original || f.stored}>
+                                {label ? `${label}: ` : ''}{f.original || f.stored}
+                              </div>
+                              <div style={{display:'flex', gap:8, marginTop:6}}>
+                                {isImage ? (
+                                  <button type="button" className="btn btn-secondary" style={{padding:'6px 10px'}} onClick={() => setViewer({ open: true, src: href, title: f.original || f.stored })}>View</button>
+                                ) : (
+                                  <a href={href} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{padding:'6px 10px'}}>Open</a>
+                                )}
+                                <a href={href} download className="btn" style={{padding:'6px 10px'}}>Download</a>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+
+                    {/* Comments */}
+                    <div className="comment-section">
+                      <button className="btn btn-secondary" onClick={() => fetchComments(d.id)}>Load comments</button>
+                      <div className="comment-list">
+                        {(comments[d.id] || []).map(c => (
+                          <div key={c.id} className="comment-item">
+                            <div className="comment-author">{c.author}</div>
+                            <div className="comment-message">{c.message}</div>
+                            <div className="comment-date">{new Date(c.created_at).toLocaleString()}</div>
+                          </div>
+                        ))}
+                        <div className="comment-compose">
+                          <div className="star-input">
+                            {[1,2,3,4,5].map(star => (
+                              <span
+                                key={star}
+                                role="button"
+                                onClick={() => setCommentRatings(prev => ({ ...prev, [d.id]: star }))}
+                                style={{color: (commentRatings[d.id] || 0) >= star ? '#f5a623' : '#ddd'}}
+                                title={`${star} star${star>1?'s':''}`}
+                              >★</span>
+                            ))}
+                          </div>
+                          <input
+                            type="text"
+                            value={commentDrafts[d.id] || ''}
+                            onChange={(e) => setCommentDrafts(prev => ({ ...prev, [d.id]: e.target.value }))}
+                            placeholder="Write a comment... (will also be posted as a review)"
+                          />
+                          <button onClick={() => postComment(d.id)}>Post</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="item-actions" style={{display:'flex', flexDirection:'column', gap:6}}>
+                    {d.status !== 'shortlisted' && d.status !== 'finalized' && (
+                      <button className="btn" onClick={() => updateSelection(d.id, 'shortlist')}>⭐ Shortlist</button>
+                    )}
+                    {d.status === 'shortlisted' && (
+                      <button className="btn" onClick={() => updateSelection(d.id, 'remove-shortlist')}>Remove shortlist</button>
+                    )}
+                    {d.status !== 'finalized' && (
+                      <button className="btn btn-primary" onClick={() => updateSelection(d.id, 'finalize')}>🏁 Finalize</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderLibrary = () => (
+    <div>
+      <div className="main-header">
+        <div className="header-content">
+          <div>
+            <h1>Layout Library</h1>
+            <p>Browse and select from our collection of pre-designed layouts</p>
+          </div>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowRequestForm(true)}
+          >
+            + Custom Request
+          </button>
+        </div>
+      </div>
+
+      <div className="section-card">
+        <div className="section-header">
+          <h2>Available Layouts</h2>
+          <p>Choose from professionally designed layouts and customize them for your needs</p>
+        </div>
+        <div className="section-content">
+          {loading ? (
+            <div className="loading">Loading layouts...</div>
+          ) : layoutLibrary.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📚</div>
+              <h3>No Layouts Available</h3>
+              <p>Check back later for new layout designs!</p>
+            </div>
+          ) : (
+            <div className="layout-grid">
+              {layoutLibrary.map(layout => (
+                <LayoutCard 
+                  key={layout.id} 
+                  layout={layout} 
+                  onSelect={() => handleSelectFromLibrary(layout)}
+                  onPreview={() => setPreviewLayout(layout)}
+                  isImageUrl={isImageUrl}
+                  isPdfUrl={isPdfUrl}
+                  onSendToContractor={openContractorModal}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderProjects = () => (
+    <div>
+      <div className="main-header">
+        <div className="header-content">
+          <div>
+            <h1>My Projects</h1>
+            <p>Monitor your ongoing construction projects</p>
+          </div>
+          <button className="btn btn-primary" onClick={fetchMyProjects}>↻ Refresh Projects</button>
+        </div>
+      </div>
+
+      {myProjects.length > 0 && (
+        <div className="section-card">
+          <div className="section-header">
+            <h2>Project Timeline</h2>
+            <p>View your project schedule and milestones</p>
+          </div>
+          <div className="section-content">
+            <div className="widget-container">
+              <ProjectTimeline projects={myProjects} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="section-card">
+        <div className="section-header">
+          <h2>Active Projects</h2>
+          <p>Your current construction projects</p>
+        </div>
+        <div className="section-content">
+          {myProjects.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">🏗️</div>
+              <h3>No Projects Yet</h3>
+              <p>Your approved layout requests will appear here as projects!</p>
+              <button className="btn btn-primary" onClick={() => setActiveTab('dashboard')}>Go to Dashboard</button>
+            </div>
+          ) : (
+            <div className="item-list">
+              {myProjects.map(project => (
+                <ProjectItem key={project.id} project={project} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {myProjects.length > 0 && (
+        <div className="section-card">
+          <div className="section-header">
+            <h2>Budget Overview</h2>
+            <p>Track your project expenses and budget allocation</p>
+          </div>
+          <div className="section-content">
+            <div className="widget-container">
+              <BudgetTracker projects={myProjects} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="dashboard-container">
+      {/* Mobile Menu Button */}
+      <button 
+        className="mobile-menu-btn"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
+        ☰
+      </button>
+
+      {/* Sidebar */}
+      <div className={`dashboard-sidebar soft-sidebar expanded ${sidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-header sb-brand">
+          <a href="#" className="sidebar-logo">
+            <div className="logo-icon">🏠</div>
+            <span className="logo-text sb-title">BUILDHUB</span>
+          </a>
+        </div>
+
+        <nav className="sidebar-nav sb-nav">
+          <a 
+            href="#" 
+            className={`nav-item sb-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            data-title="Dashboard"
+            onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
+          >
+            <span className="nav-icon sb-icon">📊</span>
+            <span className="nav-label sb-label">Dashboard</span>
+          </a>
+          <a 
+            href="#" 
+            className={`nav-item sb-item ${activeTab === 'library' ? 'active' : ''}`}
+            data-title="Layout Library"
+            onClick={(e) => { e.preventDefault(); setActiveTab('library'); }}
+          >
+            <span className="nav-icon sb-icon">📚</span>
+            <span className="nav-label sb-label">Layout Library</span>
+          </a>
+          <a 
+            href="#" 
+            className={`nav-item sb-item ${activeTab === 'requests' ? 'active' : ''}`}
+            data-title="My Requests"
+            onClick={(e) => { e.preventDefault(); setActiveTab('requests'); }}
+          >
+            <span className="nav-icon sb-icon">📋</span>
+            <span className="nav-label sb-label">My Requests</span>
+          </a>
+          <a 
+            href="#" 
+            className={`nav-item sb-item ${activeTab === 'designs' ? 'active' : ''}`}
+            data-title="Received Designs"
+            onClick={(e) => { e.preventDefault(); setActiveTab('designs'); fetchReceivedDesigns(); }}
+          >
+            <span className="nav-icon sb-icon">🎨</span>
+            <span className="nav-label sb-label">Received Designs</span>
+          </a>
+          <a 
+            href="#" 
+            className={`nav-item sb-item ${activeTab === 'projects' ? 'active' : ''}`}
+            data-title="My Projects"
+            onClick={(e) => { e.preventDefault(); setActiveTab('projects'); }}
+          >
+            <span className="nav-icon sb-icon">🏗️</span>
+            <span className="nav-label sb-label">My Projects</span>
+          </a>
+
+        </nav>
+
+        <div className="sidebar-footer sb-footer" style={{ padding:'12px', borderTop:'1px solid #e5e7eb', marginTop:'auto' }} ref={sidebarProfileRef}>
+          <button
+            type="button"
+            onClick={() => setSidebarProfileOpen(v => !v)}
+            aria-haspopup="menu"
+            aria-expanded={sidebarProfileOpen ? 'true' : 'false'}
+            style={{
+              width:'100%', background:'transparent', border:'none', padding:0, textAlign:'left', cursor:'pointer'
+            }}
+            title="Profile"
+          >
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: '#ffffff',
+                border: '1px solid #e5e7eb',
+                display: 'flex', alignItems:'center', justifyContent:'center',
+                overflow:'hidden'
+              }}>
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt="Avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                ) : (
+                  <span style={{ fontWeight: 700, fontSize: 12, color:'#374151' }}>
+                    {(user?.first_name?.[0] || 'U').toUpperCase()}{(user?.last_name?.[0] || '').toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontWeight:600, fontSize:13, color:'#111827', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  {user?.first_name || 'Homeowner'} {user?.last_name || ''}
+                </div>
+                <div style={{ fontSize:12, color:'#6b7280', display:'flex', alignItems:'center', gap:6 }}>
+                  <span style={{ display:'inline-flex', width:6, height:6, borderRadius:6, background:'#10b981' }}></span>
+                  Homeowner
+                </div>
+              </div>
+              <span style={{ fontSize:12, color:'#6b7280', transition:'transform 160ms ease', transform: sidebarProfileOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+            </div>
+          </button>
+
+          {sidebarProfileOpen && (
+            <div
+              role="menu"
+              style={{
+                marginTop:8,
+                background:'#fff',
+                border:'1px solid #e5e7eb',
+                borderRadius:10,
+                boxShadow:'0 10px 28px rgba(2,6,23,0.12)',
+                overflow:'hidden',
+                transition:'opacity 120ms ease, transform 120ms ease',
+                opacity: 1,
+                transform:'scale(1)'
+              }}
+              aria-label="Profile menu"
+            >
+              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', background:'#f9fafb', borderBottom:'1px solid #f1f5f9' }}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: '#ffffff',
+                  border: '1px solid #e5e7eb',
+                  display: 'flex', alignItems:'center', justifyContent:'center',
+                  fontWeight: 700, fontSize: 12, color:'#374151'
+                }}>
+                  {(user?.first_name?.[0] || 'U').toUpperCase()}{(user?.last_name?.[0] || '').toUpperCase()}
+                </div>
+                <div style={{ minWidth:0 }}>
+                  <div style={{ fontWeight:600, fontSize:13, color:'#111827', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                    {user?.first_name || 'Homeowner'} {user?.last_name || ''}
+                  </div>
+                  <div style={{ fontSize:12, color:'#6b7280' }}>{user?.email || ''}</div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => { setSidebarProfileOpen(false); navigate('/homeowner/profile'); }}
+                style={{
+                  width:'100%', display:'flex', alignItems:'center', gap:10,
+                  background:'transparent', border:'none', textAlign:'left', padding:'10px 12px', cursor:'pointer'
+                }}
+                onMouseOver={(e)=>{ e.currentTarget.style.background='#f9fafb'; }}
+                onFocus={(e)=>{ e.currentTarget.style.background='#f9fafb'; e.currentTarget.style.outline='none'; }}
+                onMouseOut={(e)=>{ e.currentTarget.style.background='transparent'; }}
+              >
+                <span aria-hidden style={{ width:18, textAlign:'center' }}>👤</span>
+                <span style={{ fontSize:14, color:'#111827' }}>Profile Setup</span>
+              </button>
+
+              <div style={{ height:1, background:'#f1f5f9' }}></div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  width:'100%', display:'flex', alignItems:'center', gap:10,
+                  background:'transparent', border:'none', textAlign:'left', padding:'10px 12px', cursor:'pointer', color:'#b91c1c'
+                }}
+                onMouseOver={(e)=>{ e.currentTarget.style.background='#fff1f2'; }}
+                onMouseOut={(e)=>{ e.currentTarget.style.background='transparent'; }}
+              >
+                <span aria-hidden style={{ width:18, textAlign:'center' }}>🚪</span>
+                <span style={{ fontSize:14 }}>Logout</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className={`dashboard-main soft-main shifted`}>
+        {/* Top Glass Header */}
+        <div className="top-glassbar">
+          <div className="left">
+            <div className="search">
+              <span className="icon">🔎</span>
+              <input type="text" placeholder="Search tasks, requests, designs..." aria-label="Search" />
+            </div>
+          </div>
+          <div className="right">
+            <NotificationSystem userId={user?.id} />
+            <button className="icon-btn" title="Help" onClick={() => { setShowSupportModal(true); loadSupportIssues(); }}>❓</button>
+          </div>
+        </div>
+        {/* In-page alerts */}
+        <div style={{position:'fixed', top:20, right:20, zIndex:1000, display:'flex', flexDirection:'column', gap:10}}>
+          {error && (
+            <div className="alert alert-error" style={{minWidth:280}}>
+              {error}
+              <button onClick={() => setError('')} className="alert-close">×</button>
+            </div>
+          )}
+          {success && (
+            <div className="alert alert-success" style={{minWidth:280}}>
+              {success}
+              <button onClick={() => setSuccess('')} className="alert-close">×</button>
+            </div>
+          )}
+        </div>
+
+        {activeTab === 'dashboard' && renderDashboard()}
+        {activeTab === 'library' && renderLibrary()}
+        {activeTab === 'requests' && renderRequests()}
+        {activeTab === 'designs' && renderReceivedDesigns()}
+        {activeTab === 'projects' && renderProjects()}
+        {activeTab === 'scene3d' && (
+          <div className="section-card">
+            <div className="section-header">
+              <h2>Finalized Layout – 3D View</h2>
+              <p>View your finalized floor plan in 3D. Click rooms to highlight.</p>
+            </div>
+            <div className="section-content">
+              <div className="home-3d-panel" role="region" aria-label="3D home layout">
+                <Home3DLayout rooms={computed3DRooms} walls={computed3DWalls} onSelectRoom={(room)=> setSuccess(`${room} selected`)} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Support / Help Modal */}
+        {showSupportModal && (
+          <div className="form-modal" onClick={() => setShowSupportModal(false)} style={{background:'rgba(30,58,138,0.55)', position:'fixed', inset:0}}>
+            <div
+              className="form-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                maxWidth:'unset', width:'100vw', height:'100vh', borderRadius:0, padding:0,
+                display:'flex', flexDirection:'column', overflow:'hidden', background:'#fff'
+              }}
+            >
+              {/* Fullscreen header */}
+              <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid #dbeafe', background:'#1d4ed8'}}>
+                <div>
+                  <h3 style={{margin:0, color:'#fff'}}>Help & Support</h3>
+                  <p style={{margin:'2px 0 0 0', color:'#e0e7ff'}}>Report an issue to admin and view replies</p>
+                </div>
+                <div style={{display:'flex', gap:8}}>
+                  <button className="btn" onClick={() => { setSelectedIssue(null); setShowReportsList(true); loadSupportIssues(); }}>Show My Reports</button>
+                  <button className="btn btn-secondary" onClick={() => setShowSupportModal(false)}>Close</button>
+                </div>
+              </div>
+
+              {/* Body: two-pane layout (single column when no thread selected) */}
+              <div style={{display:'grid', gridTemplateColumns: selectedIssue ? '480px 1fr' : '1fr', gap:0, flex:1, minHeight:0, background:'#eff6ff'}}>
+                {/* Left column: form + issues list */}
+                <div style={{borderRight: selectedIssue ? '1px solid #bfdbfe' : 'none', display:'flex', flexDirection:'column', minHeight:0, background:'#fff'}}>
+                  <div style={{padding: selectedIssue ? '16px 16px 8px' : '24px 24px 12px', maxWidth: selectedIssue ? 'unset' : '1200px', flex: showReportsList ? 'unset' : 1}}>
+                    <h4 style={{margin:'0 0 8px'}}>Report an Issue</h4>
+                    <form onSubmit={(e)=>{ e.preventDefault(); submitSupportIssue(); }}>
+                      <div className="form-group">
+                        <label>Subject *</label>
+                        <input type="text" value={supportForm.subject} onChange={(e)=>setSupportForm({...supportForm, subject:e.target.value})} required />
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group" style={{flex:1}}>
+                          <label>Category</label>
+                          <select value={supportForm.category} onChange={(e)=>setSupportForm({...supportForm, category:e.target.value})}>
+                            <option value="general">General</option>
+                            <option value="bug">Bug</option>
+                            <option value="billing">Billing</option>
+                            <option value="account">Account</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>Message *</label>
+                        <textarea rows={selectedIssue ? 10 : 14} value={supportForm.message} onChange={(e)=>setSupportForm({...supportForm, message:e.target.value})} required placeholder="Describe your issue in detail" />
+                      </div>
+                      <div className="form-actions" style={{padding:0, display:'flex', gap:8}}>
+                        <button type="submit" className="btn btn-primary" disabled={supportLoading}>
+                          {supportLoading ? 'Sending...' : 'Send to Admin'}
+                        </button>
+                        <button type="button" className="btn" onClick={() => { loadSupportIssues(); setSelectedIssue(null); setShowReportsList(true); }}>
+                          View Sent Reports
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                  {showReportsList && (
+                    <>
+                      <div style={{padding: selectedIssue ? '12px 16px 8px' : '16px 24px 8px', maxWidth: selectedIssue ? 'unset' : '1200px'}}>
+                        <h4 style={{margin:'0 0 8px'}}>My Reports</h4>
+                      </div>
+                      <div className="item-list" style={{flex:1, overflowY:'auto', padding: selectedIssue ? '0 8px 12px 8px' : '0 16px 24px 16px', maxWidth: selectedIssue ? 'unset' : '1200px'}}>
+                        {supportIssues.length === 0 ? (
+                          <div className="empty-state" style={{margin:'24px'}}>
+                            <div className="empty-icon">📝</div>
+                            <h3>No issues yet</h3>
+                            <p>Submit your first issue using the form above.</p>
+                          </div>
+                        ) : (
+                          supportIssues.map(iss => (
+                            <div key={iss.id} className={`list-item ${selectedIssue?.id === iss.id ? 'selected' : ''}`} style={{cursor:'pointer'}} onClick={() => openIssueThread(iss.id)}>
+                              <div className="item-icon">{iss.status === 'answered' ? '✅' : '🕘'}</div>
+                              <div className="item-content">
+                                <h4 className="item-title" style={{margin:0}}>{iss.subject}</h4>
+                                <p className="item-subtitle" style={{margin:'2px 0 0 0'}}>#{iss.id} • {iss.category} • {new Date(iss.created_at).toLocaleString()}</p>
+                              </div>
+                              <div className="item-actions">
+                                <span className={`status-badge ${iss.status}`}>{iss.status}</span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Right column: thread view (only when an issue is selected) */}
+                {selectedIssue && (
+                  <div style={{display:'flex', flexDirection:'column', minHeight:0, background:'#f8fafc'}}>
+                    <div style={{padding:'12px 16px', borderBottom:'1px solid #dbeafe', background:'#fff'}}>
+                      <h4 style={{margin:'0 0 4px'}}>{selectedIssue.subject}</h4>
+                      <div className="muted">Category: {selectedIssue.category} • Status: {selectedIssue.status} • Opened: {new Date(selectedIssue.created_at).toLocaleString()}</div>
+                    </div>
+                    <div style={{flex:1, overflowY:'auto', padding:'16px', display:'flex', flexDirection:'column', gap:10}}>
+                      <div className="chat-bubble you">
+                        <div className="bubble-header">You</div>
+                        <div className="bubble-body">{selectedIssue.message}</div>
+                        <div className="bubble-meta">{new Date(selectedIssue.created_at).toLocaleString()}</div>
+                      </div>
+                      {issueReplies.map(r => (
+                        <div key={r.id} className={`chat-bubble ${r.sender === 'admin' ? 'admin' : 'you'}`}>
+                          <div className="bubble-header">{r.sender === 'admin' ? 'Admin' : 'You'}</div>
+                          <div className="bubble-body">{r.message}</div>
+                          <div className="bubble-meta">{new Date(r.created_at).toLocaleString()}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Request Form Modal */}
+        {showRequestForm && (
+          <div className="form-modal">
+            <div className="form-content">
+              <div className="form-header">
+                <h3>
+                  {requestData.layout_type === 'library' ? 'Customize Selected Layout' : 'Submit Layout Request'}
+                </h3>
+                <p>
+                  {requestData.layout_type === 'library' 
+                    ? 'Provide your requirements to customize the selected layout'
+                    : 'Get professional architectural designs for your construction project'
+                  }
+                </p>
+              </div>
+
+              {/* Selected Layout Display */}
+              {requestData.layout_type === 'library' && selectedLibraryLayout && (
+                <div className="selected-layout-display">
+                  <h4>Selected Layout: {selectedLibraryLayout.title}</h4>
+                  <div className="layout-preview">
+                    <img 
+                      src={selectedLibraryLayout.image_url || '/images/default-layout.jpg'} 
+                      alt={selectedLibraryLayout.title}
+                      className="layout-image"
+                    />
+                    <div className="layout-details">
+                      <p><strong>Type:</strong> {selectedLibraryLayout.layout_type}</p>
+                      <p><strong>Bedrooms:</strong> {selectedLibraryLayout.bedrooms}</p>
+                      <p><strong>Bathrooms:</strong> {selectedLibraryLayout.bathrooms}</p>
+                      <p><strong>Area:</strong> {selectedLibraryLayout.area} sq ft</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <form onSubmit={handleRequestSubmit}>
+                <div className="form-section">
+                  <h4 className="section-title">Basic Information</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Plot Size (sq ft) *</label>
+                      <input
+                        type="number"
+                        value={requestData.plot_size}
+                        onChange={(e) => setRequestData({...requestData, plot_size: e.target.value})}
+                        placeholder="e.g., 1200"
+                        required
+                        min="100"
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Budget (₹) *</label>
+                      <input
+                        type="number"
+                        placeholder="Enter your budget in rupees"
+                        value={requestData.budget_range}
+                        onChange={(e) => setRequestData({...requestData, budget_range: e.target.value})}
+                        min="0"
+                        step="10000"
+                        required
+                        className="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Site details */}
+                <div className="form-section">
+                  <h4 className="section-title">Site Details</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Plot Shape</label>
+                      <input
+                        type="text"
+                        value={requestData.plot_shape}
+                        onChange={(e) => setRequestData({...requestData, plot_shape: e.target.value})}
+                        placeholder="e.g., Rectangular, Square, Irregular"
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Number of Floors *</label>
+                      <input
+                        type="number"
+                        value={requestData.num_floors}
+                        onChange={(e) => setRequestData({...requestData, num_floors: e.target.value})}
+                        placeholder="e.g., 1, 2, 3"
+                        min="1"
+                        required
+                        className="form-control"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Topography</label>
+                      <input
+                        type="text"
+                        value={requestData.topography}
+                        onChange={(e) => setRequestData({...requestData, topography: e.target.value})}
+                        placeholder="e.g., Flat, Sloped, Rocky"
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Local Development Laws / Restrictions</label>
+                      <input
+                        type="text"
+                        value={requestData.development_laws}
+                        onChange={(e) => setRequestData({...requestData, development_laws: e.target.value})}
+                        placeholder="e.g., Setbacks, FSI/FAR, height limits"
+                        className="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Family needs */}
+                <div className="form-section">
+                  <h4 className="section-title">Family & Design Preferences</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Family Needs</label>
+                      <input
+                        type="text"
+                        value={requestData.family_needs}
+                        onChange={(e) => setRequestData({...requestData, family_needs: e.target.value})}
+                        placeholder="e.g., Elder-friendly, Work-from-home, Kids play area"
+                        className="form-control"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Rooms</label>
+                      <input
+                        type="text"
+                        value={requestData.rooms}
+                        onChange={(e) => setRequestData({...requestData, rooms: e.target.value})}
+                        placeholder="e.g., 3 Bedrooms, 1 Study, 1 Puja Room"
+                        className="form-control"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Aesthetic */}
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>House Aesthetic / Style</label>
+                      <input
+                        type="text"
+                        value={requestData.aesthetic}
+                        onChange={(e) => setRequestData({...requestData, aesthetic: e.target.value})}
+                        placeholder="e.g., Modern, Traditional, Minimalist"
+                        className="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-section location-timeline-section">
+                  <h4 className="section-title">Location & Timeline</h4>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Location</label>
+                      <div className="location-input-wrapper">
+                        <SearchableDropdown
+                          options={indianCities}
+                          value={requestData.location}
+                          onChange={(value) => setRequestData({...requestData, location: value})}
+                          placeholder="Search for a city..."
+                          detectLocation={true}
+                        />
+                        <div className="location-detect-info">
+                          <i className="fas fa-info-circle"></i>
+                          <span>Click the location icon to detect your current city</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Timeline</label>
+                      <select
+                        value={requestData.timeline}
+                        onChange={(e) => setRequestData({...requestData, timeline: e.target.value})}
+                        className="form-control timeline-select"
+                      >
+                        <option value="">Select timeline</option>
+                        <option value="0-6 months">0-6 months</option>
+                        <option value="6-12 months">6-12 months</option>
+                        <option value="12-18 months">12-18 months</option>
+                        <option value="18-24 months">18-24 months</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional notes */}
+                <div className="form-section">
+                  <h4 className="section-title">
+                    {requestData.layout_type === 'library' 
+                      ? 'Customization Requirements' 
+                      : 'Additional Notes'
+                    }
+                  </h4>
+                  <div className="form-group">
+                    <label>
+                      {requestData.layout_type === 'library' 
+                        ? 'Describe your modifications *' 
+                        : 'Any other preferences or constraints'
+                      }
+                    </label>
+                    <textarea
+                      value={requestData.requirements}
+                      onChange={(e) => setRequestData({...requestData, requirements: e.target.value})}
+                      placeholder={
+                        requestData.layout_type === 'library'
+                          ? "Describe any modifications you'd like to make to the selected layout: room changes, additional features, material preferences, etc."
+                          : "Any other preferences or constraints"
+                      }
+                      rows="4"
+                      required={requestData.layout_type === 'library'}
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                {/* Inline Architect selection before submit */}
+                <div className="form-card architect-selection-card">
+                  <h4 className="architect-selection-title">Choose Architect (optional)</h4>
+                  <p className="architect-selection-subtitle">Pick who should receive your request immediately after submission.</p>
+                  <div className="architect-filters-row">
+                    <div className="filter-input-group">
+                      <i className="fas fa-search filter-icon"></i>
+                      <input
+                        type="text"
+                        placeholder="Search name/company/email"
+                        value={archSearch}
+                        onChange={(e) => setArchSearch(e.target.value)}
+                        className="architect-filter-input"
+                      />
+                    </div>
+                    <div className="filter-input-group">
+                      <i className="fas fa-briefcase filter-icon"></i>
+                      <input
+                        type="text"
+                        placeholder="Specialization (optional)"
+                        value={archSpec}
+                        onChange={(e) => setArchSpec(e.target.value)}
+                        className="architect-filter-input"
+                      />
+                    </div>
+                    <div className="filter-input-group">
+                      <i className="fas fa-clock filter-icon"></i>
+                      <input
+                        type="number"
+                        placeholder="Min experience"
+                        value={archMinExp}
+                        onChange={(e) => setArchMinExp(e.target.value)}
+                        min="0"
+                        className="architect-filter-input"
+                      />
+                    </div>
+                    <button type="button" className="architect-search-btn" onClick={() => fetchArchitects({ status: 'approved', search: archSearch, specialization: archSpec, min_experience: archMinExp })}>
+                      <i className="fas fa-search"></i> Search
+                    </button>
+                  </div>
+                  {archError && <div className="alert alert-error architect-error">{archError}</div>}
+                  <div className="architect-list">
+                    {archLoading ? (
+                      <div className="architect-loading">
+                        <i className="fas fa-spinner fa-spin"></i> Loading architects...
+                      </div>
+                    ) : architects.length === 0 ? (
+                      <div className="architect-empty-state">
+                        <div className="empty-icon">🧑‍🎨</div>
+                        <h4 className="empty-title">No architects found</h4>
+                        <p className="empty-message">Adjust your filters and try again</p>
+                      </div>
+                    ) : (
+                      architects
+                        .filter(a => (a.status || 'approved') === 'approved')
+                        .map(a => (
+                        <label key={a.id} className="architect-list-item">
+                          <div className="architect-avatar">
+                            <i className="fas fa-user-tie"></i>
+                          </div>
+                          <div className="architect-content">
+                            <div className="architect-name">{a.first_name} {a.last_name} {a.company_name ? `• ${a.company_name}` : ''}</div>
+                            <div className="architect-specialization">
+                              <i className="fas fa-briefcase"></i> {a.specialization || 'General'} 
+                              <span className="experience-badge">{a.experience_years ?? 'N/A'} yrs</span>
+                            </div>
+                            <div className="architect-email">{a.email || ''}</div>
+                            <div className="architect-rating">
+                              <span title={a.avg_rating ? `${a.avg_rating} / 5` : 'No ratings yet'}>
+                                {[1,2,3,4,5].map(star => (
+                                  <span key={star} className="rating-star" style={{color: (a.avg_rating || 0) >= star ? '#f5a623' : '#ddd'}}>★</span>
+                                ))}
+                              </span>
+                              <span className="rating-count">({a.review_count || 0} reviews)</span>
+                            </div>
+                          </div>
+                          <div className="architect-actions">
+                            <button type="button" className="select-architect-btn" onClick={() => { setSelectedArchitectId([a.id]); setArchStepDone(true); }}>
+                              <i className="fas fa-check"></i> Select
+                            </button>
+                          </div>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  {!archStepDone ? (
+                    <div className="muted" style={{marginTop:8}}>Select an approved architect above to proceed.</div>
+                  ) : (
+                    <div className="form-group" style={{marginTop:8}}>
+                      <label>Message to architect (optional)</label>
+                      <textarea
+                        value={assignMessage}
+                        onChange={(e) => setAssignMessage(e.target.value)}
+                        placeholder="Add any notes for the architect"
+                        rows="2"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-actions">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setShowRequestForm(false);
+                      setSelectedLibraryLayout(null);
+                      setRequestData({
+                        plot_size: '',
+                        budget_range: '',
+                        requirements: '',
+                        location: '',
+                        timeline: '',
+                        selected_layout_id: null,
+                        layout_type: 'custom'
+                      });
+                    }}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading || (!archStepDone && Array.isArray(selectedArchitectId) && selectedArchitectId.length > 0 && !assignMessage)}
+                    className="btn btn-primary"
+                  >
+                    {loading ? 'Submitting...' : 
+                     requestData.layout_type === 'library' ? 'Submit Customization Request' : 'Submit Request'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Architect Selection Modal */}
+        {showArchitectModal && (
+          <div className="form-modal">
+            <div className="form-content architect-modal">
+              <div className="form-header">
+                <h3>Select Architect</h3>
+                <p>Choose an architect to send your request</p>
+                <button className="modal-close" onClick={() => setShowArchitectModal(false)}>×</button>
+              </div>
+
+              {/* Request selection fallback */}
+              {(!selectedRequestForAssign || !selectedRequestForAssign.id) ? (
+                <div className="form-group">
+                  <label>Select one of your requests</label>
+                  <select
+                    value={selectedRequestForAssign?.id || ''}
+                    onChange={(e) => {
+                      const req = layoutRequests.find(r => String(r.id) === e.target.value);
+                      setSelectedRequestForAssign(req || null);
+                    }}
+                    className="form-control"
+                  >
+                    <option value="">-- Select request --</option>
+                    {layoutRequests.map(r => (
+                      <option key={r.id} value={r.id}>
+                        #{r.id} • {r.layout_type === 'library' ? (r.selected_layout_title || 'Library') : 'Custom'} • {r.plot_size} sq ft
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="info-row">
+                  <span className="status-chip success">For Request #{selectedRequestForAssign.id}</span>
+                </div>
+              )}
+
+              <div className="filters-row">
+                <input
+                  type="text"
+                  placeholder="Search name/company/email"
+                  value={archSearch}
+                  onChange={(e) => setArchSearch(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Specialization (optional)"
+                  value={archSpec}
+                  onChange={(e) => setArchSpec(e.target.value)}
+                />
+                <input
+                  type="number"
+                  placeholder="Min experience"
+                  value={archMinExp}
+                  onChange={(e) => setArchMinExp(e.target.value)}
+                  min="0"
+                />
+                <button onClick={() => fetchArchitects({ status: 'approved', search: archSearch, specialization: archSpec, min_experience: archMinExp })}>
+                  <i className="fas fa-search"></i> Search
+                </button>
+              </div>
+
+              {archError && <div className="alert alert-error">{archError}</div>}
+
+              <div className="architects-list">
+                {archLoading ? (
+                  <div className="loading">Loading architects...</div>
+                ) : architects.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">🧑‍🎨</div>
+                    <h3>No architects found</h3>
+                    <p>Adjust your filters and try again</p>
+                  </div>
+                ) : (
+                  <div className="item-list">
+                    {architects.map(a => {
+                      const already = !!a.already_assigned;
+                      const status = a.assignment_status; // sent | accepted | declined | null
+                      return (
+                        <label key={a.id} className={`list-item ${already ? 'disabled' : ''} ${Array.isArray(selectedArchitectId) ? selectedArchitectId.includes(a.id) ? 'selected' : '' : (selectedArchitectId === a.id ? 'selected' : '')}`}>
+                          <div className="item-icon">🧑‍🎨</div>
+                          <div className="item-content">
+                            <h4 className="item-title">{a.first_name} {a.last_name} {a.company_name ? `• ${a.company_name}` : ''}</h4>
+                            <p className="item-subtitle">{a.specialization || 'General'}</p>
+                            <div className="detail-grid">
+                              <span><strong>Experience:</strong> {a.experience_years ?? 'N/A'} years</span>
+                              <span><strong>Projects:</strong> {a.project_count || '0'}</span>
+                              <span><strong>Email:</strong> {a.email || 'N/A'}</span>
+                              <span><strong>License:</strong> {a.license_number || 'N/A'}</span>
+                            </div>
+                            <div className="rating-row">
+                              <span title={a.avg_rating ? `${a.avg_rating} / 5` : 'No ratings yet'}>
+                                {[1,2,3,4,5].map(star => (
+                                  <span key={star} style={{color: (a.avg_rating || 0) >= star ? '#f5a623' : '#ddd'}}>★</span>
+                                ))}
+                              </span>
+                              <span style={{marginLeft:8, color:'#666', fontSize:'0.9rem'}}>({a.review_count || 0})</span>
+                            </div>
+                            <div className="contact-info">
+                              <span className="muted">Phone: {a.phone || 'N/A'}</span>
+                              <span className="muted">City: {a.city || 'N/A'}</span>
+                            </div>
+                            {already && (
+                              <div className="status-row">
+                                <span className={`status-chip ${status === 'accepted' ? 'success' : status === 'declined' ? 'danger' : ''}`}>
+                                  {status ? `Already ${formatStatus(status)}` : 'Request sent'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="item-actions">
+                            <input 
+                              type="checkbox" 
+                              disabled={already}
+                              checked={Array.isArray(selectedArchitectId) ? selectedArchitectId.includes(a.id) : selectedArchitectId === a.id}
+                              onChange={(e) => {
+                                if (Array.isArray(selectedArchitectId)) {
+                                  setSelectedArchitectId(
+                                    e.target.checked
+                                      ? [...selectedArchitectId, a.id]
+                                      : selectedArchitectId.filter(id => id !== a.id)
+                                  );
+                                } else {
+                                  setSelectedArchitectId(e.target.checked ? [a.id] : []);
+                                }
+                              }}
+                            />
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Message to architect (optional)</label>
+                <textarea
+                  value={assignMessage}
+                  onChange={(e) => setAssignMessage(e.target.value)}
+                  placeholder="Add any specific requirements or notes for the architect"
+                  rows="3"
+                />
+              </div>
+
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setShowArchitectModal(false)}>Cancel</button>
+                <button className="btn btn-primary" disabled={archLoading || !selectedArchitectId} onClick={handleAssignArchitect}>
+                  {archLoading ? 'Sending...' : 'Send Request'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contractor Selection Modal */}
+        {showContractorModal && (
+          <div className="form-modal">
+            <div className="form-content contractor-modal">
+              <div className="form-header">
+                <h3>Select Contractor</h3>
+                <p>Choose a contractor to send your layout</p>
+                <button className="modal-close" onClick={() => setShowContractorModal(false)}>×</button>
+              </div>
+
+              {/* Selected Layout Display */}
+              {selectedLibraryLayout && (
+                <div className="selected-layout-display">
+                  <h4>Selected Layout: {selectedLibraryLayout.title}</h4>
+                  <div className="layout-preview">
+                    <img 
+                      src={selectedLibraryLayout.image_url || '/images/default-layout.jpg'} 
+                      alt={selectedLibraryLayout.title}
+                      className="layout-image"
+                    />
+                    <div className="layout-details">
+                      <p><strong>Type:</strong> {selectedLibraryLayout.layout_type}</p>
+                      <p><strong>Bedrooms:</strong> {selectedLibraryLayout.bedrooms}</p>
+                      <p><strong>Bathrooms:</strong> {selectedLibraryLayout.bathrooms}</p>
+                      <p><strong>Area:</strong> {selectedLibraryLayout.area} sq ft</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="filters-row">
+                <input
+                  type="text"
+                  placeholder="Search contractor name/email"
+                  value={archSearch}
+                  onChange={(e) => setArchSearch(e.target.value)}
+                />
+                <button onClick={() => fetchContractors({ search: archSearch })}>
+                  <i className="fas fa-search"></i> Search
+                </button>
+              </div>
+
+              {contractorError && <div className="alert alert-error">{contractorError}</div>}
+
+              <div className="contractors-list">
+                {contractorLoading ? (
+                  <div className="loading">Loading contractors...</div>
+                ) : contractors.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">👷</div>
+                    <h3>No contractors found</h3>
+                    <p>Adjust your filters and try again</p>
+                  </div>
+                ) : (
+                  <div className="item-list">
+                    {contractors.map(contractor => (
+                      <label key={contractor.id} className={`list-item ${selectedContractor?.id === contractor.id ? 'selected' : ''}`}>
+                        <div className="item-icon">👷</div>
+                        <div className="item-content">
+                          <h4 className="item-title">{contractor.first_name} {contractor.last_name}</h4>
+                          <p className="item-subtitle">Verified Contractor</p>
+                          <div className="detail-grid">
+                            <span><strong>Email:</strong> {contractor.email || 'N/A'}</span>
+                            <span><strong>License:</strong> {contractor.license ? 'Verified' : 'Not provided'}</span>
+                            <span><strong>Portfolio:</strong> {contractor.portfolio ? 'Available' : 'Not provided'}</span>
+                            <span><strong>Member since:</strong> {contractor.created_at ? new Date(contractor.created_at).getFullYear() : 'N/A'}</span>
+                          </div>
+                          <div className="rating-row">
+                            <span title={contractor.avg_rating ? `${contractor.avg_rating} / 5` : 'No ratings yet'}>
+                              {[1,2,3,4,5].map(star => (
+                                <span key={star} style={{color: (contractor.avg_rating || 0) >= star ? '#f5a623' : '#ddd'}}>★</span>
+                              ))}
+                            </span>
+                            <span style={{marginLeft:8, color:'#666', fontSize:'0.9rem'}}>({contractor.review_count || 0})</span>
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <input 
+                            type="radio" 
+                            name="contractor"
+                            checked={selectedContractor?.id === contractor.id}
+                            onChange={() => setSelectedContractor(contractor)}
+                          />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setShowContractorModal(false)}>Cancel</button>
+                <button className="btn btn-primary" disabled={contractorLoading || !selectedContractor || sendingToContractor} onClick={sendToContractor}>
+                  {sendingToContractor ? 'Sending...' : 'Send to Contractor'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Library Modal */}
+        {showLibraryModal && (
+          <div className="form-modal">
+            <div className="form-content library-modal">
+              <div className="form-header">
+                <h3>Layout Library</h3>
+                <p>Choose from our collection of professionally designed layouts</p>
+                <button 
+                  className="modal-close"
+                  onClick={() => setShowLibraryModal(false)}
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="library-content">
+                {loading ? (
+                  <div className="loading">Loading layouts...</div>
+                ) : layoutLibrary.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">📚</div>
+                    <h3>No Layouts Available</h3>
+                    <p>Check back later for new layout designs!</p>
+                  </div>
+                ) : (
+                  <div className="layout-grid">
+                    {layoutLibrary.map(layout => (
+                      <LayoutCard 
+                        key={layout.id} 
+                        layout={layout} 
+                        onSelect={() => handleSelectFromLibrary(layout)}
+                        onPreview={() => setPreviewLayout(layout)}
+                        isImageUrl={isImageUrl}
+                        isPdfUrl={isPdfUrl}
+                        isModal={true}
+                        onSendToContractor={openContractorModal}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Preview modal for image + layout */}
+        {previewLayout && (
+          <div className="form-modal" onClick={() => setPreviewLayout(null)}>
+            <div className="form-content" onClick={(e)=>e.stopPropagation()} style={{maxWidth:'min(1200px, 96vw)'}}>
+              <div className="form-header">
+                <h3>{previewLayout.title}</h3>
+                <p>Preview Image and Layout</p>
+                {(previewLayout.architect_name || previewLayout.architect_email) && (
+                  <div style={{marginTop:6, color:'#6b7280'}}>
+                    {previewLayout.architect_name && (<div><strong>Architect:</strong> {previewLayout.architect_name}</div>)}
+                    {previewLayout.architect_email && (<div><strong>Email:</strong> {previewLayout.architect_email}</div>)}
+                  </div>
+                )}
+              </div>
+              <div className="form-row" style={{gap:'16px'}}>
+                <div className="form-group" style={{flex:1}}>
+                  <label>Preview Image</label>
+                  {isImageUrl(previewLayout.image_url) ? (
+                    <img src={previewLayout.image_url} alt="Preview" style={{width:'100%', maxHeight:'70vh', objectFit:'contain', borderRadius:8}}/>
+                  ) : (
+                    <div style={{padding:12, background:'#fafafa', border:'1px dashed #ddd', borderRadius:8}}>No image</div>
+                  )}
+                </div>
+                <div className="form-group" style={{flex:1}}>
+                  <label>Layout</label>
+                  {isImageUrl(previewLayout.design_file_url) ? (
+                    <img src={previewLayout.design_file_url} alt="Layout" style={{width:'100%', maxHeight:'70vh', objectFit:'contain', borderRadius:8}}/>
+                  ) : isPdfUrl(previewLayout.design_file_url) ? (
+                    <iframe title="Layout PDF" src={previewLayout.design_file_url} style={{width:'100%', height:'70vh', border:'1px solid #eee', borderRadius:8}} />
+                  ) : previewLayout.design_file_url ? (
+                    <a className="btn btn-link" href={previewLayout.design_file_url} target="_blank" rel="noreferrer">Open/Download Layout</a>
+                  ) : (
+                    <div style={{padding:12, background:'#fafafa', border:'1px dashed #ddd', borderRadius:8}}>No layout file</div>
+                  )}
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn btn-primary" onClick={() => setPreviewLayout(null)}>Close</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Request Item Component
+const RequestItem = ({ request, onAssignArchitect, onRemove }) => {
+  const [showRemoveConfirm, setShowRemoveConfirm] = React.useState(false);
+  const [showDetails, setShowDetails] = React.useState(false);
+  return (
+    <div className="list-item">
+      <div className="item-icon">
+        {request.layout_type === 'library' 
+          ? '📚' 
+          : ((Number(request?.accepted_count) > 0 || request?.status === 'approved' || request?.status === 'accepted') ? '✅' : (request.status === 'rejected' ? '❌' : '⏳'))}
+      </div>
+      <div className="item-content">
+        <h4 className="item-title">
+          {request.layout_type === 'library' 
+            ? `Library Layout: ${request.selected_layout_title || 'Selected Layout'}` 
+            : `Custom Layout Request - ${request.plot_size} sq ft`
+          }
+        </h4>
+        <p className="item-subtitle">
+          Budget: {request.budget_range}
+          {request.layout_type === 'library' && request.selected_layout_type && (
+            <span className="layout-type-badge"> • {request.selected_layout_type}</span>
+          )}
+        </p>
+        <p className="item-meta">
+          Submitted: {new Date(request.created_at).toLocaleDateString()}
+          {request.location && ` • ${request.location}`}
+          • Designs: {request.design_count} • Proposals: {request.proposal_count}
+        </p>
+        <div className="status-row">
+          <span className="status-chip">Sent: {request.sent_count || 0}</span>
+          <span className="status-chip success">Accepted: {request.accepted_count || 0}</span>
+          <span className="status-chip danger">Rejected: {request.rejected_count || 0}</span>
+        </div>
+        {/* Minimal homeowner view: hide requirements & large preview */}
+        {showDetails && (
+          <div className="details-panel" style={{ marginTop:10, padding:12, border:'1px solid #e5e7eb', borderRadius:8, background:'#fafafa' }}>
+            <div className="grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+              <div>
+                <div className="muted" style={{ fontSize:12, color:'#666' }}>Request Type</div>
+                <div style={{ fontWeight:600 }}>{request.layout_type === 'library' ? 'Library Layout' : 'Custom Request'}</div>
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, color:'#666' }}>Plot Size</div>
+                <div style={{ fontWeight:600 }}>{request.plot_size || '-'}</div>
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, color:'#666' }}>Budget Range</div>
+                <div style={{ fontWeight:600 }}>{request.budget_range || '-'}</div>
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, color:'#666' }}>Location</div>
+                <div style={{ fontWeight:600 }}>{request.location || '-'}</div>
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, color:'#666' }}>Timeline</div>
+                <div style={{ fontWeight:600 }}>{request.timeline || '-'}</div>
+              </div>
+              {request.layout_type === 'library' && (
+                <div style={{ gridColumn:'1 / -1' }}>
+                  <div className="muted" style={{ fontSize:12, color:'#666' }}>Selected Layout</div>
+                  <div style={{ fontWeight:600 }}>{request.selected_layout_title || 'Selected Layout'}</div>
+                </div>
+              )}
+              {request.layout_type === 'library' && (request.selected_layout_architect_name || request.selected_layout_architect_email) && (
+                <div style={{ gridColumn:'1 / -1', display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                  {request.selected_layout_architect_name && (
+                    <div><strong>Architect:</strong> {request.selected_layout_architect_name}</div>
+                  )}
+                  {request.selected_layout_architect_email && (
+                    <div><strong>Email:</strong> {request.selected_layout_architect_email}</div>
+                  )}
+                </div>
+              )}
+              {request.requirements && (
+                <div style={{ gridColumn:'1 / -1' }}>
+                  <NeatJsonCard raw={request.requirements} title="Requirements" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="item-actions" style={{ position:'relative' }}>
+        {(() => { const derivedStatus = (Number(request?.accepted_count) > 0 || request?.status === 'approved' || request?.status === 'accepted') ? 'accepted' : request?.status; return (
+          <span className={`status-badge ${badgeClass(derivedStatus)}`}>
+            {derivedStatus === 'deleted' ? 'Deleted' : formatStatus(derivedStatus)}
+          </span>
+        ); })()}
+        <button className="btn btn-secondary" onClick={() => setShowDetails(s => !s)}>{showDetails ? 'Hide Details' : 'View Details'}</button>
+        <button 
+          className="btn btn-primary"
+          onClick={onAssignArchitect}
+          title="Send this request to a selected architect"
+        >
+          Send to Architect
+        </button>
+        <button
+          className="btn"
+          onClick={() => setShowRemoveConfirm(true)}
+          title="Remove from this page only"
+        >
+          Remove
+        </button>
+
+        {showRemoveConfirm && (
+          <div className="inline-confirm" style={{ 
+            position:'absolute', 
+            right:0, 
+            top:'100%', 
+            marginTop:12, 
+            background:'#fff7ed', 
+            border:'1px solid #fed7aa', 
+            borderRadius:8, 
+            padding:12, 
+            boxShadow:'0 4px 12px rgba(0,0,0,0.15)', 
+            minWidth:260,
+            zIndex: 1000,
+            maxWidth: '300px'
+          }}>
+            <div style={{ fontWeight:600, color:'#9a3412', marginBottom:8 }}>Remove request from this page?</div>
+            <div className="muted" style={{ color:'#7c2d12', marginBottom:12, fontSize:13 }}>This won't delete it from your account.</div>
+            <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setShowRemoveConfirm(false)}>Cancel</button>
+              <button className="btn btn-danger" onClick={() => { setShowRemoveConfirm(false); onRemove && onRemove(); }}>Remove</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Project Item Component
+const ProjectItem = ({ project }) => {
+  const [showDetails, setShowDetails] = React.useState(false);
+  
+  // Calculate days remaining based on start date and estimated duration
+  const calculateDaysRemaining = () => {
+    const startDate = new Date(project.start_date);
+    const duration = project.estimated_duration || 90; // Default to 90 days if not specified
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + duration);
+    
+    const today = new Date();
+    const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+    return daysRemaining > 0 ? daysRemaining : 0;
+  };
+  
+  // Progress color based on percentage
+  const getProgressColor = () => {
+    const progress = project.progress || 0;
+    if (progress < 25) return "#ff4d4d";
+    if (progress < 50) return "#ffa64d";
+    if (progress < 75) return "#4db8ff";
+    return "#4dff88";
+  };
+  
+  return (
+    <div className="list-item project-item">
+      <div className="item-icon">🏗️</div>
+      <div className="item-content">
+        <h4 className="item-title">{project.project_name}</h4>
+        <p className="item-subtitle">Contractor: {project.contractor_name}</p>
+        <p className="item-meta">
+          Started: {new Date(project.start_date).toLocaleDateString()}
+          • Progress: {project.progress || 0}%
+        </p>
+        
+        {/* Progress bar */}
+        <div className="progress-bar-container">
+          <div 
+            className="progress-bar" 
+            style={{
+              width: `${project.progress || 0}%`,
+              backgroundColor: getProgressColor()
+            }}
+          ></div>
+        </div>
+        
+        {showDetails && (
+          <div className="project-details">
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span className="detail-label">Budget:</span>
+                <span className="detail-value">{project.budget || "Not specified"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Days Remaining:</span>
+                <span className="detail-value">{calculateDaysRemaining()}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Location:</span>
+                <span className="detail-value">{project.location || "Not specified"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Plot Size:</span>
+                <span className="detail-value">{project.plot_size || "Not specified"}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="item-actions">
+        <span className={`status-badge ${project.status}`}>
+          {project.status}
+        </span>
+        <div className="button-group">
+          <button className="btn btn-secondary" onClick={() => setShowDetails(!showDetails)}>
+            {showDetails ? "Hide Details" : "Show Details"}
+          </button>
+          <button className="btn btn-primary">
+            View Project
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Layout Card Component
+const LayoutCard = ({ layout, onSelect, onPreview, isImageUrl, isPdfUrl, isModal = false, onSendToContractor }) => (
+  <div className={`layout-card ${isModal ? 'modal-card' : ''}`}>
+    <div className="layout-image-container">
+      <button className="layout-image-button" onClick={onPreview} style={{cursor:'zoom-in'}}>
+        <img 
+          src={layout.image_url || '/images/default-layout.jpg'} 
+          alt={layout.title}
+          className="layout-card-image"
+        />
+      </button>
+      <div className="layout-overlay">
+        <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+          {(layout.design_file_url && (isImageUrl(layout.design_file_url) || isPdfUrl(layout.design_file_url))) && (
+            <button className="btn" onClick={onPreview}>View Layout</button>
+          )}
+          <button className="btn" onClick={onSelect}>
+            Customize
+          </button>
+          <button className="btn btn-primary" onClick={() => onSendToContractor && onSendToContractor(layout)}>
+            Send to Contractor
+          </button>
+        </div>
+      </div>
+    </div>
+    <div className="layout-card-content">
+      <h4 className="layout-title">{layout.title}</h4>
+      <p className="layout-type">{layout.layout_type}</p>
+      <div className="layout-specs">
+        <span className="spec">🛏️ {layout.bedrooms} BR</span>
+        <span className="spec">🚿 {layout.bathrooms} BA</span>
+        <span className="spec">📐 {layout.area} sq ft</span>
+      </div>
+      {layout.architect_name && (
+        <p className="layout-author" style={{margin: '6px 0', color: '#555'}}>By {layout.architect_name}</p>
+      )}
+      {layout.architect_email && (
+        <p className="layout-author" style={{margin: '0 0 6px 0', color: '#6b7280'}}>Email: {layout.architect_email}</p>
+      )}
+      {layout.description && (
+        <p className="layout-description">{layout.description}</p>
+      )}
+      <div className="layout-price">
+        {layout.price_range && (
+          <span className="price-range">₹{layout.price_range}</span>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+
+
+export default HomeownerDashboard;
