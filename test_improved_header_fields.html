@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improved Header Fields Test</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+        
+        .house-plan-drawer {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+        
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+            z-index: 10;
+            flex-wrap: wrap;
+            gap: 1rem;
+            min-height: 100px;
+        }
+        
+        .plan-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex: 1;
+            min-width: 350px;
+        }
+        
+        .plan-name-input {
+            padding: 0.75rem 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            min-width: 300px;
+            background: rgba(255,255,255,0.95);
+            transition: all 0.2s;
+        }
+        
+        .plan-name-input:focus {
+            outline: none;
+            border-color: #fff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+        }
+        
+        .plot-dimensions {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .plot-dimensions label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+        }
+        
+        .plot-dimensions input {
+            width: 100px;
+            padding: 0.75rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            text-align: center;
+            background: rgba(255,255,255,0.95);
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        
+        .plot-dimensions input:focus {
+            outline: none;
+            border-color: #fff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+        }
+        
+        .plan-stats-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex: 2;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        
+        .header-notes {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .notes-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.95);
+            transition: all 0.2s;
+        }
+        
+        .notes-input:focus {
+            outline: none;
+            border-color: #fff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+        }
+        
+        .notes-input::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .drawer-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .save-btn, .cancel-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .save-btn {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .save-btn:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .cancel-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .cancel-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        .content-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .comparison {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+        
+        .comparison h4 {
+            margin: 0 0 10px 0;
+            color: #4caf50;
+        }
+        
+        .comparison .before {
+            color: #ff6b6b;
+        }
+        
+        .comparison .after {
+            color: #4caf50;
+        }
+        
+        /* Responsive behavior test */
+        @media (max-width: 1200px) {
+            .drawer-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+            
+            .plan-info {
+                flex-direction: column;
+                gap: 1rem;
+                min-width: auto;
+            }
+            
+            .plan-stats-header {
+                justify-content: space-between;
+                gap: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .plot-dimensions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .plot-dimensions input {
+                width: 120px;
+            }
+            
+            .plan-name-input {
+                min-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="house-plan-drawer">
+        <div class="drawer-header">
+            <div class="plan-info">
+                <input type="text" placeholder="Plan Name" value="Modern Family Home" class="plan-name-input">
+                <div class="plot-dimensions">
+                    <label>
+                        Width:
+                        <input type="number" value="55" min="10" max="100"> ft
+                    </label>
+                    <label>
+                        Height:
+                        <input type="number" value="30" min="10" max="100"> ft
+                    </label>
+                </div>
+            </div>
+            
+            <div class="plan-stats-header">
+                <div class="stat-item">
+                    <span class="stat-label">Plot:</span>
+                    <span class="stat-value">1650 sq ft</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Layout:</span>
+                    <span class="stat-value">1200 sq ft</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Construction:</span>
+                    <span class="stat-value">1320 sq ft</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Coverage:</span>
+                    <span class="stat-value">80.0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Rooms:</span>
+                    <span class="stat-value">6</span>
+                </div>
+            </div>
+
+            <div class="header-notes">
+                <input type="text" placeholder="Add notes..." value="Open floor plan with modern amenities" class="notes-input">
+            </div>
+
+            <div class="drawer-actions">
+                <button class="save-btn">Save Plan</button>
+                <button class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            Canvas and Tools Panel would be here
+        </div>
+    </div>
+
+    <div class="comparison">
+        <h4>Field Size Improvements</h4>
+        <div><span class="before">Before:</span> Width/Height inputs: 80px</div>
+        <div><span class="after">After:</span> Width/Height inputs: 100px</div>
+        <br>
+        <div><span class="before">Before:</span> Plan name: 250px min-width</div>
+        <div><span class="after">After:</span> Plan name: 300px min-width</div>
+        <br>
+        <div><span class="before">Before:</span> Gap between fields: 1.5rem</div>
+        <div><span class="after">After:</span> Gap between fields: 2rem</div>
+        <br>
+        <div><span class="after">✓</span> Increased padding for better touch targets</div>
+        <div><span class="after">✓</span> Better visual separation</div>
+        <div><span class="after">✓</span> More comfortable typing experience</div>
+    </div>
+
+    <script>
+        // Add some interactivity to test the fields
+        document.addEventListener('DOMContentLoaded', function() {
+            const widthInput = document.querySelector('input[value="55"]');
+            const heightInput = document.querySelector('input[value="30"]');
+            const plotStat = document.querySelector('.stat-value');
+            
+            function updatePlotSize() {
+                const width = parseInt(widthInput.value) || 0;
+                const height = parseInt(heightInput.value) || 0;
+                const area = width * height;
+                plotStat.textContent = area + ' sq ft';
+            }
+            
+            widthInput.addEventListener('input', updatePlotSize);
+            heightInput.addEventListener('input', updatePlotSize);
+            
+            // Add focus effects
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.transform = 'scale(1.02)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

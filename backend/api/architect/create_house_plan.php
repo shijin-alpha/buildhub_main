@@ -1,0 +1,119 @@
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+require_once '../../config/database.php';
+
+try {
+    $database = new Database();
+    $db = $database->getConnection();
+
+    session_start();
+    $architect_id = $_SESSION['user_id'] ?? null;
+
+    if (!$architect_id) {
+        echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+        exit;
+    }
+
+    // Verify user is architect
+    $userStmt = $db->prepare("SELECT role FROM users WHERE id = :id");
+    $userStmt->execute([':id' => $architect_id]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user || $user['role'] !== 'architect') {
+        echo json_encode(['success' => false, 'message' => 'Access denied']);
+        exit;
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    $plan_name = trim($input['plan_name'] ?? '');
+    $layout_request_id = isset($input['layout_request_id']) ? (int)$input['layout_request_id'] : null;
+    $plot_width = floatval($input['plot_width'] ?? 0);
+    $plot_height = floatval($input['plot_height'] ?? 0);
+    $plan_data = $input['plan_data'] ?? [];
+    $notes = trim($input['notes'] ?? '');
+
+    if (empty($plan_name) || $plot_width <= 0 || $plot_height <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Plan name, plot width and height are required']);
+        exit;
+    }
+
+    // Calculate total area from plan_data
+    $total_area = 0;
+    if (isset($plan_data['rooms']) && is_array($plan_data['rooms'])) {
+        foreach ($plan_data['rooms'] as $room) {
+            if (isset($room['width']) && isset($room['height'])) {
+                $total_area += floatval($room['width']) * floatval($room['height']);
+            }
+        }
+    }
+
+    // If linked to a request, verify architect has access
+    if ($layout_request_id) {
+        $accessStmt = $db->prepare("
+            SELECT 1 FROM layout_request_assignments 
+            WHERE layout_request_id = :lrid AND architect_id = :aid AND status = 'accepted'
+        ");
+        $accessStmt->execute([':lrid' => $layout_request_id, ':aid' => $architect_id]);
+        
+        if (!$accessStmt->fetch()) {
+            echo json_encode(['success' => false, 'message' => 'No access to this layout request']);
+            exit;
+        }
+    }
+
+    // Create house plan
+    $stmt = $db->prepare("
+        INSERT INTO house_plans (architect_id, layout_request_id, plan_name, plot_width, plot_height, plan_data, total_area, notes)
+        VALUES (:architect_id, :layout_request_id, :plan_name, :plot_width, :plot_height, :plan_data, :total_area, :notes)
+    ");
+
+    $success = $stmt->execute([
+        ':architect_id' => $architect_id,
+        ':layout_request_id' => $layout_request_id,
+        ':plan_name' => $plan_name,
+        ':plot_width' => $plot_width,
+        ':plot_height' => $plot_height,
+        ':plan_data' => json_encode($plan_data),
+        ':total_area' => $total_area,
+        ':notes' => $notes
+    ]);
+
+    if ($success) {
+        $plan_id = $db->lastInsertId();
+        
+        // Get homeowner_id if this plan is linked to a layout request
+        $homeowner_id = null;
+        if ($layout_request_id) {
+            $homeownerStmt = $db->prepare("SELECT homeowner_id FROM layout_requests WHERE id = :id");
+            $homeownerStmt->execute([':id' => $layout_request_id]);
+            $homeowner_result = $homeownerStmt->fetch(PDO::FETCH_ASSOC);
+            if ($homeowner_result) {
+                $homeowner_id = $homeowner_result['homeowner_id'];
+            }
+        }
+        
+        echo json_encode([
+            'success' => true, 
+            'message' => 'House plan created successfully',
+            'plan_id' => $plan_id,
+            'homeowner_id' => $homeowner_id,
+            'layout_request_id' => $layout_request_id
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to create house plan']);
+    }
+
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
+}
+?>

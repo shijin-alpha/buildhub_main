@@ -17,6 +17,7 @@ import TechnicalDetailsDisplay from './TechnicalDetailsDisplay';
 import TechnicalDetailsForm from './TechnicalDetailsForm';
 import '../styles/TechnicalDetailsForm.css';
 import InfoPopup from './InfoPopup';
+import HousePlanManager from './HousePlanManager';
 
 
 const ArchitectDashboard = () => {
@@ -65,6 +66,10 @@ const ArchitectDashboard = () => {
     technical_details: {},
     files: []
   });
+
+  // House plan state
+  const [showHousePlanManager, setShowHousePlanManager] = useState(false);
+  const [selectedRequestForPlan, setSelectedRequestForPlan] = useState(null);
 
   useEffect(() => {
     // Get user data from session
@@ -3172,6 +3177,142 @@ const ArchitectDashboard = () => {
     </div>
   );
 
+  const renderHousePlans = () => {
+    if (showHousePlanManager) {
+      return (
+        <HousePlanManager
+          layoutRequestId={selectedRequestForPlan}
+          onClose={() => {
+            setShowHousePlanManager(false);
+            setSelectedRequestForPlan(null);
+          }}
+        />
+      );
+    }
+
+    return (
+      <div style={{
+        height: '100vh', 
+        overflowY: 'auto', 
+        paddingRight: '8px',
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#cbd5e0 #f7fafc'
+      }}>
+        <div className="main-header">
+          <div className="header-content">
+            <div>
+              <h1>House Plans</h1>
+              <p>Create custom house plans by drawing room layouts for your clients</p>
+            </div>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => {
+                setSelectedRequestForPlan(null);
+                setShowHousePlanManager(true);
+              }}
+            >
+              + Create New Plan
+            </button>
+          </div>
+        </div>
+
+        <div className="section-card">
+          <div className="section-header">
+            <h2>Your Assigned Projects</h2>
+            <p>Create custom house plans for these client requests</p>
+          </div>
+          <div className="section-content">
+            {layoutRequests.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">🏠</div>
+                <h3>No Assigned Projects</h3>
+                <p>You don't have any assigned layout requests yet. Check the Layout Requests tab to see available projects.</p>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => setActiveTab('requests')}
+                >
+                  View Layout Requests
+                </button>
+              </div>
+            ) : (
+              <div className="request-grid">
+                {layoutRequests.map(request => (
+                  <div key={request.id} className="request-card">
+                    <div className="request-header">
+                      <h4>{request.homeowner_name}</h4>
+                      <span className="request-budget">{request.budget_range}</span>
+                    </div>
+                    
+                    <div className="request-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Plot Size:</span>
+                        <span className="detail-value">{request.plot_size}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Location:</span>
+                        <span className="detail-value">{request.location || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Style:</span>
+                        <span className="detail-value">{request.preferred_style || 'Any'}</span>
+                      </div>
+                    </div>
+
+                    {request.requirements && (
+                      <div className="request-requirements">
+                        <h5>Requirements:</h5>
+                        <p>{typeof request.requirements === 'string' ? request.requirements : JSON.stringify(request.requirements)}</p>
+                      </div>
+                    )}
+
+                    <div className="request-actions">
+                      <button 
+                        className="btn btn-primary"
+                        onClick={() => {
+                          setSelectedRequestForPlan(request.id);
+                          setShowHousePlanManager(true);
+                        }}
+                      >
+                        Create House Plan
+                      </button>
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={() => downloadProjectPDF(request)}
+                      >
+                        Download Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="section-card">
+          <div className="section-header">
+            <h2>General House Plans</h2>
+            <p>Create house plans not tied to specific client requests</p>
+          </div>
+          <div className="section-content">
+            <div className="general-plans-info">
+              <p>Create general house plans that can be used as templates or showcased in your portfolio.</p>
+              <button 
+                className="btn btn-outline"
+                onClick={() => {
+                  setSelectedRequestForPlan(null);
+                  setShowHousePlanManager(true);
+                }}
+              >
+                Create General Plan
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Render functions for different tabs
 
 
@@ -3337,6 +3478,13 @@ const ArchitectDashboard = () => {
             <span className="sb-label">My Layout Library</span>
             {libraryCount > 0 && (<span className="nav-badge pulse" style={{ marginLeft:'auto' }}>{libraryCount}</span>)}
           </a>
+          <a 
+            href="#" 
+            className={`nav-item sb-item ${activeTab === 'house-plans' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setActiveTab('house-plans'); }}
+          >
+            <span className="sb-label">House Plans</span>
+          </a>
 
         </nav>
 
@@ -3375,6 +3523,7 @@ const ArchitectDashboard = () => {
         {activeTab === 'requests' && renderRequests()}
         {activeTab === 'designs' && renderDesigns()}
         {activeTab === 'library' && renderLibrary()}
+        {activeTab === 'house-plans' && renderHousePlans()}
         {activeTab === 'profile' && renderProfile()}
 
         {/* Upload Form Modal */}

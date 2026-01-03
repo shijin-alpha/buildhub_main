@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simplified Header Test</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+        
+        .house-plan-drawer {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+        
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+            z-index: 10;
+            min-height: 60px;
+        }
+        
+        .header-title h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .drawer-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .save-btn, .cancel-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .save-btn {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .save-btn:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .cancel-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .cancel-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        .drawer-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
+            height: calc(100vh - 80px);
+        }
+        
+        .tools-panel {
+            width: 380px;
+            background: white;
+            border-right: 2px solid #e3f2fd;
+            overflow-y: auto;
+            padding: 1rem;
+            flex-shrink: 0;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            height: 100%;
+        }
+        
+        .plan-details-section {
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 8px;
+            border: 2px solid #1976d2;
+        }
+        
+        .plan-details-section h4 {
+            margin: 0 0 1rem 0;
+            color: #1976d2;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .plan-details-section h4::before {
+            content: '📋';
+            font-size: 1rem;
+        }
+        
+        .plan-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group > label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1976d2;
+        }
+        
+        .plan-detail-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #1976d2;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.2s;
+        }
+        
+        .plan-detail-input:focus {
+            outline: none;
+            border-color: #1565c0;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+        
+        .dimension-inputs {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .dimension-input {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .dimension-input label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #666;
+            min-width: 45px;
+        }
+        
+        .dimension-field {
+            width: 70px;
+            padding: 0.5rem;
+            border: 2px solid #1976d2;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: 500;
+            background: white;
+        }
+        
+        .dimension-field:focus {
+            outline: none;
+            border-color: #1565c0;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+        }
+        
+        .dimension-input span {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .plan-notes-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #1976d2;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        
+        .plan-notes-textarea:focus {
+            outline: none;
+            border-color: #1565c0;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+        
+        .plan-notes-textarea::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .plan-stats {
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 8px;
+            border: 2px solid #1976d2;
+            margin-bottom: 1.5rem;
+        }
+        
+        .plan-stats h4 {
+            margin: 0 0 1rem 0;
+            color: #1976d2;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .plan-stats h4::before {
+            content: '📊';
+            font-size: 1rem;
+        }
+        
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .stats div {
+            font-size: 0.85rem;
+            color: #1976d2;
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fafafa;
+            overflow: hidden;
+            position: relative;
+            min-height: 0;
+            height: 100%;
+        }
+        
+        .canvas-placeholder {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            color: #666;
+            font-size: 1.2rem;
+            border: 2px dashed #ccc;
+            margin: 1rem;
+            border-radius: 8px;
+        }
+        
+        .comparison-note {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+        
+        .comparison-note h4 {
+            margin: 0 0 10px 0;
+            color: #4caf50;
+        }
+        
+        .before {
+            color: #ff6b6b;
+        }
+        
+        .after {
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="house-plan-drawer">
+        <div class="drawer-header">
+            <div class="header-title">
+                <h2>House Plan Designer</h2>
+            </div>
+            <div class="drawer-actions">
+                <button class="save-btn">Save Plan</button>
+                <button class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+
+        <div class="drawer-content">
+            <div class="tools-panel">
+                <div class="plan-details-section">
+                    <h4>Plan Details</h4>
+                    <div class="plan-form">
+                        <div class="form-group">
+                            <label>Plan Name:</label>
+                            <input type="text" placeholder="Enter plan name" value="Modern Family Home" class="plan-detail-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Plot Dimensions:</label>
+                            <div class="dimension-inputs">
+                                <div class="dimension-input">
+                                    <label>Width:</label>
+                                    <input type="number" value="55" min="10" max="100" class="dimension-field">
+                                    <span>ft</span>
+                                </div>
+                                <div class="dimension-input">
+                                    <label>Height:</label>
+                                    <input type="number" value="30" min="10" max="100" class="dimension-field">
+                                    <span>ft</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Notes:</label>
+                            <textarea placeholder="Add notes about this plan..." class="plan-notes-textarea" rows="3">Open floor plan with modern amenities and energy-efficient design.</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plan-stats">
+                    <h4>Plan Statistics</h4>
+                    <div class="stats">
+                        <div>Plot Area: <span>1650 sq ft</span></div>
+                        <div>Layout Area: <span>1200 sq ft</span></div>
+                        <div>Construction Area: <span>1320 sq ft</span></div>
+                        <div>Coverage: <span>80.0%</span></div>
+                        <div>Total Rooms: <span>6</span></div>
+                    </div>
+                </div>
+
+                <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; text-align: center; color: #666;">
+                    <p><strong>Room Templates</strong></p>
+                    <p>Measurement Controls</p>
+                    <p>Room Properties</p>
+                    <p>Interaction Help</p>
+                    <p style="margin-top: 1rem; font-size: 0.8rem; font-style: italic;">All other tools would appear here...</p>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <div class="canvas-placeholder">
+                    Canvas Area - Now with Maximum Space!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="comparison-note">
+        <h4>Header Simplification</h4>
+        <div><span class="before">Before:</span> Complex header with multiple sections</div>
+        <div><span class="after">After:</span> Simple header with just title and actions</div>
+        <br>
+        <div><span class="before">Before:</span> Header height: ~100px</div>
+        <div><span class="after">After:</span> Header height: ~60px</div>
+        <br>
+        <div><span class="after">✓</span> All details moved to sidebar</div>
+        <div><span class="after">✓</span> No layout shifts when editing</div>
+        <div><span class="after">✓</span> Maximum canvas space</div>
+        <div><span class="after">✓</span> Clean, focused interface</div>
+    </div>
+
+    <script>
+        // Add some interactivity to test the form
+        document.addEventListener('DOMContentLoaded', function() {
+            const widthInput = document.querySelector('.dimension-field[value="55"]');
+            const heightInput = document.querySelector('.dimension-field[value="30"]');
+            const plotStat = document.querySelector('.stats div:first-child span');
+            
+            function updatePlotSize() {
+                const width = parseInt(widthInput.value) || 0;
+                const height = parseInt(heightInput.value) || 0;
+                const area = width * height;
+                plotStat.textContent = area + ' sq ft';
+            }
+            
+            widthInput.addEventListener('input', updatePlotSize);
+            heightInput.addEventListener('input', updatePlotSize);
+            
+            // Add focus effects
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.transform = 'scale(1.02)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+            
+            // Simulate save/cancel actions
+            document.querySelector('.save-btn').addEventListener('click', function() {
+                this.textContent = 'Saving...';
+                this.disabled = true;
+                setTimeout(() => {
+                    this.textContent = 'Save Plan';
+                    this.disabled = false;
+                    alert('Plan saved successfully!');
+                }, 2000);
+            });
+            
+            document.querySelector('.cancel-btn').addEventListener('click', function() {
+                if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+                    alert('Cancelled - returning to dashboard');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
