@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/NotificationToast.css';
 
-const NotificationToast = ({ notifications, onRemove }) => {
+const NotificationToast = ({ notifications = [], onRemove }) => {
+  // Ensure notifications is always an array
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  
   return (
     <div className="notification-container">
-      {notifications.map((notification) => (
+      {safeNotifications.map((notification) => (
         <div
           key={notification.id}
           className={`notification-toast ${notification.type}`}

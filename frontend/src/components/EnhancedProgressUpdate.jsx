@@ -8,6 +8,7 @@ import {
   standardHourlyRates 
 } from '../utils/progressValidation.js';
 import GeoPhotoCapture from './GeoPhotoCapture.jsx';
+import StagePaymentRequest from './StagePaymentRequest.jsx';
 import '../styles/EnhancedProgress.css';
 
 const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
@@ -66,6 +67,11 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
   const [showGeoPhotoCapture, setShowGeoPhotoCapture] = useState(false);
   const [geoPhotos, setGeoPhotos] = useState([]);
 
+  // Worker selection states
+  const [phaseWorkers, setPhaseWorkers] = useState(null);
+  const [loadingWorkers, setLoadingWorkers] = useState(false);
+  const [availableWorkerTypes, setAvailableWorkerTypes] = useState([]);
+
   const stages = [
     'Foundation', 'Structure', 'Brickwork', 'Roofing', 
     'Electrical', 'Plumbing', 'Finishing', 'Other'
@@ -75,7 +81,8 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
     'Sunny', 'Cloudy', 'Rainy', 'Stormy', 'Foggy', 'Hot', 'Cold', 'Windy'
   ];
 
-  const workerTypes = [
+  // Static fallback worker types (used when phase-specific loading fails)
+  const fallbackWorkerTypes = [
     'Mason', 'Helper', 'Electrician', 'Plumber', 'Carpenter', 'Painter', 
     'Supervisor', 'Welder', 'Crane Operator', 'Excavator Operator', 
     'Steel Fixer', 'Tile Worker', 'Plasterer', 'Roofer', 'Security Guard',
@@ -224,16 +231,7 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
       }
     },
     
-    labour_hourly_rate: {
-      validate: (value) => {
-        const num = parseFloat(value);
-        if (isNaN(num)) return 'Hourly rate must be a valid number';
-        if (num < 0) return 'Hourly rate cannot be negative';
-        if (num > 2000) return 'Hourly rate seems too high (max ₹2000)';
-        if (num > 0 && num < 50) return 'Hourly rate seems too low (min ₹50)';
-        return null;
-      }
-    },
+
     
     labour_productivity_rating: {
       validate: (value) => {
@@ -516,6 +514,12 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
     getCurrentLocation();
   }, []);
 
+  // Initialize available worker types
+  useEffect(() => {
+    // Start with empty array - will be populated when construction stage is selected
+    setAvailableWorkerTypes([]);
+  }, []);
+
   // Set default week dates when switching to weekly section
   useEffect(() => {
     if (activeSection === 'weekly' && !weeklyForm.week_start_date) {
@@ -531,6 +535,67 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
       }));
     }
   }, [activeSection]);
+
+  // Load phase-specific workers when construction stage changes
+  useEffect(() => {
+    if (dailyForm.construction_stage) {
+      loadPhaseWorkers(dailyForm.construction_stage);
+      
+      // Clear existing labour entries when stage changes since worker types might be different
+      if (dailyForm.labour_data.length > 0) {
+        setDailyForm(prev => ({
+          ...prev,
+          labour_data: []
+        }));
+        toast.info(`Cleared labour entries due to construction stage change. Please add workers for ${dailyForm.construction_stage} phase.`);
+      }
+    } else {
+      setPhaseWorkers(null);
+      setAvailableWorkerTypes([]); // Clear worker types when no stage selected
+    }
+  }, [dailyForm.construction_stage]);
+
+  const loadPhaseWorkers = async (phaseName) => {
+    try {
+      setLoadingWorkers(true);
+      const response = await fetch(
+        `/buildhub/backend/api/contractor/get_phase_workers.php?phase=${encodeURIComponent(phaseName)}`,
+        { credentials: 'include' }
+      );
+      const data = await response.json();
+      
+      if (data.success) {
+        setPhaseWorkers(data.data);
+        
+        // Extract available worker types for this phase
+        const phaseWorkerTypes = Object.values(data.data.available_workers).map(workerGroup => 
+          workerGroup.requirement.type_name
+        );
+        
+        // Add 'Other' as fallback option
+        if (!phaseWorkerTypes.includes('Other')) {
+          phaseWorkerTypes.push('Other');
+        }
+        
+        console.log(`Phase ${phaseName} worker types:`, phaseWorkerTypes);
+        setAvailableWorkerTypes(phaseWorkerTypes);
+        
+        toast.success(`Loaded ${phaseWorkerTypes.length} worker types for ${phaseName} phase`);
+      } else {
+        console.warn('Failed to load phase workers:', data.message);
+        setPhaseWorkers(null);
+        setAvailableWorkerTypes(['Mason', 'Helper', 'Other']); // Minimal fallback
+        toast.error(`Failed to load phase workers: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Error loading phase workers:', error);
+      setPhaseWorkers(null);
+      setAvailableWorkerTypes(['Mason', 'Helper', 'Other']); // Minimal fallback
+      toast.error('Error loading phase workers');
+    } finally {
+      setLoadingWorkers(false);
+    }
+  };
 
   const loadAssignedProjects = async () => {
     try {
@@ -622,27 +687,12 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         hours_worked: 8, 
         overtime_hours: 0, 
         absent_count: 0, 
-        hourly_rate: 0,
-        total_wages: 0,
         productivity_rating: 5,
         safety_compliance: 'good',
         remarks: '' 
       };
     }
     newLabourData[index][field] = value;
-    
-    // Auto-calculate total wages when count, hours, or rate changes
-    if (field === 'worker_count' || field === 'hours_worked' || field === 'overtime_hours' || field === 'hourly_rate') {
-      const entry = newLabourData[index];
-      const regularHours = parseFloat(entry.hours_worked) || 0;
-      const overtimeHours = parseFloat(entry.overtime_hours) || 0;
-      const workerCount = parseInt(entry.worker_count) || 0;
-      const hourlyRate = parseFloat(entry.hourly_rate) || 0;
-      
-      // Calculate total wages (regular + overtime at 1.5x rate)
-      const totalWages = workerCount * ((regularHours * hourlyRate) + (overtimeHours * hourlyRate * 1.5));
-      newLabourData[index].total_wages = Math.round(totalWages);
-    }
     
     setDailyForm(prev => ({ ...prev, labour_data: newLabourData }));
     
@@ -670,8 +720,6 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         hours_worked: 8, 
         overtime_hours: 0, 
         absent_count: 0,
-        hourly_rate: 300,
-        total_wages: 2400,
         productivity_rating: 5,
         safety_compliance: 'good',
         remarks: '' 
@@ -1512,12 +1560,31 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                       onChange={(e) => handleLabourChange(index, 'worker_type', e.target.value)}
                       onBlur={() => setFieldTouched(prev => ({ ...prev, [`labour_data_${index}_worker_type`]: true }))}
                       required
+                      disabled={loadingWorkers || !dailyForm.construction_stage}
                     >
-                      <option value="">Select Type</option>
-                      {workerTypes.map(type => (
+                      <option value="">
+                        {!dailyForm.construction_stage 
+                          ? 'Select construction stage first'
+                          : loadingWorkers 
+                            ? 'Loading workers...' 
+                            : 'Select Type'
+                        }
+                      </option>
+                      {availableWorkerTypes.map(type => (
                         <option key={type} value={type}>{type}</option>
                       ))}
                     </select>
+                    {!dailyForm.construction_stage && (
+                      <div className="field-info">⚠️ Please select a construction stage first to see relevant worker types</div>
+                    )}
+                    {loadingWorkers && dailyForm.construction_stage && (
+                      <div className="field-info">🔄 Loading phase-specific workers...</div>
+                    )}
+                    {phaseWorkers && !loadingWorkers && dailyForm.construction_stage && (
+                      <div className="field-info">
+                        ✅ Showing {availableWorkerTypes.length} worker types for {dailyForm.construction_stage} phase
+                      </div>
+                    )}
                     {fieldTouched[`labour_data_${index}_worker_type`] && validationErrors[`labour_data_${index}_worker_type`] && (
                       <div className="field-error">
                         <span className="error-message">{validationErrors[`labour_data_${index}_worker_type`]}</span>
@@ -1608,38 +1675,6 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
 
                 {/* Secondary Labour Information */}
                 <div className="labour-row secondary-info">
-                  <div className={`form-group hourly-rate-group ${validationErrors[`labour_data_${index}_hourly_rate`] ? 'error' : ''}`}>
-                    <label>Hourly Rate (₹)</label>
-                    <input
-                      type="number"
-                      value={labour.hourly_rate}
-                      onChange={(e) => handleLabourChange(index, 'hourly_rate', parseFloat(e.target.value) || 0)}
-                      onBlur={() => setFieldTouched(prev => ({ ...prev, [`labour_data_${index}_hourly_rate`]: true }))}
-                      min="0"
-                      max="2000"
-                      step="10"
-                      placeholder="300"
-                    />
-                    <div className="field-info">Range: ₹50 - ₹2000 per hour</div>
-                    {fieldTouched[`labour_data_${index}_hourly_rate`] && validationErrors[`labour_data_${index}_hourly_rate`] && (
-                      <div className="field-error">
-                        <span className="error-message">{validationErrors[`labour_data_${index}_hourly_rate`]}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="form-group total-wages-group">
-                    <label>Total Wages (₹)</label>
-                    <input
-                      type="number"
-                      value={labour.total_wages}
-                      readOnly
-                      className="calculated-field"
-                      placeholder="Auto-calculated"
-                    />
-                    <div className="field-info">Auto-calculated (Regular + OT×1.5)</div>
-                  </div>
-                  
                   <div className={`form-group productivity-group ${validationErrors[`labour_data_${index}_productivity_rating`] ? 'error' : ''}`}>
                     <label>Productivity Rating</label>
                     <select
@@ -1712,12 +1747,12 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                     </span>
                   </div>
                   <div className="summary-item">
-                    <span className="label">Daily Cost:</span>
-                    <span className="value">₹{labour.total_wages || 0}</span>
-                  </div>
-                  <div className="summary-item">
                     <span className="label">Efficiency:</span>
                     <span className="value">{labour.productivity_rating}/5 ⭐</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="label">Safety:</span>
+                    <span className="value">{labour.safety_compliance.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                   </div>
                 </div>
               </div>
@@ -1751,12 +1786,6 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                     </span>
                   </div>
                   <div className="total-item">
-                    <span className="label">Total Daily Wages:</span>
-                    <span className="value">
-                      ₹{dailyForm.labour_data.reduce((sum, labour) => sum + (parseFloat(labour.total_wages) || 0), 0)}
-                    </span>
-                  </div>
-                  <div className="total-item">
                     <span className="label">Average Productivity:</span>
                     <span className="value">
                       {dailyForm.labour_data.length > 0 
@@ -1770,10 +1799,37 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                       {dailyForm.labour_data.reduce((sum, labour) => sum + (parseInt(labour.absent_count) || 0), 0)}
                     </span>
                   </div>
+                  <div className="total-item">
+                    <span className="label">Worker Types:</span>
+                    <span className="value">
+                      {dailyForm.labour_data.length} types
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
           </div>
+
+          {/* Stage Payment Request Section */}
+          {dailyForm.construction_stage && selectedProject && (
+            <div className="stage-payment-section">
+              <div className="section-header">
+                <h5>💰 Stage Payment Request</h5>
+                <p>Request payment for completed {dailyForm.construction_stage} stage work</p>
+              </div>
+              
+              <StagePaymentRequest 
+                projectId={selectedProject}
+                stageName={dailyForm.construction_stage}
+                contractorId={contractorId}
+                completionPercentage={dailyForm.incremental_completion_percentage}
+                workDescription={dailyForm.work_done_today}
+                onPaymentRequested={(data) => {
+                  toast.success(`Payment request submitted: ₹${data.requested_amount} for ${data.stage_name} stage`);
+                }}
+              />
+            </div>
+          )}
 
           {/* Enhanced Photo Upload Section */}
           <div className="photo-upload-section">

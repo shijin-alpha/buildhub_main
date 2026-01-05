@@ -24,6 +24,26 @@ try {
         exit;
     }
     
+    // Check if geo_photos table exists
+    $tableCheck = $pdo->query("SHOW TABLES LIKE 'geo_photos'");
+    if ($tableCheck->rowCount() == 0) {
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'photos' => [],
+                'pagination' => [
+                    'total' => 0,
+                    'limit' => 50,
+                    'offset' => 0,
+                    'has_more' => false
+                ],
+                'project_summary' => null
+            ],
+            'message' => 'Geo photos system not yet initialized. No photos available.'
+        ]);
+        exit;
+    }
+    
     $homeowner_id = $_SESSION['user_id'];
     $project_id = $_GET['project_id'] ?? null;
     $limit = intval($_GET['limit'] ?? 50);
@@ -46,13 +66,13 @@ try {
             c.last_name as contractor_last_name,
             c.email as contractor_email,
             c.phone as contractor_phone,
-            cr.requirements as project_requirements,
-            cr.budget_range as project_budget,
-            cr.plot_size,
-            cr.building_size
+            lr.requirements as project_requirements,
+            lr.budget_range as project_budget,
+            lr.plot_size,
+            lr.building_size
         FROM geo_photos gp
         LEFT JOIN users c ON gp.contractor_id = c.id
-        LEFT JOIN contractor_requests cr ON gp.project_id = cr.id
+        LEFT JOIN layout_requests lr ON gp.project_id = lr.id
         {$whereClause}
         ORDER BY gp.upload_timestamp DESC
         LIMIT ? OFFSET ?
@@ -136,17 +156,17 @@ try {
     if ($project_id) {
         $projectStmt = $pdo->prepare("
             SELECT 
-                cr.*,
+                lr.*,
                 c.first_name as contractor_first_name,
                 c.last_name as contractor_last_name,
                 COUNT(gp.id) as total_photos,
                 COUNT(CASE WHEN gp.homeowner_viewed = 0 THEN 1 END) as unviewed_photos,
                 MAX(gp.upload_timestamp) as latest_photo_date
-            FROM contractor_requests cr
-            LEFT JOIN users c ON cr.contractor_id = c.id
-            LEFT JOIN geo_photos gp ON cr.id = gp.project_id
-            WHERE cr.id = ? AND cr.homeowner_id = ?
-            GROUP BY cr.id
+            FROM layout_requests lr
+            LEFT JOIN users c ON lr.contractor_id = c.id
+            LEFT JOIN geo_photos gp ON lr.id = gp.project_id
+            WHERE lr.id = ? AND lr.homeowner_id = ?
+            GROUP BY lr.id
         ");
         $projectStmt->execute([$project_id, $homeowner_id]);
         $projectData = $projectStmt->fetch(PDO::FETCH_ASSOC);

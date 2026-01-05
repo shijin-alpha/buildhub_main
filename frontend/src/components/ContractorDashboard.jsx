@@ -13,6 +13,7 @@ import ConstructionProgressUpdate from './ConstructionProgressUpdate';
 import ProgressTimeline from './ProgressTimeline';
 import EnhancedProgressUpdate from './EnhancedProgressUpdate';
 import ProgressReportGenerator from './ProgressReportGenerator';
+import ContractorPaymentManager from './ContractorPaymentManager';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -2652,6 +2653,12 @@ const ContractorDashboard = () => {
             📊 View Timeline
           </button>
           <button 
+            className={`toggle-btn ${progressView === 'payment' ? 'active' : ''}`}
+            onClick={() => setProgressView('payment')}
+          >
+            💰 Request Payment
+          </button>
+          <button 
             className={`toggle-btn ${progressView === 'reports' ? 'active' : ''}`}
             onClick={() => setProgressView('reports')}
           >
@@ -2670,6 +2677,20 @@ const ContractorDashboard = () => {
             contractorId={user?.id}
             userRole="contractor"
           />
+        ) : progressView === 'payment' ? (
+          <div className="payment-section">
+            <div className="payment-header">
+              <h2>💰 Stage Payment Requests</h2>
+              <p>Request payments for completed construction stages and track payment status</p>
+            </div>
+            
+            <ContractorPaymentManager 
+              contractorId={user?.id}
+              onPaymentRequested={(data) => {
+                toast.success(`Payment request submitted: ₹${data.requested_amount} for ${data.stage_name} stage`);
+              }}
+            />
+          </div>
         ) : progressView === 'reports' ? (
           <div className="reports-section">
             <div className="reports-header">

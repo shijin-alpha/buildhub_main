@@ -583,6 +583,19 @@ const GeoPhotoCapture = ({ projectId, contractorId, onPhotosCaptured, onClose })
       return;
     }
 
+    // Validate location has coordinates
+    if (!location.latitude || !location.longitude) {
+      toast.error('GPS coordinates not available. Please wait for location to be captured.');
+      return;
+    }
+
+    console.log('Capturing photo with location:', {
+      latitude: location.latitude,
+      longitude: location.longitude,
+      placeName: location.placeName,
+      accuracy: location.accuracy
+    });
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
@@ -640,37 +653,46 @@ const GeoPhotoCapture = ({ projectId, contractorId, onPhotosCaptured, onClose })
 
   const addLocationOverlay = (context, width, height) => {
     // Enhanced overlay with better visibility and more location details
-    const overlayHeight = 140;
+    const overlayHeight = 160; // Increased height for better coordinate display
     
     // Semi-transparent dark overlay at bottom
-    context.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    context.fillStyle = 'rgba(0, 0, 0, 0.85)'; // Darker background for better contrast
     context.fillRect(0, height - overlayHeight, width, overlayHeight);
     
     // Add a subtle border at the top of overlay
-    context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    context.fillRect(0, height - overlayHeight, width, 2);
+    context.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    context.fillRect(0, height - overlayHeight, width, 3);
 
     // White text for better contrast
     context.fillStyle = 'white';
     context.textAlign = 'left';
     
-    const padding = 20;
-    let yPos = height - overlayHeight + 25;
+    const padding = 15;
+    let yPos = height - overlayHeight + 20;
     
     // Location icon and place name (larger font)
-    context.font = 'bold 18px Arial';
-    context.fillText(`📍 ${location.placeName}`, padding, yPos);
-    yPos += 28;
-    
-    // Coordinates (prominent display)
     context.font = 'bold 16px Arial';
-    context.fillStyle = '#FFD700'; // Gold color for coordinates
-    context.fillText(`Lat: ${location.latitude.toFixed(6)}°`, padding, yPos);
-    context.fillText(`Lng: ${location.longitude.toFixed(6)}°`, padding + 180, yPos);
+    context.fillText(`📍 ${location.placeName}`, padding, yPos);
+    yPos += 25;
+    
+    // Coordinates (VERY prominent display with larger font and bright color)
+    context.font = 'bold 18px Arial';
+    context.fillStyle = '#00FF00'; // Bright green for maximum visibility
+    context.fillText(`📍 LAT: ${location.latitude.toFixed(6)}°`, padding, yPos);
     yPos += 22;
     
+    context.fillStyle = '#00FFFF'; // Bright cyan for longitude
+    context.fillText(`🌐 LNG: ${location.longitude.toFixed(6)}°`, padding, yPos);
+    yPos += 25;
+    
     // Accuracy and timestamp
-    context.font = '14px Arial';
+    context.font = '13px Arial';
+    context.fillStyle = '#FFFF00'; // Yellow for accuracy
+    const accuracyText = `📡 GPS Accuracy: ±${Math.round(location.accuracy)}m`;
+    context.fillText(accuracyText, padding, yPos);
+    yPos += 18;
+    
+    // Timestamp
     context.fillStyle = 'white';
     const timestamp = new Date(location.timestamp).toLocaleString('en-IN', {
       year: 'numeric',
@@ -681,25 +703,39 @@ const GeoPhotoCapture = ({ projectId, contractorId, onPhotosCaptured, onClose })
       second: '2-digit'
     });
     context.fillText(`🕒 ${timestamp}`, padding, yPos);
-    yPos += 20;
     
-    // Accuracy information
-    context.font = '13px Arial';
-    context.fillStyle = '#90EE90'; // Light green for accuracy
-    const accuracyText = `📡 GPS Accuracy: ±${Math.round(location.accuracy)}m`;
-    context.fillText(accuracyText, padding, yPos);
-    
-    // Add additional location details if available
+    // Add additional location details if available (on the right side)
     if (location.altitude !== null && location.altitude !== undefined) {
       context.fillStyle = '#87CEEB'; // Sky blue for altitude
-      context.fillText(`⛰️ Alt: ${Math.round(location.altitude)}m`, padding + 200, yPos);
+      context.fillText(`⛰️ Alt: ${Math.round(location.altitude)}m`, width - 150, height - overlayHeight + 45);
     }
     
+    // Add a coordinate summary box in the top right
+    const coordBoxWidth = 200;
+    const coordBoxHeight = 50;
+    const coordBoxX = width - coordBoxWidth - 10;
+    const coordBoxY = height - overlayHeight + 10;
+    
+    // Coordinate summary box background
+    context.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    context.fillRect(coordBoxX, coordBoxY, coordBoxWidth, coordBoxHeight);
+    
+    // Coordinate summary text
+    context.font = 'bold 12px Arial';
+    context.fillStyle = '#FFFFFF';
+    context.textAlign = 'center';
+    context.fillText('GPS COORDINATES', coordBoxX + coordBoxWidth/2, coordBoxY + 15);
+    context.font = 'bold 11px Courier New';
+    context.fillStyle = '#00FF00';
+    context.fillText(`${location.latitude.toFixed(6)}`, coordBoxX + coordBoxWidth/2, coordBoxY + 30);
+    context.fillStyle = '#00FFFF';
+    context.fillText(`${location.longitude.toFixed(6)}`, coordBoxX + coordBoxWidth/2, coordBoxY + 43);
+    
     // Add a small BuildHub watermark
-    context.font = '12px Arial';
-    context.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    context.font = '11px Arial';
+    context.fillStyle = 'rgba(255, 255, 255, 0.8)';
     context.textAlign = 'right';
-    context.fillText('BuildHub Geo Photo', width - padding, height - 10);
+    context.fillText('BuildHub Geo Photo', width - padding, height - 8);
     
     // Reset text alignment
     context.textAlign = 'left';
@@ -961,7 +997,7 @@ const GeoPhotoCapture = ({ projectId, contractorId, onPhotosCaptured, onClose })
             {capturedPhotos.map((photo) => (
               <div key={photo.id} className="photo-item">
                 <div className="photo-preview">
-                  <img src={photo.url} alt="Captured" />
+                  <img src={photo.url} alt="Captured with GPS overlay" />
                   <button
                     className="remove-photo-btn"
                     onClick={() => removePhoto(photo.id)}
@@ -974,6 +1010,12 @@ const GeoPhotoCapture = ({ projectId, contractorId, onPhotosCaptured, onClose })
                 <div className="photo-info">
                   <div className="photo-location">
                     📍 {photo.location.placeName || 'Location unavailable'}
+                  </div>
+                  <div className="photo-coordinates">
+                    🌐 LAT: {photo.location.latitude?.toFixed(6)}° | LNG: {photo.location.longitude?.toFixed(6)}°
+                  </div>
+                  <div className="photo-accuracy">
+                    📡 ±{Math.round(photo.location.accuracy || 0)}m accuracy
                   </div>
                   <div className="photo-timestamp">
                     🕒 {new Date(photo.timestamp).toLocaleString()}

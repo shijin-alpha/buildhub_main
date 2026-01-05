@@ -181,8 +181,87 @@ try {
         }
     }
 
-    // Validate mandatory photo for completed stages
-    if ($stage_status === 'Completed' && empty($photo_paths)) {
+    // Handle worker assignments
+    $workers = [];
+    if ($isMultipart && isset($_POST['workers'])) {
+        $workers = $_POST['workers'];
+        
+        // Validate worker data
+        foreach ($workers as $index => $worker) {
+            $worker_id = isset($worker['worker_id']) ? (int)$worker['worker_id'] : 0;
+            $hours_worked = isset($worker['hours_worked']) ? (float)$worker['hours_worked'] : 8;
+            $overtime_hours = isset($worker['overtime_hours']) ? (float)$worker['overtime_hours'] : 0;
+            $daily_wage = isset($worker['daily_wage']) ? (float)$worker['daily_wage'] : 0;
+            
+            if ($worker_id <= 0) {
+                echo json_encode(['success' => false, 'message' => 'Invalid worker ID']);
+                exit;
+            }
+            
+            if ($hours_worked <= 0 || $hours_worked > 16) {
+                echo json_encode(['success' => false, 'message' => 'Work hours must be between 1-16 hours']);
+                exit;
+            }
+            
+            if ($overtime_hours < 0 || $overtime_hours > 8) {
+                echo json_encode(['success' => false, 'message' => 'Overtime hours must be between 0-8 hours']);
+                exit;
+            }
+            
+            // Verify worker belongs to this contractor
+            $workerCheck = $db->prepare("
+                SELECT id, worker_name, daily_wage 
+                FROM contractor_workers 
+                WHERE id = :worker_id AND contractor_id = :contractor_id AND is_available = 1
+            ");
+            $workerCheck->bindValue(':worker_id', $worker_id, PDO::PARAM_INT);
+            $workerCheck->bindValue(':contractor_id', $contractor_id, PDO::PARAM_INT);
+            $workerCheck->execute();
+            $workerData = $workerCheck->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$workerData) {
+                echo json_encode(['success' => false, 'message' => 'Worker not found or not available']);
+                exit;
+            }
+            
+            $workers[$index] = [
+                'worker_id' => $worker_id,
+                'hours_worked' => $hours_worked,
+                'overtime_hours' => $overtime_hours,
+                'daily_wage' => $daily_wage,
+                'work_description' => $worker['work_description'] ?? ''
+            ];
+        }
+    }
+
+    // Handle geo photo IDs (these are already uploaded)
+    $geo_photo_ids = [];
+    if ($isMultipart && isset($_POST['geo_photo_ids'])) {
+        $geo_photo_ids = is_array($_POST['geo_photo_ids']) ? $_POST['geo_photo_ids'] : [$_POST['geo_photo_ids']];
+        
+        // Validate geo photo IDs belong to this project and contractor
+        if (!empty($geo_photo_ids)) {
+            $placeholders = str_repeat('?,', count($geo_photo_ids) - 1) . '?';
+            $geoPhotoCheck = $db->prepare("
+                SELECT id FROM geo_photos 
+                WHERE id IN ($placeholders) 
+                AND project_id = ? 
+                AND contractor_id = ?
+            ");
+            $params = array_merge($geo_photo_ids, [$project_id, $contractor_id]);
+            $geoPhotoCheck->execute($params);
+            $validGeoPhotos = $geoPhotoCheck->fetchAll(PDO::FETCH_COLUMN);
+            
+            if (count($validGeoPhotos) !== count($geo_photo_ids)) {
+                echo json_encode(['success' => false, 'message' => 'Invalid geo photo IDs provided']);
+                exit;
+            }
+        }
+    }
+
+    // Validate mandatory photo for completed stages (including geo photos)
+    $total_photos = count($photo_paths) + count($geo_photo_ids);
+    if ($stage_status === 'Completed' && $total_photos === 0) {
         echo json_encode(['success' => false, 'message' => 'At least one photo is required for completed stages']);
         exit;
     }
@@ -249,6 +328,50 @@ try {
     if ($stmt->execute()) {
         $progress_update_id = $db->lastInsertId();
 
+        // Insert worker assignments
+        if (!empty($workers)) {
+            $workerStmt = $db->prepare("
+                INSERT INTO progress_worker_assignments (
+                    progress_update_id, worker_id, work_date, hours_worked, 
+                    overtime_hours, daily_wage, overtime_rate, work_description
+                ) VALUES (
+                    :progress_update_id, :worker_id, CURDATE(), :hours_worked,
+                    :overtime_hours, :daily_wage, :overtime_rate, :work_description
+                )
+            ");
+            
+            foreach ($workers as $worker) {
+                $overtime_rate = $worker['daily_wage'] / 8 * 1.5; // 1.5x overtime rate
+                
+                $workerStmt->bindValue(':progress_update_id', $progress_update_id, PDO::PARAM_INT);
+                $workerStmt->bindValue(':worker_id', $worker['worker_id'], PDO::PARAM_INT);
+                $workerStmt->bindValue(':hours_worked', $worker['hours_worked'], PDO::PARAM_STR);
+                $workerStmt->bindValue(':overtime_hours', $worker['overtime_hours'], PDO::PARAM_STR);
+                $workerStmt->bindValue(':daily_wage', $worker['daily_wage'], PDO::PARAM_STR);
+                $workerStmt->bindValue(':overtime_rate', $overtime_rate, PDO::PARAM_STR);
+                $workerStmt->bindValue(':work_description', $worker['work_description'], PDO::PARAM_STR);
+                
+                if (!$workerStmt->execute()) {
+                    error_log("Failed to insert worker assignment: " . print_r($workerStmt->errorInfo(), true));
+                }
+            }
+        }
+
+        // Link geo photos to this progress update
+        if (!empty($geo_photo_ids)) {
+            $geoLinkStmt = $db->prepare("
+                UPDATE geo_photos 
+                SET progress_update_id = :progress_update_id 
+                WHERE id = :geo_photo_id
+            ");
+            
+            foreach ($geo_photo_ids as $geo_photo_id) {
+                $geoLinkStmt->bindValue(':progress_update_id', $progress_update_id, PDO::PARAM_INT);
+                $geoLinkStmt->bindValue(':geo_photo_id', $geo_photo_id, PDO::PARAM_INT);
+                $geoLinkStmt->execute();
+            }
+        }
+
         // Create notification for homeowner
         $notification_type = $stage_status === 'Completed' ? 'stage_completed' : 'progress_update';
         $notification_title = $stage_status === 'Completed' 
@@ -257,6 +380,32 @@ try {
         
         $notification_message = "Contractor has updated progress for {$stage_name} stage. ";
         $notification_message .= "Status: {$stage_status}, Progress: {$completion_percentage}%";
+        
+        // Add photo information
+        $total_photos = count($photo_paths) + count($geo_photo_ids);
+        if ($total_photos > 0) {
+            $photo_details = [];
+            if (count($photo_paths) > 0) {
+                $photo_details[] = count($photo_paths) . " regular photo(s)";
+            }
+            if (count($geo_photo_ids) > 0) {
+                $photo_details[] = count($geo_photo_ids) . " geo-tagged photo(s)";
+            }
+            $notification_message .= ". Includes " . implode(" and ", $photo_details);
+        }
+        
+        // Add worker information to notification
+        if (!empty($workers)) {
+            $worker_count = count($workers);
+            $total_cost = 0;
+            foreach ($workers as $worker) {
+                $regular_pay = ($worker['hours_worked'] / 8) * $worker['daily_wage'];
+                $overtime_pay = $worker['overtime_hours'] * ($worker['daily_wage'] / 8) * 1.5;
+                $total_cost += $regular_pay + $overtime_pay;
+            }
+            $notification_message .= ". Work team: {$worker_count} worker(s), Total cost: ₹" . number_format($total_cost, 2);
+        }
+
         if ($remarks) {
             $notification_message .= ". Remarks: " . substr($remarks, 0, 100);
         }
@@ -277,12 +426,29 @@ try {
         $notificationStmt->bindValue(':message', $notification_message, PDO::PARAM_STR);
         $notificationStmt->execute();
 
+        // Associate geo photos with this progress update
+        if (!empty($geo_photo_ids)) {
+            foreach ($geo_photo_ids as $geo_photo_id) {
+                $geoPhotoAssocStmt = $db->prepare("
+                    UPDATE geo_photos 
+                    SET progress_update_id = ?, 
+                        is_included_in_progress = TRUE,
+                        progress_association_date = NOW()
+                    WHERE id = ? AND project_id = ? AND contractor_id = ?
+                ");
+                $geoPhotoAssocStmt->execute([$progress_update_id, $geo_photo_id, $project_id, $contractor_id]);
+            }
+        }
+
         echo json_encode([
             'success' => true, 
             'message' => 'Progress update submitted successfully',
             'data' => [
                 'progress_update_id' => $progress_update_id,
                 'photos_uploaded' => count($photo_paths),
+                'geo_photos_included' => count($geo_photo_ids),
+                'total_photos' => count($photo_paths) + count($geo_photo_ids),
+                'workers_assigned' => count($workers),
                 'location_verified' => $location_verified
             ]
         ]);

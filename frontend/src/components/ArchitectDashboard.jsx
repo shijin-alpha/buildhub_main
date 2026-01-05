@@ -18,6 +18,7 @@ import TechnicalDetailsForm from './TechnicalDetailsForm';
 import '../styles/TechnicalDetailsForm.css';
 import InfoPopup from './InfoPopup';
 import HousePlanManager from './HousePlanManager';
+import RequirementsDisplay from './RequirementsDisplay';
 
 
 const ArchitectDashboard = () => {
@@ -999,118 +1000,10 @@ const ArchitectDashboard = () => {
                       {request.requirements_parsed && (
                         <div className="requirements-summary">
                           <p><strong>Requirements:</strong></p>
-                          <div style={{fontSize:'0.9rem', color:'#666', marginLeft:'10px'}}>
-                            {request.requirements_parsed.family_needs && (
-                              <p>• Family Needs: {Array.isArray(request.requirements_parsed.family_needs) 
-                                ? request.requirements_parsed.family_needs.join(', ') 
-                                : request.requirements_parsed.family_needs}</p>
-                            )}
-                            {request.requirements_parsed.rooms && (
-                              <div style={{ marginBottom: '8px' }}>
-                                <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>• Rooms:</p>
-                                <div style={{ marginLeft: '10px' }}>
-                                  {(() => {
-                                    let roomsList = [];
-                                    if (Array.isArray(request.requirements_parsed.rooms)) {
-                                      roomsList = request.requirements_parsed.rooms;
-                                    } else if (typeof request.requirements_parsed.rooms === 'string') {
-                                      roomsList = request.requirements_parsed.rooms.split(',').map(room => room.trim()).filter(room => room);
-                                    }
-                                    
-                                    const roomCounts = {};
-                                    roomsList.forEach(room => {
-                                      roomCounts[room] = (roomCounts[room] || 0) + 1;
-                                    });
-                                    
-                                    return Object.entries(roomCounts).map(([roomType, count]) => (
-                                      <span key={roomType} style={{ 
-                                        display: 'inline-block',
-                                        margin: '2px 4px 2px 0',
-                                        padding: '3px 6px',
-                                        backgroundColor: '#dbeafe',
-                                        color: '#1e40af',
-                                        borderRadius: '8px',
-                                        fontSize: '11px',
-                                        fontWeight: '500'
-                                      }}>
-                                        {roomType.replace(/_/g, ' ')}: {count}
-                                      </span>
-                                    ));
-                                  })()}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Floor-wise Room Distribution - Remove this basic version, use enhanced version below */}
-                            
-                            {/* Fallback: Show floor distribution based on num_floors if floor_rooms is not available */}
-                            {(() => {
-                              const hasFloorRooms = request.floor_rooms && (
-                                Array.isArray(request.floor_rooms) 
-                                  ? request.floor_rooms.length > 0 
-                                  : Object.keys(request.floor_rooms).length > 0
-                              );
-                              const hasFloorRoomsInParsed = request.requirements_parsed?.floor_rooms && (
-                                typeof request.requirements_parsed.floor_rooms === 'string' ? request.requirements_parsed.floor_rooms.length > 0
-                                : (Array.isArray(request.requirements_parsed.floor_rooms) 
-                                    ? request.requirements_parsed.floor_rooms.length > 0 
-                                    : Object.keys(request.requirements_parsed.floor_rooms).length > 0)
-                              );
-                              return !hasFloorRooms && !hasFloorRoomsInParsed;
-                            })() && request.num_floors && parseInt(request.num_floors) > 1 && (
-                              <div style={{ marginBottom: '12px' }}>
-                                <p style={{ margin: '0 0 12px 0', fontWeight: '700', fontSize: '14px', color: '#374151' }}>
-                                  🏗️ Floor Details ({request.num_floors} Floors):
-                                </p>
-                                <div style={{ 
-                                  display: 'grid', 
-                                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                                  gap: '10px',
-                                  marginLeft: '10px'
-                                }}>
-                                  {Array.from({ length: parseInt(request.num_floors) }, (_, idx) => {
-                                    const floorNumber = idx + 1;
-                                    return (
-                                      <div key={`floor${floorNumber}`} style={{ 
-                                        padding: '12px 14px', 
-                                        backgroundColor: floorNumber === 1 ? '#eff6ff' : '#f0fdf4', 
-                                        borderRadius: '8px',
-                                        border: `1px solid ${floorNumber === 1 ? '#bfdbfe' : '#bbf7d0'}`,
-                                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
-                                        transition: 'all 0.2s ease'
-                                      }}>
-                                        <div style={{ 
-                                          fontSize: '13px', 
-                                          fontWeight: '700', 
-                                          color: floorNumber === 1 ? '#1e40af' : '#166534', 
-                                          marginBottom: '6px',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '6px'
-                                        }}>
-                                          <span>{floorNumber === 1 ? '🏠' : '🏢'}</span>
-                                          <span>{floorNumber === 1 ? 'Ground Floor' : `Floor ${floorNumber}`}</span>
-                                        </div>
-                                        <div style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>
-                                          Planning phase
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {request.requirements_parsed.plot_shape && (
-                              <p>• Plot Shape: {request.requirements_parsed.plot_shape}</p>
-                            )}
-                            {request.requirements_parsed.topography && (
-                              <p>• Topography: {request.requirements_parsed.topography}</p>
-                            )}
-                            {request.requirements_parsed.notes && (
-                              <p>• Notes: {request.requirements_parsed.notes}</p>
-                            )}
-                          </div>
+                          <RequirementsDisplay 
+                            requirements={request.requirements_parsed} 
+                            compact={true}
+                          />
                         </div>
                       )}
                     </div>
@@ -1127,11 +1020,12 @@ const ArchitectDashboard = () => {
                       <button 
                         className="btn btn-primary"
                         onClick={() => {
-                          setUploadData({...uploadData, request_id: request.id});
-                          setShowUploadForm(true);
+                          setSelectedRequestForPlan(request.id);
+                          setActiveTab('house-plans');
+                          setShowHousePlanManager(true);
                         }}
                       >
-                        Upload Design
+                        Create Design
                       </button>
                       <button 
                         className="btn btn-danger btn-sm"
@@ -1403,199 +1297,15 @@ const ArchitectDashboard = () => {
                         </div>
                       )}
 
-                      {/* Floor Plans & Room Details - Enhanced */}
-                      {(request.floor_rooms || request.requirements_parsed?.floor_rooms) && (() => {
-                        // Get floor_rooms from either location
-                        let floorRoomsData = request.floor_rooms;
-                        
-                        if (!floorRoomsData && request.requirements_parsed?.floor_rooms) {
-                          const parsedFloorRooms = request.requirements_parsed.floor_rooms;
-                          // Handle case where it's stored as a JSON string (double-encoded)
-                          if (typeof parsedFloorRooms === 'string') {
-                            try {
-                              floorRoomsData = JSON.parse(parsedFloorRooms);
-                            } catch (e) {
-                              console.error('Error parsing floor_rooms JSON string:', e);
-                              floorRoomsData = null;
-                            }
-                          } else {
-                            floorRoomsData = parsedFloorRooms;
-                          }
-                        }
-                        
-                        const hasFloors = Array.isArray(floorRoomsData) 
-                          ? floorRoomsData.length > 0 
-                          : floorRoomsData && Object.keys(floorRoomsData).length > 0;
-                        
-                        if (!hasFloors) return null;
-                        
-                        return (
-                        <div className="floor-plans" style={{marginBottom: '20px'}}>
-                          <div style={{
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            marginBottom: '16px'
-                          }}>
-                            <span style={{fontSize: '18px', marginRight: '8px', color: '#8b5cf6'}}>🏗️</span>
-                            <h4 style={{margin: 0, color: '#1f2937', fontSize: '18px', fontWeight: '700'}}>Floor-wise Room Distribution</h4>
-                            <span style={{
-                              marginLeft: '12px',
-                              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                              color: 'white',
-                              padding: '6px 14px',
-                              borderRadius: '20px',
-                              fontSize: '14px',
-                              fontWeight: '600',
-                              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)'
-                            }}>
-                              {(() => {
-                                const floorCount = Array.isArray(floorRoomsData) 
-                                  ? floorRoomsData.length 
-                                  : Object.keys(floorRoomsData || {}).length;
-                                return `${floorCount} Floor${floorCount > 1 ? 's' : ''}`;
-                              })()}
-                            </span>
-                          </div>
-                          <div style={{
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-                            gap: '14px'
-                          }}>
-                          {(Array.isArray(floorRoomsData) ? floorRoomsData : Object.entries(floorRoomsData || {})).map((item, floorIdx) => {
-                              // Handle both array [{floor: 1, rooms: {...}}] and object {floor1: {...}} formats
-                              let floorData, floorNumber;
-                              if (Array.isArray(floorRoomsData)) {
-                                // Array format: item is {floor: 1, rooms: {...}}
-                                floorData = item.rooms;
-                                floorNumber = parseInt(item.floor || floorIdx + 1);
-                              } else {
-                                // Object format: item is ['floor1', {...}]
-                                const [floorKey, floorRooms] = item;
-                                floorData = floorRooms;
-                                floorNumber = parseInt(floorKey.replace('floor', ''));
-                              }
-                              
-                              const roomCount = Object.values(floorData || {}).reduce((sum, val) => sum + (typeof val === 'number' ? val : val.length || 0), 0);
-                              
-                              return (
-                              <div key={floorIdx} style={{
-                                background: 'linear-gradient(to bottom right, #ffffff, #f8fafc)', 
-                                padding: '16px 18px', 
-                                borderRadius: '12px', 
-                                border: floorNumber === 1 ? '2px solid #3b82f6' : '2px solid #10b981',
-                                boxShadow: floorNumber === 1 
-                                  ? '0 4px 12px rgba(59, 130, 246, 0.15)' 
-                                  : '0 4px 12px rgba(16, 185, 129, 0.15)',
-                                transition: 'all 0.3s ease',
-                                position: 'relative',
-                                overflow: 'hidden'
-                              }}>
-                                {/* Background decoration */}
-                                <div style={{
-                                  position: 'absolute',
-                                  top: '-20px',
-                                  right: '-20px',
-                                  width: '80px',
-                                  height: '80px',
-                                  borderRadius: '50%',
-                                  background: floorNumber === 1 
-                                    ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' 
-                                    : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                  opacity: 0.1
-                                }} />
-                                
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  marginBottom: '12px',
-                                  paddingBottom: '12px',
-                                  borderBottom: `2px solid ${floorNumber === 1 ? '#bfdbfe' : '#bbf7d0'}`,
-                                  position: 'relative',
-                                  zIndex: 1
-                                }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{
-                                      fontSize: '24px',
-                                      background: floorNumber === 1 
-                                        ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' 
-                                        : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                      width: '36px',
-                                      height: '36px',
-                                      borderRadius: '8px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      boxShadow: floorNumber === 1 
-                                        ? '0 2px 8px rgba(59, 130, 246, 0.3)' 
-                                        : '0 2px 8px rgba(16, 185, 129, 0.3)',
-                                      color: 'white',
-                                      fontWeight: '700'
-                                    }}>
-                                      {floorNumber === 1 ? '🏠' : '🏢'}
-                                    </span>
-                                    <h5 style={{
-                                      margin: 0, 
-                                      color: floorNumber === 1 ? '#1e40af' : '#166534', 
-                                      fontWeight: '700', 
-                                      fontSize: '17px'
-                                    }}>
-                                      {floorNumber === 1 ? 'Ground Floor' : `Floor ${floorNumber}`}
-                                    </h5>
-                                  </div>
-                                  <span style={{
-                                    background: floorNumber === 1 ? '#dbeafe' : '#d1fae5',
-                                    color: floorNumber === 1 ? '#1e40af' : '#166534',
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                    fontSize: '12px',
-                                    fontWeight: '700'
-                                  }}>
-                                    {roomCount} Rooms
-                                  </span>
-                                </div>
-                                <div style={{
-                                  display: 'flex',
-                                  flexWrap: 'wrap',
-                                  gap: '8px',
-                                  position: 'relative',
-                                  zIndex: 1
-                                }}>
-                                {Object.entries(floorData || {}).map(([roomType, rooms]) => {
-                                    const count = typeof rooms === 'number' ? rooms : (rooms.length || 0);
-                                    return (
-                                    <div key={roomType} style={{
-                                      background: 'white',
-                                      padding: '8px 12px',
-                                      borderRadius: '8px',
-                                      border: '1px solid #e2e8f0',
-                                      fontSize: '13px',
-                                      fontWeight: '600',
-                                      color: '#475569',
-                                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '6px'
-                                    }}>
-                                      <span style={{ fontSize: '16px' }}>
-                                        {roomType === 'bedrooms' ? '🛏️' : 
-                                         roomType === 'bathrooms' ? '🚿' : 
-                                         roomType === 'kitchen' ? '🍳' :
-                                         roomType === 'living_room' ? '🛋️' :
-                                         roomType === 'dining_room' ? '🍽️' : '🏠'}
-                                      </span>
-                                      <span>{roomType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}: {count}</span>
-                                  </div>
-                                  );
-                                  })}
-                              </div>
-                            </div>
-                          );
-                          })}
-                          </div>
+                      {/* Requirements Display */}
+                      {(request.requirements || request.requirements_parsed) && (
+                        <div style={{marginBottom: '20px'}}>
+                          <RequirementsDisplay 
+                            requirements={request.requirements || request.requirements_parsed} 
+                            compact={false}
+                          />
                         </div>
-                        );
-                      })()}
+                      )}
 
                       {/* Site Considerations - Compact */}
                       {request.site_considerations && (
@@ -3258,18 +2968,17 @@ const ArchitectDashboard = () => {
                       </div>
                     </div>
 
-                    {request.requirements && (
-                      <div className="request-requirements">
-                        <h5>Requirements:</h5>
-                        <p>{typeof request.requirements === 'string' ? request.requirements : JSON.stringify(request.requirements)}</p>
-                      </div>
-                    )}
+                    <RequirementsDisplay 
+                      requirements={request.requirements} 
+                      compact={true}
+                    />
 
                     <div className="request-actions">
                       <button 
                         className="btn btn-primary"
                         onClick={() => {
                           setSelectedRequestForPlan(request.id);
+                          setActiveTab('house-plans');
                           setShowHousePlanManager(true);
                         }}
                       >

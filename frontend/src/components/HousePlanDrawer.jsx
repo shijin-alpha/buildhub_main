@@ -7,6 +7,7 @@ import { useNotifications } from '../hooks/useNotifications';
 
 const HousePlanDrawer = ({ 
   layoutRequestId = null, 
+  requestInfo = null,
   existingPlan = null, 
   onSave, 
   onCancel 
@@ -39,19 +40,48 @@ const HousePlanDrawer = ({
     showInfo
   } = useNotifications();
 
+  // Auto-save functionality state
+  const [autoSaveTimer, setAutoSaveTimer] = useState(null);
+  const [lastSaved, setLastSaved] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   // Tour and Help state
   const [showTour, setShowTour] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
 
-  // Plan data
-  const [planData, setPlanData] = useState({
-    plan_name: existingPlan?.plan_name || '',
-    plot_width: existingPlan?.plot_width || 40,
-    plot_height: existingPlan?.plot_height || 30,
-    rooms: existingPlan?.plan_data?.rooms || [],
-    notes: existingPlan?.notes || '',
-    scale_ratio: existingPlan?.plan_data?.scale_ratio || 1.2 // Layout to actual ratio
+  // Plan data - Initialize with proper handling of existing plan
+  const [planData, setPlanData] = useState(() => {
+    if (existingPlan) {
+      // Parse plan_data if it's a string
+      let parsedPlanData = existingPlan.plan_data;
+      if (typeof parsedPlanData === 'string') {
+        try {
+          parsedPlanData = JSON.parse(parsedPlanData);
+        } catch (e) {
+          console.error('Error parsing existing plan data:', e);
+          parsedPlanData = { rooms: [], scale_ratio: 1.2 };
+        }
+      }
+      
+      return {
+        plan_name: existingPlan.plan_name || '',
+        plot_width: existingPlan.plot_width || 100,
+        plot_height: existingPlan.plot_height || 100,
+        rooms: parsedPlanData?.rooms || [],
+        notes: existingPlan.notes || '',
+        scale_ratio: parsedPlanData?.scale_ratio || 1.2
+      };
+    }
+    
+    return {
+      plan_name: '',
+      plot_width: 100,
+      plot_height: 100,
+      rooms: [],
+      notes: '',
+      scale_ratio: 1.2
+    };
   });
 
   // Canvas settings
@@ -61,6 +91,10 @@ const HousePlanDrawer = ({
 
   useEffect(() => {
     loadRoomTemplates();
+    // Load request information if layoutRequestId is provided
+    if (layoutRequestId || requestInfo) {
+      loadRequestInfo();
+    }
     // Initialize history with empty state
     saveToHistory();
     
@@ -70,7 +104,57 @@ const HousePlanDrawer = ({
       setIsFirstTime(true);
       setTimeout(() => setShowTour(true), 1000); // Show tour after component loads
     }
-  }, []);
+  }, [layoutRequestId, requestInfo]);
+
+  // Warn user about unsaved changes when leaving
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Handle existing plan changes (when switching between edit modes)
+  useEffect(() => {
+    if (existingPlan) {
+      // Parse plan_data if it's a string
+      let parsedPlanData = existingPlan.plan_data;
+      if (typeof parsedPlanData === 'string') {
+        try {
+          parsedPlanData = JSON.parse(parsedPlanData);
+        } catch (e) {
+          console.error('Error parsing existing plan data:', e);
+          parsedPlanData = { rooms: [], scale_ratio: 1.2 };
+        }
+      }
+      
+      setPlanData({
+        plan_name: existingPlan.plan_name || '',
+        plot_width: existingPlan.plot_width || 100,
+        plot_height: existingPlan.plot_height || 100,
+        rooms: parsedPlanData?.rooms || [],
+        notes: existingPlan.notes || '',
+        scale_ratio: parsedPlanData?.scale_ratio || 1.2
+      });
+      
+      // Reset history when loading existing plan
+      setHistory([]);
+      setHistoryIndex(-1);
+      setHasUnsavedChanges(false);
+      setLastSaved(existingPlan.updated_at ? new Date(existingPlan.updated_at) : null);
+      
+      // Save initial state to history after a short delay
+      setTimeout(() => {
+        saveToHistory();
+      }, 100);
+    }
+  }, [existingPlan]);
 
   // Save current state to history
   const saveToHistory = useCallback(() => {
@@ -176,6 +260,31 @@ const HousePlanDrawer = ({
     }
   }, [planData.rooms, saveToHistory, isUndoRedo]);
 
+  // Auto-save when plan data changes
+  useEffect(() => {
+    if (planData.plan_name && planData.rooms.length > 0 && !isUndoRedo) {
+      setHasUnsavedChanges(true);
+      
+      // Clear existing timer
+      if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+      }
+      
+      // Set new timer for auto-save (30 seconds after last change)
+      const timer = setTimeout(() => {
+        handleAutoSave();
+      }, 30000);
+      
+      setAutoSaveTimer(timer);
+    }
+    
+    return () => {
+      if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+      }
+    };
+  }, [planData, isUndoRedo]);
+
   // Define drawing functions first
   const drawGrid = () => {
     canvas.strokeStyle = '#e8e8e8';
@@ -257,11 +366,99 @@ const HousePlanDrawer = ({
     return (usePound ? '#' : '') + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
   };
 
+  // Get color based on room type for better visual identification
+  const getRoomColor = (roomType) => {
+    const colorMap = {
+      // Bedrooms (Green tones)
+      'master_bedroom': '#c8e6c9',
+      'bedroom': '#dcedc8',
+      'bedrooms': '#dcedc8',
+      'guest_bedroom': '#e8f5e8',
+      'kids_bedroom': '#f1f8e9',
+      
+      // Bathrooms (Blue tones)
+      'master_bathroom': '#b3e5fc',
+      'bathroom': '#e1f5fe',
+      'bathrooms': '#e1f5fe',
+      'attached_bathroom': '#e3f2fd',
+      'powder_room': '#f0f8ff',
+      
+      // Kitchen (Pink/Red tones)
+      'kitchen': '#ffcdd2',
+      'modular_kitchen': '#f8bbd9',
+      'pantry': '#fce4ec',
+      
+      // Living Areas (Orange tones)
+      'living_room': '#ffe0b2',
+      'family_room': '#ffcc80',
+      'drawing_room': '#fff3e0',
+      'tv_lounge': '#ffe0b2',
+      
+      // Dining Areas (Purple tones)
+      'dining_room': '#e1bee7',
+      'breakfast_area': '#f3e5f5',
+      
+      // Utility Areas (Gray tones)
+      'utility_room': '#e0e0e0',
+      'laundry_room': '#eeeeee',
+      'store_room': '#f5f5f5',
+      'servant_room': '#e8eaf6',
+      
+      // Outdoor Areas (Light Green tones)
+      'balcony': '#c8e6c9',
+      'terrace': '#dcedc8',
+      'garden': '#e8f5e8',
+      'courtyard': '#f1f8e9',
+      
+      // Circulation Areas (Yellow tones)
+      'corridor': '#fff9c4',
+      'hallway': '#fff59d',
+      'passage': '#ffecb3',
+      'entrance_hall': '#ffe082',
+      'foyer': '#ffd54f',
+      
+      // Structural Elements (Brown tones)
+      'staircase': '#d7ccc8',
+      'spiral_staircase': '#bcaaa4',
+      'elevator_shaft': '#a1887f',
+      'column': '#8d6e63',
+      'beam_area': '#795548',
+      
+      // Other Special Rooms (Light Purple tones)
+      'study_room': '#e8eaf6',
+      'home_office': '#c5cae9',
+      'pooja_room': '#d1c4e9',
+      'prayer_room': '#b39ddb',
+      'home_theater': '#9575cd',
+      'gym': '#7e57c2',
+      'library': '#673ab7',
+      'music_room': '#5e35b1',
+      'workshop': '#512da8',
+      'safe_room': '#4527a0'
+    };
+    
+    return colorMap[roomType] || '#e3f2fd'; // Default light blue
+  };
+
   const drawRoom = (room, isSelected) => {
+    // Validate room properties to prevent non-finite values
+    if (!room || typeof room.x !== 'number' || typeof room.y !== 'number' ||
+        !isFinite(room.layout_width) || !isFinite(room.layout_height) ||
+        room.layout_width <= 0 || room.layout_height <= 0) {
+      console.warn('Invalid room data:', room);
+      return; // Skip drawing invalid rooms
+    }
+
     const x = room.x + 20;
     const y = room.y + 20;
     const width = room.layout_width * PIXELS_PER_FOOT;
     const height = room.layout_height * PIXELS_PER_FOOT;
+
+    // Additional validation for calculated dimensions
+    if (!isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) {
+      console.warn('Invalid calculated dimensions:', { width, height, room });
+      return;
+    }
 
     // Room background with gradient
     const gradient = canvas.createLinearGradient(x, y, x + width, y + height);
@@ -508,6 +705,136 @@ const HousePlanDrawer = ({
     }
   };
 
+  const loadRequestInfo = async () => {
+    try {
+      let assignment = requestInfo;
+      
+      // If requestInfo is not passed, fetch it
+      if (!assignment && layoutRequestId) {
+        const response = await fetch(`/buildhub/backend/api/architect/get_assigned_requests.php`);
+        const result = await response.json();
+        
+        if (result.success) {
+          assignment = result.assignments?.find(a => 
+            a.layout_request_id === layoutRequestId || 
+            a.layout_request?.id === layoutRequestId
+          );
+        }
+      }
+      
+      if (assignment && assignment.layout_request) {
+        const request = assignment.layout_request;
+        
+        // Parse requirements to get room specifications
+        let requirements = null;
+        if (request.requirements) {
+          try {
+            requirements = typeof request.requirements === 'string' 
+              ? JSON.parse(request.requirements) 
+              : request.requirements;
+          } catch (e) {
+            console.error('Error parsing requirements:', e);
+          }
+        }
+        
+        // Update plan data with request information
+        setPlanData(prev => ({
+          ...prev,
+          plan_name: `${assignment.homeowner?.name || 'Client'} House Plan`,
+          plot_width: parseFloat(request.plot_size) || 100,
+          plot_height: parseFloat(request.plot_size) || 100, // Assuming square plot if only one dimension
+          scale_ratio: prev.scale_ratio || 1.2 // Ensure scale_ratio is available
+        }));
+        
+        // Pre-populate rooms based on requirements
+        if (requirements) {
+          const prePopulatedRooms = [];
+          let roomId = 1;
+          let currentY = 50; // Starting Y position
+          const currentScaleRatio = 1.2; // Use default scale ratio during initialization
+          
+          // Handle floor_rooms if available
+          if (requirements.floor_rooms) {
+            Object.entries(requirements.floor_rooms).forEach(([floorKey, floorRooms]) => {
+              const floorNumber = parseInt(floorKey.replace('floor', ''));
+              let currentX = 50; // Starting X position for each floor
+              
+              Object.entries(floorRooms).forEach(([roomType, count]) => {
+                const roomCount = typeof count === 'number' ? count : 1;
+                
+                for (let i = 0; i < roomCount; i++) {
+                  const roomName = roomCount > 1 ? `${roomType.replace(/_/g, ' ')} ${i + 1}` : roomType.replace(/_/g, ' ');
+                  
+                  prePopulatedRooms.push({
+                    id: roomId++,
+                    name: roomName,
+                    type: roomType,
+                    x: currentX,
+                    y: currentY + (floorNumber - 1) * 200, // Offset floors vertically
+                    layout_width: 10, // Updated default layout width in feet
+                    layout_height: 10, // Updated default layout height in feet
+                    actual_width: 10 * currentScaleRatio,
+                    actual_height: 10 * currentScaleRatio,
+                    color: getRoomColor(roomType),
+                    floor: floorNumber
+                  });
+                  
+                  currentX += 140; // Space rooms horizontally
+                  if (currentX > 400) { // Wrap to next row
+                    currentX = 50;
+                    currentY += 120;
+                  }
+                }
+              });
+            });
+          } 
+          // Handle simple rooms list if floor_rooms not available
+          else if (requirements.rooms) {
+            const roomsList = typeof requirements.rooms === 'string' 
+              ? requirements.rooms.split(',').map(r => r.trim())
+              : requirements.rooms;
+            
+            let currentX = 50;
+            
+            roomsList.forEach((roomType) => {
+              prePopulatedRooms.push({
+                id: roomId++,
+                name: roomType.replace(/_/g, ' '),
+                type: roomType,
+                x: currentX,
+                y: currentY,
+                layout_width: 10, // Updated default layout width in feet
+                layout_height: 10, // Updated default layout height in feet
+                actual_width: 10 * currentScaleRatio,
+                actual_height: 10 * currentScaleRatio,
+                color: getRoomColor(roomType),
+                floor: 1
+              });
+              
+              currentX += 140;
+              if (currentX > 400) {
+                currentX = 50;
+                currentY += 120;
+              }
+            });
+          }
+          
+          // Update plan data with pre-populated rooms
+          if (prePopulatedRooms.length > 0) {
+            setPlanData(prev => ({
+              ...prev,
+              rooms: prePopulatedRooms
+            }));
+            
+            showInfo('Rooms Pre-loaded', `Added ${prePopulatedRooms.length} rooms based on client requirements`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading request info:', error);
+    }
+  };
+
   const snapToGrid = (value) => {
     return Math.round(value / GRID_SIZE) * GRID_SIZE;
   };
@@ -542,6 +869,12 @@ const HousePlanDrawer = ({
     if (selectedTool === 'select') {
       // Find clicked room
       const clickedRoomIndex = planData.rooms.findIndex(room => {
+        // Validate room properties before calculations
+        if (!room || !isFinite(room.layout_width) || !isFinite(room.layout_height) ||
+            room.layout_width <= 0 || room.layout_height <= 0) {
+          return false;
+        }
+        
         const roomX = room.x + 20;
         const roomY = room.y + 20;
         const roomWidth = room.layout_width * PIXELS_PER_FOOT;
@@ -554,10 +887,14 @@ const HousePlanDrawer = ({
       if (clickedRoomIndex >= 0) {
         setSelectedRoom(clickedRoomIndex);
         const room = planData.rooms[clickedRoomIndex];
-        const roomX = room.x + 20;
-        const roomY = room.y + 20;
-        const roomWidth = room.layout_width * PIXELS_PER_FOOT;
-        const roomHeight = room.layout_height * PIXELS_PER_FOOT;
+        
+        // Validate room properties before calculations
+        if (room && isFinite(room.layout_width) && isFinite(room.layout_height) &&
+            room.layout_width > 0 && room.layout_height > 0) {
+          const roomX = room.x + 20;
+          const roomY = room.y + 20;
+          const roomWidth = room.layout_width * PIXELS_PER_FOOT;
+          const roomHeight = room.layout_height * PIXELS_PER_FOOT;
 
         // Check if clicking on resize handle
         const handle = getResizeHandle(coords.x, coords.y, roomX, roomY, roomWidth, roomHeight);
@@ -574,6 +911,7 @@ const HousePlanDrawer = ({
             y: coords.y - room.y 
           });
         }
+        } // Close validation block
       } else {
         setSelectedRoom(null);
       }
@@ -589,6 +927,13 @@ const HousePlanDrawer = ({
 
     // Ensure room stays within plot boundaries
     const room = planData.rooms[selectedRoom];
+    
+    // Validate room properties
+    if (!room || !isFinite(room.layout_width) || !isFinite(room.layout_height) ||
+        room.layout_width <= 0 || room.layout_height <= 0) {
+      return;
+    }
+    
     const roomWidth = room.layout_width * PIXELS_PER_FOOT;
     const roomHeight = room.layout_height * PIXELS_PER_FOOT;
     const plotWidth = planData.plot_width * PIXELS_PER_FOOT;
@@ -664,7 +1009,41 @@ const HousePlanDrawer = ({
     }));
 
     setSelectedRoom(planData.rooms.length);
+    setHasUnsavedChanges(true);
     showSuccess('Room Added', `${template.name} has been added to your plan`);
+  };
+
+  // Quick room addition for common circulation and structural elements
+  const addQuickRoom = (type, name, width, height, color, icon) => {
+    const newRoom = {
+      id: Date.now(),
+      name: name,
+      category: type.includes('stair') || type.includes('column') || type.includes('beam') ? 'structural' : 'circulation',
+      type: type,
+      x: 50,
+      y: 50,
+      layout_width: width,
+      layout_height: height,
+      actual_width: width * planData.scale_ratio,
+      actual_height: height * planData.scale_ratio,
+      color: color,
+      icon: icon,
+      // Construction specifications
+      wall_thickness: type.includes('stair') ? 1.0 : 0.5, // Thicker walls for stairs
+      ceiling_height: type.includes('stair') ? 10 : 9, // Higher ceiling for stairs
+      floor_type: type.includes('stair') ? 'concrete' : 'ceramic',
+      wall_material: type.includes('stair') ? 'concrete' : 'brick',
+      notes: ''
+    };
+
+    setPlanData(prev => ({
+      ...prev,
+      rooms: [...prev.rooms, newRoom]
+    }));
+
+    setSelectedRoom(planData.rooms.length);
+    setHasUnsavedChanges(true);
+    showSuccess('Element Added', `${name} has been added to your plan`);
   };
 
   const updateSelectedRoom = (updates) => {
@@ -676,6 +1055,8 @@ const HousePlanDrawer = ({
         index === selectedRoom ? { ...room, ...updates } : room
       )
     }));
+    
+    setHasUnsavedChanges(true);
   };
 
   const deleteSelectedRoom = () => {
@@ -689,6 +1070,7 @@ const HousePlanDrawer = ({
     }));
 
     setSelectedRoom(null);
+    setHasUnsavedChanges(true);
     showWarning('Room Deleted', `"${roomName}" has been removed from your plan`);
     // History will be saved automatically by the useEffect
   };
@@ -709,6 +1091,53 @@ const HousePlanDrawer = ({
       const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
       return total + (actualWidth * actualHeight);
     }, 0);
+  };
+
+  // Auto-save function
+  const handleAutoSave = async () => {
+    if (!planData.plan_name.trim() || planData.rooms.length === 0) {
+      return;
+    }
+
+    try {
+      const payload = {
+        plan_name: planData.plan_name,
+        layout_request_id: layoutRequestId,
+        plot_width: planData.plot_width,
+        plot_height: planData.plot_height,
+        plan_data: {
+          rooms: planData.rooms,
+          scale_ratio: planData.scale_ratio,
+          total_layout_area: calculateTotalArea(),
+          total_construction_area: calculateConstructionArea()
+        },
+        notes: planData.notes
+      };
+
+      const url = existingPlan 
+        ? '/buildhub/backend/api/architect/update_house_plan.php'
+        : '/buildhub/backend/api/architect/create_house_plan.php';
+
+      if (existingPlan) {
+        payload.plan_id = existingPlan.id;
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setLastSaved(new Date());
+        setHasUnsavedChanges(false);
+        showInfo('Auto-saved', 'Your changes have been automatically saved');
+      }
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    }
   };
 
   const sendInboxMessage = async (recipientId, messageType, title, message, metadata = null, priority = 'normal') => {
@@ -880,7 +1309,8 @@ const HousePlanDrawer = ({
           total_layout_area: calculateTotalArea(),
           total_construction_area: calculateConstructionArea()
         },
-        notes: planData.notes
+        notes: planData.notes,
+        status: 'draft'
       };
 
       const url = existingPlan 
@@ -891,6 +1321,8 @@ const HousePlanDrawer = ({
         payload.plan_id = existingPlan.id;
       }
 
+      console.log('Saving plan with payload:', payload); // Debug log
+
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -898,18 +1330,31 @@ const HousePlanDrawer = ({
       });
 
       const result = await response.json();
+      console.log('Save result:', result); // Debug log
       
       if (result.success) {
-        // Show success toast notification only (no inbox message for save)
+        // Update local state to reflect saved data
+        setLastSaved(new Date());
+        setHasUnsavedChanges(false);
+        
+        // Clear auto-save timer
+        if (autoSaveTimer) {
+          clearTimeout(autoSaveTimer);
+          setAutoSaveTimer(null);
+        }
+        
+        // Show success toast notification
         showSuccess(
           'Plan Saved Successfully!', 
           `Your house plan "${planData.plan_name}" has been saved with ${planData.rooms.length} rooms covering ${calculateConstructionArea().toFixed(0)} sq ft.`
         );
         
-        // Clear history after successful save
+        // Clear history after successful save and reinitialize
         setHistory([]);
         setHistoryIndex(-1);
-        saveToHistory();
+        setTimeout(() => {
+          saveToHistory();
+        }, 100);
         
         if (onSave) {
           setTimeout(() => onSave(result), 1500); // Delay to show success message
@@ -954,6 +1399,16 @@ const HousePlanDrawer = ({
       <div className="drawer-header">
         <div className="header-title">
           <h2>House Plan Designer</h2>
+          {hasUnsavedChanges && (
+            <span className="unsaved-indicator" title="You have unsaved changes">
+              ● Unsaved Changes
+            </span>
+          )}
+          {lastSaved && (
+            <span className="last-saved" title={`Last saved: ${lastSaved.toLocaleTimeString()}`}>
+              Last saved: {lastSaved.toLocaleTimeString()}
+            </span>
+          )}
         </div>
         
         <div className="header-actions">
@@ -1024,7 +1479,10 @@ const HousePlanDrawer = ({
                   type="text"
                   placeholder="Enter plan name"
                   value={planData.plan_name}
-                  onChange={(e) => setPlanData(prev => ({ ...prev, plan_name: e.target.value }))}
+                  onChange={(e) => {
+                    setPlanData(prev => ({ ...prev, plan_name: e.target.value }));
+                    setHasUnsavedChanges(true);
+                  }}
                   className="plan-detail-input"
                 />
               </div>
@@ -1037,7 +1495,10 @@ const HousePlanDrawer = ({
                     <input
                       type="number"
                       value={planData.plot_width}
-                      onChange={(e) => setPlanData(prev => ({ ...prev, plot_width: parseFloat(e.target.value) || 0 }))}
+                      onChange={(e) => {
+                        setPlanData(prev => ({ ...prev, plot_width: parseFloat(e.target.value) || 0 }));
+                        setHasUnsavedChanges(true);
+                      }}
                       min="10"
                       max="100"
                       className="dimension-field"
@@ -1049,7 +1510,10 @@ const HousePlanDrawer = ({
                     <input
                       type="number"
                       value={planData.plot_height}
-                      onChange={(e) => setPlanData(prev => ({ ...prev, plot_height: parseFloat(e.target.value) || 0 }))}
+                      onChange={(e) => {
+                        setPlanData(prev => ({ ...prev, plot_height: parseFloat(e.target.value) || 0 }));
+                        setHasUnsavedChanges(true);
+                      }}
                       min="10"
                       max="100"
                       className="dimension-field"
@@ -1064,7 +1528,10 @@ const HousePlanDrawer = ({
                 <textarea
                   placeholder="Add notes about this plan..."
                   value={planData.notes}
-                  onChange={(e) => setPlanData(prev => ({ ...prev, notes: e.target.value }))}
+                  onChange={(e) => {
+                    setPlanData(prev => ({ ...prev, notes: e.target.value }));
+                    setHasUnsavedChanges(true);
+                  }}
                   className="plan-notes-textarea"
                   rows="3"
                 />
@@ -1145,7 +1612,10 @@ const HousePlanDrawer = ({
                 <input
                   type="number"
                   value={planData.scale_ratio}
-                  onChange={(e) => setPlanData(prev => ({ ...prev, scale_ratio: parseFloat(e.target.value) || 1 }))}
+                  onChange={(e) => {
+                    setPlanData(prev => ({ ...prev, scale_ratio: parseFloat(e.target.value) || 1 }));
+                    setHasUnsavedChanges(true);
+                  }}
                   min="0.5"
                   max="3"
                   step="0.1"
@@ -1158,6 +1628,56 @@ const HousePlanDrawer = ({
 
           <div className="room-templates">
             <h4>Room Templates</h4>
+            
+            {/* Quick Access for Common Elements */}
+            <div className="quick-access">
+              <h5>🚀 Quick Access</h5>
+              <div className="quick-access-grid">
+                <button
+                  className="quick-btn circulation"
+                  onClick={() => addQuickRoom('corridor', 'Corridor', 20, 4, '#fff9c4', '🚶')}
+                  title="Add Corridor (20' × 4')"
+                >
+                  🚶 Corridor
+                </button>
+                <button
+                  className="quick-btn circulation"
+                  onClick={() => addQuickRoom('hallway', 'Hallway', 15, 6, '#fff59d', '🚶‍♂️')}
+                  title="Add Hallway (15' × 6')"
+                >
+                  🚶‍♂️ Hallway
+                </button>
+                <button
+                  className="quick-btn structural"
+                  onClick={() => addQuickRoom('staircase', 'Staircase', 8, 12, '#d7ccc8', '🪜')}
+                  title="Add Staircase (8' × 12')"
+                >
+                  🪜 Staircase
+                </button>
+                <button
+                  className="quick-btn structural"
+                  onClick={() => addQuickRoom('spiral_staircase', 'Spiral Staircase', 6, 6, '#bcaaa4', '🌀')}
+                  title="Add Spiral Staircase (6' × 6')"
+                >
+                  🌀 Spiral Stair
+                </button>
+                <button
+                  className="quick-btn circulation"
+                  onClick={() => addQuickRoom('entrance_hall', 'Entrance Hall', 10, 8, '#ffe082', '🚪')}
+                  title="Add Entrance Hall (10' × 8')"
+                >
+                  🚪 Entrance
+                </button>
+                <button
+                  className="quick-btn circulation"
+                  onClick={() => addQuickRoom('passage', 'Passage', 12, 3, '#ffecb3', '➡️')}
+                  title="Add Passage (12' × 3')"
+                >
+                  ➡️ Passage
+                </button>
+              </div>
+            </div>
+            
             {Object.entries(roomTemplates).map(([category, templates]) => (
               <div key={category} className="template-category">
                 <h5>{category.charAt(0).toUpperCase() + category.slice(1)}</h5>
@@ -1179,6 +1699,45 @@ const HousePlanDrawer = ({
             ))}
           </div>
 
+          {/* Color Legend */}
+          <div className="color-legend">
+            <h5>🎨 Color Legend</h5>
+            <div className="legend-grid">
+              <div className="legend-item">
+                <div className="legend-color" style={{ backgroundColor: '#c8e6c9' }}></div>
+                <span className="legend-label">Bedrooms</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color" style={{ backgroundColor: '#b3e5fc' }}></div>
+                <span className="legend-label">Bathrooms</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color" style={{ backgroundColor: '#ffcdd2' }}></div>
+                <span className="legend-label">Kitchen</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color" style={{ backgroundColor: '#ffe0b2' }}></div>
+                <span className="legend-label">Living Areas</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color" style={{ backgroundColor: '#e1bee7' }}></div>
+                <span className="legend-label">Dining Areas</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color" style={{ backgroundColor: '#fff9c4' }}></div>
+                <span className="legend-label">Walkways</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color" style={{ backgroundColor: '#d7ccc8' }}></div>
+                <span className="legend-label">Stairs/Structure</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color" style={{ backgroundColor: '#e0e0e0' }}></div>
+                <span className="legend-label">Utility</span>
+              </div>
+            </div>
+          </div>
+
           {currentRoom && (
             <div className="room-properties">
               <h4>Room Properties</h4>
@@ -1188,7 +1747,9 @@ const HousePlanDrawer = ({
                   <input
                     type="text"
                     value={currentRoom.name}
-                    onChange={(e) => updateSelectedRoom({ name: e.target.value })}
+                    onChange={(e) => {
+                      updateSelectedRoom({ name: e.target.value });
+                    }}
                   />
                 </label>
                 

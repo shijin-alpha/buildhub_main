@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Selection System Demo - BuildHub</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .demo-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+        
+        .demo-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .demo-content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .test-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .phase-selector {
+            margin: 20px 0;
+        }
+        
+        .phase-selector select {
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 300px;
+            background: white;
+        }
+        
+        .phase-selector select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+        
+        .worker-results {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .worker-type-group {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid #dee2e6;
+        }
+        
+        .worker-type-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .priority-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .priority-badge.essential {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .priority-badge.important {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .priority-badge.optional {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .workers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .worker-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .worker-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+        }
+        
+        .worker-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .main-worker-badge {
+            font-size: 0.7rem;
+            background: #ffd700;
+            color: #212529;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .worker-details {
+            display: flex;
+            gap: 8px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .skill-level {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #495057;
+        }
+        
+        .experience {
+            color: #6c757d;
+        }
+        
+        .wage {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .phase-readiness {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .readiness-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .readiness-status.success {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .readiness-status.error {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .missing-workers-alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        
+        .missing-workers-alert strong {
+            color: #856404;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .missing-worker {
+            color: #856404;
+            font-size: 0.9rem;
+            margin-left: 16px;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🏗️ Worker Selection System Demo</h1>
+            <p>Intelligent worker selection based on construction phases with main workers and apprentices</p>
+        </div>
+        
+        <div class="demo-content">
+            <div class="test-section">
+                <h3>🔧 Phase Worker Selection Test</h3>
+                <p>Select a construction phase to see the required workers and available team members:</p>
+                
+                <div class="phase-selector">
+                    <label for="phaseSelect"><strong>Construction Phase:</strong></label><br><br>
+                    <select id="phaseSelect">
+                        <option value="">Select a construction phase...</option>
+                        <option value="Site Preparation">Site Preparation</option>
+                        <option value="Foundation">Foundation</option>
+                        <option value="Structure">Structure</option>
+                        <option value="Brickwork">Brickwork</option>
+                        <option value="Roofing">Roofing</option>
+                        <option value="Electrical">Electrical</option>
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Finishing">Finishing</option>
+                        <option value="Flooring">Flooring</option>
+                        <option value="Final Inspection">Final Inspection</option>
+                    </select>
+                </div>
+                
+                <div id="workerResults" class="worker-results" style="display: none;">
+                    <!-- Results will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const phaseSelect = document.getElementById('phaseSelect');
+        const workerResults = document.getElementById('workerResults');
+        
+        phaseSelect.addEventListener('change', function() {
+            const selectedPhase = this.value;
+            
+            if (!selectedPhase) {
+                workerResults.style.display = 'none';
+                return;
+            }
+            
+            loadPhaseWorkers(selectedPhase);
+        });
+        
+        async function loadPhaseWorkers(phaseName) {
+            workerResults.style.display = 'block';
+            workerResults.innerHTML = '<div class="loading">🔄 Loading workers for ' + phaseName + ' phase...</div>';
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/contractor/get_phase_workers.php?phase=${encodeURIComponent(phaseName)}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayWorkerData(data.data);
+                } else {
+                    workerResults.innerHTML = '<div class="error">❌ Error: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                console.error('Error loading phase workers:', error);
+                workerResults.innerHTML = '<div class="error">❌ Error loading workers: ' + error.message + '</div>';
+            }
+        }
+        
+        function displayWorkerData(data) {
+            let html = '';
+            
+            // Phase info
+            html += `
+                <div class="success">
+                    <h4>📋 ${data.phase_info.phase_name} Phase</h4>
+                    <p>${data.phase_info.description}</p>
+                </div>
+            `;
+            
+            // Phase readiness
+            html += `
+                <div class="phase-readiness">
+                    <div class="readiness-summary">
+                        <div>
+                            <strong>Phase Readiness:</strong>
+                            <span class="readiness-status ${data.phase_readiness.missing_essential.length === 0 ? 'success' : 'error'}">
+                                ${data.phase_readiness.missing_essential.length === 0 ? '✅ Ready' : `❌ Missing ${data.phase_readiness.missing_essential.length} essential worker type(s)`}
+                            </span>
+                        </div>
+                        <div>
+                            <strong>Total Requirements:</strong> ${data.phase_readiness.total_requirements}
+                        </div>
+                    </div>
+            `;
+            
+            if (data.phase_readiness.missing_essential.length > 0) {
+                html += `
+                    <div class="missing-workers-alert">
+                        <strong>⚠️ Missing Essential Workers:</strong>
+                `;
+                data.phase_readiness.missing_essential.forEach(missing => {
+                    html += `<div class="missing-worker">${missing.worker_type}: Need ${missing.shortage} more worker(s)</div>`;
+                });
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            
+            // Worker statistics
+            if (data.worker_stats) {
+                html += `
+                    <div class="success">
+                        <h4>👥 Contractor Worker Statistics</h4>
+                        <p>
+                            <strong>Total Workers:</strong> ${data.worker_stats.total_workers} | 
+                            <strong>Main Workers:</strong> ${data.worker_stats.main_workers} | 
+                            <strong>Average Wage:</strong> ₹${parseFloat(data.worker_stats.average_wage).toFixed(2)}/day
+                        </p>
+                    </div>
+                `;
+            }
+            
+            // Available workers by type
+            html += '<h4>🔨 Available Workers by Type</h4>';
+            
+            Object.values(data.available_workers).forEach(workerGroup => {
+                html += `
+                    <div class="worker-type-group">
+                        <div class="worker-type-header">
+                            <h5>
+                                ${workerGroup.requirement.type_name}
+                                <span class="priority-badge ${workerGroup.requirement.priority_level}">
+                                    ${workerGroup.requirement.priority_level}
+                                </span>
+                            </h5>
+                            <div class="requirement-info">
+                                Required: ${workerGroup.requirement.min_workers}-${workerGroup.requirement.max_workers} workers
+                            </div>
+                        </div>
+                `;
+                
+                if (workerGroup.workers.length > 0) {
+                    html += '<div class="workers-grid">';
+                    workerGroup.workers.forEach(worker => {
+                        html += `
+                            <div class="worker-card">
+                                <div class="worker-name">
+                                    ${worker.worker_name}
+                                    ${worker.is_main_worker ? '<span class="main-worker-badge">👑 Main</span>' : ''}
+                                </div>
+                                <div class="worker-details">
+                                    <span class="skill-level">${worker.worker_role}</span>
+                                    <span class="experience">${worker.experience_years}y exp</span>
+                                    <span class="wage">₹${worker.daily_wage}/day</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div style="text-align: center; color: #6c757d; padding: 20px; font-style: italic;">No ' + workerGroup.requirement.type_name + 's available</div>';
+                }
+                
+                html += '</div>';
+            });
+            
+            // Recommendations
+            if (data.phase_readiness.recommendations.length > 0) {
+                html += `
+                    <div class="success">
+                        <h4>💡 Recommendations</h4>
+                        <ul>
+                `;
+                data.phase_readiness.recommendations.slice(0, 5).forEach(rec => {
+                    html += `<li>${rec.message}</li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            workerResults.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

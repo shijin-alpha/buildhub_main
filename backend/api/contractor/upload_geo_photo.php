@@ -47,7 +47,7 @@ try {
     // Verify project exists and contractor is assigned
     $projectStmt = $pdo->prepare("
         SELECT p.*, h.id as homeowner_id, h.first_name, h.last_name, h.email
-        FROM contractor_requests p
+        FROM layout_requests p
         LEFT JOIN users h ON p.homeowner_id = h.id
         WHERE p.id = ? AND p.contractor_id = ? AND p.status = 'acknowledged'
     ");
@@ -157,6 +157,9 @@ try {
             is_sent_to_homeowner BOOLEAN DEFAULT TRUE,
             homeowner_viewed BOOLEAN DEFAULT FALSE,
             homeowner_viewed_at TIMESTAMP NULL,
+            progress_update_id INT NULL,
+            is_included_in_progress BOOLEAN DEFAULT FALSE,
+            progress_association_date TIMESTAMP NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             
@@ -164,6 +167,7 @@ try {
             INDEX idx_homeowner (homeowner_id),
             INDEX idx_upload_date (upload_timestamp),
             INDEX idx_location (latitude, longitude),
+            INDEX idx_progress_update (progress_update_id),
             
             FOREIGN KEY (contractor_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (homeowner_id) REFERENCES users(id) ON DELETE CASCADE

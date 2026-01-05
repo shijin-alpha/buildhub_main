@@ -557,3 +557,86 @@
   pointer-events: none;
   animation: captureFlash 0.3s ease-out;
 }
+/* Capture Flash Effect */
+.capture-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  animation: flash 0.3s ease-out;
+  z-index: 1000;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Enhanced coordinate display */
+.coordinate-highlight {
+  background: rgba(0, 255, 0, 0.2);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+/* GPS accuracy indicators */
+.gps-excellent {
+  color: #28a745;
+}
+
+.gps-good {
+  color: #ffc107;
+}
+
+.gps-poor {
+  color: #dc3545;
+}
+/* Enhanced photo info display */
+.photo-coordinates {
+  color: #007bff;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin: 4px 0;
+  padding: 2px 6px;
+  background: rgba(0, 123, 255, 0.1);
+  border-radius: 4px;
+}
+
+.photo-accuracy {
+  color: #28a745;
+  font-size: 0.8rem;
+  margin: 2px 0;
+}
+
+.photo-location {
+  color: #6f42c1;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.photo-timestamp {
+  color: #6c757d;
+  font-size: 0.8rem;
+  margin: 2px 0;
+}
+
+/* Coordinate validation indicator */
+.coordinates-valid {
+  color: #28a745;
+}
+
+.coordinates-invalid {
+  color: #dc3545;
+}

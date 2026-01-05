@@ -47,17 +47,19 @@ function RequestAssistantContent({ userId, pageContext = "request" }) {
 
   async function logInteraction({ message, response, feedback = null, confidence = null }) {
     try {
-      await fetch("/backend/api/chatbot/log_interaction.php", {
+      await fetch("/buildhub/backend/api/chatbot/log_interaction.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: userId || null,
           conversation_id: conversationId,
-          message,
+          question: message,
           response,
           feedback,
           confidence,
-          context: userContext
+          context: userContext,
+          intent: null,
+          response_time: null
         })
       });
     } catch (err) {

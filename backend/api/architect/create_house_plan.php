@@ -49,13 +49,44 @@ try {
 
     // Calculate total area from plan_data
     $total_area = 0;
+    $construction_area = 0;
+    
     if (isset($plan_data['rooms']) && is_array($plan_data['rooms'])) {
         foreach ($plan_data['rooms'] as $room) {
-            if (isset($room['width']) && isset($room['height'])) {
-                $total_area += floatval($room['width']) * floatval($room['height']);
+            // Handle both old format (width/height) and new format (layout_width/layout_height)
+            $room_width = 0;
+            $room_height = 0;
+            
+            if (isset($room['layout_width']) && isset($room['layout_height'])) {
+                $room_width = floatval($room['layout_width']);
+                $room_height = floatval($room['layout_height']);
+            } elseif (isset($room['width']) && isset($room['height'])) {
+                $room_width = floatval($room['width']);
+                $room_height = floatval($room['height']);
             }
+            
+            $total_area += $room_width * $room_height;
+            
+            // Calculate construction area
+            $actual_width = 0;
+            $actual_height = 0;
+            
+            if (isset($room['actual_width']) && isset($room['actual_height'])) {
+                $actual_width = floatval($room['actual_width']);
+                $actual_height = floatval($room['actual_height']);
+            } elseif ($room_width > 0 && $room_height > 0) {
+                // Use scale ratio if available
+                $scale_ratio = isset($plan_data['scale_ratio']) ? floatval($plan_data['scale_ratio']) : 1.2;
+                $actual_width = $room_width * $scale_ratio;
+                $actual_height = $room_height * $scale_ratio;
+            }
+            
+            $construction_area += $actual_width * $actual_height;
         }
     }
+    
+    // Use construction area if available, otherwise use layout area
+    $final_area = $construction_area > 0 ? $construction_area : $total_area;
 
     // If linked to a request, verify architect has access
     if ($layout_request_id) {
@@ -84,7 +115,7 @@ try {
         ':plot_width' => $plot_width,
         ':plot_height' => $plot_height,
         ':plan_data' => json_encode($plan_data),
-        ':total_area' => $total_area,
+        ':total_area' => $final_area,
         ':notes' => $notes
     ]);
 

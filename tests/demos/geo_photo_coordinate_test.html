@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geo Photo Coordinate Overlay Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .canvas-container {
+            position: relative;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .location-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .coordinate-display {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #007bff;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🌍 Geo Photo Coordinate Overlay Test</h1>
+        <p>This test verifies that GPS coordinates are properly displayed on captured photos.</p>
+        
+        <div class="location-info">
+            <h3>📍 Test Location Data:</h3>
+            <div class="coordinate-display">
+                LAT: <span id="test-lat">9.123456</span>° | LNG: <span id="test-lng">76.654321</span>°
+            </div>
+            <p><strong>Place:</strong> <span id="test-place">Test Location, Kottayam, Kerala</span></p>
+            <p><strong>Accuracy:</strong> ±<span id="test-accuracy">15</span>m</p>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="testCanvas" width="640" height="480"></canvas>
+        </div>
+        
+        <div>
+            <button class="test-button" onclick="generateTestPhoto()">📸 Generate Test Photo with Coordinates</button>
+            <button class="test-button" onclick="testDifferentCoordinates()">🔄 Test Different Coordinates</button>
+            <button class="test-button" onclick="downloadTestPhoto()">💾 Download Test Photo</button>
+        </div>
+        
+        <div id="test-results" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        let testCanvas;
+        let testLocation = {
+            latitude: 9.123456,
+            longitude: 76.654321,
+            placeName: 'Test Location, Kottayam, Kerala',
+            accuracy: 15,
+            timestamp: new Date().toISOString()
+        };
+
+        function initCanvas() {
+            testCanvas = document.getElementById('testCanvas');
+            const ctx = testCanvas.getContext('2d');
+            
+            // Create a sample background (simulating a photo)
+            const gradient = ctx.createLinearGradient(0, 0, testCanvas.width, testCanvas.height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(1, '#98FB98');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, testCanvas.width, testCanvas.height);
+            
+            // Add some sample content
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('SAMPLE CONSTRUCTION PHOTO', testCanvas.width/2, testCanvas.height/2 - 50);
+            ctx.font = '16px Arial';
+            ctx.fillText('This would be the actual photo content', testCanvas.width/2, testCanvas.height/2 - 20);
+            ctx.fillText('GPS coordinates should appear at the bottom', testCanvas.width/2, testCanvas.height/2 + 10);
+        }
+
+        function addLocationOverlay(context, width, height, location) {
+            // Enhanced overlay with better visibility and more location details
+            const overlayHeight = 160;
+            
+            // Semi-transparent dark overlay at bottom
+            context.fillStyle = 'rgba(0, 0, 0, 0.85)';
+            context.fillRect(0, height - overlayHeight, width, overlayHeight);
+            
+            // Add a subtle border at the top of overlay
+            context.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            context.fillRect(0, height - overlayHeight, width, 3);
+
+            // White text for better contrast
+            context.fillStyle = 'white';
+            context.textAlign = 'left';
+            
+            const padding = 15;
+            let yPos = height - overlayHeight + 20;
+            
+            // Location icon and place name
+            context.font = 'bold 16px Arial';
+            context.fillText(`📍 ${location.placeName}`, padding, yPos);
+            yPos += 25;
+            
+            // Coordinates (VERY prominent display)
+            context.font = 'bold 18px Arial';
+            context.fillStyle = '#00FF00'; // Bright green
+            context.fillText(`📍 LAT: ${location.latitude.toFixed(6)}°`, padding, yPos);
+            yPos += 22;
+            
+            context.fillStyle = '#00FFFF'; // Bright cyan
+            context.fillText(`🌐 LNG: ${location.longitude.toFixed(6)}°`, padding, yPos);
+            yPos += 25;
+            
+            // Accuracy and timestamp
+            context.font = '13px Arial';
+            context.fillStyle = '#FFFF00'; // Yellow
+            context.fillText(`📡 GPS Accuracy: ±${Math.round(location.accuracy)}m`, padding, yPos);
+            yPos += 18;
+            
+            // Timestamp
+            context.fillStyle = 'white';
+            const timestamp = new Date(location.timestamp).toLocaleString('en-IN');
+            context.fillText(`🕒 ${timestamp}`, padding, yPos);
+            
+            // Coordinate summary box in top right
+            const coordBoxWidth = 200;
+            const coordBoxHeight = 50;
+            const coordBoxX = width - coordBoxWidth - 10;
+            const coordBoxY = height - overlayHeight + 10;
+            
+            // Box background
+            context.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            context.fillRect(coordBoxX, coordBoxY, coordBoxWidth, coordBoxHeight);
+            
+            // Box text
+            context.font = 'bold 12px Arial';
+            context.fillStyle = '#FFFFFF';
+            context.textAlign = 'center';
+            context.fillText('GPS COORDINATES', coordBoxX + coordBoxWidth/2, coordBoxY + 15);
+            context.font = 'bold 11px Courier New';
+            context.fillStyle = '#00FF00';
+            context.fillText(`${location.latitude.toFixed(6)}`, coordBoxX + coordBoxWidth/2, coordBoxY + 30);
+            context.fillStyle = '#00FFFF';
+            context.fillText(`${location.longitude.toFixed(6)}`, coordBoxX + coordBoxWidth/2, coordBoxY + 43);
+            
+            // BuildHub watermark
+            context.font = '11px Arial';
+            context.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            context.textAlign = 'right';
+            context.fillText('BuildHub Geo Photo', width - padding, height - 8);
+            
+            // Reset text alignment
+            context.textAlign = 'left';
+        }
+
+        function generateTestPhoto() {
+            initCanvas();
+            const ctx = testCanvas.getContext('2d');
+            
+            // Add the location overlay
+            addLocationOverlay(ctx, testCanvas.width, testCanvas.height, testLocation);
+            
+            // Update results
+            document.getElementById('test-results').innerHTML = `
+                <div style="background: #d4edda; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb;">
+                    <h4 style="color: #155724; margin: 0 0 10px 0;">✅ Test Photo Generated Successfully!</h4>
+                    <p style="color: #155724; margin: 0;">
+                        GPS coordinates <strong>${testLocation.latitude.toFixed(6)}, ${testLocation.longitude.toFixed(6)}</strong> 
+                        have been embedded in the photo overlay. Check the bottom of the image for the coordinate display.
+                    </p>
+                </div>
+            `;
+        }
+
+        function testDifferentCoordinates() {
+            // Generate random coordinates within Kerala bounds
+            const keralaBounds = {
+                minLat: 8.2, maxLat: 12.8,
+                minLng: 74.8, maxLng: 77.4
+            };
+            
+            testLocation = {
+                latitude: keralaBounds.minLat + Math.random() * (keralaBounds.maxLat - keralaBounds.minLat),
+                longitude: keralaBounds.minLng + Math.random() * (keralaBounds.maxLng - keralaBounds.minLng),
+                placeName: 'Random Test Location, Kerala',
+                accuracy: Math.floor(Math.random() * 50) + 5,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Update display
+            document.getElementById('test-lat').textContent = testLocation.latitude.toFixed(6);
+            document.getElementById('test-lng').textContent = testLocation.longitude.toFixed(6);
+            document.getElementById('test-place').textContent = testLocation.placeName;
+            document.getElementById('test-accuracy').textContent = testLocation.accuracy;
+            
+            // Generate new photo
+            generateTestPhoto();
+        }
+
+        function downloadTestPhoto() {
+            const link = document.createElement('a');
+            link.download = `geo_photo_test_${testLocation.latitude.toFixed(6)}_${testLocation.longitude.toFixed(6)}.png`;
+            link.href = testCanvas.toDataURL();
+            link.click();
+            
+            document.getElementById('test-results').innerHTML += `
+                <div style="background: #cce5ff; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    <p style="margin: 0; color: #004085;">
+                        📥 Test photo downloaded with coordinates: ${testLocation.latitude.toFixed(6)}, ${testLocation.longitude.toFixed(6)}
+                    </p>
+                </div>
+            `;
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initCanvas();
+            generateTestPhoto();
+        };
+    </script>
+</body>
+</html>

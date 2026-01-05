@@ -1918,3 +1918,153 @@ textarea.success {
     font-size: 0.85rem;
   }
 }
+/* Phase Readiness Indicator Styles */
+.phase-readiness-indicator {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  border-left: 4px solid #007bff;
+}
+
+.readiness-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.readiness-header h5 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.readiness-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.readiness-status.ready {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.readiness-status.not-ready {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.missing-workers-alert {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.missing-workers-alert strong {
+  color: #856404;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.missing-worker {
+  color: #856404;
+  font-size: 0.9rem;
+  margin: 4px 0;
+}
+
+.phase-info {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-top: 8px;
+}
+
+.phase-info span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Enhanced worker type dropdown */
+.worker-type-group .field-info {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.worker-type-group select:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+/* Loading state for worker selection */
+.worker-type-group select option:first-child {
+  font-style: italic;
+}
+
+/* Phase-specific worker type styling */
+.worker-type-group.phase-loaded {
+  border-left: 3px solid #28a745;
+}
+
+.worker-type-group.phase-loading {
+  border-left: 3px solid #ffc107;
+}
+
+/* Responsive design for phase readiness */
+@media (max-width: 768px) {
+  .readiness-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .phase-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+/* Stage Payment Section Styles */
+.stage-payment-section {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  border-left: 4px solid #28a745;
+}
+
+.stage-payment-section .section-header {
+  margin-bottom: 16px;
+}
+
+.stage-payment-section .section-header h5 {
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-payment-section .section-header p {
+  color: #6c757d;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Integration with existing form styles */
+.progress-section .stage-payment-section {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-left: 4px solid #28a745;
+}

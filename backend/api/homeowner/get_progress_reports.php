@@ -32,10 +32,10 @@ try {
         SELECT pr.*, 
                c.first_name as contractor_first_name, 
                c.last_name as contractor_last_name,
-               cr.requirements as project_name
+               lr.requirements as project_name
         FROM progress_reports pr
         LEFT JOIN users c ON pr.contractor_id = c.id
-        LEFT JOIN contractor_requests cr ON pr.project_id = cr.id
+        LEFT JOIN layout_requests lr ON pr.project_id = lr.id
         WHERE pr.homeowner_id = ?
     ";
     

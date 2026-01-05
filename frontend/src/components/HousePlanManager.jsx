@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import HousePlanDrawer from './HousePlanDrawer';
+import NotificationToast from './NotificationToast';
+import ConfirmModal from './ConfirmModal';
+import { useNotifications } from '../hooks/useNotifications';
 import '../styles/HousePlanManager.css';
 
 const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
@@ -8,6 +11,23 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [requestInfo, setRequestInfo] = useState(null);
+  
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    type: 'danger',
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  // Notification system
+  const {
+    notifications,
+    removeNotification,
+    showSuccess,
+    showError
+  } = useNotifications();
 
   useEffect(() => {
     loadPlans();
@@ -44,9 +64,12 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
       const result = await response.json();
       
       if (result.success) {
-        const request = result.assignments?.find(a => a.layout_request_id === layoutRequestId);
-        if (request) {
-          setRequestInfo(request);
+        const assignment = result.assignments?.find(a => 
+          a.layout_request_id === layoutRequestId || 
+          a.layout_request?.id === layoutRequestId
+        );
+        if (assignment) {
+          setRequestInfo(assignment);
         }
       }
     } catch (error) {
@@ -67,15 +90,21 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
   const handlePlanSaved = (result) => {
     setView('list');
     loadPlans();
-    // Show success message
-    alert('Plan saved successfully!');
+    // Show success toast notification
+    showSuccess('Plan Saved', 'Your house plan has been saved successfully!');
   };
 
   const handleSubmitPlan = async (planId) => {
-    if (!confirm('Are you sure you want to submit this plan to the homeowner? You won\'t be able to edit it after submission.')) {
-      return;
-    }
+    setConfirmModal({
+      isOpen: true,
+      type: 'warning',
+      title: 'Submit House Plan',
+      message: 'Are you sure you want to submit this plan to the homeowner? You won\'t be able to edit it after submission.',
+      onConfirm: () => submitPlan(planId)
+    });
+  };
 
+  const submitPlan = async (planId) => {
     try {
       const response = await fetch('/buildhub/backend/api/architect/submit_house_plan.php', {
         method: 'POST',
@@ -86,22 +115,28 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
       const result = await response.json();
       
       if (result.success) {
-        alert('Plan submitted successfully!');
+        showSuccess('Plan Submitted', 'Plan submitted successfully! The homeowner has been notified.');
         loadPlans();
       } else {
-        alert(result.message || 'Failed to submit plan');
+        showError('Submission Failed', result.message || 'Failed to submit plan');
       }
     } catch (error) {
       console.error('Error submitting plan:', error);
-      alert('Error submitting plan');
+      showError('Submission Error', 'Error submitting plan. Please try again.');
     }
   };
 
   const handleDeletePlan = async (planId) => {
-    if (!confirm('Are you sure you want to delete this plan? This action cannot be undone.')) {
-      return;
-    }
+    setConfirmModal({
+      isOpen: true,
+      type: 'danger',
+      title: 'Delete House Plan',
+      message: 'Are you sure you want to delete this plan? This action cannot be undone and the homeowner will be notified.',
+      onConfirm: () => deletePlan(planId)
+    });
+  };
 
+  const deletePlan = async (planId) => {
     try {
       const response = await fetch('/buildhub/backend/api/architect/delete_house_plan.php', {
         method: 'POST',
@@ -112,13 +147,19 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
       const result = await response.json();
       
       if (result.success) {
+        // Show toast notification for architect
+        const message = result.data?.homeowner_notified 
+          ? `Plan "${result.data.plan_name}" deleted successfully! The homeowner has been notified.`
+          : `Plan "${result.data.plan_name}" deleted successfully!`;
+        
+        showSuccess('Plan Deleted', message);
         loadPlans();
       } else {
-        alert(result.message || 'Failed to delete plan');
+        showError('Delete Failed', result.message || 'Failed to delete plan');
       }
     } catch (error) {
       console.error('Error deleting plan:', error);
-      alert('Error deleting plan');
+      showError('Delete Error', 'Error deleting plan. Please try again.');
     }
   };
 
@@ -138,6 +179,7 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
     return (
       <HousePlanDrawer
         layoutRequestId={layoutRequestId}
+        requestInfo={requestInfo}
         existingPlan={selectedPlan}
         onSave={handlePlanSaved}
         onCancel={() => setView('list')}
@@ -147,6 +189,24 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
 
   return (
     <div className="house-plan-manager">
+      {/* Notification Toast System */}
+      <NotificationToast
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText={confirmModal.type === 'danger' ? 'Delete' : 'Submit'}
+        cancelText="Cancel"
+      />
+
       <div className="manager-header">
         <div className="header-content">
           <h2>House Plans</h2>

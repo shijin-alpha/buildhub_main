@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Progress Worker Selection Test - BuildHub</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .test-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        
+        .test-content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .worker-list {
+            margin-top: 15px;
+        }
+        
+        .worker-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+        }
+        
+        .phase-info {
+            background: #e7f3ff;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border: 1px solid #b3d9ff;
+        }
+        
+        .readiness-status {
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 15px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .readiness-status.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .readiness-status.not-ready {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🔧 Enhanced Progress Worker Selection Test</h1>
+            <p>Testing intelligent worker selection based on construction phases</p>
+        </div>
+        
+        <div class="test-content">
+            <div class="test-section">
+                <h3>Phase-Based Worker Selection Test</h3>
+                <p>Select a construction phase to see the intelligent worker filtering in action:</p>
+                
+                <div class="form-group">
+                    <label for="phaseSelect">Construction Phase:</label>
+                    <select id="phaseSelect">
+                        <option value="">Select a construction phase...</option>
+                        <option value="Foundation">Foundation</option>
+                        <option value="Structure">Structure</option>
+                        <option value="Brickwork">Brickwork</option>
+                        <option value="Roofing">Roofing</option>
+                        <option value="Electrical">Electrical</option>
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Finishing">Finishing</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div id="results" class="results" style="display: none;">
+                    <!-- Results will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>Expected Behavior</h3>
+                <ul>
+                    <li><strong>Foundation:</strong> Should show Mason, Steel Fixer, Laborer, Helper (no electricians)</li>
+                    <li><strong>Electrical:</strong> Should show Electrician, Assistant Electrician, Helper (no masons)</li>
+                    <li><strong>Structure:</strong> Should show most worker types (complex phase)</li>
+                    <li><strong>Finishing:</strong> Should show Mason, Painter, Tiler, Carpenter</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const phaseSelect = document.getElementById('phaseSelect');
+        const results = document.getElementById('results');
+        
+        phaseSelect.addEventListener('change', function() {
+            const selectedPhase = this.value;
+            
+            if (!selectedPhase) {
+                results.style.display = 'none';
+                return;
+            }
+            
+            loadPhaseWorkers(selectedPhase);
+        });
+        
+        async function loadPhaseWorkers(phaseName) {
+            results.style.display = 'block';
+            results.innerHTML = '<div class="loading">🔄 Loading workers for ' + phaseName + ' phase...</div>';
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/contractor/get_phase_workers.php?phase=${encodeURIComponent(phaseName)}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data.data, phaseName);
+                } else {
+                    results.innerHTML = '<div class="error">❌ Error: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                console.error('Error loading phase workers:', error);
+                results.innerHTML = '<div class="error">❌ Error loading workers: ' + error.message + '</div>';
+            }
+        }
+        
+        function displayResults(data, phaseName) {
+            let html = '';
+            
+            // Phase info
+            html += `
+                <div class="success">
+                    <h4>📋 ${data.phase_info.phase_name} Phase</h4>
+                    <p>${data.phase_info.description}</p>
+                </div>
+            `;
+            
+            // Phase readiness
+            html += `
+                <div class="phase-info">
+                    <strong>Phase Readiness:</strong>
+                    <span class="readiness-status ${data.phase_readiness.missing_essential.length === 0 ? 'ready' : 'not-ready'}">
+                        ${data.phase_readiness.missing_essential.length === 0 ? '✅ Ready' : `⚠️ Missing ${data.phase_readiness.missing_essential.length} essential worker type(s)`}
+                    </span>
+                    <br><strong>Total Requirements:</strong> ${data.phase_readiness.total_requirements} worker types
+                </div>
+            `;
+            
+            // Available worker types (this is what would appear in the dropdown)
+            const workerTypes = Object.values(data.available_workers).map(workerGroup => workerGroup.requirement.type_name);
+            
+            html += `
+                <div class="success">
+                    <h4>🔧 Available Worker Types for ${phaseName}</h4>
+                    <p><strong>These are the worker types that would appear in the dropdown:</strong></p>
+                    <div class="worker-list">
+            `;
+            
+            workerTypes.forEach(type => {
+                html += `<div class="worker-item">• ${type}</div>`;
+            });
+            
+            html += `
+                    </div>
+                    <p><em>Total: ${workerTypes.length} worker types (instead of all 19 static types)</em></p>
+                </div>
+            `;
+            
+            // Show what was filtered out
+            const allTypes = ['Mason', 'Helper', 'Electrician', 'Plumber', 'Carpenter', 'Painter', 'Supervisor', 'Welder', 'Crane Operator', 'Excavator Operator', 'Steel Fixer', 'Tile Worker', 'Plasterer', 'Roofer', 'Security Guard', 'Site Engineer', 'Quality Inspector', 'Safety Officer', 'Other'];
+            const filteredOut = allTypes.filter(type => !workerTypes.includes(type));
+            
+            if (filteredOut.length > 0) {
+                html += `
+                    <div class="phase-info">
+                        <h4>🚫 Filtered Out (Not Relevant for ${phaseName})</h4>
+                        <p>These worker types were intelligently filtered out:</p>
+                        <div class="worker-list">
+                `;
+                
+                filteredOut.forEach(type => {
+                    html += `<div class="worker-item" style="border-left-color: #dc3545; background: #f8d7da;">• ${type}</div>`;
+                });
+                
+                html += `
+                        </div>
+                        <p><em>Filtered out: ${filteredOut.length} irrelevant worker types</em></p>
+                    </div>
+                `;
+            }
+            
+            results.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

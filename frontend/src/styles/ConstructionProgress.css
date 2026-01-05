@@ -307,3 +307,673 @@
 .submit-btn.submitting {
   animation: submitPulse 1s infinite;
 }
+
+/* Geo Photo Integration Styles */
+.photo-upload-options {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.geo-capture-btn {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.geo-capture-btn:hover {
+  background: linear-gradient(135deg, #218838, #1ea085);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.geo-capture-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.geo-capture-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.geo-capture-content {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.geo-photos-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+.geo-photos-section h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+}
+
+.geo-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.geo-photo-item {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dee2e6;
+  position: relative;
+}
+
+.geo-photo-preview {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.geo-photo-placeholder {
+  background: linear-gradient(135deg, #6c757d, #495057);
+  color: white;
+  padding: 20px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+.geo-photo-info {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.geo-location {
+  color: #28a745;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.geo-coordinates {
+  color: #6c757d;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+}
+
+.geo-timestamp {
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+.geo-status {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.remove-photo-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-photo-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+/* Enhanced photo preview section */
+.photo-preview h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .photo-upload-options {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .geo-capture-btn {
+    justify-content: center;
+  }
+  
+  .geo-photos-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .geo-capture-content {
+    max-width: 95vw;
+    max-height: 95vh;
+    margin: 10px;
+  }
+}
+
+/* Animation for geo photo addition */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.geo-photo-item {
+  animation: slideInUp 0.3s ease-out;
+}
+
+/* Worker Selection Styles */
+.worker-selection-section {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.worker-section-header {
+  margin-bottom: 20px;
+}
+
+.worker-section-header h4 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phase-info {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.phase-readiness {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-left: 4px solid #007bff;
+}
+
+.readiness-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.readiness-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.readiness-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.readiness-status.success {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.readiness-status.error {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.readiness-cost {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #007bff;
+}
+
+.missing-workers-alert {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 10px;
+}
+
+.missing-workers-alert strong {
+  color: #856404;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.missing-worker {
+  color: #856404;
+  font-size: 0.9rem;
+  margin-left: 16px;
+}
+
+.available-workers {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.worker-type-group {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #dee2e6;
+}
+
+.worker-type-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.worker-type-header h5 {
+  margin: 0;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.priority-badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.priority-badge.essential {
+  background: #dc3545;
+  color: white;
+}
+
+.priority-badge.important {
+  background: #ffc107;
+  color: #212529;
+}
+
+.priority-badge.optional {
+  background: #6c757d;
+  color: white;
+}
+
+.requirement-info {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.workers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.worker-card {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.worker-card:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.worker-info {
+  flex: 1;
+}
+
+.worker-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.main-worker-badge {
+  font-size: 0.7rem;
+  background: #ffd700;
+  color: #212529;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.worker-details {
+  display: flex;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.skill-level {
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #495057;
+}
+
+.experience {
+  color: #6c757d;
+}
+
+.wage {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.add-worker-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-worker-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.add-worker-btn:disabled {
+  background: #28a745;
+  cursor: not-allowed;
+}
+
+.no-workers {
+  text-align: center;
+  color: #6c757d;
+  padding: 20px;
+  font-style: italic;
+}
+
+.add-worker-link {
+  color: #007bff;
+  text-decoration: none;
+  margin-left: 8px;
+}
+
+.add-worker-link:hover {
+  text-decoration: underline;
+}
+
+.selected-workers {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+  border: 2px solid #28a745;
+}
+
+.selected-workers h5 {
+  color: #2c3e50;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selected-workers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.selected-worker {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.worker-summary {
+  flex: 1;
+}
+
+.worker-name-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.worker-type {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.main-badge {
+  font-size: 0.8rem;
+}
+
+.worker-wage {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.worker-hours {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hours-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hours-input label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+.hours-input input {
+  width: 60px;
+  padding: 4px 6px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.worker-payment {
+  color: #007bff;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: right;
+}
+
+.remove-worker-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.remove-worker-btn:hover {
+  background: #c82333;
+}
+
+.workers-total {
+  text-align: right;
+  padding-top: 12px;
+  border-top: 2px solid #dee2e6;
+  margin-top: 12px;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.worker-recommendations {
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.worker-recommendations h6 {
+  color: #0056b3;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.recommendation {
+  font-size: 0.85rem;
+  color: #495057;
+  margin-bottom: 4px;
+  padding-left: 16px;
+  position: relative;
+}
+
+.recommendation:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #007bff;
+}
+
+.recommendation.shortage {
+  color: #dc3545;
+}
+
+.recommendation.shortage:before {
+  color: #dc3545;
+}
+
+.recommendation.leadership {
+  color: #ffc107;
+}
+
+.recommendation.leadership:before {
+  color: #ffc107;
+}
+
+.recommendation.cost_optimization {
+  color: #28a745;
+}
+
+.recommendation.cost_optimization:before {
+  color: #28a745;
+}
+
+/* Responsive Design for Worker Selection */
+@media (max-width: 768px) {
+  .workers-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .readiness-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .worker-type-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .selected-worker {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .worker-hours {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

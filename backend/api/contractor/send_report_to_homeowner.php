@@ -42,11 +42,13 @@ try {
     
     // Verify project belongs to contractor and get homeowner info
     $projectStmt = $pdo->prepare("
-        SELECT cr.*, h.first_name as homeowner_first_name, h.last_name as homeowner_last_name, 
-               h.email as homeowner_email, h.id as homeowner_id
-        FROM contractor_requests cr
-        LEFT JOIN users h ON cr.homeowner_id = h.id
-        WHERE cr.id = ? AND cr.contractor_id = ? AND cr.status = 'acknowledged'
+        SELECT lr.*, h.first_name as homeowner_first_name, h.last_name as homeowner_last_name, 
+               h.email as homeowner_email, h.id as homeowner_id,
+               cls.contractor_id, cls.acknowledged_at
+        FROM layout_requests lr
+        LEFT JOIN users h ON lr.homeowner_id = h.id
+        LEFT JOIN contractor_layout_sends cls ON lr.id = cls.layout_id AND cls.homeowner_id = lr.homeowner_id
+        WHERE lr.id = ? AND cls.contractor_id = ? AND cls.acknowledged_at IS NOT NULL
     ");
     $projectStmt->execute([$project_id, $contractor_id]);
     $project = $projectStmt->fetch(PDO::FETCH_ASSOC);

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Selection Validation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .test-case {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            background: #f8f9fa;
+        }
+        .test-case.pass {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .test-case.fail {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .expected {
+            color: #007bff;
+            font-weight: bold;
+        }
+        .actual {
+            color: #6c757d;
+        }
+        .result {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .result.pass {
+            color: #28a745;
+        }
+        .result.fail {
+            color: #dc3545;
+        }
+        .worker-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .worker-badge {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .worker-badge.expected {
+            background: #28a745;
+        }
+        .worker-badge.unexpected {
+            background: #dc3545;
+        }
+        .summary {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .summary h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>✅ Worker Selection Validation Test</h1>
+        <p>Validating phase-specific worker filtering logic</p>
+        <p><strong>Status:</strong> <span id="overall-status">Running tests...</span></p>
+    </div>
+
+    <div class="test-container">
+        <h2>🧪 Test Cases</h2>
+        <div id="test-results"></div>
+        
+        <div class="summary">
+            <h3>📊 Test Summary</h3>
+            <div id="test-summary"></div>
+        </div>
+    </div>
+
+    <script>
+        // Phase-specific worker mappings (based on BuildHub requirements)
+        const phaseWorkerMappings = {
+            'Foundation': {
+                essential: ['Mason', 'Steel Fixer'],
+                important: ['Helper', 'Excavator Operator', 'Crane Operator'],
+                optional: ['Site Engineer', 'Quality Inspector', 'Safety Officer'],
+                forbidden: ['Electrician', 'Plumber', 'Painter', 'Tile Worker', 'Carpenter', 'Plasterer', 'Roofer']
+            },
+            'Structure': {
+                essential: ['Mason', 'Steel Fixer'],
+                important: ['Helper', 'Crane Operator', 'Welder'],
+                optional: ['Site Engineer', 'Quality Inspector', 'Safety Officer'],
+                forbidden: ['Electrician', 'Plumber', 'Painter', 'Tile Worker', 'Carpenter', 'Plasterer', 'Roofer']
+            },
+            'Brickwork': {
+                essential: ['Mason'],
+                important: ['Helper'],
+                optional: ['Site Engineer', 'Quality Inspector', 'Safety Officer'],
+                forbidden: ['Electrician', 'Plumber', 'Painter', 'Tile Worker', 'Carpenter', 'Steel Fixer', 'Excavator Operator', 'Crane Operator', 'Welder', 'Roofer']
+            },
+            'Roofing': {
+                essential: ['Roofer'],
+                important: ['Helper', 'Crane Operator'],
+                optional: ['Site Engineer', 'Safety Officer'],
+                forbidden: ['Electrician', 'Plumber', 'Painter', 'Tile Worker', 'Carpenter', 'Mason', 'Steel Fixer', 'Excavator Operator', 'Welder']
+            },
+            'Electrical': {
+                essential: ['Electrician'],
+                important: ['Helper'],
+                optional: ['Site Engineer', 'Quality Inspector', 'Safety Officer'],
+                forbidden: ['Mason', 'Steel Fixer', 'Plumber', 'Painter', 'Tile Worker', 'Carpenter', 'Excavator Operator', 'Crane Operator', 'Welder', 'Roofer']
+            },
+            'Plumbing': {
+                essential: ['Plumber'],
+                important: ['Helper'],
+                optional: ['Site Engineer', 'Quality Inspector', 'Safety Officer'],
+                forbidden: ['Mason', 'Steel Fixer', 'Electrician', 'Painter', 'Tile Worker', 'Carpenter', 'Excavator Operator', 'Crane Operator', 'Welder', 'Roofer']
+            },
+            'Finishing': {
+                essential: ['Painter', 'Tile Worker', 'Carpenter'],
+                important: ['Plasterer', 'Helper'],
+                optional: ['Site Engineer', 'Quality Inspector'],
+                forbidden: ['Mason', 'Steel Fixer', 'Electrician', 'Plumber', 'Excavator Operator', 'Crane Operator', 'Welder', 'Roofer']
+            }
+        };
+
+        // Simulate the fixed worker selection logic
+        function getPhaseWorkers(phaseName) {
+            const phaseData = phaseWorkerMappings[phaseName];
+            if (!phaseData) return [];
+            
+            // Combine all allowed worker types
+            const allowedWorkers = [
+                ...phaseData.essential,
+                ...phaseData.important,
+                ...phaseData.optional,
+                'Other' // Always include Other as fallback
+            ];
+            
+            return allowedWorkers;
+        }
+
+        // Test cases
+        const testCases = [
+            {
+                name: 'Foundation Phase Worker Selection',
+                phase: 'Foundation',
+                description: 'Foundation should only show foundation-relevant workers',
+                mustInclude: ['Mason', 'Steel Fixer', 'Helper', 'Other'],
+                mustNotInclude: ['Electrician', 'Plumber', 'Painter', 'Tile Worker']
+            },
+            {
+                name: 'Electrical Phase Worker Selection',
+                phase: 'Electrical',
+                description: 'Electrical should only show electrical-relevant workers',
+                mustInclude: ['Electrician', 'Helper', 'Site Engineer', 'Other'],
+                mustNotInclude: ['Mason', 'Steel Fixer', 'Plumber', 'Painter', 'Excavator Operator']
+            },
+            {
+                name: 'Plumbing Phase Worker Selection',
+                phase: 'Plumbing',
+                description: 'Plumbing should only show plumbing-relevant workers',
+                mustInclude: ['Plumber', 'Helper', 'Site Engineer', 'Other'],
+                mustNotInclude: ['Mason', 'Steel Fixer', 'Electrician', 'Painter', 'Crane Operator']
+            },
+            {
+                name: 'Finishing Phase Worker Selection',
+                phase: 'Finishing',
+                description: 'Finishing should only show finishing-relevant workers',
+                mustInclude: ['Painter', 'Tile Worker', 'Carpenter', 'Plasterer', 'Other'],
+                mustNotInclude: ['Mason', 'Steel Fixer', 'Electrician', 'Plumber', 'Excavator Operator']
+            },
+            {
+                name: 'Brickwork Phase Worker Selection',
+                phase: 'Brickwork',
+                description: 'Brickwork should only show masonry-relevant workers',
+                mustInclude: ['Mason', 'Helper', 'Site Engineer', 'Other'],
+                mustNotInclude: ['Electrician', 'Plumber', 'Painter', 'Steel Fixer', 'Crane Operator']
+            },
+            {
+                name: 'Roofing Phase Worker Selection',
+                phase: 'Roofing',
+                description: 'Roofing should only show roofing-relevant workers',
+                mustInclude: ['Roofer', 'Helper', 'Crane Operator', 'Other'],
+                mustNotInclude: ['Mason', 'Steel Fixer', 'Electrician', 'Plumber', 'Painter']
+            }
+        ];
+
+        // Run tests
+        function runTests() {
+            const resultsContainer = document.getElementById('test-results');
+            let passCount = 0;
+            let totalTests = testCases.length;
+
+            testCases.forEach((testCase, index) => {
+                const actualWorkers = getPhaseWorkers(testCase.phase);
+                
+                // Check if all required workers are included
+                const missingRequired = testCase.mustInclude.filter(worker => !actualWorkers.includes(worker));
+                
+                // Check if any forbidden workers are included
+                const unexpectedWorkers = testCase.mustNotInclude.filter(worker => actualWorkers.includes(worker));
+                
+                const passed = missingRequired.length === 0 && unexpectedWorkers.length === 0;
+                if (passed) passCount++;
+
+                // Create test case HTML
+                const testCaseDiv = document.createElement('div');
+                testCaseDiv.className = `test-case ${passed ? 'pass' : 'fail'}`;
+                
+                testCaseDiv.innerHTML = `
+                    <div class="test-title">${testCase.name}</div>
+                    <div class="description">${testCase.description}</div>
+                    
+                    <div style="margin: 10px 0;">
+                        <strong>Expected to include:</strong>
+                        <div class="worker-list">
+                            ${testCase.mustInclude.map(worker => 
+                                `<span class="worker-badge expected">${worker}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 10px 0;">
+                        <strong>Expected to exclude:</strong>
+                        <div class="worker-list">
+                            ${testCase.mustNotInclude.map(worker => 
+                                `<span class="worker-badge unexpected">${worker}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 10px 0;">
+                        <strong>Actual workers returned:</strong>
+                        <div class="worker-list">
+                            ${actualWorkers.map(worker => {
+                                let className = 'worker-badge';
+                                if (testCase.mustInclude.includes(worker)) {
+                                    className += ' expected';
+                                } else if (testCase.mustNotInclude.includes(worker)) {
+                                    className += ' unexpected';
+                                }
+                                return `<span class="${className}">${worker}</span>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    ${missingRequired.length > 0 ? `
+                        <div style="color: #dc3545; margin: 5px 0;">
+                            <strong>❌ Missing required workers:</strong> ${missingRequired.join(', ')}
+                        </div>
+                    ` : ''}
+                    
+                    ${unexpectedWorkers.length > 0 ? `
+                        <div style="color: #dc3545; margin: 5px 0;">
+                            <strong>❌ Unexpected workers found:</strong> ${unexpectedWorkers.join(', ')}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="result ${passed ? 'pass' : 'fail'}">
+                        ${passed ? '✅ PASS' : '❌ FAIL'}
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(testCaseDiv);
+            });
+
+            // Update summary
+            const summaryDiv = document.getElementById('test-summary');
+            const overallStatus = document.getElementById('overall-status');
+            
+            const passRate = ((passCount / totalTests) * 100).toFixed(1);
+            const overallPassed = passCount === totalTests;
+            
+            summaryDiv.innerHTML = `
+                <div><strong>Total Tests:</strong> ${totalTests}</div>
+                <div><strong>Passed:</strong> ${passCount}</div>
+                <div><strong>Failed:</strong> ${totalTests - passCount}</div>
+                <div><strong>Pass Rate:</strong> ${passRate}%</div>
+                <div style="margin-top: 10px; font-size: 16px; font-weight: bold; color: ${overallPassed ? '#28a745' : '#dc3545'}">
+                    ${overallPassed ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}
+                </div>
+            `;
+            
+            overallStatus.innerHTML = overallPassed ? 
+                '<span style="color: #28a745;">✅ All tests passed</span>' : 
+                '<span style="color: #dc3545;">❌ Some tests failed</span>';
+        }
+
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Running worker selection validation tests...');
+            runTests();
+        });
+    </script>
+</body>
+</html>
+</content>
