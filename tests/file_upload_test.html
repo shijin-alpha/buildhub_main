@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Plan File Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .upload-area { border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 10px 0; }
+        .file-info { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 4px; }
+        .status { padding: 5px 10px; border-radius: 4px; margin: 5px 0; display: inline-block; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.uploading { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>House Plan File Upload Test</h1>
+    <p>This test verifies that file uploads work correctly for house plan technical details.</p>
+
+    <div class="test-section">
+        <h3>Test 1: Upload Layout Image</h3>
+        <div class="upload-area">
+            <input type="file" id="layoutFile" accept="image/*" />
+            <p>Select a layout image to upload</p>
+        </div>
+        <button onclick="uploadFile('layout_image', 'layoutFile')">Upload Layout Image</button>
+        <div id="layoutResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Upload Multiple Elevation Images</h3>
+        <div class="upload-area">
+            <input type="file" id="elevationFiles" accept="image/*" multiple />
+            <p>Select elevation images to upload (multiple files allowed)</p>
+        </div>
+        <button onclick="uploadFile('elevation_images', 'elevationFiles')">Upload Elevation Images</button>
+        <div id="elevationResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: API Response Test</h3>
+        <button onclick="testAPI()">Test Upload API Endpoint</button>
+        <div id="apiResult"></div>
+    </div>
+
+    <script>
+        async function uploadFile(fileType, inputId) {
+            const fileInput = document.getElementById(inputId);
+            const resultDiv = document.getElementById(inputId.replace('Files', '').replace('File', '') + 'Result');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                resultDiv.innerHTML = '<div class="status error">Please select a file first</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="status uploading">Uploading...</div>';
+
+            try {
+                const formData = new FormData();
+                
+                // Add all selected files
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('file' + i, fileInput.files[i]);
+                }
+                
+                formData.append('plan_id', '999'); // Test plan ID
+                formData.append('file_type', fileType);
+
+                const response = await fetch('/buildhub/backend/api/architect/upload_house_plan_files.php', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = '<div class="status success">✅ Upload successful!</div>';
+                    html += '<div class="file-info">';
+                    html += '<strong>Uploaded Files:</strong><br>';
+                    
+                    if (result.files && result.files.length > 0) {
+                        result.files.forEach(file => {
+                            html += `• ${file.original} → ${file.stored} (${(file.size / 1024).toFixed(1)} KB)<br>`;
+                        });
+                    }
+                    
+                    if (result.errors && result.errors.length > 0) {
+                        html += '<br><strong>Errors:</strong><br>';
+                        result.errors.forEach(error => {
+                            html += `• ${error}<br>`;
+                        });
+                    }
+                    
+                    html += '</div>';
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="status error">❌ Upload failed: ${result.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Network error: ${error.message}</div>`;
+            }
+        }
+
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<div class="status uploading">Testing API...</div>';
+
+            try {
+                // Test with no files
+                const response = await fetch('/buildhub/backend/api/architect/upload_house_plan_files.php', {
+                    method: 'POST',
+                    body: new FormData(),
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                
+                let html = '<div class="file-info">';
+                html += '<strong>API Response Test:</strong><br>';
+                html += `Status: ${response.status}<br>`;
+                html += `Success: ${result.success}<br>`;
+                html += `Message: ${result.message}<br>`;
+                html += '</div>';
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ API test failed: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-test API on page load
+        window.onload = function() {
+            console.log('File upload test page loaded');
+            testAPI();
+        };
+    </script>
+</body>
+</html>

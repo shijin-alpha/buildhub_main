@@ -1,0 +1,1 @@
+function n(){try{window.history.replaceState(null,document.title,window.location.href)}catch{}window.addEventListener("pageshow",e=>{e.persisted&&window.location.reload()})}async function a(){try{return!!(await(await fetch("/buildhub/backend/api/session_check.php",{credentials:"include"})).json()).authenticated}catch{return!1}}export{n as preventCache,a as verifyServerSession};

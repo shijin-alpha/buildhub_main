@@ -1,8 +1,5 @@
--- Enhanced Room Templates with Walkways, Staircases, and Better Color Coding
+-- Enhanced Room Templates with Walkways, Staircases, Doors, and Better Color Coding
 -- Update existing room templates and add new ones
-
--- First, update the category enum to include new types
-ALTER TABLE room_templates MODIFY COLUMN category ENUM('bedroom', 'bathroom', 'kitchen', 'living', 'dining', 'utility', 'outdoor', 'circulation', 'structural', 'other') NOT NULL;
 
 -- Clear existing templates to insert enhanced ones
 DELETE FROM room_templates;
@@ -62,6 +59,16 @@ INSERT INTO room_templates (name, category, default_width, default_height, min_w
 ('Elevator Shaft', 'structural', 6, 6, 4, 4, 8, 8, '#a1887f', '🛗'),
 ('Column', 'structural', 2, 2, 1, 1, 3, 3, '#8d6e63', '🏛️'),
 ('Beam Area', 'structural', 8, 2, 4, 1, 12, 3, '#795548', '🏗️'),
+
+-- Doors and Openings (Light Blue tones) - NEW CATEGORY
+('Main Door', 'doors', 4, 1, 3, 0.5, 6, 1.5, '#b3d9ff', '🚪'),
+('Interior Door', 'doors', 3, 1, 2.5, 0.5, 4, 1.5, '#cce7ff', '🚪'),
+('Sliding Door', 'doors', 6, 1, 4, 0.5, 8, 1.5, '#e0f2ff', '🚪'),
+('French Door', 'doors', 5, 1, 4, 0.5, 7, 1.5, '#f0f8ff', '🚪'),
+('Folding Door', 'doors', 8, 1, 6, 0.5, 10, 1.5, '#e6f3ff', '🚪'),
+('Window', 'doors', 4, 1, 2, 0.5, 8, 1.5, '#d9ecff', '🪟'),
+('Bay Window', 'doors', 6, 2, 4, 1, 10, 3, '#ccdfff', '🪟'),
+('Arch Opening', 'doors', 4, 1, 3, 0.5, 6, 1.5, '#bfd6ff', '🏛️'),
 
 -- Other Special Rooms (Light Purple tones)
 ('Study Room', 'other', 10, 8, 6, 6, 14, 12, '#e8eaf6', '📚'),

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Received Designs with House Plans Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .design-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+        }
+        .design-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .source-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .source-design { background: #e3f2fd; color: #1976d2; }
+        .source-house-plan { background: #f3e5f5; color: #7b1fa2; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .technical-details {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .file-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Received Designs with House Plans Test</h1>
+        <p>This test verifies that house plans with technical details appear in the homeowner's "Received Designs" section.</p>
+
+        <div class="test-section info">
+            <h3>Test Configuration</h3>
+            <p><strong>Homeowner ID:</strong> 28 (SHIJIN THOMAS MCA2024-2026)</p>
+            <p><strong>Expected:</strong> Regular designs + House plans with technical details</p>
+            <p><strong>API Endpoint:</strong> /buildhub/backend/api/homeowner/get_received_designs.php</p>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 1: Fetch Received Designs (Including House Plans)</h3>
+            <button onclick="fetchReceivedDesigns()">Fetch All Designs & House Plans</button>
+            <div id="fetchResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 2: Display Results</h3>
+            <div id="designsDisplay"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Debug Information</h3>
+            <button onclick="testAPIDirectly()">Test API Directly</button>
+            <div id="debugInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchReceivedDesigns() {
+            const resultDiv = document.getElementById('fetchResult');
+            const designsDiv = document.getElementById('designsDisplay');
+            
+            resultDiv.innerHTML = '<p>Fetching received designs and house plans...</p>';
+            designsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const designs = result.designs || [];
+                    const regularDesigns = designs.filter(d => d.source_type !== 'house_plan');
+                    const housePlans = designs.filter(d => d.source_type === 'house_plan');
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ API Call Successful</h4>
+                            <p><strong>Total Items:</strong> ${designs.length}</p>
+                            <p><strong>Regular Designs:</strong> ${regularDesigns.length}</p>
+                            <p><strong>House Plans:</strong> ${housePlans.length}</p>
+                        </div>
+                    `;
+
+                    if (designs.length > 0) {
+                        displayDesigns(designs);
+                    } else {
+                        designsDiv.innerHTML = `
+                            <div class="info">
+                                <h4>ℹ️ No Designs Found</h4>
+                                <p>No designs or house plans were found for this homeowner.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ API Error</h4>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Fetch Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayDesigns(designs) {
+            const designsDiv = document.getElementById('designsDisplay');
+            
+            designsDiv.innerHTML = `
+                <h4>📋 Found ${designs.length} Item(s)</h4>
+                ${designs.map(design => `
+                    <div class="design-card">
+                        <div class="design-header">
+                            <h5>${design.design_title}</h5>
+                            <span class="source-badge source-${design.source_type || 'design'}">
+                                ${design.source_type === 'house_plan' ? 'House Plan' : 'Design'}
+                            </span>
+                        </div>
+                        
+                        <p><strong>Architect:</strong> ${design.architect?.name || 'Unknown'}</p>
+                        <p><strong>Created:</strong> ${new Date(design.created_at).toLocaleDateString()}</p>
+                        
+                        ${design.source_type === 'house_plan' ? `
+                            <p><strong>Plot Dimensions:</strong> ${design.plot_dimensions || 'N/A'}</p>
+                            <p><strong>Total Area:</strong> ${design.total_area || 0} sq ft</p>
+                            <p><strong>House Plan Status:</strong> ${design.house_plan_status || 'N/A'}</p>
+                        ` : ''}
+                        
+                        <p><strong>Files:</strong> ${design.files?.length || 0} file(s)</p>
+                        
+                        ${design.files && design.files.length > 0 ? `
+                            <div class="file-grid">
+                                ${design.files.map(file => `
+                                    <div class="file-item">
+                                        <strong>${file.type || 'File'}:</strong><br>
+                                        ${file.original || file.stored || 'Unknown'}
+                                        <br><small>${file.ext || 'unknown'} file</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${design.technical_details && Object.keys(design.technical_details).length > 0 ? `
+                            <div class="technical-details">
+                                <h6>🔧 Technical Details Available</h6>
+                                <p><strong>Construction Cost:</strong> ${design.technical_details.construction_cost || 'Not specified'}</p>
+                                <p><strong>Duration:</strong> ${design.technical_details.construction_duration || 'Not specified'}</p>
+                                <p><strong>Foundation:</strong> ${design.technical_details.foundation_type || 'Not specified'}</p>
+                                <p><strong>Structure:</strong> ${design.technical_details.structure_type || 'Not specified'}</p>
+                                ${design.technical_details.layout_image ? '<p><strong>Layout Image:</strong> Available</p>' : ''}
+                            </div>
+                        ` : '<p><em>No technical details available</em></p>'}
+                        
+                        <p><strong>Description:</strong> ${design.description || 'No description'}</p>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        async function testAPIDirectly() {
+            const debugDiv = document.getElementById('debugInfo');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php?debug=1', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const text = await response.text();
+                debugDiv.innerHTML = `
+                    <h4>Direct API Test (Raw Response):</h4>
+                    <pre>${text}</pre>
+                `;
+
+                try {
+                    const json = JSON.parse(text);
+                    debugDiv.innerHTML += `
+                        <h4>Parsed JSON:</h4>
+                        <pre>${JSON.stringify(json, null, 2)}</pre>
+                    `;
+                } catch (parseError) {
+                    debugDiv.innerHTML += `<p>Failed to parse as JSON: ${parseError.message}</p>`;
+                }
+
+            } catch (error) {
+                debugDiv.innerHTML = `
+                    <h4>Direct API Test Error:</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // Auto-run test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                fetchReceivedDesigns();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

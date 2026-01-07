@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Razorpay Payment Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 16px;
+            margin: 8px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        .api-response {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            margin: 8px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .test-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .fix-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Razorpay 400 Error - FIXED!</h1>
+            <p>Real Razorpay integration with proper order creation</p>
+        </div>
+
+        <div class="fix-summary">
+            <h3>✅ What Was Fixed</h3>
+            <p><strong>Problem:</strong> 400 Bad Request - Invalid order ID from mock orders</p>
+            <p><strong>Solution:</strong> Implemented real Razorpay API order creation</p>
+            <p><strong>Result:</strong> Proper order IDs that Razorpay accepts</p>
+        </div>
+
+        <div class="status success">
+            <h3>🔧 Technical Fix Details</h3>
+            <p><strong>Before:</strong> Mock order IDs like "order_12345_timestamp"</p>
+            <p><strong>After:</strong> Real Razorpay order IDs like "order_S0Zd5oLQBwIUN6"</p>
+            <p><strong>API:</strong> Now calls https://api.razorpay.com/v1/orders</p>
+            <p><strong>Authentication:</strong> Uses your real keys with proper Basic Auth</p>
+        </div>
+
+        <div class="test-card">
+            <h4>🎯 Test Card Details (Safe for Testing)</h4>
+            <strong>Card Number:</strong> 4111 1111 1111 1111<br>
+            <strong>Expiry Date:</strong> 12/25<br>
+            <strong>CVV:</strong> 123<br>
+            <strong>Name:</strong> Test User<br><br>
+            <em>Note: No real money will be charged</em>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="btn btn-primary" onclick="testFixedPayment()">
+                🚀 Test Fixed Payment - Pay ₹8,000
+            </button>
+            <button class="btn btn-success" onclick="checkOrderCreation()">
+                🔍 Test Order Creation
+            </button>
+        </div>
+
+        <div id="results">
+            <h3>📊 Test Results</h3>
+            <div id="api-logs">
+                <p>Click "Test Fixed Payment" to verify the fix...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        function addLog(title, data, type = 'info') {
+            const logsContainer = document.getElementById('api-logs');
+            const logDiv = document.createElement('div');
+            
+            const statusClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            
+            logDiv.innerHTML = `
+                <div class="status ${statusClass}">
+                    <h4>${title}</h4>
+                    <div class="api-response">${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}</div>
+                </div>
+            `;
+            logsContainer.appendChild(logDiv);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        async function checkOrderCreation() {
+            try {
+                addLog('🔄 Testing Order Creation...', 'Checking if real Razorpay orders are being created');
+                
+                const response = await fetch('/buildhub/backend/test_real_razorpay_order.php');
+                const text = await response.text();
+                
+                if (text.includes('Order created successfully')) {
+                    addLog('✅ Order Creation Test', 'Real Razorpay orders are working correctly!', 'success');
+                    addLog('📋 Order Creation Details', text);
+                } else {
+                    addLog('❌ Order Creation Failed', text, 'error');
+                }
+            } catch (error) {
+                addLog('❌ Test Error', error.message, 'error');
+            }
+        }
+
+        async function testFixedPayment() {
+            try {
+                addLog('🔄 Testing Fixed Payment...', 'Initiating payment with real Razorpay order creation');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ house_plan_id: 7 })
+                });
+                
+                const data = await response.json();
+                addLog('💳 Payment Initiation Response', data);
+                
+                if (data.success) {
+                    // Check if we got a real Razorpay order ID
+                    if (data.razorpay_order_id && data.razorpay_order_id.startsWith('order_') && data.razorpay_order_id.length > 15) {
+                        addLog('✅ Real Order ID Detected', `Got real Razorpay order: ${data.razorpay_order_id}`, 'success');
+                    } else {
+                        addLog('❌ Mock Order ID', `Still using mock order: ${data.razorpay_order_id}`, 'error');
+                    }
+                    
+                    // Verify we're using correct keys
+                    if (data.razorpay_key_id === 'rzp_test_RP6aD2gNdAuoRE') {
+                        addLog('✅ Correct Key ID', 'Using your real Razorpay key', 'success');
+                    } else {
+                        addLog('❌ Wrong Key ID', `Unexpected key: ${data.razorpay_key_id}`, 'error');
+                    }
+                    
+                    addLog('🚀 Opening Razorpay Checkout...', 'Real payment gateway should open without 400 errors');
+                    
+                    // Open real Razorpay checkout
+                    const options = {
+                        key: data.razorpay_key_id,
+                        amount: data.amount,
+                        currency: data.currency || 'INR',
+                        name: 'BuildHub - Fixed Payment',
+                        description: data.description,
+                        order_id: data.razorpay_order_id,
+                        handler: async function (rzpResponse) {
+                            addLog('🎉 Payment Successful!', rzpResponse, 'success');
+                            
+                            try {
+                                const verifyResponse = await fetch('/buildhub/backend/api/homeowner/verify_technical_details_payment.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    credentials: 'include',
+                                    body: JSON.stringify({
+                                        razorpay_payment_id: rzpResponse.razorpay_payment_id,
+                                        razorpay_order_id: rzpResponse.razorpay_order_id,
+                                        razorpay_signature: rzpResponse.razorpay_signature,
+                                        payment_id: data.payment_id
+                                    })
+                                });
+                                
+                                const verifyData = await verifyResponse.json();
+                                addLog('🔐 Payment Verification', verifyData);
+                                
+                                if (verifyData.success) {
+                                    addLog('🎊 Complete Success!', 'Payment flow completed successfully! 400 error is completely fixed.', 'success');
+                                } else {
+                                    addLog('❌ Verification Failed', verifyData.message, 'error');
+                                }
+                            } catch (error) {
+                                addLog('❌ Verification Error', error.message, 'error');
+                            }
+                        },
+                        prefill: {
+                            name: 'Test User',
+                            email: 'test@example.com'
+                        },
+                        theme: {
+                            color: '#3498db'
+                        }
+                    };
+                    
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                    
+                } else {
+                    addLog('❌ Payment Initiation Failed', data.message, 'error');
+                }
+            } catch (error) {
+                addLog('❌ Network Error', error.message, 'error');
+            }
+        }
+
+        // Auto-run order creation test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addLog('🎯 Ready for Testing', 'Fixed Razorpay integration loaded. Testing order creation...');
+                checkOrderCreation();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

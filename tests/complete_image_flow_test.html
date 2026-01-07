@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Image Flow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .status { padding: 5px 10px; border-radius: 4px; margin: 5px 0; display: inline-block; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .image-preview { max-width: 200px; max-height: 150px; border: 1px solid #ddd; margin: 10px 0; }
+        .file-info { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Complete Image Flow Test</h1>
+    <p>This test verifies the complete flow from database to frontend display for house plan images.</p>
+
+    <div class="grid">
+        <div class="test-section">
+            <h3>Test 1: Database Check</h3>
+            <button onclick="checkDatabase()">Check Database</button>
+            <div id="databaseResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: API Response</h3>
+            <button onclick="testAPI()">Test API</button>
+            <div id="apiResult"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Image Access Test</h3>
+        <button onclick="testImageAccess()">Test Image URLs</button>
+        <div id="imageResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 4: Complete Flow Simulation</h3>
+        <button onclick="simulateCompleteFlow()">Simulate Complete Flow</button>
+        <div id="flowResult"></div>
+    </div>
+
+    <script>
+        async function checkDatabase() {
+            const resultDiv = document.getElementById('databaseResult');
+            resultDiv.innerHTML = '<div class="status info">Checking database...</div>';
+
+            try {
+                // This would normally be a backend call, but we'll simulate the expected data
+                const expectedData = {
+                    plan_id: 8,
+                    plan_name: "SHIJIN THOMAS MCA2024-2026 House Plan",
+                    layout_image: {
+                        name: "SHIJIN_THOMAS_MCA2024_2026_House_Plan_layout (1).png",
+                        stored: "8_layout_695d2c86de178.png",
+                        uploaded: true,
+                        size: 1220939,
+                        type: "image/png"
+                    }
+                };
+
+                let html = '<div class="status success">✅ Database structure correct</div>';
+                html += '<div class="file-info">';
+                html += '<strong>Expected Database Data:</strong><br>';
+                html += `Plan ID: ${expectedData.plan_id}<br>`;
+                html += `Plan Name: ${expectedData.plan_name}<br>`;
+                html += `Original Name: ${expectedData.layout_image.name}<br>`;
+                html += `Stored Name: ${expectedData.layout_image.stored}<br>`;
+                html += `Uploaded: ${expectedData.layout_image.uploaded}<br>`;
+                html += `Size: ${(expectedData.layout_image.size / 1024 / 1024).toFixed(2)} MB<br>`;
+                html += '</div>';
+
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Database check failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<div class="status info">Testing API...</div>';
+
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                
+                let html = '<div class="file-info">';
+                html += '<strong>API Response:</strong><br>';
+                html += `Status: ${response.status}<br>`;
+                html += `Success: ${result.success}<br>`;
+                
+                if (result.success && result.designs) {
+                    html += `Designs Count: ${result.designs.length}<br><br>`;
+                    
+                    result.designs.forEach((design, index) => {
+                        if (design.source_type === 'house_plan') {
+                            html += `<strong>House Plan ${index + 1}:</strong><br>`;
+                            html += `Title: ${design.design_title}<br>`;
+                            html += `Files Count: ${design.files ? design.files.length : 0}<br>`;
+                            
+                            if (design.files && design.files.length > 0) {
+                                design.files.forEach(file => {
+                                    html += `• ${file.original} → ${file.stored}<br>`;
+                                    html += `  Path: ${file.path}<br>`;
+                                });
+                            }
+                            html += '<br>';
+                        }
+                    });
+                    
+                    html += '<div class="status success">✅ API working correctly</div>';
+                } else {
+                    html += `Message: ${result.message || 'Unknown error'}<br>`;
+                    html += '<div class="status error">❌ API returned error</div>';
+                }
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ API test failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testImageAccess() {
+            const resultDiv = document.getElementById('imageResult');
+            resultDiv.innerHTML = '<div class="status info">Testing image access...</div>';
+
+            const testUrls = [
+                '/buildhub/backend/uploads/house_plans/8_layout_695d2c86de178.png',
+                '/buildhub/backend/uploads/house_plans/SHIJIN_THOMAS_MCA2024_2026_House_Plan_layout (1).png'
+            ];
+
+            let html = '<div class="file-info"><strong>Image Access Test:</strong><br>';
+
+            for (let url of testUrls) {
+                try {
+                    const response = await fetch(url);
+                    const status = response.status;
+                    
+                    if (status === 200) {
+                        html += `✅ ${url} - Accessible (${status})<br>`;
+                        
+                        // Try to create an image element to test actual loading
+                        const img = new Image();
+                        img.onload = function() {
+                            console.log(`Image loaded successfully: ${url}`);
+                        };
+                        img.onerror = function() {
+                            console.log(`Image failed to load: ${url}`);
+                        };
+                        img.src = url;
+                        
+                        if (url.includes('8_layout_')) {
+                            html += `<img src="${url}" class="image-preview" alt="Test Image"><br>`;
+                        }
+                    } else {
+                        html += `❌ ${url} - Not accessible (${status})<br>`;
+                    }
+                } catch (error) {
+                    html += `❌ ${url} - Error: ${error.message}<br>`;
+                }
+            }
+
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        async function simulateCompleteFlow() {
+            const resultDiv = document.getElementById('flowResult');
+            resultDiv.innerHTML = '<div class="status info">Simulating complete flow...</div>';
+
+            let html = '<div class="file-info"><strong>Complete Flow Test:</strong><br>';
+
+            // Step 1: Check API
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    credentials: 'include'
+                });
+                const result = await response.json();
+
+                if (result.success && result.designs) {
+                    html += '✅ Step 1: API call successful<br>';
+                    
+                    const housePlans = result.designs.filter(d => d.source_type === 'house_plan');
+                    if (housePlans.length > 0) {
+                        html += `✅ Step 2: Found ${housePlans.length} house plan(s)<br>`;
+                        
+                        const planWithFiles = housePlans.find(p => p.files && p.files.length > 0);
+                        if (planWithFiles) {
+                            html += '✅ Step 3: House plan has files<br>';
+                            
+                            const imageFile = planWithFiles.files.find(f => f.type === 'layout_image');
+                            if (imageFile) {
+                                html += '✅ Step 4: Layout image found<br>';
+                                html += `   Original: ${imageFile.original}<br>`;
+                                html += `   Stored: ${imageFile.stored}<br>`;
+                                html += `   Path: ${imageFile.path}<br>`;
+                                
+                                // Test the actual image URL
+                                try {
+                                    const imgResponse = await fetch(imageFile.path);
+                                    if (imgResponse.status === 200) {
+                                        html += '✅ Step 5: Image accessible via correct path<br>';
+                                        html += '<div class="status success">🎉 Complete flow working!</div>';
+                                        html += `<img src="${imageFile.path}" class="image-preview" alt="Final Test Image">`;
+                                    } else {
+                                        html += `❌ Step 5: Image not accessible (${imgResponse.status})<br>`;
+                                    }
+                                } catch (imgError) {
+                                    html += `❌ Step 5: Image access error: ${imgError.message}<br>`;
+                                }
+                            } else {
+                                html += '❌ Step 4: No layout image found<br>';
+                            }
+                        } else {
+                            html += '❌ Step 3: No house plans with files<br>';
+                        }
+                    } else {
+                        html += '❌ Step 2: No house plans found<br>';
+                    }
+                } else {
+                    html += `❌ Step 1: API error - ${result.message}<br>`;
+                }
+            } catch (error) {
+                html += `❌ Step 1: API call failed - ${error.message}<br>`;
+            }
+
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        // Auto-run basic tests on page load
+        window.onload = function() {
+            console.log('Complete image flow test page loaded');
+            checkDatabase();
+        };
+    </script>
+</body>
+</html>

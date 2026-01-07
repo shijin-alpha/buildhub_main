@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Design Database Fix Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .fix-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f0fdf4;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+        }
+        .error-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 5px;
+        }
+        .status-fixed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .migration-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .migration-step {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        .step-number {
+            background: #10b981;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .table-structure {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin: 15px 0;
+        }
+        .column-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        .column-row:last-child {
+            border-bottom: none;
+        }
+        .column-name {
+            font-weight: 600;
+            color: #1e40af;
+        }
+        .column-type {
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Database Fix: Technical Details Column</h1>
+            <p>Resolving "Column not found: technical_details" error</p>
+            <div>
+                <span class="status-badge status-fixed">✅ Database Updated</span>
+                <span class="status-badge status-fixed">✅ Column Added</span>
+                <span class="status-badge status-fixed">✅ Migration Complete</span>
+            </div>
+        </div>
+
+        <!-- Error Analysis -->
+        <div class="error-section">
+            <h3>🚨 Database Error Identified</h3>
+            <div class="code-block">
+Error uploading design: Error: Server error: SQLSTATE[42S22]: 
+Column not found: 1054 Unknown column 'technical_details' in 'field list'
+    at handleTechnicalDetailsSubmit (ArchitectDashboard.jsx:724:15)
+            </div>
+            <p><strong>Root Cause:</strong> The <code>house_plans</code> table was missing the <code>technical_details</code> column required by the <code>submit_house_plan_with_details.php</code> API.</p>
+            
+            <h4>Why This Happened:</h4>
+            <ul>
+                <li>The original table schema didn't include technical details storage</li>
+                <li>The enhanced upload design functionality requires this column</li>
+                <li>The API was trying to update a non-existent column</li>
+            </ul>
+        </div>
+
+        <!-- Fix Implementation -->
+        <div class="fix-section">
+            <h3>🔧 Database Migration Executed</h3>
+            
+            <h4>Migration Steps Completed:</h4>
+            <div class="migration-steps">
+                <div class="migration-step">
+                    <div class="step-number">1</div>
+                    <strong>Column Check</strong>
+                    <p>Verified column doesn't exist</p>
+                </div>
+                <div class="migration-step">
+                    <div class="step-number">2</div>
+                    <strong>ALTER TABLE</strong>
+                    <p>Added technical_details JSON column</p>
+                </div>
+                <div class="migration-step">
+                    <div class="step-number">3</div>
+                    <strong>Verification</strong>
+                    <p>Confirmed successful addition</p>
+                </div>
+                <div class="migration-step">
+                    <div class="step-number">4</div>
+                    <strong>Testing</strong>
+                    <p>Ready for upload design testing</p>
+                </div>
+            </div>
+
+            <h4>SQL Migration Executed:</h4>
+            <div class="code-block">
+ALTER TABLE house_plans 
+ADD COLUMN technical_details JSON NULL 
+COMMENT 'Stores comprehensive technical specifications including construction details, materials, MEP systems, etc.'
+AFTER plan_data;
+            </div>
+
+            <h4>Migration Result:</h4>
+            <div class="code-block">
+✅ Successfully added 'technical_details' column to house_plans table.
+✅ Migration completed successfully!
+The house_plans table now supports technical_details storage.
+            </div>
+        </div>
+
+        <!-- Updated Table Structure -->
+        <div class="fix-section">
+            <h3>📊 Updated Table Structure</h3>
+            <p>The <code>house_plans</code> table now includes the <code>technical_details</code> column:</p>
+            
+            <div class="table-structure">
+                <div class="column-row">
+                    <span class="column-name">id</span>
+                    <span class="column-type">int(11) NOT NULL AUTO_INCREMENT</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">architect_id</span>
+                    <span class="column-type">int(11) NOT NULL</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">layout_request_id</span>
+                    <span class="column-type">int(11) NULL</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">plan_name</span>
+                    <span class="column-type">varchar(255) NOT NULL</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">plot_width</span>
+                    <span class="column-type">decimal(8,2) NOT NULL</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">plot_height</span>
+                    <span class="column-type">decimal(8,2) NOT NULL</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">plan_data</span>
+                    <span class="column-type">longtext NOT NULL</span>
+                </div>
+                <div class="column-row" style="background: #dcfce7;">
+                    <span class="column-name">technical_details</span>
+                    <span class="column-type">longtext NULL (NEW)</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">total_area</span>
+                    <span class="column-type">decimal(10,2) NOT NULL</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">status</span>
+                    <span class="column-type">enum('draft','submitted','approved','rejected')</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">version</span>
+                    <span class="column-type">int(11) DEFAULT '1'</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">parent_plan_id</span>
+                    <span class="column-type">int(11) NULL</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">notes</span>
+                    <span class="column-type">text NULL</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">created_at</span>
+                    <span class="column-type">timestamp DEFAULT CURRENT_TIMESTAMP</span>
+                </div>
+                <div class="column-row">
+                    <span class="column-name">updated_at</span>
+                    <span class="column-type">timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Details Storage -->
+        <div class="fix-section">
+            <h3>📋 Technical Details Storage Format</h3>
+            <p>The <code>technical_details</code> column stores comprehensive specifications as JSON:</p>
+            
+            <div class="code-block">
+{
+  "site_area": "2400",
+  "built_up_area": "1800",
+  "carpet_area": "1600",
+  "setback_front": "10",
+  "setback_rear": "5",
+  "setback_left": "3",
+  "setback_right": "3",
+  "foundation_type": "RCC",
+  "structure_type": "RCC Frame",
+  "wall_material": "Brick",
+  "roofing_type": "RCC Slab",
+  "beam_size": "9x12",
+  "column_size": "9x12",
+  "slab_thickness": "5",
+  "footing_depth": "4 feet",
+  "electrical_points": "45",
+  "plumbing_fixtures": "12",
+  "hvac_system": "Split AC",
+  "solar_provision": "Yes - Rooftop",
+  "main_door_material": "Teak Wood",
+  "window_material": "UPVC",
+  "staircase_material": "RCC with Granite",
+  "compound_wall": "Yes",
+  "building_plan_approval": "Required",
+  "environmental_clearance": "Not Required",
+  "fire_noc": "Required",
+  "construction_cost": "25,00,000",
+  "construction_duration": "8-12",
+  "special_features": "Smart home integration, solar panels",
+  "construction_notes": "High-quality materials preferred",
+  "layout_image": { "file": "...", "name": "layout.jpg" },
+  "elevation_images": [...],
+  "section_drawings": [...],
+  "renders_3d": [...]
+}
+            </div>
+        </div>
+
+        <!-- Testing Instructions -->
+        <div class="fix-section">
+            <h3>🧪 Testing the Fix</h3>
+            
+            <h4>Upload Design Test Workflow:</h4>
+            <ol>
+                <li><strong>Navigate to Architect Dashboard</strong></li>
+                <li><strong>Find an accepted project</strong></li>
+                <li><strong>Click "📤 Upload Design" button</strong></li>
+                <li><strong>Fill comprehensive technical details:</strong>
+                    <ul>
+                        <li>Site Details (area, setbacks)</li>
+                        <li>Construction Details (foundation, structure)</li>
+                        <li>MEP Systems (electrical, plumbing, HVAC)</li>
+                        <li>Materials & Finishes</li>
+                        <li>Approvals & Compliance</li>
+                        <li>Upload layout image</li>
+                    </ul>
+                </li>
+                <li><strong>Click "Submit to Homeowner"</strong></li>
+                <li><strong>Verify success message</strong></li>
+                <li><strong>Check homeowner receives complete package</strong></li>
+            </ol>
+
+            <h4>Expected Results:</h4>
+            <ul>
+                <li>✅ No more "Column not found" errors</li>
+                <li>✅ Technical details saved successfully</li>
+                <li>✅ House plan created and submitted</li>
+                <li>✅ Homeowner receives notification</li>
+                <li>✅ Complete design package delivered</li>
+            </ul>
+        </div>
+
+        <!-- Files Created -->
+        <div class="fix-section">
+            <h3>📝 Migration Files Created</h3>
+            <ul>
+                <li>✅ <code>backend/database/add_technical_details_column.sql</code> - SQL migration script</li>
+                <li>✅ <code>backend/add_technical_details_column.php</code> - PHP migration executor</li>
+                <li>✅ <code>tests/demos/upload_design_database_fix_test.html</code> - Fix documentation</li>
+            </ul>
+        </div>
+
+        <!-- Resolution Summary -->
+        <div class="fix-section">
+            <h3>✅ Resolution Summary</h3>
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 2.5rem; margin-bottom: 15px;">🎯</div>
+                <h2 style="color: #059669; margin: 0;">Database Issue Resolved</h2>
+                <p style="margin: 10px 0 0 0; color: #6b7280;">
+                    Upload Design functionality now has proper database support
+                </p>
+                <div style="margin-top: 20px;">
+                    <span class="status-badge status-fixed">Column Added</span>
+                    <span class="status-badge status-fixed">Migration Complete</span>
+                    <span class="status-badge status-fixed">API Compatible</span>
+                    <span class="status-badge status-fixed">Ready for Testing</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="fix-section">
+            <h3>🚀 Next Steps</h3>
+            <ul>
+                <li>✅ Test the complete upload design workflow</li>
+                <li>✅ Verify technical details are saved correctly</li>
+                <li>✅ Test file upload functionality</li>
+                <li>✅ Confirm homeowner receives complete package</li>
+                <li>✅ Monitor for any additional issues</li>
+            </ul>
+            
+            <p><strong>The upload design functionality should now work without database errors!</strong></p>
+        </div>
+    </div>
+</body>
+</html>

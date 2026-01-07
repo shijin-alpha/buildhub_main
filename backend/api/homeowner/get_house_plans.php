@@ -70,10 +70,13 @@ try {
         FROM house_plans hp
         INNER JOIN layout_requests lr ON hp.layout_request_id = lr.id
         INNER JOIN users u ON hp.architect_id = u.id
-        LEFT JOIN house_plan_reviews hpr ON hp.id = hpr.house_plan_id AND hpr.homeowner_id = :homeowner_id
+        LEFT JOIN house_plan_reviews hpr ON hp.id = hpr.house_plan_id AND hpr.homeowner_id = :homeowner_id_review
         WHERE {$whereClause}
         ORDER BY hp.updated_at DESC
     ";
+
+    // Add the second homeowner_id parameter for the LEFT JOIN
+    $params[':homeowner_id_review'] = $homeowner_id;
 
     $stmt = $db->prepare($query);
     $stmt->execute($params);
@@ -82,6 +85,9 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         // Parse plan_data JSON
         $plan_data = json_decode($row['plan_data'], true) ?? [];
+        
+        // Parse technical_details JSON
+        $technical_details = json_decode($row['technical_details'], true) ?? [];
         
         $plans[] = [
             'id' => (int)$row['id'],
@@ -94,6 +100,7 @@ try {
             'version' => (int)$row['version'],
             'notes' => $row['notes'],
             'plan_data' => $plan_data,
+            'technical_details' => $technical_details,
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
             // Architect details

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Floor House Plan System Test</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+        
+        .test-section h2 {
+            margin: 0 0 1rem 0;
+            color: #1e293b;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .feature-item {
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .feature-item h3 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+        
+        .feature-item p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .demo-steps {
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .demo-steps h3 {
+            margin: 0 0 1rem 0;
+            color: #065f46;
+            font-size: 1.3rem;
+        }
+        
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .steps-list li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #10b981;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .steps-list li::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            background: #10b981;
+            color: white;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            font-size: 0.8rem;
+        }
+        
+        .steps-list {
+            counter-reset: step-counter;
+        }
+        
+        .technical-specs {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .technical-specs h3 {
+            margin: 0 0 1rem 0;
+            color: #92400e;
+            font-size: 1.3rem;
+        }
+        
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .spec-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .spec-item strong {
+            color: #92400e;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .benefits {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .benefits h3 {
+            margin: 0 0 1rem 0;
+            color: #1e40af;
+            font-size: 1.3rem;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .benefit-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .benefit-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1e40af;
+            font-size: 1rem;
+        }
+        
+        .benefit-item p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-new {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .footer {
+            background: #f1f5f9;
+            padding: 1.5rem;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Multi-Floor House Plan System</h1>
+            <p>Interactive floor management for comprehensive architectural design</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-section">
+                <h2>🎯 System Overview <span class="status-badge status-completed">Implemented</span></h2>
+                <p>The multi-floor design system allows architects to create comprehensive house plans with multiple floors, providing logical separation and organization of rooms across different levels.</p>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h3>🏗️ Floor Management</h3>
+                        <p>Add, remove, and rename floors with intuitive controls. Each floor maintains its own set of rooms and layout.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>🎛️ Floor Navigation</h3>
+                        <p>Switch between floors using tab-based navigation. Only current floor rooms are displayed for clarity.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>📋 Room Assignment</h3>
+                        <p>Rooms are automatically assigned to the current floor when added. Move rooms between floors easily.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>📊 Floor Statistics</h3>
+                        <p>View room counts and area calculations per floor and overall totals.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>💾 Data Persistence</h3>
+                        <p>Floor information is saved with the plan and restored when editing existing plans.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>📄 Enhanced Downloads</h3>
+                        <p>PDF and JSON exports include floor-wise organization and detailed floor information.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-steps">
+                <h3>🚀 How to Use Multi-Floor Design</h3>
+                <ol class="steps-list">
+                    <li>Start with the default Ground Floor (Floor 1)</li>
+                    <li>Add rooms to the current floor using room templates</li>
+                    <li>Click the "+" button in floor tabs to add a new floor</li>
+                    <li>Switch between floors using the numbered tabs</li>
+                    <li>Rename floors by editing the floor name input</li>
+                    <li>Move rooms between floors using the room properties panel</li>
+                    <li>Copy selected rooms to other floors using copy buttons</li>
+                    <li>Remove floors (except the last one) using the Remove Floor button</li>
+                    <li>View floor-specific statistics in the plan stats section</li>
+                    <li>Save and download plans with complete floor information</li>
+                </ol>
+            </div>
+            
+            <div class="technical-specs">
+                <h3>⚙️ Technical Implementation</h3>
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <strong>Floor State Management</strong>
+                        React state manages current floor, total floors, and floor names with proper synchronization.
+                    </div>
+                    <div class="spec-item">
+                        <strong>Room Filtering</strong>
+                        Canvas rendering shows only current floor rooms using getCurrentFloorRooms() function.
+                    </div>
+                    <div class="spec-item">
+                        <strong>Floor Assignment</strong>
+                        New rooms automatically get assigned to the current floor with proper floor property.
+                    </div>
+                    <div class="spec-item">
+                        <strong>Data Structure</strong>
+                        Floor information stored in plan_data.floors with total_floors, current_floor, and floor_names.
+                    </div>
+                    <div class="spec-item">
+                        <strong>Interaction Updates</strong>
+                        Mouse interactions work only with current floor rooms for proper selection and manipulation.
+                    </div>
+                    <div class="spec-item">
+                        <strong>Export Enhancement</strong>
+                        Downloads include floor-wise room organization and complete floor metadata.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="benefits">
+                <h3>✨ Key Benefits</h3>
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <h4>🎯 Organized Design</h4>
+                        <p>Separate floors logically organize rooms, making complex multi-story designs manageable and clear.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h4>🖥️ Clean Interface</h4>
+                        <p>Only current floor rooms are shown, reducing visual clutter and improving design focus.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h4>🔄 Flexible Workflow</h4>
+                        <p>Easy floor switching, room copying, and floor management support various design workflows.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h4>📊 Comprehensive Analytics</h4>
+                        <p>Floor-wise statistics help architects understand space distribution and plan efficiency.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h4>💾 Complete Persistence</h4>
+                        <p>All floor information is saved and restored, ensuring no data loss during editing sessions.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h4>📋 Professional Output</h4>
+                        <p>Enhanced exports provide floor-organized documentation suitable for client presentations.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h2>🧪 Testing Scenarios</h2>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h3>Basic Multi-Floor Creation</h3>
+                        <p>Create a 2-story house with ground floor (living areas) and first floor (bedrooms). Test floor switching and room assignment.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Room Movement Between Floors</h3>
+                        <p>Add rooms to one floor, then move them to another floor using the room properties panel. Verify proper floor assignment.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Floor Copying Workflow</h3>
+                        <p>Design one floor completely, then copy selected rooms to other floors to create similar layouts efficiently.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Save and Load Testing</h3>
+                        <p>Create multi-floor plan, save it, then reload to verify all floor information is properly preserved.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Export Verification</h3>
+                        <p>Download PDF and JSON exports to verify floor-wise organization and complete floor metadata inclusion.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Edge Case Handling</h3>
+                        <p>Test floor removal, floor renaming, and interaction with existing single-floor plans.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Multi-Floor House Plan System - BuildHub Architecture Platform</p>
+            <p>Implemented: January 2026 | Status: ✅ Complete and Ready for Testing</p>
+        </div>
+    </div>
+</body>
+</html>

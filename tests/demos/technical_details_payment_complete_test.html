@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Details Payment System - Complete Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            color: #34495e;
+            margin-top: 0;
+        }
+        .design-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #fafafa;
+        }
+        .design-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .design-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .design-badge {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .payment-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+        }
+        .payment-section.unlocked {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-locked {
+            background: #e74c3c;
+            color: white;
+        }
+        .status-unlocked {
+            background: #27ae60;
+            color: white;
+        }
+        .price-display {
+            font-weight: 600;
+            color: #e67e22;
+        }
+        .test-results {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .api-response {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            margin: 8px 0;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Technical Details Payment System</h1>
+            <p>Complete End-to-End Testing</p>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="test-section">
+            <h3>🧪 Test Controls</h3>
+            <button class="btn btn-primary" onclick="loadReceivedDesigns()">Load Received Designs</button>
+            <button class="btn btn-warning" onclick="resetPaymentStatus()">Reset Payment Status</button>
+            <button class="btn btn-success" onclick="simulatePayment()">Simulate Payment</button>
+        </div>
+
+        <!-- Received Designs Display -->
+        <div class="test-section">
+            <h3>📋 Received Designs</h3>
+            <div id="designs-container">
+                <p>Click "Load Received Designs" to fetch data...</p>
+            </div>
+        </div>
+
+        <!-- API Test Results -->
+        <div class="test-section">
+            <h3>🔍 API Test Results</h3>
+            <div id="api-results">
+                <p>API responses will appear here...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="/buildhub/frontend/demo_payment_handler.js"></script>
+    <script>
+        let currentDesigns = [];
+        let paymentInProgress = false;
+
+        // Simulate session (in real app this would be handled by authentication)
+        const currentUser = { id: 28, name: 'SHIJIN THOMAS MCA2024-2026' };
+
+        function addApiResult(title, data) {
+            const resultsContainer = document.getElementById('api-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-results';
+            resultDiv.innerHTML = `
+                <h4>${title}</h4>
+                <div class="api-response">${JSON.stringify(data, null, 2)}</div>
+            `;
+            resultsContainer.appendChild(resultDiv);
+            resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        }
+
+        async function loadReceivedDesigns() {
+            try {
+                addApiResult('🔄 Loading Received Designs...', { status: 'loading' });
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                addApiResult('📥 Received Designs Response', data);
+                
+                if (data.success) {
+                    currentDesigns = data.designs;
+                    displayDesigns(data.designs);
+                } else {
+                    document.getElementById('designs-container').innerHTML = `
+                        <div style="color: #e74c3c; padding: 16px; background: #fdf2f2; border-radius: 6px;">
+                            ❌ Error: ${data.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                addApiResult('❌ Load Designs Error', { error: error.message });
+                document.getElementById('designs-container').innerHTML = `
+                    <div style="color: #e74c3c; padding: 16px; background: #fdf2f2; border-radius: 6px;">
+                        ❌ Network Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function displayDesigns(designs) {
+            const container = document.getElementById('designs-container');
+            
+            if (!designs || designs.length === 0) {
+                container.innerHTML = '<p>No designs found.</p>';
+                return;
+            }
+
+            const housePlans = designs.filter(d => d.source_type === 'house_plan');
+            const regularDesigns = designs.filter(d => d.source_type !== 'house_plan');
+
+            let html = '';
+
+            if (housePlans.length > 0) {
+                html += '<h4>🏠 House Plans with Technical Details</h4>';
+                housePlans.forEach(design => {
+                    html += createDesignCard(design);
+                });
+            }
+
+            if (regularDesigns.length > 0) {
+                html += '<h4>🎨 Regular Designs</h4>';
+                regularDesigns.forEach(design => {
+                    html += createDesignCard(design);
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function createDesignCard(design) {
+            const isHousePlan = design.source_type === 'house_plan';
+            const isUnlocked = design.is_technical_details_unlocked;
+            const unlockPrice = parseFloat(design.unlock_price || 8000);
+            const formattedPrice = unlockPrice.toLocaleString('en-IN');
+
+            return `
+                <div class="design-card">
+                    <div class="design-header">
+                        <div class="design-title">${design.design_title}</div>
+                        <div class="design-badge">${isHousePlan ? 'House Plan' : 'Design'}</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <strong>Architect:</strong> ${design.architect?.name || 'Unknown'}
+                    </div>
+                    
+                    ${isHousePlan ? `
+                        <div class="payment-section ${isUnlocked ? 'unlocked' : ''}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    ${isUnlocked ? `
+                                        <span class="status-indicator status-unlocked">✅ Unlocked</span>
+                                        <div style="margin-top: 4px; font-size: 14px;">
+                                            Paid ₹${design.paid_amount ? parseFloat(design.paid_amount).toLocaleString('en-IN') : formattedPrice} - Access Granted
+                                        </div>
+                                    ` : `
+                                        <span class="status-indicator status-locked">🔒 Locked</span>
+                                        <div style="margin-top: 4px; font-size: 14px; color: #92400e;">
+                                            Technical details are locked. Pay <span class="price-display">₹${formattedPrice}</span> to unlock complete specifications.
+                                        </div>
+                                    `}
+                                </div>
+                                <div>
+                                    ${isUnlocked ? `
+                                        <button class="btn btn-success" onclick="viewTechnicalDetails('${design.id}')">
+                                            View Technical Details
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-primary" onclick="initiatePayment('${design.id}', ${unlockPrice})" 
+                                                ${paymentInProgress ? 'disabled' : ''}>
+                                            ${paymentInProgress ? 'Processing...' : `Pay ₹${formattedPrice} to Unlock`}
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="color: #666; font-size: 14px;">
+                            Regular design - no payment required
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        async function initiatePayment(designId, amount) {
+            if (paymentInProgress) return;
+            
+            paymentInProgress = true;
+            document.getElementById('designs-container').classList.add('loading');
+            
+            try {
+                const housePlanId = designId.replace('hp_', '');
+                addApiResult('💳 Initiating Payment...', { 
+                    designId, 
+                    housePlanId, 
+                    amount 
+                });
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ house_plan_id: parseInt(housePlanId) })
+                });
+                
+                const data = await response.json();
+                addApiResult('💳 Payment Initiation Response', data);
+                
+                if (data.success) {
+                    // Simulate Razorpay payment (in real app, this would open Razorpay)
+                    setTimeout(() => {
+                        simulateRazorpayPayment(data);
+                    }, 1000);
+                } else {
+                    alert(`Payment initiation failed: ${data.message}`);
+                }
+            } catch (error) {
+                addApiResult('❌ Payment Initiation Error', { error: error.message });
+                alert(`Payment error: ${error.message}`);
+            } finally {
+                paymentInProgress = false;
+                document.getElementById('designs-container').classList.remove('loading');
+            }
+        }
+
+        async function simulateRazorpayPayment(paymentData) {
+            addApiResult('🎭 Simulating Razorpay Payment...', paymentData);
+            
+            // Simulate successful payment
+            const mockRazorpayResponse = {
+                razorpay_payment_id: 'pay_' + Date.now() + '_test',
+                razorpay_order_id: paymentData.razorpay_order_id,
+                razorpay_signature: 'sig_' + Date.now() + '_test'
+            };
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/verify_technical_details_payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        ...mockRazorpayResponse,
+                        payment_id: paymentData.payment_id
+                    })
+                });
+                
+                const data = await response.json();
+                addApiResult('✅ Payment Verification Response', data);
+                
+                if (data.success) {
+                    alert('Payment successful! Technical details unlocked.');
+                    // Reload designs to show updated status
+                    setTimeout(() => loadReceivedDesigns(), 1000);
+                } else {
+                    alert(`Payment verification failed: ${data.message}`);
+                }
+            } catch (error) {
+                addApiResult('❌ Payment Verification Error', { error: error.message });
+                alert(`Payment verification error: ${error.message}`);
+            }
+        }
+
+        async function resetPaymentStatus() {
+            try {
+                addApiResult('🔄 Resetting Payment Status...', { status: 'resetting' });
+                
+                const response = await fetch('/buildhub/backend/reset_payment_for_testing.php');
+                const text = await response.text();
+                
+                addApiResult('🔄 Reset Payment Response', { response: text });
+                alert('Payment status reset. Technical details are now locked again.');
+                
+                // Reload designs
+                setTimeout(() => loadReceivedDesigns(), 500);
+            } catch (error) {
+                addApiResult('❌ Reset Error', { error: error.message });
+                alert(`Reset error: ${error.message}`);
+            }
+        }
+
+        async function simulatePayment() {
+            try {
+                addApiResult('🎭 Simulating Complete Payment Flow...', { status: 'starting' });
+                
+                const response = await fetch('/buildhub/backend/test_payment_verification.php');
+                const text = await response.text();
+                
+                addApiResult('🎭 Payment Simulation Response', { response: text });
+                alert('Payment simulation completed. Check the API results for details.');
+                
+                // Reload designs
+                setTimeout(() => loadReceivedDesigns(), 500);
+            } catch (error) {
+                addApiResult('❌ Simulation Error', { error: error.message });
+                alert(`Simulation error: ${error.message}`);
+            }
+        }
+
+        function viewTechnicalDetails(designId) {
+            alert(`Viewing technical details for ${designId}. In the real app, this would show the complete technical specifications.`);
+        }
+
+        // Auto-load designs on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => loadReceivedDesigns(), 500);
+        });
+    </script>
+</body>
+</html>

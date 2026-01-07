@@ -1,21 +1,12 @@
 <?php
-require_once 'config/database.php';
-
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    $pdo = new PDO('sqlite:buildhub.db');
+    $stmt = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'");
     
-    $tables_to_check = ['construction_progress_updates', 'users'];
-    
-    foreach ($tables_to_check as $table) {
-        $stmt = $db->query("SHOW TABLES LIKE '$table'");
-        if ($stmt->rowCount() > 0) {
-            echo "✓ Table '$table' exists\n";
-        } else {
-            echo "✗ Table '$table' does not exist\n";
-        }
+    echo "Tables in database:\n";
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        echo "- " . $row['name'] . "\n";
     }
-    
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }

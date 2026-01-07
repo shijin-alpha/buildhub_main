@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Plan to Contractor Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .contractor-card { border: 1px solid #ddd; padding: 10px; margin: 5px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>House Plan to Contractor Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test Overview</h3>
+        <p>This test verifies that house plans can be sent to contractors for construction estimates.</p>
+        <p><strong>Test House Plan ID:</strong> 10</p>
+        <p><strong>Expected Functionality:</strong> Send house plan with technical details to contractors</p>
+    </div>
+
+    <div class="test-section" id="contractors-test">
+        <h3>1. Get Available Contractors</h3>
+        <button onclick="getContractors()">Get Contractors</button>
+        <div id="contractors-result"></div>
+    </div>
+
+    <div class="test-section" id="house-plan-test">
+        <h3>2. Get House Plan Data</h3>
+        <button onclick="getHousePlan()">Get House Plan</button>
+        <div id="house-plan-result"></div>
+    </div>
+
+    <div class="test-section" id="send-test">
+        <h3>3. Send House Plan to Contractor</h3>
+        <button onclick="sendHousePlanToContractor()" id="send-btn" disabled>Send to First Contractor</button>
+        <div id="send-result"></div>
+    </div>
+
+    <script>
+        let contractors = [];
+        let housePlanData = null;
+
+        async function getContractors() {
+            const resultDiv = document.getElementById('contractors-result');
+            resultDiv.innerHTML = '<p>Loading contractors...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_contractors.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.contractors) {
+                    contractors = data.contractors;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Found ${contractors.length} Contractors</h4>
+                            <div>
+                                ${contractors.slice(0, 3).map(c => `
+                                    <div class="contractor-card">
+                                        <strong>${c.first_name} ${c.last_name}</strong><br>
+                                        Email: ${c.email}<br>
+                                        ID: ${c.id}
+                                    </div>
+                                `).join('')}
+                                ${contractors.length > 3 ? `<p>... and ${contractors.length - 3} more</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Enable next test if we have contractors
+                    if (contractors.length > 0) {
+                        document.getElementById('send-btn').disabled = false;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ No Contractors Found</h4>
+                            <p>${data.message || 'No contractors available'}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Request Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function getHousePlan() {
+            const resultDiv = document.getElementById('house-plan-result');
+            resultDiv.innerHTML = '<p>Loading house plan...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const housePlans = data.designs.filter(d => d.source_type === 'house_plan');
+                    
+                    if (housePlans.length > 0) {
+                        housePlanData = housePlans[0];
+                        
+                        resultDiv.innerHTML = `
+                            <div class="success">
+                                <h4>✅ House Plan Found</h4>
+                                <p><strong>Name:</strong> ${housePlanData.design_title}</p>
+                                <p><strong>Plot:</strong> ${housePlanData.plot_dimensions}</p>
+                                <p><strong>Area:</strong> ${housePlanData.total_area} sq ft</p>
+                                <p><strong>Architect:</strong> ${housePlanData.architect?.name}</p>
+                                <p><strong>Files:</strong> ${housePlanData.files?.length || 0}</p>
+                                <p><strong>Technical Details:</strong> ${housePlanData.technical_details ? 'Yes' : 'No'}</p>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h4>❌ No House Plans Found</h4>
+                                <p>No house plans available for testing</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ API Error</h4>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Request Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function sendHousePlanToContractor() {
+            if (!contractors.length || !housePlanData) {
+                alert('Please run the previous tests first');
+                return;
+            }
+
+            const resultDiv = document.getElementById('send-result');
+            resultDiv.innerHTML = '<p>Sending house plan to contractor...</p>';
+            
+            const contractor = contractors[0];
+            
+            try {
+                const housePlanPayload = {
+                    house_plan_id: housePlanData.house_plan_id,
+                    plan_name: housePlanData.design_title,
+                    plot_dimensions: housePlanData.plot_dimensions,
+                    total_area: housePlanData.total_area,
+                    technical_details: housePlanData.technical_details,
+                    plan_data: housePlanData.plan_data,
+                    architect_info: housePlanData.architect,
+                    layout_images: housePlanData.files?.filter(f => f.type === 'layout_image') || [],
+                    notes: housePlanData.description
+                };
+
+                const response = await fetch('/buildhub/backend/api/homeowner/send_house_plan_to_contractor.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        contractor_id: contractor.id,
+                        house_plan_data: housePlanPayload,
+                        message: 'Test message: Please provide construction estimate for this house plan.'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ House Plan Sent Successfully</h4>
+                            <p><strong>Contractor:</strong> ${result.contractor_name}</p>
+                            <p><strong>Send ID:</strong> ${result.send_id}</p>
+                            <p><strong>Message:</strong> ${result.message}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Send Failed</h4>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Request Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run first test
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                getContractors();
+                getHousePlan();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

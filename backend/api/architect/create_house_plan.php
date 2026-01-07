@@ -9,17 +9,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once '../../config/database.php';
 
 try {
     $database = new Database();
     $db = $database->getConnection();
 
+    if (!$db) {
+        echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+        exit;
+    }
+
     session_start();
     $architect_id = $_SESSION['user_id'] ?? null;
 
     if (!$architect_id) {
-        echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+        echo json_encode(['success' => false, 'message' => 'User not authenticated. Please log in again.']);
         exit;
     }
 
@@ -29,11 +38,16 @@ try {
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user || $user['role'] !== 'architect') {
-        echo json_encode(['success' => false, 'message' => 'Access denied']);
+        echo json_encode(['success' => false, 'message' => 'Access denied. User is not an architect.']);
         exit;
     }
 
     $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        echo json_encode(['success' => false, 'message' => 'Invalid JSON input: ' . json_last_error_msg()]);
+        exit;
+    }
     
     $plan_name = trim($input['plan_name'] ?? '');
     $layout_request_id = isset($input['layout_request_id']) ? (int)$input['layout_request_id'] : null;
@@ -43,7 +57,13 @@ try {
     $notes = trim($input['notes'] ?? '');
 
     if (empty($plan_name) || $plot_width <= 0 || $plot_height <= 0) {
-        echo json_encode(['success' => false, 'message' => 'Plan name, plot width and height are required']);
+        echo json_encode(['success' => false, 'message' => 'Plan name, plot width and height are required and must be greater than 0']);
+        exit;
+    }
+
+    // Validate plan_data structure
+    if (!isset($plan_data['rooms']) || !is_array($plan_data['rooms'])) {
+        echo json_encode(['success' => false, 'message' => 'Plan data must contain a rooms array']);
         exit;
     }
 
@@ -141,7 +161,8 @@ try {
             'layout_request_id' => $layout_request_id
         ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to create house plan']);
+        $errorInfo = $stmt->errorInfo();
+        echo json_encode(['success' => false, 'message' => 'Failed to create house plan: ' . $errorInfo[2]]);
     }
 
 } catch (Exception $e) {

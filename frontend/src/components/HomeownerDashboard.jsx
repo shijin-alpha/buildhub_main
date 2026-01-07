@@ -6,6 +6,7 @@ import TourGuide from './TourGuide.jsx';
 import HomeownerDashboardTour from './HomeownerDashboardTour.jsx';
 import ArchitectSelection from './ArchitectSelection.jsx';
 import GeoPhotoViewer from './GeoPhotoViewer.jsx';
+import HousePlanViewer from './HousePlanViewer.jsx';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -1114,6 +1115,99 @@ const HomeownerDashboard = () => {
     return false;
   };
 
+  // Handle payment for unlocking technical details of house plans
+  const handlePayToUnlockTechnicalDetails = async (housePlan) => {
+    setPaymentError('');
+    setPaymentLoading(true);
+    setPayingDesignId(housePlan.id);
+    
+    try {
+      // Wait for Razorpay to be available
+      let attempts = 0;
+      while ((!window.Razorpay || window._razorpayLoading) && attempts < 20) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+
+      if (!window.Razorpay) {
+        setPaymentError('Payment system not loaded. Please refresh the page and try again.');
+        return;
+      }
+
+      // Request order from backend
+      const response = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          house_plan_id: housePlan.house_plan_id
+        })
+      });
+      
+      const result = await response.json();
+      if (!result?.success) {
+        setPaymentError(result?.message || 'Failed to initiate payment');
+        return;
+      }
+
+      const options = {
+        key: result.razorpay_key_id,
+        amount: result.amount, // in paise
+        currency: result.currency || 'INR',
+        name: 'BuildHub',
+        description: result.description || `Unlock Technical Details: ${housePlan.design_title}`,
+        order_id: result.razorpay_order_id,
+        handler: async function (rzpRes) {
+          try {
+            const verifyRes = await fetch('/buildhub/backend/api/homeowner/verify_technical_details_payment.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                razorpay_payment_id: rzpRes.razorpay_payment_id,
+                razorpay_order_id: rzpRes.razorpay_order_id,
+                razorpay_signature: rzpRes.razorpay_signature,
+                payment_id: result.payment_id
+              })
+            });
+            
+            const verifyJson = await verifyRes.json();
+            if (verifyJson?.success) {
+              // Refresh designs to get updated payment status
+              await fetchReceivedDesigns();
+              setPaymentError('');
+              toast?.success('Technical details unlocked successfully!');
+            } else {
+              setPaymentError(verifyJson?.message || 'Payment verification failed');
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            setPaymentError('Payment verification failed');
+          }
+        },
+        prefill: {
+          name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || undefined,
+          email: user?.email
+        },
+        theme: { color: '#2563eb' }
+      };
+
+      try {
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } catch (error) {
+        console.error('Razorpay error:', error);
+        setPaymentError('Failed to open payment gateway. Please try again.');
+      }
+    } catch (error) {
+      console.error('Payment initiation error:', error);
+      setPaymentError('Network error during payment');
+    } finally {
+      setPaymentLoading(false);
+      setPayingDesignId(null);
+    }
+  };
+
   // Architect assignment state
   const [architects, setArchitects] = useState([]);
   const [archLoading, setArchLoading] = useState(false);
@@ -1404,21 +1498,55 @@ const HomeownerDashboard = () => {
 
   const handleDeleteDesign = async (designId) => {
     if (!designId) return;
+    
+    // Check if this is a house plan (ID starts with 'hp_')
+    const isHousePlan = typeof designId === 'string' && designId.startsWith('hp_');
+    
     try {
-      const res = await fetch('/buildhub/backend/api/homeowner/delete_design.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ design_id: designId })
-      });
-      const json = await res.json();
-      if (json.success) {
-        setReceivedDesigns(prev => prev.filter(d => d.id !== designId));
-        setSuccess('Design deleted successfully');
+      if (isHousePlan) {
+        // Extract the actual house plan ID from the prefixed ID (hp_123 -> 123)
+        const housePlanId = designId.replace('hp_', '');
+        
+        const res = await fetch('/buildhub/backend/api/homeowner/delete_house_plan.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ house_plan_id: parseInt(housePlanId) })
+        });
+        const json = await res.json();
+        
+        if (json.success) {
+          setReceivedDesigns(prev => prev.filter(d => d.id !== designId));
+          setSuccess('House plan deleted successfully');
+        } else {
+          setError(json.message || 'Failed to delete house plan');
+        }
       } else {
-        setError(json.message || 'Failed to delete design');
+        // Handle regular design deletion
+        const res = await fetch('/buildhub/backend/api/homeowner/delete_design.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ design_id: designId })
+        });
+        const json = await res.json();
+        
+        if (json.success) {
+          setReceivedDesigns(prev => prev.filter(d => d.id !== designId));
+          setSuccess('Design deleted successfully');
+        } else {
+          setError(json.message || 'Failed to delete design');
+        }
       }
     } catch (e) {
-      setError('Error deleting design');
+      setError('Error deleting ' + (isHousePlan ? 'house plan' : 'design'));
+    }
+  };
+
+  const confirmDeleteDesign = (designId, designTitle) => {
+    const isHousePlan = typeof designId === 'string' && designId.startsWith('hp_');
+    const itemType = isHousePlan ? 'house plan' : 'design';
+    
+    if (window.confirm(`Are you sure you want to delete this ${itemType}?\n\n"${designTitle}"\n\nThis action cannot be undone.${isHousePlan ? '\n\nNote: This will also delete all associated files and payment records.' : ''}`)) {
+      handleDeleteDesign(designId);
     }
   };
 
@@ -1621,7 +1749,11 @@ const HomeownerDashboard = () => {
       setError('Please select at least one contractor');
       return;
     }
-    // Allow send without layout if we have a forwarded design bundle
+    
+    // Check if we're sending a house plan
+    const isHousePlan = sourceDesignForContractor?.source_type === 'house_plan';
+    
+    // Allow send without layout if we have a forwarded design bundle or house plan
     const canSendWithoutLayout = !!sourceDesignForContractor;
     if (!layoutIdToSend && !canSendWithoutLayout) {
       setError('Please select a layout to send');
@@ -1636,29 +1768,58 @@ const HomeownerDashboard = () => {
       // Send to all selected contractors
       for (const contractor of selectedContractors) {
         try {
-          const response = await fetch('/buildhub/backend/api/homeowner/send_to_contractor.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              layout_id: layoutIdToSend || null,
-              contractor_id: contractor.id,
-              homeowner_id: user?.id,
-              contractor_message: contractorMessage || '',
-              forwarded_design: sourceDesignForContractor ? {
-                id: sourceDesignForContractor.id,
-                title: sourceDesignForContractor.design_title,
-                description: sourceDesignForContractor.description,
-                files: Array.isArray(sourceDesignForContractor.files) ? sourceDesignForContractor.files : [],
-                technical_details: sourceDesignForContractor.technical_details || null,
-                created_at: sourceDesignForContractor.created_at
-              } : null,
-              plot_size: selectedLibraryLayout?.plot_size || requestData.plot_size || null,
-              building_size: selectedLibraryLayout?.building_size || requestData.building_size || null
-            })
-          });
+          let response, result;
+          
+          if (isHousePlan) {
+            // Use house plan API
+            const housePlanData = {
+              house_plan_id: sourceDesignForContractor.house_plan_id,
+              plan_name: sourceDesignForContractor.design_title,
+              plot_dimensions: sourceDesignForContractor.plot_dimensions,
+              total_area: sourceDesignForContractor.total_area,
+              technical_details: sourceDesignForContractor.technical_details,
+              plan_data: sourceDesignForContractor.plan_data,
+              architect_info: sourceDesignForContractor.architect,
+              layout_images: sourceDesignForContractor.files?.filter(f => f.type === 'layout_image') || [],
+              notes: sourceDesignForContractor.description
+            };
+            
+            response = await fetch('/buildhub/backend/api/homeowner/send_house_plan_to_contractor.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                contractor_id: contractor.id,
+                house_plan_data: housePlanData,
+                message: ''
+              })
+            });
+          } else {
+            // Use regular design API
+            response = await fetch('/buildhub/backend/api/homeowner/send_to_contractor.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                layout_id: layoutIdToSend || null,
+                contractor_id: contractor.id,
+                homeowner_id: user?.id,
+                contractor_message: '',
+                forwarded_design: sourceDesignForContractor ? {
+                  id: sourceDesignForContractor.id,
+                  title: sourceDesignForContractor.design_title,
+                  description: sourceDesignForContractor.description,
+                  files: Array.isArray(sourceDesignForContractor.files) ? sourceDesignForContractor.files : [],
+                  technical_details: sourceDesignForContractor.technical_details || null,
+                  created_at: sourceDesignForContractor.created_at
+                } : null,
+                plot_size: selectedLibraryLayout?.plot_size || requestData.plot_size || null,
+                building_size: selectedLibraryLayout?.building_size || requestData.building_size || null
+              })
+            });
+          }
 
-          const result = await response.json();
+          result = await response.json();
           if (result.success) {
             successMessages.push(result.contractor_name || contractor.first_name);
           } else {
@@ -1671,10 +1832,10 @@ const HomeownerDashboard = () => {
 
       // Show success/error messages
       if (successMessages.length > 0) {
-        setSuccess(`Layout sent to ${successMessages.length} contractor(s): ${successMessages.join(', ')}`);
+        const itemType = isHousePlan ? 'House plan' : 'Layout';
+        setSuccess(`${itemType} sent to ${successMessages.length} contractor(s): ${successMessages.join(', ')}`);
         setShowContractorModal(false);
         setSelectedContractors([]);
-        setContractorMessage('');
         setSelectedLibraryLayout(null);
         setSourceDesignForContractor(null);
         // Refresh the requests to show the new entry
@@ -2258,8 +2419,8 @@ const HomeownerDashboard = () => {
 
       <div className="section-card">
         <div className="section-header">
-          <h2>All Designs (Legacy View)</h2>
-          <p>Designs sent by architects directly or for your requests</p>
+          <h2>All Designs & House Plans</h2>
+          <p>Designs sent by architects and house plans with technical specifications</p>
         </div>
         <div className="section-content">
           {receivedDesigns.length === 0 ? (
@@ -2272,12 +2433,38 @@ const HomeownerDashboard = () => {
             <div className="item-list">
               {receivedDesigns.map(d => (
                 <div key={d.id} className="list-item">
-                  <div className="item-icon">{d.status === 'finalized' ? '🏁' : d.status === 'shortlisted' ? '⭐' : '🎨'}</div>
+                  <div className="item-icon">
+                    {d.source_type === 'house_plan' ? '🏗️' : 
+                     d.status === 'finalized' ? '🏁' : 
+                     d.status === 'shortlisted' ? '⭐' : '🎨'}
+                  </div>
                   <div className="item-content" style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                       <div>
-                        <h4 className="item-title" style={{ margin: 0 }}>{d.design_title}</h4>
-                        <p className="item-subtitle" style={{ margin: '2px 0 0 0' }}>By {d.architect?.name || 'Architect'} • {new Date(d.created_at).toLocaleString()}</p>
+                        <h4 className="item-title" style={{ margin: 0 }}>
+                          {d.design_title}
+                          {d.source_type === 'house_plan' && (
+                            <span style={{ 
+                              marginLeft: '8px', 
+                              padding: '2px 6px', 
+                              background: '#e3f2fd', 
+                              color: '#1976d2', 
+                              borderRadius: '4px', 
+                              fontSize: '12px',
+                              fontWeight: 'normal'
+                            }}>
+                              House Plan
+                            </span>
+                          )}
+                        </h4>
+                        <p className="item-subtitle" style={{ margin: '2px 0 0 0' }}>
+                          By {d.architect?.name || 'Architect'} • {new Date(d.created_at).toLocaleString()}
+                          {d.source_type === 'house_plan' && d.plot_dimensions && (
+                            <span style={{ marginLeft: '8px', color: '#666' }}>
+                              • Plot: {d.plot_dimensions} • Area: {d.total_area} sq ft
+                            </span>
+                          )}
+                        </p>
                         <button className="btn btn-secondary" style={{ marginTop: 6 }} onClick={() => setShowDesignDetails(prev => ({ ...prev, [d.id]: !prev[d.id] }))}>
                           {showDesignDetails[d.id] ? 'Hide Details' : 'View Details'}
                         </button>
@@ -2293,50 +2480,135 @@ const HomeownerDashboard = () => {
                                 <div><strong>Request:</strong> Direct upload</div>
                               )}
                               <div><strong>Status:</strong> <span className={`status-chip ${d.status}`}>{d.status}</span></div>
+                              {d.source_type === 'house_plan' && (
+                                <>
+                                  <div><strong>House Plan Status:</strong> <span className={`status-chip ${d.house_plan_status}`}>{d.house_plan_status}</span></div>
+                                  <div><strong>Plot Dimensions:</strong> {d.plot_dimensions}</div>
+                                  <div><strong>Total Area:</strong> {d.total_area} sq ft</div>
+                                </>
+                              )}
                               <div><strong>Uploaded:</strong> {new Date(d.created_at).toLocaleString()}</div>
                             </div>
                             {d.description && (
                               <div className="description-section">
                                 <strong>Description:</strong>
                                 <div className="description-content">
-                                  <NeatJsonCard raw={d.description} title="Requirements" />
+                                  {d.source_type === 'house_plan' ? (
+                                    <p>{d.description}</p>
+                                  ) : (
+                                    <NeatJsonCard raw={d.description} title="Requirements" />
+                                  )}
                                 </div>
                               </div>
                             )}
                             {d.technical_details && (
                               <div className="technical-details-section" style={{ marginTop: 16 }}>
-                                <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600, color: '#374151' }}>Technical Details</h3>
-                                <TechnicalDetailsDisplay technicalDetails={d.technical_details} startExpanded={true} />
+                                <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600, color: '#374151' }}>
+                                  {d.source_type === 'house_plan' ? 'House Plan Technical Specifications' : 'Technical Details'}
+                                  {d.source_type === 'house_plan' && !d.is_technical_details_unlocked && (
+                                    <span style={{ 
+                                      marginLeft: '8px', 
+                                      padding: '2px 6px', 
+                                      background: '#fef3c7', 
+                                      color: '#92400e', 
+                                      borderRadius: '4px', 
+                                      fontSize: '12px',
+                                      fontWeight: 'normal'
+                                    }}>
+                                      🔒 Locked - Pay ₹{parseFloat(d.unlock_price || 8000).toLocaleString('en-IN')} to unlock
+                                    </span>
+                                  )}
+                                  {d.source_type === 'house_plan' && d.is_technical_details_unlocked && (
+                                    <span style={{ 
+                                      marginLeft: '8px', 
+                                      padding: '2px 6px', 
+                                      background: '#d1fae5', 
+                                      color: '#065f46', 
+                                      borderRadius: '4px', 
+                                      fontSize: '12px',
+                                      fontWeight: 'normal'
+                                    }}>
+                                      ✅ Unlocked
+                                    </span>
+                                  )}
+                                </h3>
+                                {d.source_type === 'house_plan' && !d.is_technical_details_unlocked ? (
+                                  <div style={{ 
+                                    padding: '16px', 
+                                    background: '#fffbeb', 
+                                    border: '1px solid #fbbf24', 
+                                    borderRadius: '8px',
+                                    textAlign: 'center'
+                                  }}>
+                                    <div style={{ fontSize: '14px', color: '#92400e', marginBottom: '8px' }}>
+                                      Technical details are locked. Pay ₹{parseFloat(d.unlock_price || 8000).toLocaleString('en-IN')} to unlock complete specifications.
+                                    </div>
+                                    <button 
+                                      className="btn btn-primary"
+                                      onClick={() => handlePayToUnlockTechnicalDetails(d)}
+                                      disabled={paymentLoading && payingDesignId === d.id}
+                                      style={{ fontSize: '14px', padding: '8px 16px' }}
+                                    >
+                                      {paymentLoading && payingDesignId === d.id ? 'Processing...' : 
+                                       `Pay ₹${parseFloat(d.unlock_price || 8000).toLocaleString('en-IN')} to Unlock`}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <TechnicalDetailsDisplay technicalDetails={d.technical_details} startExpanded={true} />
+                                )}
+                              </div>
+                            )}
+                            {d.source_type === 'house_plan' && d.plan_data && (
+                              <div className="plan-data-section" style={{ marginTop: 16 }}>
+                                <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600, color: '#374151' }}>Plan Information</h3>
+                                <div className="plan-info-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                                  <div><strong>Plot Size:</strong> {d.plot_dimensions}</div>
+                                  <div><strong>Total Area:</strong> {d.total_area} sq ft</div>
+                                  <div><strong>Floors:</strong> {d.plan_data.floors?.total_floors || 1}</div>
+                                  <div><strong>Rooms:</strong> {d.plan_data.rooms?.length || 0}</div>
+                                  {d.plan_data.scale_ratio && (
+                                    <div><strong>Scale Ratio:</strong> {d.plan_data.scale_ratio}</div>
+                                  )}
+                                </div>
                               </div>
                             )}
                           </div>
                         )}
                       </div>
-                      <button className="btn btn-danger" onClick={() => handleDeleteDesign(d.id)}>🗑️ Delete</button>
+                      <button className="btn btn-danger" onClick={() => confirmDeleteDesign(d.id, d.design_title)}>🗑️ Delete</button>
                     </div>
                     <p className="item-meta" style={{ marginTop: 6 }}>
                       Status: <span className={`status-badge ${d.status}`}>{d.status}</span>
                     </p>
 
-                    {/* Payment gate */}
-                    {!hasPaidAccess(d) ? (
+                    {/* Payment gate - for house plans with technical details or regular designs */}
+                    {((d.source_type === 'house_plan' && !d.is_technical_details_unlocked) || 
+                      (d.source_type !== 'house_plan' && !hasPaidAccess(d))) ? (
                       <div style={{ margin: '12px 0', padding: '12px', border: '1px solid #f59e0b', background: '#fffbeb', borderRadius: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                           <div>
-                            <div style={{ fontWeight: 600, color: '#92400e' }}>Payment required to view files</div>
+                            <div style={{ fontWeight: 600, color: '#92400e' }}>
+                              {d.source_type === 'house_plan' ? 'Payment required to unlock technical details' : 'Payment required to view files'}
+                            </div>
                             <div style={{ color: '#92400e', fontSize: 14 }}>
-                              {d?.view_price && d.view_price > 0 ?
-                                `Architect-set price: ₹${parseFloat(d.view_price).toLocaleString('en-IN')}` :
-                                `Price based on sqft: ₹${calculateDesignPrice(d).toLocaleString('en-IN')}`
+                              {d.source_type === 'house_plan' ? 
+                                `Unlock Price: ₹${parseFloat(d.unlock_price || 8000).toLocaleString('en-IN')}` :
+                                (d?.view_price && d.view_price > 0 ?
+                                  `Architect-set price: ₹${parseFloat(d.view_price).toLocaleString('en-IN')}` :
+                                  `Price based on sqft: ₹${calculateDesignPrice(d).toLocaleString('en-IN')}`
+                                )
                               }
                             </div>
                           </div>
                           <button
                             className="btn btn-primary"
-                            onClick={() => handlePayToView(d)}
+                            onClick={() => d.source_type === 'house_plan' ? handlePayToUnlockTechnicalDetails(d) : handlePayToView(d)}
                             disabled={paymentLoading && payingDesignId === d.id}
                           >
-                            {paymentLoading && payingDesignId === d.id ? 'Processing…' : 'Pay to View'}
+                            {paymentLoading && payingDesignId === d.id ? 'Processing…' : 
+                             d.source_type === 'house_plan' ? 
+                               `Pay ₹${parseFloat(d.unlock_price || 8000).toLocaleString('en-IN')} to Unlock` : 
+                               'Pay to View'}
                           </button>
                         </div>
                         {paymentError && (
@@ -2345,44 +2617,152 @@ const HomeownerDashboard = () => {
                       </div>
                     ) : null}
 
-                    {/* Files grid - visible only if paid or unlocked */}
-                    {hasPaidAccess(d) && (
+                    {/* Files grid - visible for unlocked house plans or paid regular designs */}
+                    {((d.source_type === 'house_plan' && d.is_technical_details_unlocked) || 
+                      (d.source_type !== 'house_plan' && hasPaidAccess(d))) && (
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', marginTop: '10px' }}>
-                        {/* Prefer special tags if present */}
+                        {/* Handle different file types for house plans vs regular designs */}
                         {(() => {
                           const files = Array.isArray(d.files) ? d.files : [];
-                          const preview = files.find(x => x.tag === 'preview') || files.find(x => /preview|thumb|cover/i.test(x.original || ''));
-                          const layout = files.find(x => x.tag === 'layout') || files.find(x => /layout|plan|floor|design/i.test(x.original || ''));
-                          const others = files.filter(x => x !== preview && x !== layout);
-                          const toCards = [preview, layout, ...others].filter(Boolean);
-                          return toCards.map((f, idx) => {
-                            const href = f.path || `/buildhub/backend/uploads/designs/${f.stored || f.original}`;
-                            const ext = (f.ext || '').toLowerCase();
-                            const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'heic'].includes(ext);
-                            const label = f.tag === 'preview' ? 'Preview' : f.tag === 'layout' ? 'Layout' : undefined;
-                            return (
-                              <div key={idx} className="file-card" style={{ cursor: 'default' }}>
-                                {isImage ? (
-                                  <img src={href} alt={f.original} style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 6 }} onClick={() => setViewer({ open: true, src: href, title: f.original || f.stored })} />
-                                ) : (
-                                  <div className="file-thumb" style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f7', borderRadius: 6 }}>
-                                    <span style={{ fontSize: '2rem' }}>📄</span>
-                                  </div>
-                                )}
-                                <div className="file-name" style={{ fontSize: '0.85rem', marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={f.original || f.stored}>
-                                  {label ? `${label}: ` : ''}{f.original || f.stored}
-                                </div>
-                                <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                          
+                          if (d.source_type === 'house_plan') {
+                            // For house plans, organize by file type
+                            const layoutImages = files.filter(f => f.type === 'layout_image');
+                            const elevationImages = files.filter(f => f.type === 'elevation_images');
+                            const sectionDrawings = files.filter(f => f.type === 'section_drawings');
+                            const renders3d = files.filter(f => f.type === 'renders_3d');
+                            const allFiles = [...layoutImages, ...elevationImages, ...sectionDrawings, ...renders3d];
+                            
+                            return allFiles.map((f, idx) => {
+                              const href = f.path || `/buildhub/backend/uploads/house_plans/${f.stored || f.original}`;
+                              const ext = (f.ext || '').toLowerCase();
+                              const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'heic'].includes(ext);
+                              
+                              let label = '';
+                              switch(f.type) {
+                                case 'layout_image': label = 'Layout'; break;
+                                case 'elevation_images': label = 'Elevation'; break;
+                                case 'section_drawings': label = 'Section'; break;
+                                case 'renders_3d': label = '3D Render'; break;
+                                default: label = 'File';
+                              }
+                              
+                              return (
+                                <div key={idx} className="file-card" style={{ cursor: 'default' }}>
                                   {isImage ? (
-                                    <button type="button" className="btn btn-secondary" style={{ padding: '6px 10px' }} onClick={() => setViewer({ open: true, src: href, title: f.original || f.stored })}>View</button>
-                                  ) : (
-                                    <a href={href} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ padding: '6px 10px' }}>Open</a>
+                                    <img 
+                                      src={href} 
+                                      alt={f.original} 
+                                      style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 6 }} 
+                                      onClick={() => setViewer({ open: true, src: href, title: f.original || f.stored })} 
+                                      onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                      }}
+                                    />
+                                  ) : null}
+                                  {isImage && (
+                                    <div 
+                                      className="file-thumb" 
+                                      style={{ 
+                                        height: 120, 
+                                        display: 'none', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        background: '#f5f5f7', 
+                                        borderRadius: 6,
+                                        flexDirection: 'column',
+                                        color: '#6b7280'
+                                      }}
+                                    >
+                                      <span style={{ fontSize: '2rem', marginBottom: 8 }}>🖼️</span>
+                                      <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Image not found</span>
+                                    </div>
                                   )}
-                                  <a href={href} download className="btn" style={{ padding: '6px 10px' }}>Download</a>
+                                  {!isImage && (
+                                    <div className="file-thumb" style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f7', borderRadius: 6 }}>
+                                      <span style={{ fontSize: '2rem' }}>📄</span>
+                                    </div>
+                                  )}
+                                  <div className="file-name" style={{ fontSize: '0.85rem', marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={f.original || f.stored}>
+                                    {label}: {f.original || f.stored}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                                    {isImage ? (
+                                      <button type="button" className="btn btn-secondary" style={{ padding: '6px 10px' }} onClick={() => setViewer({ open: true, src: href, title: f.original || f.stored })}>View</button>
+                                    ) : (
+                                      <a href={href} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ padding: '6px 10px' }}>Open</a>
+                                    )}
+                                    <a href={href} download className="btn" style={{ padding: '6px 10px' }}>Download</a>
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          });
+                              );
+                            });
+                          } else {
+                            // For regular designs, use existing logic
+                            const preview = files.find(x => x.tag === 'preview') || files.find(x => /preview|thumb|cover/i.test(x.original || ''));
+                            const layout = files.find(x => x.tag === 'layout') || files.find(x => /layout|plan|floor|design/i.test(x.original || ''));
+                            const others = files.filter(x => x !== preview && x !== layout);
+                            const toCards = [preview, layout, ...others].filter(Boolean);
+                            
+                            return toCards.map((f, idx) => {
+                              const href = f.path || `/buildhub/backend/uploads/designs/${f.stored || f.original}`;
+                              const ext = (f.ext || '').toLowerCase();
+                              const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'heic'].includes(ext);
+                              const label = f.tag === 'preview' ? 'Preview' : f.tag === 'layout' ? 'Layout' : undefined;
+                              
+                              return (
+                                <div key={idx} className="file-card" style={{ cursor: 'default' }}>
+                                  {isImage ? (
+                                    <img 
+                                      src={href} 
+                                      alt={f.original} 
+                                      style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 6 }} 
+                                      onClick={() => setViewer({ open: true, src: href, title: f.original || f.stored })} 
+                                      onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                      }}
+                                    />
+                                  ) : null}
+                                  {isImage && (
+                                    <div 
+                                      className="file-thumb" 
+                                      style={{ 
+                                        height: 120, 
+                                        display: 'none', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        background: '#f5f5f7', 
+                                        borderRadius: 6,
+                                        flexDirection: 'column',
+                                        color: '#6b7280'
+                                      }}
+                                    >
+                                      <span style={{ fontSize: '2rem', marginBottom: 8 }}>🖼️</span>
+                                      <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Image not found</span>
+                                    </div>
+                                  )}
+                                  {!isImage && (
+                                    <div className="file-thumb" style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f7', borderRadius: 6 }}>
+                                      <span style={{ fontSize: '2rem' }}>📄</span>
+                                    </div>
+                                  )}
+                                  <div className="file-name" style={{ fontSize: '0.85rem', marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={f.original || f.stored}>
+                                    {label ? `${label}: ` : ''}{f.original || f.stored}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                                    {isImage ? (
+                                      <button type="button" className="btn btn-secondary" style={{ padding: '6px 10px' }} onClick={() => setViewer({ open: true, src: href, title: f.original || f.stored })}>View</button>
+                                    ) : (
+                                      <a href={href} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ padding: '6px 10px' }}>Open</a>
+                                    )}
+                                    <a href={href} download className="btn" style={{ padding: '6px 10px' }}>Download</a>
+                                  </div>
+                                </div>
+                              );
+                            });
+                          }
                         })()}
                       </div>
                     )}
@@ -2423,14 +2803,22 @@ const HomeownerDashboard = () => {
                   </div>
                   <div className="item-actions" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <button className="btn" onClick={() => openSendToContractorFromDesign(d)}>Send to Contractor</button>
-                    {d.status !== 'shortlisted' && d.status !== 'finalized' && (
-                      <button className="btn" onClick={() => updateSelection(d.id, 'shortlist')}>⭐ Shortlist</button>
-                    )}
-                    {d.status === 'shortlisted' && (
-                      <button className="btn" onClick={() => updateSelection(d.id, 'remove-shortlist')}>Remove shortlist</button>
-                    )}
-                    {d.status !== 'finalized' && (
-                      <button className="btn btn-primary" onClick={() => updateSelection(d.id, 'finalize')}>🏁 Finalize</button>
+                    {d.source_type === 'house_plan' ? (
+                      <div style={{ padding: '8px', background: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: '4px', fontSize: '12px', color: '#0369a1' }}>
+                        House Plan - Review in House Plans tab for approval/rejection
+                      </div>
+                    ) : (
+                      <>
+                        {d.status !== 'shortlisted' && d.status !== 'finalized' && (
+                          <button className="btn" onClick={() => updateSelection(d.id, 'shortlist')}>⭐ Shortlist</button>
+                        )}
+                        {d.status === 'shortlisted' && (
+                          <button className="btn" onClick={() => updateSelection(d.id, 'remove-shortlist')}>Remove shortlist</button>
+                        )}
+                        {d.status !== 'finalized' && (
+                          <button className="btn btn-primary" onClick={() => updateSelection(d.id, 'finalize')}>🏁 Finalize</button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -2616,6 +3004,15 @@ const HomeownerDashboard = () => {
               <span className="nav-badge pulse" style={{ marginLeft: 'auto' }}>{designsCount}</span>
             )}
           </a>
+
+          <a
+            href="#"
+            className={`nav-item sb-item ${activeTab === 'house-plans' ? 'active' : ''}`}
+            data-title="House Plans"
+            onClick={(e) => { e.preventDefault(); setActiveTab('house-plans'); }}
+          >
+            <span className="nav-label sb-label">House Plans</span>
+          </a>
           <a
             href="#"
             className={`nav-item sb-item ${activeTab === 'estimates' ? 'active' : ''}`}
@@ -2688,6 +3085,7 @@ const HomeownerDashboard = () => {
         {activeTab === 'library' && renderLibrary()}
         {activeTab === 'requests' && renderRequests()}
         {activeTab === 'designs' && renderReceivedDesigns()}
+        {activeTab === 'house-plans' && <HousePlanViewer />}
         {activeTab === 'estimates' && (
           <div className="section-card" style={{ marginTop: '1rem' }}>
             <div className="section-header">
@@ -3628,113 +4026,138 @@ const HomeownerDashboard = () => {
           loading={architectReviewsLoading}
         />
 
-        {/* Contractor Selection Modal */}
+        {/* Simple Contractor Selection Modal */}
         {showContractorModal && (
           <div className="form-modal">
-            <div className="form-content contractor-modal">
-              <div className="form-header">
-                <h3>Select Contractor{selectedContractors.length > 0 ? ` (${selectedContractors.length})` : ''}</h3>
-                <p>Select one or more contractors to send your layout</p>
+            <div className="form-content simple-contractor-modal">
+              {/* Simple Header */}
+              <div className="simple-modal-header">
+                <h3>Send to Contractors</h3>
+                <p>Select contractors to receive your {sourceDesignForContractor?.source_type === 'house_plan' ? 'house plan' : 'design'}</p>
                 <button className="modal-close" onClick={() => setShowContractorModal(false)}>×</button>
               </div>
 
-              {/* Selected Layout Display */}
-              {selectedLibraryLayout && (
-                <div className="selected-layout-display">
-                  <h4>Selected Layout: {selectedLibraryLayout.title}</h4>
-                  <div className="layout-preview">
-                    <img
-                      src={selectedLibraryLayout.image_url || '/images/default-layout.jpg'}
-                      alt={selectedLibraryLayout.title}
-                      className="layout-image"
-                    />
-                    <div className="layout-details">
-                      <p><strong>Type:</strong> {selectedLibraryLayout.layout_type}</p>
-                      <p><strong>Bedrooms:</strong> {selectedLibraryLayout.bedrooms}</p>
-                      <p><strong>Bathrooms:</strong> {selectedLibraryLayout.bathrooms}</p>
-                      <p><strong>Area:</strong> {selectedLibraryLayout.area} sq ft</p>
-                    </div>
+              {/* Project Info */}
+              <div className="project-info-simple">
+                {sourceDesignForContractor?.source_type === 'house_plan' ? (
+                  <div className="info-row">
+                    <strong>House Plan:</strong> {sourceDesignForContractor.design_title}
+                    <span className="info-details">
+                      Plot: {sourceDesignForContractor.plot_dimensions} • 
+                      Area: {sourceDesignForContractor.total_area} sq ft • 
+                      Files: {sourceDesignForContractor.files?.length || 0}
+                    </span>
                   </div>
+                ) : selectedLibraryLayout ? (
+                  <div className="info-row">
+                    <strong>Layout:</strong> {selectedLibraryLayout.title}
+                    <span className="info-details">
+                      {selectedLibraryLayout.bedrooms}BR • 
+                      {selectedLibraryLayout.bathrooms}BA • 
+                      {selectedLibraryLayout.area} sq ft
+                    </span>
+                  </div>
+                ) : sourceDesignForContractor ? (
+                  <div className="info-row">
+                    <strong>Design:</strong> {sourceDesignForContractor.design_title}
+                    <span className="info-details">
+                      By {sourceDesignForContractor.architect?.name} • 
+                      Files: {sourceDesignForContractor.files?.length || 0}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
 
-                  {/* Technical Details in Selected Layout */}
-                  {selectedLibraryLayout.technical_details && (
-                    <div style={{ marginTop: '12px', padding: '12px', background: '#f8f9fa', borderRadius: '6px', border: '1px solid #e9ecef' }}>
-                      <h5 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: '#495057' }}>Technical Specifications</h5>
-                      <TechnicalDetailsDisplay
-                        technicalDetails={selectedLibraryLayout.technical_details}
-                        compact={true}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="filters-row">
+              {/* Search */}
+              <div className="search-simple">
                 <input
                   type="text"
-                  placeholder="Search contractor name/email"
+                  placeholder="Search contractors..."
                   value={archSearch}
                   onChange={(e) => setArchSearch(e.target.value)}
+                  className="search-input-simple"
                 />
-                <button onClick={() => fetchContractors({ search: archSearch })}>
-                  <i className="fas fa-search"></i> Search
+                <button 
+                  className="search-btn-simple" 
+                  onClick={() => fetchContractors({ search: archSearch })}
+                >
+                  Search
                 </button>
               </div>
 
-              {contractorError && <div className="alert alert-error">{contractorError}</div>}
-
+              {/* Selection Info */}
               {selectedContractors.length > 0 && (
-                <div className="alert alert-info" style={{ marginBottom: '12px', padding: '8px 12px', fontSize: '0.9rem' }}>
-                  📋 {selectedContractors.length} contractor{selectedContractors.length > 1 ? 's' : ''} selected
+                <div className="selection-info">
+                  {selectedContractors.length} contractor{selectedContractors.length > 1 ? 's' : ''} selected
                 </div>
               )}
 
-              <div className="contractors-list">
+              {/* Error */}
+              {contractorError && (
+                <div className="error-simple">{contractorError}</div>
+              )}
+
+              {/* Contractors List */}
+              <div className="contractors-list-simple">
                 {contractorLoading ? (
-                  <div className="loading">Loading contractors...</div>
+                  <div className="loading-simple">Loading contractors...</div>
                 ) : contractors.length === 0 ? (
-                  <div className="empty-state">
-                    <div className="empty-icon">👷</div>
-                    <h3>No contractors found</h3>
-                    <p>Adjust your filters and try again</p>
+                  <div className="empty-simple">
+                    <p>No contractors found</p>
                   </div>
                 ) : (
-                  <div className="item-list">
+                  <div className="contractors-simple">
                     {contractors.map(contractor => {
                       const isSelected = selectedContractors.some(c => c.id === contractor.id);
                       return (
-                        <label key={contractor.id} className={`list-item ${isSelected ? 'selected' : ''}`}>
-                          <div className="item-icon">👷</div>
-                          <div className="item-content">
-                            <h4 className="item-title">{contractor.first_name} {contractor.last_name}</h4>
-                            <p className="item-subtitle">Verified Contractor</p>
-                            <div className="detail-grid">
-                              <span><strong>Email:</strong> {contractor.email || 'N/A'}</span>
-                              <span><strong>License:</strong> {contractor.license ? 'Verified' : 'Not provided'}</span>
-                              <span><strong>Portfolio:</strong> {contractor.portfolio ? 'Available' : 'Not provided'}</span>
-                              <span><strong>Member since:</strong> {contractor.created_at ? new Date(contractor.created_at).getFullYear() : 'N/A'}</span>
+                        <label 
+                          key={contractor.id} 
+                          className={`contractor-item ${isSelected ? 'selected' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedContractors([...selectedContractors, contractor]);
+                              } else {
+                                setSelectedContractors(selectedContractors.filter(c => c.id !== contractor.id));
+                              }
+                            }}
+                          />
+                          <div className="contractor-info-simple">
+                            <div className="contractor-name-simple">
+                              {contractor.first_name} {contractor.last_name}
                             </div>
-                            <div className="rating-row">
-                              <span title={contractor.avg_rating ? `${contractor.avg_rating} / 5` : 'No ratings yet'}>
+                            <div className="contractor-details-simple">
+                              <div className="detail-line">
+                                <span className="detail-icon">📧</span>
+                                <span>{contractor.email}</span>
+                              </div>
+                              <div className="detail-line">
+                                <span className="detail-icon">📜</span>
+                                <span>{contractor.license ? 'Licensed Contractor' : 'License Pending'}</span>
+                              </div>
+                              <div className="detail-line">
+                                <span className="detail-icon">📅</span>
+                                <span>Member since {contractor.created_at ? new Date(contractor.created_at).getFullYear() : 'N/A'}</span>
+                              </div>
+                            </div>
+                            <div className="contractor-rating">
+                              <div className="rating-stars">
                                 {[1, 2, 3, 4, 5].map(star => (
-                                  <span key={star} style={{ color: (contractor.avg_rating || 0) >= star ? '#f5a623' : '#ddd' }}>★</span>
+                                  <span 
+                                    key={star} 
+                                    className={`rating-star ${(contractor.avg_rating || 0) >= star ? '' : 'empty'}`}
+                                  >
+                                    ★
+                                  </span>
                                 ))}
+                              </div>
+                              <span className="rating-text">
+                                {contractor.avg_rating || 0}/5 ({contractor.review_count || 0} reviews)
                               </span>
-                              <span style={{ marginLeft: 8, color: '#666', fontSize: '0.9rem' }}>({contractor.review_count || 0})</span>
                             </div>
-                          </div>
-                          <div className="item-actions">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedContractors([...selectedContractors, contractor]);
-                                } else {
-                                  setSelectedContractors(selectedContractors.filter(c => c.id !== contractor.id));
-                                }
-                              }}
-                            />
                           </div>
                         </label>
                       );
@@ -3742,21 +4165,24 @@ const HomeownerDashboard = () => {
                   </div>
                 )}
               </div>
-              {/* Optional message to contractor */}
-              <div className="form-group" style={{ marginTop: 12 }}>
-                <label>Message to contractor (optional)</label>
-                <textarea
-                  value={contractorMessage}
-                  onChange={(e) => setContractorMessage(e.target.value)}
-                  placeholder="Add any notes or instructions for the contractor"
-                  rows="3"
-                />
-              </div>
 
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setShowContractorModal(false)}>Cancel</button>
-                <button className="btn btn-primary" disabled={contractorLoading || !selectedContractors || selectedContractors.length === 0 || sendingToContractor} onClick={sendToContractor}>
-                  {sendingToContractor ? `Sending to ${selectedContractors.length} contractor(s)...` : `Send to ${selectedContractors.length > 0 ? `${selectedContractors.length} Contractor${selectedContractors.length > 1 ? 's' : ''}` : 'Contractor'}`}
+              {/* Actions */}
+              <div className="modal-actions-simple">
+                <button 
+                  className="btn-cancel" 
+                  onClick={() => setShowContractorModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn-send" 
+                  disabled={contractorLoading || !selectedContractors || selectedContractors.length === 0 || sendingToContractor} 
+                  onClick={sendToContractor}
+                >
+                  {sendingToContractor ? 
+                    `Sending to ${selectedContractors.length} contractor${selectedContractors.length > 1 ? 's' : ''}...` : 
+                    `Send to ${selectedContractors.length || 0} Contractor${selectedContractors.length > 1 ? 's' : ''}`
+                  }
                 </button>
               </div>
             </div>
@@ -4243,6 +4669,13 @@ const RequestItem = ({ request, onAssignArchitect, onRemove, showContractorInfo 
                         e.stopPropagation();
                         const overlay = e.currentTarget.nextSibling;
                         overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        const errorDiv = document.createElement('div');
+                        errorDiv.style.cssText = 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f5f5f7; flex-direction: column; color: #6b7280;';
+                        errorDiv.innerHTML = '<span style="font-size: 2rem; margin-bottom: 8px;">🖼️</span><span style="font-size: 0.75rem;">Image not found</span>';
+                        e.target.parentNode.insertBefore(errorDiv, e.target);
                       }}
                     />
                     <div className="image-overlay" style={{
@@ -5157,482 +5590,6 @@ const ImageViewer = ({ viewer, setViewer }) => {
           </a>
         </div>
       </div>
-
-      {/* Dashboard Tour Guide */}
-      <HomeownerDashboardTour
-        isOpen={showDashboardTour}
-        onClose={handleDashboardTourClose}
-        currentStep={tourStep}
-        totalSteps={10}
-        onNext={handleDashboardTourNext}
-        onPrev={handleDashboardTourPrev}
-        onSkip={handleDashboardTourSkip}
-      />
-
-      {/* Debug info */}
-      <div style={{
-        position: 'fixed',
-        top: '10px',
-        left: '10px',
-        backgroundColor: 'red',
-        color: 'white',
-        padding: '10px',
-        zIndex: 10000,
-        borderRadius: '5px',
-        fontSize: '12px'
-      }}>
-        Modal: {showConstructionModal ? 'TRUE' : 'FALSE'}<br />
-        Estimate: {selectedEstimate ? selectedEstimate.id : 'NULL'}
-      </div>
-
-      {/* Simple Test Modal (via Portal) */}
-      {showConstructionModal && createPortal((
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'red',
-          zIndex: 99999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '24px',
-          color: 'white'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            color: 'black',
-            padding: '20px',
-            borderRadius: '10px',
-            textAlign: 'center'
-          }}>
-            <h2>TEST MODAL IS WORKING!</h2>
-            <p>Estimate ID: {selectedEstimate?.id}</p>
-            <button
-              onClick={() => {
-                setShowConstructionModal(false);
-                setSelectedEstimate(null);
-              }}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: 'red',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer'
-              }}
-            >
-              Close Test Modal
-            </button>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Construction Confirmation Modal (via Portal) */}
-      {showConstructionModal && selectedEstimate && createPortal((
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px'
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowConstructionModal(false);
-              setSelectedEstimate(null);
-            }
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '30px',
-              maxWidth: '500px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              position: 'relative'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => {
-                setShowConstructionModal(false);
-                setSelectedEstimate(null);
-              }}
-              style={{
-                position: 'absolute',
-                top: '15px',
-                right: '15px',
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: '#6b7280',
-                padding: '5px',
-                borderRadius: '4px'
-              }}
-            >
-              ×
-            </button>
-
-            {/* Modal content */}
-            <div style={{ marginBottom: '20px' }}>
-              <h2 style={{
-                margin: '0 0 15px 0',
-                fontSize: '24px',
-                fontWeight: '600',
-                color: '#1f2937',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                🏗️ Start Construction
-              </h2>
-
-              <p style={{
-                margin: '0 0 20px 0',
-                fontSize: '16px',
-                color: '#374151',
-                lineHeight: '1.5'
-              }}>
-                Are you sure you want to start construction for this project?
-              </p>
-
-              <div style={{
-                backgroundColor: '#f9fafb',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '16px',
-                marginBottom: '16px'
-              }}>
-                <div style={{ marginBottom: '8px' }}>
-                  <strong style={{ color: '#374151' }}>Contractor:</strong>
-                  <span style={{ marginLeft: '8px', color: '#6b7280' }}>
-                    {selectedEstimate.contractor_name || 'Unknown Contractor'}
-                  </span>
-                </div>
-                <div style={{ marginBottom: '8px' }}>
-                  <strong style={{ color: '#374151' }}>Project:</strong>
-                  <span style={{ marginLeft: '8px', color: '#6b7280' }}>
-                    {selectedEstimate.project_title || 'Untitled Project'}
-                  </span>
-                </div>
-                <div>
-                  <strong style={{ color: '#374151' }}>Estimate ID:</strong>
-                  <span style={{ marginLeft: '8px', color: '#6b7280' }}>
-                    #{selectedEstimate.id}
-                  </span>
-                </div>
-              </div>
-
-              <div style={{
-                backgroundColor: '#fef3c7',
-                border: '1px solid #f59e0b',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '20px'
-              }}>
-                <p style={{
-                  margin: 0,
-                  fontSize: '14px',
-                  color: '#92400e',
-                  fontWeight: '500'
-                }}>
-                  ⚠️ This will notify the contractor that they can begin construction work as per the agreed terms.
-                </p>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'flex-end'
-            }}>
-              <button
-                onClick={() => {
-                  setShowConstructionModal(false);
-                  setSelectedEstimate(null);
-                }}
-                style={{
-                  padding: '12px 24px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  backgroundColor: 'white',
-                  color: '#374151',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#f9fafb'}
-                onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmStartConstruction}
-                style={{
-                  padding: '12px 24px',
-                  border: 'none',
-                  borderRadius: '8px',
-                  backgroundColor: '#10b981',
-                  color: 'white',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#059669'}
-                onMouseOut={(e) => e.target.style.backgroundColor = '#10b981'}
-              >
-                🏗️ Start Construction
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Message to Contractor Modal */}
-      {showMessageModal && selectedEstimateForMessage && createPortal((
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px'
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowMessageModal(false);
-              setSelectedEstimateForMessage(null);
-              setMessageToContractor('');
-            }
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '24px',
-              maxWidth: '500px',
-              width: '100%',
-              maxHeight: '80vh',
-              overflow: 'auto',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-              position: 'relative'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => {
-                setShowMessageModal(false);
-                setSelectedEstimateForMessage(null);
-                setMessageToContractor('');
-              }}
-              style={{
-                position: 'absolute',
-                top: '15px',
-                right: '15px',
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: '#6b7280',
-                padding: '4px',
-                borderRadius: '4px'
-              }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-              onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-            >
-              ×
-            </button>
-
-            {/* Modal Header */}
-            <div style={{ marginBottom: '20px' }}>
-              <h2 style={{
-                margin: '0 0 8px 0',
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#111827'
-              }}>
-                💬 Send Message to Contractor
-              </h2>
-              <p style={{
-                margin: 0,
-                fontSize: '14px',
-                color: '#6b7280'
-              }}>
-                Send a message to the contractor with complete estimation details, layout information, and your contact details to start working on the project.
-              </p>
-            </div>
-
-            {/* Estimate Info */}
-            <div style={{
-              backgroundColor: '#f9fafb',
-              padding: '16px',
-              borderRadius: '8px',
-              marginBottom: '20px',
-              border: '1px solid #e5e7eb'
-            }}>
-              <h3 style={{
-                margin: '0 0 8px 0',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#374151'
-              }}>
-                Project: {selectedEstimateForMessage?.project_title || 'Untitled Project'}
-              </h3>
-              <p style={{
-                margin: '0 0 4px 0',
-                fontSize: '14px',
-                color: '#6b7280'
-              }}>
-                <strong>Total Cost:</strong> ₹{selectedEstimateForMessage?.total_cost || 'N/A'}
-              </p>
-              <p style={{
-                margin: '0 0 4px 0',
-                fontSize: '14px',
-                color: '#6b7280'
-              }}>
-                <strong>Timeline:</strong> {selectedEstimateForMessage?.timeline || 'N/A'}
-              </p>
-              <p style={{
-                margin: 0,
-                fontSize: '14px',
-                color: '#6b7280'
-              }}>
-                <strong>Contractor:</strong> {selectedEstimateForMessage?.contractor_name || 'Unknown'}
-              </p>
-            </div>
-
-            {/* Message Input */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#374151'
-              }}>
-                Your Message to Contractor
-              </label>
-              <textarea
-                value={messageToContractor}
-                onChange={(e) => setMessageToContractor(e.target.value)}
-                placeholder="I am satisfied with this estimate and ready to start the construction project. Please let me know the next steps and when we can begin work..."
-                style={{
-                  width: '100%',
-                  minHeight: '120px',
-                  padding: '12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                  resize: 'vertical',
-                  outline: 'none',
-                  transition: 'border-color 0.2s'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-              />
-              <p style={{
-                margin: '8px 0 0 0',
-                fontSize: '12px',
-                color: '#6b7280'
-              }}>
-                This message will be sent along with the complete estimation details and your contact information.
-              </p>
-            </div>
-
-            {/* Action Buttons */}
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'flex-end'
-            }}>
-              <button
-                onClick={() => {
-                  setShowMessageModal(false);
-                  setSelectedEstimateForMessage(null);
-                  setMessageToContractor('');
-                }}
-                style={{
-                  padding: '12px 24px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  backgroundColor: 'white',
-                  color: '#374151',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#f9fafb'}
-                onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => sendMessageToContractor(selectedEstimateForMessage)}
-                style={{
-                  padding: '12px 24px',
-                  border: 'none',
-                  borderRadius: '8px',
-                  backgroundColor: '#3b82f6',
-                  color: 'white',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#2563eb'}
-                onMouseOut={(e) => e.target.style.backgroundColor = '#3b82f6'}
-              >
-                💬 Send Message
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Confirmation Modal */}
-      <ConfirmModal
-        isOpen={confirmModal.isOpen}
-        onClose={closeConfirmation}
-        onConfirm={confirmModal.onConfirm}
-        title={confirmModal.title}
-        message={confirmModal.message}
-        type={confirmModal.type}
-      />
     </div>
   );
 };

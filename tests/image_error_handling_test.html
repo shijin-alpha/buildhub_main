@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Error Handling Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-container { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .file-card { display: inline-block; margin: 10px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Image Error Handling Test</h1>
+    <p>This test verifies that missing images are handled gracefully with fallback placeholders.</p>
+
+    <div class="test-container">
+        <h3>Test 1: Valid Image (should load normally)</h3>
+        <div class="file-card">
+            <img 
+                src="https://via.placeholder.com/200x120/4CAF50/white?text=Valid+Image" 
+                alt="Valid Image" 
+                style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px;" 
+                onError="handleImageError(this)"
+            />
+            <div 
+                class="file-thumb" 
+                style="height: 120px; display: none; align-items: center; justify-content: center; background: #f5f5f7; border-radius: 6px; flex-direction: column; color: #6b7280;"
+            >
+                <span style="font-size: 2rem; margin-bottom: 8px;">🖼️</span>
+                <span style="font-size: 0.75rem; text-align: center;">Image not found</span>
+            </div>
+            <div style="padding: 8px;">
+                <div style="font-size: 0.85rem; font-weight: 500;">Valid Image</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h3>Test 2: Missing Image (should show placeholder)</h3>
+        <div class="file-card">
+            <img 
+                src="/buildhub/backend/uploads/house_plans/SHIJIN_THOMAS_MCA2024_2026_House_Plan_layout (1).png" 
+                alt="Missing Image" 
+                style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px;" 
+                onError="handleImageError(this)"
+            />
+            <div 
+                class="file-thumb" 
+                style="height: 120px; display: none; align-items: center; justify-content: center; background: #f5f5f7; border-radius: 6px; flex-direction: column; color: #6b7280;"
+            >
+                <span style="font-size: 2rem; margin-bottom: 8px;">🖼️</span>
+                <span style="font-size: 0.75rem; text-align: center;">Image not found</span>
+            </div>
+            <div style="padding: 8px;">
+                <div style="font-size: 0.85rem; font-weight: 500;">Missing Image (404)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h3>Test 3: Another Missing Image</h3>
+        <div class="file-card">
+            <img 
+                src="/buildhub/backend/uploads/house_plans/nonexistent_file.png" 
+                alt="Another Missing Image" 
+                style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px;" 
+                onError="handleImageError(this)"
+            />
+            <div 
+                class="file-thumb" 
+                style="height: 120px; display: none; align-items: center; justify-content: center; background: #f5f5f7; border-radius: 6px; flex-direction: column; color: #6b7280;"
+            >
+                <span style="font-size: 2rem; margin-bottom: 8px;">🖼️</span>
+                <span style="font-size: 0.75rem; text-align: center;">Image not found</span>
+            </div>
+            <div style="padding: 8px;">
+                <div style="font-size: 0.85rem; font-weight: 500;">Another Missing Image</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleImageError(img) {
+            console.log('Image failed to load:', img.src);
+            img.style.display = 'none';
+            const placeholder = img.nextElementSibling;
+            if (placeholder && placeholder.classList.contains('file-thumb')) {
+                placeholder.style.display = 'flex';
+            }
+        }
+
+        // Test results
+        setTimeout(() => {
+            const images = document.querySelectorAll('img');
+            let loadedCount = 0;
+            let errorCount = 0;
+            
+            images.forEach(img => {
+                if (img.style.display === 'none') {
+                    errorCount++;
+                } else {
+                    loadedCount++;
+                }
+            });
+            
+            console.log(`Test Results: ${loadedCount} images loaded, ${errorCount} images showed error placeholders`);
+            
+            // Add results to page
+            const results = document.createElement('div');
+            results.className = 'test-container';
+            results.style.backgroundColor = '#f0f9ff';
+            results.innerHTML = `
+                <h3>Test Results</h3>
+                <p>✅ ${loadedCount} images loaded successfully</p>
+                <p>🖼️ ${errorCount} images showed error placeholders</p>
+                <p><strong>Expected:</strong> 1 valid image, 2 error placeholders</p>
+            `;
+            document.body.appendChild(results);
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Upload Flow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        img { max-width: 300px; border: 1px solid #ddd; margin: 10px 0; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Complete Upload Flow Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test Overview</h3>
+        <p>This test verifies the complete upload flow from architect upload to homeowner display.</p>
+        <p><strong>Test Plan ID:</strong> 10</p>
+        <p><strong>Expected File:</strong> 10_layout_image_test.png</p>
+    </div>
+
+    <div class="test-section" id="api-test">
+        <h3>1. API Response Test</h3>
+        <button onclick="testAPI()">Test Homeowner API</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test-section" id="image-test">
+        <h3>2. Image Display Test</h3>
+        <button onclick="testImageDisplay()">Test Image Display</button>
+        <div id="image-result"></div>
+    </div>
+
+    <div class="test-section" id="file-test">
+        <h3>3. File Access Test</h3>
+        <button onclick="testFileAccess()">Test File Access</button>
+        <div id="file-result"></div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing API...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const housePlans = data.designs.filter(d => d.source_type === 'house_plan');
+                    
+                    if (housePlans.length > 0) {
+                        const plan = housePlans[0];
+                        const layoutFiles = plan.files.filter(f => f.type === 'layout_image');
+                        
+                        if (layoutFiles.length > 0) {
+                            const file = layoutFiles[0];
+                            resultDiv.innerHTML = `
+                                <div class="success">
+                                    <h4>✅ API Test Passed</h4>
+                                    <p><strong>House Plan Found:</strong> ${plan.design_title}</p>
+                                    <p><strong>Layout File:</strong> ${file.original}</p>
+                                    <p><strong>Stored As:</strong> ${file.stored}</p>
+                                    <p><strong>File Path:</strong> ${file.path}</p>
+                                    <p><strong>File Type:</strong> ${file.type}</p>
+                                </div>
+                            `;
+                            
+                            // Store file info for other tests
+                            window.testFileInfo = file;
+                        } else {
+                            resultDiv.innerHTML = `
+                                <div class="error">
+                                    <h4>❌ No Layout Files Found</h4>
+                                    <p>House plan found but no layout image files</p>
+                                    <pre>${JSON.stringify(plan.files, null, 2)}</pre>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h4>❌ No House Plans Found</h4>
+                                <p>API returned ${data.designs.length} designs but no house plans</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ API Error</h4>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Request Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testImageDisplay() {
+            const resultDiv = document.getElementById('image-result');
+            
+            if (!window.testFileInfo) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ No File Info</h4>
+                        <p>Please run API test first</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const file = window.testFileInfo;
+            const imgSrc = file.path;
+            
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <h4>🖼️ Testing Image Display</h4>
+                    <p><strong>Image URL:</strong> ${imgSrc}</p>
+                    <img src="${imgSrc}" alt="Layout Image" onload="imageLoaded(this)" onerror="imageError(this)" />
+                </div>
+            `;
+        }
+        
+        function imageLoaded(img) {
+            const parent = img.parentElement;
+            parent.className = 'success';
+            parent.innerHTML = `
+                <h4>✅ Image Display Test Passed</h4>
+                <p>Image loaded successfully</p>
+                <p><strong>Dimensions:</strong> ${img.naturalWidth} x ${img.naturalHeight}</p>
+                ${img.outerHTML}
+            `;
+        }
+        
+        function imageError(img) {
+            const parent = img.parentElement;
+            parent.className = 'error';
+            parent.innerHTML = `
+                <h4>❌ Image Display Test Failed</h4>
+                <p>Failed to load image: ${img.src}</p>
+                <p>This indicates a 404 or file access issue</p>
+            `;
+        }
+        
+        async function testFileAccess() {
+            const resultDiv = document.getElementById('file-result');
+            
+            if (!window.testFileInfo) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ No File Info</h4>
+                        <p>Please run API test first</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const file = window.testFileInfo;
+            resultDiv.innerHTML = '<p>Testing file access...</p>';
+            
+            try {
+                const response = await fetch(file.path, {
+                    method: 'HEAD'
+                });
+                
+                if (response.ok) {
+                    const contentLength = response.headers.get('content-length');
+                    const contentType = response.headers.get('content-type');
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ File Access Test Passed</h4>
+                            <p><strong>File URL:</strong> ${file.path}</p>
+                            <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                            <p><strong>Content Type:</strong> ${contentType}</p>
+                            <p><strong>Content Length:</strong> ${contentLength} bytes</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ File Access Test Failed</h4>
+                            <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                            <p><strong>File URL:</strong> ${file.path}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ File Access Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run API test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testAPI, 1000);
+        });
+    </script>
+</body>
+</html>

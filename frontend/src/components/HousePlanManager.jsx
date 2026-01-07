@@ -12,6 +12,9 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [requestInfo, setRequestInfo] = useState(null);
   
+  // Download functionality state
+  const [downloadLoading, setDownloadLoading] = useState(false);
+  
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -26,8 +29,257 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
     notifications,
     removeNotification,
     showSuccess,
-    showError
+    showError,
+    showInfo
   } = useNotifications();
+
+  // Download Functions
+  const downloadPlanAsPDF = async (plan) => {
+    setDownloadLoading(true);
+    try {
+      // Dynamic import for jsPDF
+      const { default: jsPDF } = await import('jspdf');
+      
+      const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
+      
+      // Add title
+      pdf.setFontSize(20);
+      pdf.text(plan.plan_name, 20, 20);
+      
+      // Add basic info
+      pdf.setFontSize(12);
+      let yPos = 40;
+      
+      pdf.text(`Plot Size: ${plan.plot_width}' × ${plan.plot_height}'`, 20, yPos);
+      yPos += 10;
+      pdf.text(`Total Area: ${plan.total_area} sq ft`, 20, yPos);
+      yPos += 10;
+      pdf.text(`Number of Rooms: ${plan.plan_data?.rooms?.length || 0}`, 20, yPos);
+      yPos += 10;
+      pdf.text(`Status: ${plan.status.charAt(0).toUpperCase() + plan.status.slice(1)}`, 20, yPos);
+      yPos += 20;
+      
+      // Add visual design if we can generate it
+      try {
+        const designImage = await generatePlanVisualization(plan);
+        if (designImage) {
+          pdf.addPage();
+          pdf.setFontSize(14);
+          pdf.text('Plan Layout:', 20, 20);
+          
+          // Calculate dimensions to fit the page
+          const imgWidth = 250;
+          const imgHeight = 150; // Fixed height for consistency
+          
+          pdf.addImage(designImage, 'PNG', 20, 30, imgWidth, imgHeight);
+          yPos = 190; // Continue after image
+        }
+      } catch (error) {
+        console.warn('Could not add visual design to PDF:', error);
+      }
+      
+      // Add room details if available
+      if (plan.plan_data?.rooms && plan.plan_data.rooms.length > 0) {
+        if (yPos > 150) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
+        pdf.setFontSize(14);
+        pdf.text('Room Details:', 20, yPos);
+        yPos += 10;
+        
+        pdf.setFontSize(10);
+        plan.plan_data.rooms.forEach((room, index) => {
+          const roomText = `${room.name}: ${room.layout_width}' × ${room.layout_height}' (${(room.layout_width * room.layout_height).toFixed(0)} sq ft)`;
+          pdf.text(roomText, 20, yPos);
+          yPos += 8;
+          
+          // Start new page if needed
+          if (yPos > 180) {
+            pdf.addPage();
+            yPos = 20;
+          }
+        });
+      }
+      
+      // Add notes if available
+      if (plan.notes) {
+        yPos += 10;
+        pdf.setFontSize(14);
+        pdf.text('Notes:', 20, yPos);
+        yPos += 10;
+        pdf.setFontSize(10);
+        
+        // Split notes into lines that fit the page
+        const lines = pdf.splitTextToSize(plan.notes, 250);
+        pdf.text(lines, 20, yPos);
+      }
+      
+      // Save the PDF
+      pdf.save(`${plan.plan_name.replace(/[^a-z0-9]/gi, '_')}_house_plan.pdf`);
+      showSuccess('PDF Downloaded', 'House plan has been downloaded as PDF with visual design');
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showError('Download Failed', 'Error generating PDF. Please try again.');
+    } finally {
+      setDownloadLoading(false);
+    }
+  };
+
+  const downloadPlanAsImage = async (plan) => {
+    setDownloadLoading(true);
+    try {
+      const designImage = await generatePlanVisualization(plan);
+      if (designImage) {
+        // Create download link
+        const link = document.createElement('a');
+        link.download = `${plan.plan_name.replace(/[^a-z0-9]/gi, '_')}_layout.png`;
+        link.href = designImage;
+        link.click();
+        
+        showSuccess('Image Downloaded', 'House plan layout has been downloaded as PNG');
+      } else {
+        showError('Download Failed', 'Could not generate plan visualization');
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+      showError('Download Failed', 'Error generating image. Please try again.');
+    } finally {
+      setDownloadLoading(false);
+    }
+  };
+
+  // Function to generate plan visualization from plan data
+  const generatePlanVisualization = async (plan) => {
+    return new Promise((resolve) => {
+      try {
+        if (!plan.plan_data?.rooms || plan.plan_data.rooms.length === 0) {
+          resolve(null);
+          return;
+        }
+
+        // Create a temporary canvas for rendering
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size based on plot dimensions
+        const PIXELS_PER_FOOT = 15; // Scale for visualization
+        const MARGIN = 40;
+        const canvasWidth = (plan.plot_width * PIXELS_PER_FOOT) + (MARGIN * 2);
+        const canvasHeight = (plan.plot_height * PIXELS_PER_FOOT) + (MARGIN * 2);
+        
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        
+        // Clear canvas with white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        
+        // Draw plot boundary
+        ctx.strokeStyle = '#2c3e50';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(MARGIN, MARGIN, plan.plot_width * PIXELS_PER_FOOT, plan.plot_height * PIXELS_PER_FOOT);
+        
+        // Add plot dimensions
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        
+        // Top dimension
+        ctx.fillText(`${plan.plot_width}'`, MARGIN + (plan.plot_width * PIXELS_PER_FOOT) / 2, MARGIN - 10);
+        
+        // Left dimension
+        ctx.save();
+        ctx.translate(MARGIN - 15, MARGIN + (plan.plot_height * PIXELS_PER_FOOT) / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(`${plan.plot_height}'`, 0, 0);
+        ctx.restore();
+        
+        // Draw rooms
+        plan.plan_data.rooms.forEach((room) => {
+          const x = (room.x || 0) + MARGIN;
+          const y = (room.y || 0) + MARGIN;
+          const width = (room.layout_width || 10) * PIXELS_PER_FOOT;
+          const height = (room.layout_height || 10) * PIXELS_PER_FOOT;
+          
+          // Room background
+          ctx.fillStyle = room.color || '#e3f2fd';
+          ctx.fillRect(x, y, width, height);
+          
+          // Room border
+          ctx.strokeStyle = '#666';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, width, height);
+          
+          // Room label
+          ctx.fillStyle = '#333';
+          ctx.font = 'bold 12px Arial';
+          ctx.textAlign = 'center';
+          
+          const centerX = x + width / 2;
+          const centerY = y + height / 2;
+          
+          // Room name
+          ctx.fillText(room.name, centerX, centerY - 8);
+          
+          // Room dimensions
+          ctx.font = '10px Arial';
+          ctx.fillStyle = '#666';
+          ctx.fillText(`${room.layout_width}' × ${room.layout_height}'`, centerX, centerY + 8);
+        });
+        
+        // Convert canvas to data URL
+        const dataURL = canvas.toDataURL('image/png', 1.0);
+        resolve(dataURL);
+        
+      } catch (error) {
+        console.error('Error generating visualization:', error);
+        resolve(null);
+      }
+    });
+  };
+
+  const downloadPlanAsJSON = (plan) => {
+    try {
+      const exportData = {
+        plan_info: {
+          name: plan.plan_name,
+          plot_width: plan.plot_width,
+          plot_height: plan.plot_height,
+          total_area: plan.total_area,
+          status: plan.status,
+          created_at: plan.created_at,
+          updated_at: plan.updated_at
+        },
+        rooms: plan.plan_data?.rooms || [],
+        notes: plan.notes,
+        technical_details: plan.technical_details || null,
+        request_info: requestInfo ? {
+          homeowner_name: requestInfo.homeowner_name,
+          budget_range: requestInfo.budget_range,
+          plot_size: requestInfo.plot_size
+        } : null
+      };
+      
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(dataBlob);
+      link.download = `${plan.plan_name.replace(/[^a-z0-9]/gi, '_')}_data.json`;
+      link.click();
+      
+      // Clean up
+      URL.revokeObjectURL(link.href);
+      
+      showSuccess('JSON Downloaded', 'House plan data has been downloaded as JSON');
+    } catch (error) {
+      console.error('Error generating JSON:', error);
+      showError('Download Failed', 'Error generating JSON file. Please try again.');
+    }
+  };
 
   useEffect(() => {
     loadPlans();
@@ -99,7 +351,7 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
       isOpen: true,
       type: 'warning',
       title: 'Submit House Plan',
-      message: 'Are you sure you want to submit this plan to the homeowner? You won\'t be able to edit it after submission.',
+      message: 'Are you sure you want to submit this plan to the homeowner? The homeowner will be notified and can review the plan. You can still edit the plan after submission if needed.',
       onConfirm: () => submitPlan(planId)
     });
   };
@@ -283,8 +535,37 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
                 </div>
 
                 <div className="plan-actions">
+                  {/* Download buttons - available for all statuses */}
+                  <div className="download-actions">
+                    <button 
+                      onClick={() => downloadPlanAsPDF(plan)}
+                      disabled={downloadLoading}
+                      className="download-btn pdf-btn"
+                      title="Download as PDF with visual design"
+                    >
+                      {downloadLoading ? '⏳' : '📄'} PDF
+                    </button>
+                    <button 
+                      onClick={() => downloadPlanAsImage(plan)}
+                      disabled={downloadLoading}
+                      className="download-btn image-btn"
+                      title="Download layout as image"
+                    >
+                      {downloadLoading ? '⏳' : '🖼️'} PNG
+                    </button>
+                    <button 
+                      onClick={() => downloadPlanAsJSON(plan)}
+                      disabled={downloadLoading}
+                      className="download-btn json-btn"
+                      title="Download as JSON data"
+                    >
+                      {downloadLoading ? '⏳' : '📊'} JSON
+                    </button>
+                  </div>
+
+                  {/* Status-specific actions */}
                   {plan.status === 'draft' && (
-                    <>
+                    <div className="status-actions">
                       <button 
                         onClick={() => handleEditPlan(plan)}
                         className="edit-btn"
@@ -303,28 +584,48 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
                       >
                         Delete
                       </button>
-                    </>
+                    </div>
                   )}
                   
                   {plan.status === 'submitted' && (
-                    <div className="submitted-info">
-                      <span>Waiting for homeowner review</span>
+                    <div className="status-actions">
+                      <button 
+                        onClick={() => handleEditPlan(plan)}
+                        className="edit-btn"
+                        title="Edit submitted plan"
+                      >
+                        Edit
+                      </button>
+                      <div className="submitted-info">
+                        <span>Waiting for homeowner review</span>
+                      </div>
                     </div>
                   )}
                   
                   {plan.status === 'approved' && (
-                    <div className="approved-info">
-                      <span>✓ Approved by homeowner</span>
+                    <div className="status-actions">
+                      <button 
+                        onClick={() => handleEditPlan(plan)}
+                        className="edit-btn"
+                        title="Edit approved plan"
+                      >
+                        Edit
+                      </button>
+                      <div className="approved-info">
+                        <span>✓ Approved by homeowner</span>
+                      </div>
                     </div>
                   )}
                   
                   {plan.status === 'rejected' && (
-                    <button 
-                      onClick={() => handleEditPlan(plan)}
-                      className="revise-btn"
-                    >
-                      Revise Plan
-                    </button>
+                    <div className="status-actions">
+                      <button 
+                        onClick={() => handleEditPlan(plan)}
+                        className="revise-btn"
+                      >
+                        Revise Plan
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

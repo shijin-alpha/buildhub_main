@@ -15,6 +15,7 @@ import StylishProfile from './StylishProfile';
 import NeatJsonCard from './NeatJsonCard';
 import TechnicalDetailsDisplay from './TechnicalDetailsDisplay';
 import TechnicalDetailsForm from './TechnicalDetailsForm';
+import TechnicalDetailsModal from './TechnicalDetailsModal';
 import '../styles/TechnicalDetailsForm.css';
 import InfoPopup from './InfoPopup';
 import HousePlanManager from './HousePlanManager';
@@ -71,6 +72,11 @@ const ArchitectDashboard = () => {
   // House plan state
   const [showHousePlanManager, setShowHousePlanManager] = useState(false);
   const [selectedRequestForPlan, setSelectedRequestForPlan] = useState(null);
+
+  // Technical Details Modal state
+  const [showTechnicalModal, setShowTechnicalModal] = useState(false);
+  const [selectedRequestForUpload, setSelectedRequestForUpload] = useState(null);
+  const [technicalSubmissionLoading, setTechnicalSubmissionLoading] = useState(false);
 
   useEffect(() => {
     // Get user data from session
@@ -618,6 +624,124 @@ const ArchitectDashboard = () => {
     }
   };
 
+  // Handle technical details submission for upload design
+  // Handle technical details submission for upload design
+  const handleTechnicalDetailsSubmit = async (technicalDetails, uploadFilesFunction) => {
+    if (!selectedRequestForUpload) return;
+    
+    setTechnicalSubmissionLoading(true);
+    
+    try {
+      // Create a plan data object for the submission
+      const planData = {
+        plan_name: `${selectedRequestForUpload.homeowner_name || 'Client'} House Plan`,
+        plot_width: parseFloat(selectedRequestForUpload.plot_size) || 100,
+        plot_height: parseFloat(selectedRequestForUpload.plot_size) || 100,
+        rooms: [], // Empty rooms array for upload design
+        scale_ratio: 1.2,
+        total_layout_area: 0,
+        total_construction_area: 0,
+        floors: {
+          total_floors: selectedRequestForUpload.floors || 1,
+          current_floor: 1,
+          floor_names: { 1: 'Ground Floor' }
+        }
+      };
+
+      console.log('Creating house plan for upload design:', {
+        layout_request_id: selectedRequestForUpload.id,
+        plan_data: planData
+      });
+
+      // Step 1: Create the house plan first
+      const createPlanPayload = {
+        layout_request_id: selectedRequestForUpload.id,
+        plan_name: planData.plan_name,
+        plot_width: planData.plot_width,
+        plot_height: planData.plot_height,
+        plan_data: planData,
+        notes: 'Upload Design with Technical Details'
+      };
+
+      const createResponse = await fetch('/buildhub/backend/api/architect/create_house_plan.php', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(createPlanPayload)
+      });
+
+      if (!createResponse.ok) {
+        throw new Error(`Failed to create house plan: HTTP ${createResponse.status}`);
+      }
+
+      const createResult = await createResponse.json();
+      
+      if (!createResult.success) {
+        throw new Error(createResult.message || 'Failed to create house plan');
+      }
+
+      const planId = createResult.plan_id;
+      console.log('House plan created successfully with ID:', planId);
+
+      // Step 2: Upload files if there are any and get updated technical details
+      let updatedTechnicalDetails = technicalDetails;
+      if (uploadFilesFunction) {
+        console.log('Uploading files for plan ID:', planId);
+        updatedTechnicalDetails = await uploadFilesFunction(planId);
+      }
+
+      // Step 3: Submit the plan with updated technical details (after file upload)
+      const submissionPayload = {
+        plan_id: planId, // Use the created plan ID
+        plan_data: planData,
+        technical_details: updatedTechnicalDetails // Use updated technical details with file info
+      };
+
+      console.log('Submitting plan with technical details:', submissionPayload);
+
+      const submitResponse = await fetch('/buildhub/backend/api/architect/submit_house_plan_with_details.php', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(submissionPayload)
+      });
+
+      if (!submitResponse.ok) {
+        throw new Error(`Failed to submit plan: HTTP ${submitResponse.status}`);
+      }
+
+      const submitResult = await submitResponse.json();
+      
+      if (submitResult.success) {
+        setShowTechnicalModal(false);
+        setSelectedRequestForUpload(null);
+        toast.success(
+          'Design Uploaded Successfully!', 
+          `Your design with technical details has been submitted to the homeowner for review.`
+        );
+        
+        // Refresh the requests to show updated status
+        fetchLayoutRequests();
+      } else {
+        throw new Error(submitResult.message || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Error uploading design:', error);
+      toast.error(
+        'Upload Failed', 
+        `Failed to upload design: ${error.message}. Please try again.`
+      );
+    } finally {
+      setTechnicalSubmissionLoading(false);
+    }
+  };
+
   // Preview modal for clear viewing of image and layout file
   const [previewItem, setPreviewItem] = useState(null);
   const openPreview = (item) => setPreviewItem(item);
@@ -1026,6 +1150,16 @@ const ArchitectDashboard = () => {
                         }}
                       >
                         Create Design
+                      </button>
+                      <button 
+                        className="btn btn-success"
+                        onClick={() => {
+                          setSelectedRequestForUpload(request);
+                          setShowTechnicalModal(true);
+                        }}
+                        title="Upload design with technical details"
+                      >
+                        📤 Upload Design
                       </button>
                       <button 
                         className="btn btn-danger btn-sm"
@@ -3413,6 +3547,22 @@ const ArchitectDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Technical Details Modal for Upload Design */}
+      <TechnicalDetailsModal
+        isOpen={showTechnicalModal}
+        onClose={() => {
+          setShowTechnicalModal(false);
+          setSelectedRequestForUpload(null);
+        }}
+        onSubmit={handleTechnicalDetailsSubmit}
+        planData={{
+          plan_name: selectedRequestForUpload ? `${selectedRequestForUpload.homeowner_name || 'Client'} House Plan` : '',
+          rooms: [],
+          scale_ratio: 1.2
+        }}
+        loading={technicalSubmissionLoading}
+      />
     </div>
   );
 };

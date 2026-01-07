@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeowner Plan Visibility Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .plan-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+        }
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-submitted { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Homeowner Plan Visibility Test</h1>
+        <p>This test checks if the homeowner can see submitted house plans on the review page.</p>
+
+        <div class="test-section info">
+            <h3>Test Configuration</h3>
+            <p><strong>Homeowner ID:</strong> 28 (SHIJIN THOMAS MCA2024-2026)</p>
+            <p><strong>Expected Plans:</strong> 1 submitted plan</p>
+            <p><strong>API Endpoint:</strong> /buildhub/backend/api/homeowner/get_house_plans.php</p>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 1: Login Simulation</h3>
+            <button onclick="simulateLogin()">Simulate Homeowner Login</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 2: Fetch House Plans</h3>
+            <button onclick="fetchHousePlans()">Fetch House Plans</button>
+            <div id="fetchResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 3: Display Plans</h3>
+            <div id="plansDisplay"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Debug Information</h3>
+            <button onclick="checkSession()">Check Session</button>
+            <button onclick="testDirectAPI()">Test Direct API</button>
+            <div id="debugInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        let sessionData = null;
+
+        async function simulateLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p>Simulating login...</p>';
+
+            try {
+                // Try to login with the correct API endpoint
+                const response = await fetch('/buildhub/backend/api/login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'shijinthomas2026@mca.ajce.in',
+                        password: 'password123' // You may need to adjust this
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    sessionData = result.user;
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Login Successful</h4>
+                            <p><strong>User:</strong> ${result.user.first_name} ${result.user.last_name}</p>
+                            <p><strong>Role:</strong> ${result.user.role}</p>
+                            <p><strong>ID:</strong> ${result.user.id}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Login Failed</h4>
+                            <p>${result.message}</p>
+                            <p><em>Note: You may need to manually log in as the homeowner first.</em></p>
+                            <p><em>Try these credentials:</em></p>
+                            <ul>
+                                <li>Email: shijinthomas2026@mca.ajce.in</li>
+                                <li>Password: password123 (or check database)</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Login Error</h4>
+                        <p>${error.message}</p>
+                        <p><em>Proceeding with test assuming you're already logged in...</em></p>
+                    </div>
+                `;
+            }
+        }
+
+        async function fetchHousePlans() {
+            const resultDiv = document.getElementById('fetchResult');
+            const plansDiv = document.getElementById('plansDisplay');
+            
+            resultDiv.innerHTML = '<p>Fetching house plans...</p>';
+            plansDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_house_plans.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ API Call Successful</h4>
+                            <p><strong>Plans Found:</strong> ${result.total}</p>
+                        </div>
+                    `;
+
+                    if (result.plans && result.plans.length > 0) {
+                        displayPlans(result.plans);
+                    } else {
+                        plansDiv.innerHTML = `
+                            <div class="info">
+                                <h4>ℹ️ No Plans Found</h4>
+                                <p>The API returned successfully but no plans were found.</p>
+                                <p>This could mean:</p>
+                                <ul>
+                                    <li>You're not logged in as the correct homeowner</li>
+                                    <li>No plans have been submitted for your requests</li>
+                                    <li>Plans are in draft status (not submitted)</li>
+                                </ul>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ API Error</h4>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                }
+
+                // Show raw response for debugging
+                document.getElementById('debugInfo').innerHTML += `
+                    <h4>Raw API Response:</h4>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Fetch Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayPlans(plans) {
+            const plansDiv = document.getElementById('plansDisplay');
+            
+            plansDiv.innerHTML = `
+                <h4>📋 Found ${plans.length} Plan(s)</h4>
+                ${plans.map(plan => `
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <h5>${plan.plan_name}</h5>
+                            <span class="status-badge status-${plan.status}">${plan.status.toUpperCase()}</span>
+                        </div>
+                        <p><strong>Plot Size:</strong> ${plan.plot_width}' × ${plan.plot_height}'</p>
+                        <p><strong>Total Area:</strong> ${plan.total_area} sq ft</p>
+                        <p><strong>Architect:</strong> ${plan.architect_info.name}</p>
+                        <p><strong>Submitted:</strong> ${new Date(plan.updated_at).toLocaleDateString()}</p>
+                        <p><strong>Technical Details:</strong> ${Object.keys(plan.technical_details || {}).length > 0 ? 'Present' : 'Missing'}</p>
+                        <p><strong>Review Status:</strong> ${plan.review_info.status || 'Pending'}</p>
+                        ${plan.notes ? `<p><strong>Notes:</strong> ${plan.notes}</p>` : ''}
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        async function checkSession() {
+            const debugDiv = document.getElementById('debugInfo');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/auth/check_session.php', {
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                
+                debugDiv.innerHTML += `
+                    <h4>Session Check:</h4>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                debugDiv.innerHTML += `
+                    <h4>Session Check Error:</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        async function testDirectAPI() {
+            const debugDiv = document.getElementById('debugInfo');
+            
+            try {
+                // Test with explicit parameters
+                const response = await fetch('/buildhub/backend/api/homeowner/get_house_plans.php?debug=1', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const text = await response.text();
+                debugDiv.innerHTML += `
+                    <h4>Direct API Test (Raw Response):</h4>
+                    <pre>${text}</pre>
+                `;
+
+                try {
+                    const json = JSON.parse(text);
+                    debugDiv.innerHTML += `
+                        <h4>Parsed JSON:</h4>
+                        <pre>${JSON.stringify(json, null, 2)}</pre>
+                    `;
+                } catch (parseError) {
+                    debugDiv.innerHTML += `<p>Failed to parse as JSON: ${parseError.message}</p>`;
+                }
+
+            } catch (error) {
+                debugDiv.innerHTML += `
+                    <h4>Direct API Test Error:</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                fetchHousePlans();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .download-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        .download-btn:hover {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            transform: translateY(-1px);
+        }
+        .download-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .test-canvas {
+            border: 2px solid #333;
+            background: #f9f9f9;
+            margin: 20px 0;
+        }
+        .room {
+            fill: #e3f2fd;
+            stroke: #666;
+            stroke-width: 1;
+        }
+        .room-selected {
+            fill: #bbdefb;
+            stroke: #1976d2;
+            stroke-width: 2;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🏗️ BuildHub Download Functionality Test</h1>
+        <p>This page tests the download functionality for house plans in different formats.</p>
+        
+        <div class="test-section">
+            <h3>📄 PDF Download Test</h3>
+            <p>Tests the PDF generation with jsPDF library including plan visualization and technical details.</p>
+            <button class="download-btn" onclick="testPDFDownload()">📄 Test PDF Download</button>
+            <div id="pdf-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🖼️ Image Download Test</h3>
+            <p>Tests the PNG image generation with html2canvas library for plan layouts.</p>
+            <svg class="test-canvas" width="400" height="300" id="test-canvas">
+                <!-- Sample house plan visualization -->
+                <rect x="20" y="20" width="360" height="260" fill="none" stroke="#2c3e50" stroke-width="3"/>
+                <text x="200" y="15" text-anchor="middle" font-size="12" fill="#2c3e50">40' × 30' Plot</text>
+                
+                <!-- Sample rooms -->
+                <rect class="room" x="40" y="40" width="100" height="80"/>
+                <text x="90" y="75" text-anchor="middle" font-size="10" fill="#333">Living Room</text>
+                <text x="90" y="90" text-anchor="middle" font-size="8" fill="#666">20' × 16'</text>
+                
+                <rect class="room" x="160" y="40" width="80" height="80"/>
+                <text x="200" y="75" text-anchor="middle" font-size="10" fill="#333">Kitchen</text>
+                <text x="200" y="90" text-anchor="middle" font-size="8" fill="#666">16' × 16'</text>
+                
+                <rect class="room" x="260" y="40" width="100" height="60"/>
+                <text x="310" y="65" text-anchor="middle" font-size="10" fill="#333">Master Bedroom</text>
+                <text x="310" y="80" text-anchor="middle" font-size="8" fill="#666">20' × 12'</text>
+                
+                <rect class="room" x="40" y="140" width="80" height="60"/>
+                <text x="80" y="165" text-anchor="middle" font-size="10" fill="#333">Bedroom 2</text>
+                <text x="80" y="180" text-anchor="middle" font-size="8" fill="#666">16' × 12'</text>
+                
+                <rect class="room" x="140" y="140" width="60" height="60"/>
+                <text x="170" y="165" text-anchor="middle" font-size="10" fill="#333">Bathroom</text>
+                <text x="170" y="180" text-anchor="middle" font-size="8" fill="#666">12' × 12'</text>
+                
+                <rect class="room" x="220" y="140" width="140" height="60"/>
+                <text x="290" y="165" text-anchor="middle" font-size="10" fill="#333">Dining Room</text>
+                <text x="290" y="180" text-anchor="middle" font-size="8" fill="#666">28' × 12'</text>
+            </svg>
+            <button class="download-btn" onclick="testImageDownload()">🖼️ Test Image Download</button>
+            <div id="image-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 JSON Download Test</h3>
+            <p>Tests the JSON data export functionality for plan data and specifications.</p>
+            <button class="download-btn" onclick="testJSONDownload()">📊 Test JSON Download</button>
+            <div id="json-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Test Results</h3>
+            <div id="overall-status">
+                <div class="info">Click the test buttons above to verify download functionality.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        let testResults = {
+            pdf: false,
+            image: false,
+            json: false
+        };
+
+        async function testPDFDownload() {
+            const statusDiv = document.getElementById('pdf-status');
+            statusDiv.innerHTML = '<div class="info">Testing PDF download...</div>';
+            
+            try {
+                // Use globally loaded jsPDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                
+                // Add test content
+                pdf.setFontSize(20);
+                pdf.text('Test House Plan', 20, 20);
+                
+                pdf.setFontSize(12);
+                pdf.text('Plot Size: 40\' × 30\'', 20, 40);
+                pdf.text('Total Area: 1200 sq ft', 20, 50);
+                pdf.text('Number of Rooms: 5', 20, 60);
+                pdf.text('Generated: ' + new Date().toLocaleString(), 20, 70);
+                
+                // Add room details
+                pdf.setFontSize(14);
+                pdf.text('Room Details:', 20, 90);
+                
+                pdf.setFontSize(10);
+                const rooms = [
+                    'Living Room: 20\' × 16\' (320 sq ft)',
+                    'Kitchen: 16\' × 16\' (256 sq ft)',
+                    'Master Bedroom: 20\' × 12\' (240 sq ft)',
+                    'Bedroom 2: 16\' × 12\' (192 sq ft)',
+                    'Bathroom: 12\' × 12\' (144 sq ft)'
+                ];
+                
+                rooms.forEach((room, index) => {
+                    pdf.text(room, 20, 105 + (index * 10));
+                });
+                
+                // Save the PDF
+                pdf.save('test_house_plan.pdf');
+                
+                statusDiv.innerHTML = '<div class="success">✅ PDF download test successful!</div>';
+                testResults.pdf = true;
+                updateOverallStatus();
+                
+            } catch (error) {
+                console.error('PDF test error:', error);
+                statusDiv.innerHTML = '<div class="error">❌ PDF download test failed: ' + error.message + '</div>';
+            }
+        }
+
+        async function testImageDownload() {
+            const statusDiv = document.getElementById('image-status');
+            statusDiv.innerHTML = '<div class="info">Testing image download...</div>';
+            
+            try {
+                // Use globally loaded html2canvas
+                const canvas = await html2canvas(document.getElementById('test-canvas'), {
+                    backgroundColor: '#ffffff',
+                    scale: 2
+                });
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.download = 'test_house_plan_layout.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                statusDiv.innerHTML = '<div class="success">✅ Image download test successful!</div>';
+                testResults.image = true;
+                updateOverallStatus();
+                
+            } catch (error) {
+                console.error('Image test error:', error);
+                statusDiv.innerHTML = '<div class="error">❌ Image download test failed: ' + error.message + '</div>';
+            }
+        }
+
+        function testJSONDownload() {
+            const statusDiv = document.getElementById('json-status');
+            statusDiv.innerHTML = '<div class="info">Testing JSON download...</div>';
+            
+            try {
+                const testData = {
+                    plan_info: {
+                        name: 'Test House Plan',
+                        plot_width: 40,
+                        plot_height: 30,
+                        layout_area: 1200,
+                        construction_area: 1440,
+                        scale_ratio: 1.2,
+                        created_at: new Date().toISOString()
+                    },
+                    rooms: [
+                        {
+                            id: 1,
+                            name: 'Living Room',
+                            x: 20,
+                            y: 20,
+                            layout_width: 20,
+                            layout_height: 16,
+                            actual_width: 24,
+                            actual_height: 19.2,
+                            color: '#ffe0b2',
+                            category: 'living'
+                        },
+                        {
+                            id: 2,
+                            name: 'Kitchen',
+                            x: 140,
+                            y: 20,
+                            layout_width: 16,
+                            layout_height: 16,
+                            actual_width: 19.2,
+                            actual_height: 19.2,
+                            color: '#ffcdd2',
+                            category: 'kitchen'
+                        },
+                        {
+                            id: 3,
+                            name: 'Master Bedroom',
+                            x: 240,
+                            y: 20,
+                            layout_width: 20,
+                            layout_height: 12,
+                            actual_width: 24,
+                            actual_height: 14.4,
+                            color: '#c8e6c9',
+                            category: 'bedroom'
+                        },
+                        {
+                            id: 4,
+                            name: 'Bedroom 2',
+                            x: 20,
+                            y: 120,
+                            layout_width: 16,
+                            layout_height: 12,
+                            actual_width: 19.2,
+                            actual_height: 14.4,
+                            color: '#dcedc8',
+                            category: 'bedroom'
+                        },
+                        {
+                            id: 5,
+                            name: 'Bathroom',
+                            x: 120,
+                            y: 120,
+                            layout_width: 12,
+                            layout_height: 12,
+                            actual_width: 14.4,
+                            actual_height: 14.4,
+                            color: '#b3e5fc',
+                            category: 'bathroom'
+                        }
+                    ],
+                    technical_details: {
+                        foundation_type: 'RCC',
+                        structure_type: 'RCC Frame',
+                        wall_material: 'Brick',
+                        roofing_type: 'RCC Slab',
+                        construction_cost: '₹18,00,000',
+                        construction_duration: '8-12 months'
+                    },
+                    notes: 'Test house plan for download functionality verification'
+                };
+                
+                const dataStr = JSON.stringify(testData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = 'test_house_plan_data.json';
+                link.click();
+                
+                // Clean up
+                URL.revokeObjectURL(link.href);
+                
+                statusDiv.innerHTML = '<div class="success">✅ JSON download test successful!</div>';
+                testResults.json = true;
+                updateOverallStatus();
+                
+            } catch (error) {
+                console.error('JSON test error:', error);
+                statusDiv.innerHTML = '<div class="error">❌ JSON download test failed: ' + error.message + '</div>';
+            }
+        }
+
+        function updateOverallStatus() {
+            const overallDiv = document.getElementById('overall-status');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result).length;
+            
+            if (passedTests === 0) {
+                overallDiv.innerHTML = '<div class="info">Click the test buttons above to verify download functionality.</div>';
+            } else if (passedTests === totalTests) {
+                overallDiv.innerHTML = '<div class="success">🎉 All download functionality tests passed! (' + passedTests + '/' + totalTests + ')</div>';
+            } else {
+                overallDiv.innerHTML = '<div class="info">📊 Test Progress: ' + passedTests + '/' + totalTests + ' tests passed</div>';
+            }
+        }
+
+        // Initialize
+        updateOverallStatus();
+    </script>
+</body>
+</html>
