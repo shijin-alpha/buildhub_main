@@ -134,6 +134,40 @@ try {
             $notifStmt->bindValue(':msg', $notificationMessage);
             $notifStmt->execute();
             
+            // Also send a message to the messages table for the Messages tab
+            try {
+                // Create messages table if it doesn't exist
+                $db->exec("CREATE TABLE IF NOT EXISTS messages (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    from_user_id INT NOT NULL,
+                    to_user_id INT NOT NULL,
+                    subject VARCHAR(255) NOT NULL,
+                    message TEXT NOT NULL,
+                    message_type VARCHAR(50) DEFAULT 'acknowledgment',
+                    related_id INT NULL,
+                    is_read BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE
+                )");
+                
+                // Create the acknowledgment message
+                $subject = "Layout Request Acknowledged - {$layoutTitle}";
+                $due_text = $dueDate ? "Expected completion: " . date('F j, Y', strtotime($dueDate)) : "Due date to be confirmed";
+                $message_text = "Hello! I have acknowledged your layout request for '{$layoutTitle}' and will begin working on your estimate. {$due_text}. I'll keep you updated on the progress.";
+                
+                // Insert the message
+                $messageStmt = $db->prepare("
+                    INSERT INTO messages (from_user_id, to_user_id, subject, message, message_type, created_at) 
+                    VALUES (?, ?, ?, ?, 'acknowledgment', NOW())
+                ");
+                $messageStmt->execute([$contractorId, $homeownerId, $subject, $message_text]);
+                
+                error_log("Acknowledgment message sent to homeowner messages");
+            } catch (Exception $msgError) {
+                error_log("Failed to send acknowledgment message: " . $msgError->getMessage());
+            }
+            
             // Send email to homeowner
             if ($homeownerEmail) {
                 try {

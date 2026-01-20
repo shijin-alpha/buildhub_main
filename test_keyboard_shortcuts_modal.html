@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard Shortcuts Modal Test</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-header {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .demo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            background: #ffffff;
+            color: #1a1a1a;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .header-title h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .help-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding-right: 1rem;
+            border-right: 1px solid #e5e7eb;
+        }
+        .action-btn {
+            padding: 0.625rem 1rem;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            color: #374151;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .action-btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+        .shortcuts-btn:hover {
+            background: #f0f9ff;
+            border-color: #3b82f6;
+            color: #1d4ed8;
+        }
+        .feature-list {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #0ea5e9;
+        }
+        .feature-list h4 {
+            color: #0369a1;
+            margin-top: 0;
+        }
+        .feature {
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+        .feature::before {
+            content: "✓ ";
+            color: #059669;
+            font-weight: bold;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        .shortcut-demo {
+            display: inline-block;
+            background: #374151;
+            color: #ffffff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            margin: 0 2px;
+        }
+        .mouse-demo {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: #ffffff;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-header">⌨️ Keyboard Shortcuts Modal Implementation</h1>
+        
+        <div class="test-section">
+            <h3>📋 Implementation Overview</h3>
+            <p>Added a comprehensive keyboard shortcuts modal to the House Plan Designer header that displays all available shortcuts and mouse controls in an organized, user-friendly format.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Demo Header with Shortcuts Button</h3>
+            <div class="demo-header">
+                <div class="header-title">
+                    <h2>House Plan Designer</h2>
+                </div>
+                <div class="header-actions">
+                    <div class="help-actions">
+                        <button class="action-btn tour-btn" title="Take a guided tour">
+                            🎯 Tour
+                        </button>
+                        <button class="action-btn help-btn" title="Open user manual">
+                            📖 Help
+                        </button>
+                        <button class="action-btn shortcuts-btn" title="View keyboard shortcuts" onclick="showModal()">
+                            ⌨️ Shortcuts
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <p><strong>Click the "⌨️ Shortcuts" button above to see the modal in action!</strong></p>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Features Implemented</h3>
+            <div class="feature-list">
+                <h4>Modal Features:</h4>
+                <div class="feature">Clean, modern modal design with backdrop blur</div>
+                <div class="feature">Organized sections for different types of shortcuts</div>
+                <div class="feature">Visual keyboard key representations</div>
+                <div class="feature">Mouse action indicators with distinct styling</div>
+                <div class="feature">Helpful tips section for better user guidance</div>
+                <div class="feature">Responsive design for mobile devices</div>
+                <div class="feature">Smooth animations and hover effects</div>
+                <div class="feature">Easy close functionality (click outside or close button)</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>⌨️ Shortcuts Categories</h3>
+            
+            <h4>🎯 General Actions</h4>
+            <ul>
+                <li><span class="shortcut-demo">Ctrl</span> + <span class="shortcut-demo">Z</span> - Undo last action</li>
+                <li><span class="shortcut-demo">Ctrl</span> + <span class="shortcut-demo">Y</span> - Redo last undone action</li>
+                <li><span class="shortcut-demo">Delete</span> - Delete selected room</li>
+            </ul>
+
+            <h4>🔄 Room Rotation</h4>
+            <ul>
+                <li><span class="shortcut-demo">R</span> - Rotate room 15° clockwise</li>
+                <li><span class="shortcut-demo">E</span> - Rotate room 15° counter-clockwise</li>
+                <li><span class="shortcut-demo">T</span> - Rotate room 90° clockwise</li>
+                <li><span class="shortcut-demo">Q</span> - Reset room rotation to 0°</li>
+            </ul>
+
+            <h4>🖱️ Mouse Controls</h4>
+            <ul>
+                <li><span class="mouse-demo">Click</span> - Select room</li>
+                <li><span class="mouse-demo">Drag</span> - Move selected room</li>
+                <li><span class="mouse-demo">Drag Blue Handle</span> - Resize room</li>
+                <li><span class="mouse-demo">Drag Red Handle</span> - Rotate room (5° snaps)</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🎨 Design Features</h3>
+            <ul>
+                <li><strong>Modern UI:</strong> Clean design with gradients and shadows</li>
+                <li><strong>Visual Hierarchy:</strong> Clear sections with icons and colors</li>
+                <li><strong>Interactive Elements:</strong> Hover effects and animations</li>
+                <li><strong>Accessibility:</strong> Keyboard navigation and clear contrast</li>
+                <li><strong>Responsive:</strong> Adapts to different screen sizes</li>
+                <li><strong>Consistent Styling:</strong> Matches the overall app design</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 Responsive Behavior</h3>
+            <ul>
+                <li>On mobile devices, the modal switches to single-column layout</li>
+                <li>Shortcut items stack vertically for better readability</li>
+                <li>Modal takes up 95% of viewport width on small screens</li>
+                <li>Touch-friendly button sizes and spacing</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Implementation Details</h3>
+            <ul>
+                <li><strong>State Management:</strong> Added <code>showKeyboardShortcuts</code> state</li>
+                <li><strong>Button Integration:</strong> Added to help-actions section in header</li>
+                <li><strong>Modal Component:</strong> Complete modal with overlay and content</li>
+                <li><strong>CSS Styling:</strong> Comprehensive styles added to HousePlanDrawer.css</li>
+                <li><strong>Event Handling:</strong> Click outside to close, close button functionality</li>
+                <li><strong>Animation:</strong> Smooth slide-in animation on modal open</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal HTML (for demo purposes) -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;" onclick="hideModal()">
+        <div class="keyboard-shortcuts-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>⌨️ Keyboard Shortcuts</h3>
+                <button class="modal-close-btn" onclick="hideModal()" title="Close shortcuts">✕</button>
+            </div>
+            
+            <div class="shortcuts-content">
+                <div class="shortcuts-section">
+                    <h4>🎯 General Actions</h4>
+                    <div class="shortcut-list">
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <kbd>Ctrl</kbd> + <kbd>Z</kbd>
+                            </span>
+                            <span class="shortcut-description">Undo last action</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <kbd>Ctrl</kbd> + <kbd>Y</kbd>
+                            </span>
+                            <span class="shortcut-description">Redo last undone action</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <kbd>Delete</kbd>
+                            </span>
+                            <span class="shortcut-description">Delete selected room</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shortcuts-section">
+                    <h4>🔄 Room Rotation</h4>
+                    <div class="shortcut-list">
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <kbd>R</kbd>
+                            </span>
+                            <span class="shortcut-description">Rotate room 15° clockwise</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <kbd>E</kbd>
+                            </span>
+                            <span class="shortcut-description">Rotate room 15° counter-clockwise</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <kbd>T</kbd>
+                            </span>
+                            <span class="shortcut-description">Rotate room 90° clockwise</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <kbd>Q</kbd>
+                            </span>
+                            <span class="shortcut-description">Reset room rotation to 0°</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shortcuts-section">
+                    <h4>🖱️ Mouse Controls</h4>
+                    <div class="shortcut-list">
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <span class="mouse-action">Click</span>
+                            </span>
+                            <span class="shortcut-description">Select room</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <span class="mouse-action">Drag</span>
+                            </span>
+                            <span class="shortcut-description">Move selected room</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <span class="mouse-action">Drag Blue Handle</span>
+                            </span>
+                            <span class="shortcut-description">Resize room</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-keys">
+                                <span class="mouse-action">Drag Red Handle</span>
+                            </span>
+                            <span class="shortcut-description">Rotate room (5° snaps)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shortcuts-section">
+                    <h4>💡 Tips</h4>
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <span class="tip-icon">🎯</span>
+                            <span class="tip-text">Select a room first before using rotation shortcuts</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-icon">🔄</span>
+                            <span class="tip-text">Click overlapping rooms multiple times to cycle selection</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-icon">📐</span>
+                            <span class="tip-text">Use the properties panel for precise angle input</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-icon">⚡</span>
+                            <span class="tip-text">Rotation handles appear outside selected rooms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="modal-close-btn-primary" onclick="hideModal()">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Include the modal styles here for demo */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .keyboard-shortcuts-modal {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            background: #f1f5f9;
+            color: #374151;
+        }
+
+        .shortcuts-content {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .shortcuts-section h4 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .shortcut-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .shortcut-item:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .shortcut-keys kbd {
+            background: #374151;
+            color: #ffffff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            margin: 0 2px;
+        }
+
+        .mouse-action {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: #ffffff;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .shortcut-description {
+            color: #475569;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: right;
+            flex: 1;
+            margin-left: 1rem;
+        }
+
+        .tips-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 8px;
+            border: 1px solid #f59e0b;
+        }
+
+        .tip-text {
+            color: #92400e;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid #e5e7eb;
+            background: #f8fafc;
+            border-radius: 0 0 12px 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-close-btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .shortcuts-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+            
+            .shortcut-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .shortcut-description {
+                text-align: left;
+                margin-left: 0;
+            }
+        }
+    </style>
+
+    <script>
+        function showModal() {
+            document.getElementById('modal-overlay').style.display = 'flex';
+        }
+
+        function hideModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideModal();
+            }
+        });
+    </script>
+</body>
+</html>

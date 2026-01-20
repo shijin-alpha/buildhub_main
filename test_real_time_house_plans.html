@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time House Plans Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .test-section h3 {
+            margin: 0 0 1rem 0;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-list li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .feature-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .feature-text {
+            flex: 1;
+        }
+        
+        .feature-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-implemented {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-active {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .test-instructions {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .test-instructions h4 {
+            margin: 0 0 1rem 0;
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .instruction-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .instruction-steps li {
+            padding: 0.5rem 0;
+            color: #92400e;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .step-number {
+            background: #f59e0b;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .code-snippet {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        
+        .success-indicator {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 1px solid #16a34a;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .success-indicator h4 {
+            margin: 0 0 0.5rem 0;
+            color: #166534;
+        }
+        
+        .success-indicator p {
+            margin: 0;
+            color: #166534;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🔄 Real-Time House Plans Update System</h1>
+            <p>Testing automatic dashboard refresh functionality for house plan changes</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ Implemented Features</h3>
+            <ul class="feature-list">
+                <li>
+                    <span class="feature-icon">💾</span>
+                    <span class="feature-text">Auto-save triggers real-time dashboard refresh</span>
+                    <span class="feature-status status-implemented">Implemented</span>
+                </li>
+                <li>
+                    <span class="feature-icon">📋</span>
+                    <span class="feature-text">Manual save triggers immediate dashboard update</span>
+                    <span class="feature-status status-implemented">Implemented</span>
+                </li>
+                <li>
+                    <span class="feature-icon">📤</span>
+                    <span class="feature-text">Plan submission triggers dashboard refresh</span>
+                    <span class="feature-status status-implemented">Implemented</span>
+                </li>
+                <li>
+                    <span class="feature-icon">🔄</span>
+                    <span class="feature-text">Manual refresh button in HousePlanManager</span>
+                    <span class="feature-status status-implemented">Implemented</span>
+                </li>
+                <li>
+                    <span class="feature-icon">⏰</span>
+                    <span class="feature-text">Auto-refresh every 30 seconds in plan list view</span>
+                    <span class="feature-status status-active">Active</span>
+                </li>
+                <li>
+                    <span class="feature-icon">🌐</span>
+                    <span class="feature-text">Global refresh functions for cross-component updates</span>
+                    <span class="feature-status status-implemented">Implemented</span>
+                </li>
+                <li>
+                    <span class="feature-icon">📊</span>
+                    <span class="feature-text">Dashboard auto-refresh every 2 minutes</span>
+                    <span class="feature-status status-active">Active</span>
+                </li>
+                <li>
+                    <span class="feature-icon">🕐</span>
+                    <span class="feature-text">Last updated timestamp display</span>
+                    <span class="feature-status status-implemented">Implemented</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 Technical Implementation</h3>
+            <p><strong>Global Refresh Functions:</strong></p>
+            <div class="code-snippet">
+// Set up in ArchitectDashboard.jsx
+window.refreshDashboard = refreshDashboard;
+window.refreshHousePlans = () => fetchMyDesigns();
+
+// Called from HousePlanDrawer.jsx after saves
+if (window.refreshDashboard) {
+    setTimeout(() => window.refreshDashboard(), 500);
+}
+            </div>
+            
+            <p><strong>Auto-refresh Intervals:</strong></p>
+            <div class="code-snippet">
+// HousePlanManager: Refresh plans every 30 seconds
+setInterval(() => {
+    loadPlans();
+    setLastRefresh(Date.now());
+}, 30000);
+
+// ArchitectDashboard: Refresh dashboard every 2 minutes
+setInterval(() => {
+    if (activeTab === 'dashboard' && !loading) {
+        fetchLayoutRequests();
+        fetchMyDesigns();
+    }
+}, 120000);
+            </div>
+        </div>
+        
+        <div class="test-instructions">
+            <h4>🧪 How to Test Real-Time Updates</h4>
+            <ol class="instruction-steps">
+                <li>
+                    <span class="step-number">1</span>
+                    <span>Open the Architect Dashboard and navigate to a house plan project</span>
+                </li>
+                <li>
+                    <span class="step-number">2</span>
+                    <span>Open the House Plan Designer and make changes to a room (resize, move, rotate)</span>
+                </li>
+                <li>
+                    <span class="step-number">3</span>
+                    <span>Wait 5 seconds for auto-save to trigger (you'll see "Auto-saved" notification)</span>
+                </li>
+                <li>
+                    <span class="step-number">4</span>
+                    <span>Check the dashboard - it should automatically refresh within 1-2 seconds</span>
+                </li>
+                <li>
+                    <span class="step-number">5</span>
+                    <span>Try manual save - dashboard should update immediately</span>
+                </li>
+                <li>
+                    <span class="step-number">6</span>
+                    <span>Submit a plan - dashboard should refresh to show new status</span>
+                </li>
+                <li>
+                    <span class="step-number">7</span>
+                    <span>Use the "🔄 Refresh" button to manually update the plan list</span>
+                </li>
+            </ol>
+        </div>
+        
+        <div class="success-indicator">
+            <h4>✅ Real-Time Updates Successfully Implemented!</h4>
+            <p>Your dashboard will now automatically refresh when house plan changes are made, ensuring you always see the latest information without manual page refreshes.</p>
+        </div>
+    </div>
+</body>
+</html>
+</script>
+</body>
+</html>

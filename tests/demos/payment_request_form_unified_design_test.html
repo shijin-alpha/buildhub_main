@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Request Form - Unified Design Test</title>
+    <link rel="stylesheet" href="../../frontend/src/styles/SimplePaymentRequestForm_Unified.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-info {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-info h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .test-info p {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-info">
+            <h1>💰 Payment Request Form - Unified Design</h1>
+            <p><strong>Test Objective:</strong> Redesigned payment request form to match the unified design style of other sections (HomeownerProgressReports, etc.)</p>
+            <p><strong>Key Changes:</strong> Section card layout, unified header style, improved form groups, better visual hierarchy, and consistent spacing.</p>
+        </div>
+        
+        <!-- Payment Request Form with Unified Design -->
+        <div class="payment-request-section-card">
+            <!-- Section Header -->
+            <div class="payment-section-header">
+                <div class="payment-header-content">
+                    <div>
+                        <h2>💰 Request Stage Payment</h2>
+                        <p>Submit payment requests for completed construction stages</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Content -->
+            <div class="payment-section-content">
+                <!-- Project Selection -->
+                <div class="form-group-unified">
+                    <label for="project-select" class="form-label-unified">
+                        <span class="label-icon">🏗️</span>
+                        Select Project
+                    </label>
+                    <select id="project-select" class="form-select-unified">
+                        <option value="">Choose a project...</option>
+                        <option value="1" selected>Modern Villa Construction - Rajesh Kumar (₹45,00,000) - Mumbai</option>
+                        <option value="2">Apartment Renovation - Priya Sharma (₹25,00,000) - Delhi</option>
+                    </select>
+                </div>
+                
+                <!-- Total Cost Entry -->
+                <div class="form-group-unified">
+                    <label for="total-cost" class="form-label-unified">
+                        <span class="label-icon">💰</span>
+                        Total Project Cost (₹)
+                    </label>
+                    <input 
+                        type="number" 
+                        id="total-cost" 
+                        class="form-input-unified" 
+                        value="4500000"
+                        disabled
+                    />
+                </div>
+                
+                <!-- Project Info Card -->
+                <div class="project-info-card-unified">
+                    <div class="project-card-header">
+                        <div class="project-title">
+                            <span class="project-icon">🏗️</span>
+                            <h3>Modern Villa Construction</h3>
+                        </div>
+                        <span class="status-badge status-active">🚀 Ready for Construction</span>
+                    </div>
+                    
+                    <div class="project-card-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">💼</span>
+                            <span class="detail-label">Total Cost:</span>
+                            <span class="detail-value">₹45,00,000</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value">Mumbai, Maharashtra</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📐</span>
+                            <span class="detail-label">Plot Size:</span>
+                            <span class="detail-value">2400 sq ft</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">🎨</span>
+                            <span class="detail-label">Style:</span>
+                            <span class="detail-value">Modern Contemporary</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stage Selection -->
+                <div class="stage-selection-unified">
+                    <h4>🏗️ Select Construction Stage</h4>
+                    
+                    <div class="stages-grid-unified">
+                        <!-- Foundation Stage -->
+                        <div class="stage-card-unified">
+                            <div class="stage-card-header-unified">
+                                <h5>Foundation</h5>
+                                <span class="stage-percentage-badge">20%</span>
+                            </div>
+                            <p class="stage-description-unified">Site preparation, excavation, and foundation work</p>
+                            <div class="stage-amount-unified">₹9,00,000</div>
+                            <div class="stage-deliverables-unified">
+                                <strong>Key Deliverables:</strong>
+                                <ul>
+                                    <li>Site clearance</li>
+                                    <li>Excavation</li>
+                                    <li>Foundation laying</li>
+                                    <li>Plinth beam</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Structure Stage - Selected -->
+                        <div class="stage-card-unified selected">
+                            <div class="stage-card-header-unified">
+                                <h5>Structure</h5>
+                                <span class="stage-percentage-badge">25%</span>
+                            </div>
+                            <p class="stage-description-unified">Column, beam, and slab construction</p>
+                            <div class="stage-amount-unified">₹11,25,000</div>
+                            <div class="stage-deliverables-unified">
+                                <strong>Key Deliverables:</strong>
+                                <ul>
+                                    <li>Column construction</li>
+                                    <li>Beam work</li>
+                                    <li>Slab casting</li>
+                                    <li>Structural framework</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Brickwork Stage -->
+                        <div class="stage-card-unified">
+                            <div class="stage-card-header-unified">
+                                <h5>Brickwork</h5>
+                                <span class="stage-percentage-badge">15%</span>
+                            </div>
+                            <p class="stage-description-unified">Wall construction and masonry work</p>
+                            <div class="stage-amount-unified">₹6,75,000</div>
+                            <div class="stage-deliverables-unified">
+                                <strong>Key Deliverables:</strong>
+                                <ul>
+                                    <li>Wall construction</li>
+                                    <li>Door/window frames</li>
+                                    <li>Plastering base</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Form -->
+                <div class="payment-form-unified">
+                    <div class="payment-form-title-unified">
+                        <h4>💰 Payment Request: Structure Stage</h4>
+                        <p>Fill in the details for your payment request</p>
+                    </div>
+                    
+                    <!-- Payment Details Section -->
+                    <div class="form-section-unified">
+                        <h5>💵 Payment Details</h5>
+                        
+                        <div class="form-row-unified">
+                            <div class="form-group-unified">
+                                <label for="requested-amount" class="form-label-unified">
+                                    <span class="label-icon">💰</span>
+                                    Requested Amount (₹) *
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="requested-amount" 
+                                    class="form-input-unified" 
+                                    value="1125000"
+                                    placeholder="Enter amount"
+                                />
+                                <small>Suggested: ₹11,25,000 (25% of total)</small>
+                            </div>
+                            
+                            <div class="form-group-unified">
+                                <label for="completion" class="form-label-unified">
+                                    <span class="label-icon">📊</span>
+                                    Stage Completion (%) *
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="completion" 
+                                    class="form-input-unified" 
+                                    value="25"
+                                    placeholder="0-100"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Work Details Section -->
+                    <div class="form-section-unified">
+                        <h5>🏗️ Work Details</h5>
+                        
+                        <div class="form-group-unified">
+                            <label for="work-description" class="form-label-unified">
+                                <span class="label-icon">📝</span>
+                                Work Description *
+                            </label>
+                            <textarea 
+                                id="work-description" 
+                                placeholder="Describe the work completed for this stage in detail..."
+                            >Completed all structural work including column construction up to first floor, beam work, and slab casting. All structural elements have been inspected and approved by the structural engineer.</textarea>
+                            <small>150/500 characters (minimum 20 required)</small>
+                        </div>
+                        
+                        <div class="form-row-unified">
+                            <div class="form-group-unified">
+                                <label for="labor-count" class="form-label-unified">
+                                    <span class="label-icon">👷</span>
+                                    Number of Workers *
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="labor-count" 
+                                    class="form-input-unified" 
+                                    value="15"
+                                    placeholder="Enter number of workers"
+                                />
+                            </div>
+                            
+                            <div class="form-group-unified">
+                                <label for="work-start" class="form-label-unified">
+                                    <span class="label-icon">📅</span>
+                                    Work Start Date
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="work-start" 
+                                    class="form-input-unified" 
+                                    value="2026-01-01"
+                                />
+                            </div>
+                            
+                            <div class="form-group-unified">
+                                <label for="work-end" class="form-label-unified">
+                                    <span class="label-icon">📅</span>
+                                    Work End Date
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="work-end" 
+                                    class="form-input-unified" 
+                                    value="2026-01-14"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quality & Compliance Section -->
+                    <div class="form-section-unified">
+                        <h5>✅ Quality & Compliance</h5>
+                        
+                        <div class="checkbox-group-unified">
+                            <div class="checkbox-item-unified">
+                                <label class="checkbox-label-unified">
+                                    <input type="checkbox" checked />
+                                    <span class="checkmark-unified"></span>
+                                    Quality assurance checks completed for Structure stage
+                                </label>
+                            </div>
+                            
+                            <div class="checkbox-item-unified">
+                                <label class="checkbox-label-unified">
+                                    <input type="checkbox" checked />
+                                    <span class="checkmark-unified"></span>
+                                    Safety compliance verified and documented
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="form-actions-unified">
+                        <button class="btn-cancel-unified">Cancel</button>
+                        <button class="btn-submit-unified">Submit Payment Request</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- No Project Selected State Example -->
+        <div class="payment-request-section-card" style="margin-top: 30px;">
+            <div class="payment-section-header">
+                <div class="payment-header-content">
+                    <div>
+                        <h2>💰 Request Stage Payment</h2>
+                        <p>Submit payment requests for completed construction stages</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="payment-section-content">
+                <div class="form-group-unified">
+                    <label for="project-select-2" class="form-label-unified">
+                        <span class="label-icon">🏗️</span>
+                        Select Project
+                    </label>
+                    <select id="project-select-2" class="form-select-unified">
+                        <option value="" selected>Choose a project...</option>
+                    </select>
+                </div>
+                
+                <div class="empty-state-inline">
+                    <div class="empty-icon">📋</div>
+                    <div class="empty-content">
+                        <h4>No Construction Projects Available</h4>
+                        <p>Projects become available when homeowners accept your estimates and are ready to start construction.</p>
+                    </div>
+                </div>
+                
+                <div class="no-selection-state">
+                    <div class="no-selection-icon">📋</div>
+                    <h4>Select a Project</h4>
+                    <p>Choose a project above to start creating payment requests for construction stages.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

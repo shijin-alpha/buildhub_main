@@ -1,4 +1,9 @@
 <?php
+// Suppress warnings to prevent JSON corruption
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', 0);
+
+
 /**
  * Get Progress Analytics API
  * Provides data for graphs and visualizations

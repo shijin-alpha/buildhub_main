@@ -1,4 +1,9 @@
 <?php
+// Suppress warnings to prevent JSON corruption
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', 0);
+
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');

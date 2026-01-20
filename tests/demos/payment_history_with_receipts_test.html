@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History with Receipts Test - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .payment-history-demo {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stage-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: #d1ecf1;
+            color: #17a2b8;
+            border: 1px solid #bee5eb;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .receipt-info {
+            background: #e3f2fd;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin-top: 15px;
+        }
+
+        .receipt-info h4 {
+            color: #1976d2;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .receipt-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .receipt-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #bbdefb;
+        }
+
+        .receipt-item strong {
+            display: block;
+            font-size: 12px;
+            color: #1565c0;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .receipt-item span {
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        .files-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #bbdefb;
+            margin-top: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .file-icon {
+            font-size: 20px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .view-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .view-btn:hover {
+            background: #1976d2;
+        }
+
+        .verification-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .verification-verified {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .verification-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .pending-receipt {
+            background: #fff3cd;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pending-icon {
+            font-size: 24px;
+        }
+
+        .pending-text strong {
+            display: block;
+            color: #856404;
+            margin-bottom: 4px;
+        }
+
+        .pending-text p {
+            margin: 0;
+            color: #856404;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Payment History with Receipts</h1>
+            <p>Testing receipt display in payment history for both contractors and homeowners</p>
+        </div>
+
+        <div class="content">
+            <div class="test-section">
+                <h3>✅ Enhanced Payment History Features</h3>
+                <p><strong>New Features Added:</strong></p>
+                <ul style="padding-left: 20px; margin: 10px 0;">
+                    <li>✅ Receipt information display in payment history</li>
+                    <li>✅ Payment method, transaction reference, and payment date</li>
+                    <li>✅ Verification status tracking</li>
+                    <li>✅ Uploaded receipt files with view links</li>
+                    <li>✅ Verification notes and timestamps</li>
+                    <li>✅ Pending receipt upload indicators</li>
+                </ul>
+                <button class="btn" onclick="loadPaymentHistory()">Load Payment History</button>
+                <button class="btn-secondary" onclick="loadHomeownerView()">Load Homeowner View</button>
+                <div id="testResult"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>📋 Sample Payment History with Receipts</h3>
+                <div class="payment-history-demo">
+                    <!-- Payment with Receipt -->
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="stage-name">🏗️ Foundation Stage</div>
+                            <span class="status-badge status-paid">💰 Paid</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong>Amount:</strong> ₹3,00,000 | <strong>Completion:</strong> 100%
+                        </div>
+                        
+                        <div class="receipt-info">
+                            <h4>📄 Payment Receipt Information</h4>
+                            <div class="receipt-details">
+                                <div class="receipt-item">
+                                    <strong>Payment Method</strong>
+                                    <span>🏦 Bank Transfer</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Transaction Reference</strong>
+                                    <span>NEFT123456789</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Payment Date</strong>
+                                    <span>Jan 10, 2026</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Verification Status</strong>
+                                    <span class="verification-status verification-verified">✅ Verified</span>
+                                </div>
+                            </div>
+                            
+                            <div class="files-section">
+                                <strong style="display: block; margin-bottom: 12px; color: #1976d2;">Uploaded Files:</strong>
+                                <div class="file-item">
+                                    <span class="file-icon">🖼️</span>
+                                    <div class="file-details">
+                                        <div class="file-name">bank_transfer_receipt.jpg</div>
+                                        <div class="file-size">2.3 MB</div>
+                                    </div>
+                                    <a href="#" class="view-btn">👁️ View</a>
+                                </div>
+                                <div class="file-item">
+                                    <span class="file-icon">📄</span>
+                                    <div class="file-details">
+                                        <div class="file-name">transaction_confirmation.pdf</div>
+                                        <div class="file-size">1.1 MB</div>
+                                    </div>
+                                    <a href="#" class="view-btn">👁️ View</a>
+                                </div>
+                            </div>
+                            
+                            <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #bbdefb; margin-top: 12px;">
+                                <strong style="display: block; margin-bottom: 8px; color: #1976d2;">Verification Notes:</strong>
+                                <p style="margin: 0; color: #1565c0; font-size: 14px;">Payment verified successfully. All documents are clear and amount matches.</p>
+                            </div>
+                            
+                            <div style="text-align: right; padding-top: 8px; border-top: 1px solid #e3f2fd; margin-top: 12px;">
+                                <small style="color: #6c757d;">Verified on Jan 11, 2026 at 10:30 AM</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment with Pending Receipt -->
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="stage-name">🏗️ Structure Stage</div>
+                            <span class="status-badge status-approved">✅ Approved</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong>Amount:</strong> ₹4,50,000 | <strong>Completion:</strong> 90%
+                        </div>
+                        
+                        <div class="pending-receipt">
+                            <span class="pending-icon">⏳</span>
+                            <div class="pending-text">
+                                <strong>Awaiting Payment Receipt</strong>
+                                <p>Homeowner needs to upload payment receipt for verification</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment with UPI Receipt -->
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="stage-name">🏗️ Electrical Stage</div>
+                            <span class="status-badge status-paid">💰 Paid</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong>Amount:</strong> ₹1,80,000 | <strong>Completion:</strong> 100%
+                        </div>
+                        
+                        <div class="receipt-info">
+                            <h4>📄 Payment Receipt Information</h4>
+                            <div class="receipt-details">
+                                <div class="receipt-item">
+                                    <strong>Payment Method</strong>
+                                    <span>📱 UPI Payment</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Transaction Reference</strong>
+                                    <span>UPI123456789012</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Payment Date</strong>
+                                    <span>Jan 8, 2026</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Verification Status</strong>
+                                    <span class="verification-status verification-pending">⏳ Pending Verification</span>
+                                </div>
+                            </div>
+                            
+                            <div class="files-section">
+                                <strong style="display: block; margin-bottom: 12px; color: #1976d2;">Uploaded Files:</strong>
+                                <div class="file-item">
+                                    <span class="file-icon">🖼️</span>
+                                    <div class="file-details">
+                                        <div class="file-name">upi_payment_screenshot.png</div>
+                                        <div class="file-size">1.8 MB</div>
+                                    </div>
+                                    <a href="#" class="view-btn">👁️ View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔧 Technical Implementation</h3>
+                <ul style="padding-left: 20px; line-height: 1.8;">
+                    <li><strong>Backend Updates:</strong> Enhanced payment history APIs to include receipt data</li>
+                    <li><strong>Frontend Components:</strong> Updated PaymentHistory and HomeownerProgressReports</li>
+                    <li><strong>Receipt Display:</strong> Shows payment method, reference, date, and verification status</li>
+                    <li><strong>File Management:</strong> Displays uploaded files with view links</li>
+                    <li><strong>Status Tracking:</strong> Visual indicators for verification status</li>
+                    <li><strong>Responsive Design:</strong> Mobile-friendly receipt information display</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadPaymentHistory() {
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_payment_history.php?project_id=105', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const requests = data.data.payment_requests || [];
+                    const hasReceipts = requests.some(r => r.receipt_file_path);
+                    
+                    document.getElementById('testResult').innerHTML = 
+                        `<div class="test-result success">
+                            ✅ Payment history loaded successfully!<br>
+                            📊 Found ${requests.length} payment requests<br>
+                            📄 ${hasReceipts ? 'Receipt information included' : 'No receipts found yet'}<br>
+                            💰 Total paid: ₹${data.data.summary.total_paid?.toLocaleString() || '0'}
+                        </div>`;
+                } else {
+                    document.getElementById('testResult').innerHTML = 
+                        '<div class="test-result error">❌ Failed to load payment history: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = 
+                    '<div class="test-result error">❌ Error loading payment history: ' + error.message + '</div>';
+            }
+        }
+
+        async function loadHomeownerView() {
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_payment_requests.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const requests = data.data.requests || [];
+                    const hasReceipts = requests.some(r => r.receipt_files);
+                    
+                    document.getElementById('testResult').innerHTML = 
+                        `<div class="test-result success">
+                            ✅ Homeowner payment requests loaded!<br>
+                            📊 Found ${requests.length} payment requests<br>
+                            📄 ${hasReceipts ? 'Receipt information included' : 'No receipts uploaded yet'}<br>
+                            ⏳ Pending: ${data.data.summary.pending_count || 0} | 
+                            ✅ Approved: ${data.data.summary.approved_count || 0}
+                        </div>`;
+                } else {
+                    document.getElementById('testResult').innerHTML = 
+                        '<div class="test-result error">❌ Failed to load homeowner requests: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = 
+                    '<div class="test-result error">❌ Error loading homeowner requests: ' + error.message + '</div>';
+            }
+        }
+
+        // Auto-load on page load
+        window.onload = function() {
+            console.log('Payment History with Receipts Test loaded - ready to test!');
+        };
+    </script>
+</body>
+</html>

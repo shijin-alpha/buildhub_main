@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Architect Selection Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Clean Architect Selection Form Styles */
+        .architect-selection-container {
+            background: transparent;
+            border-radius: 0;
+            padding: 16px;
+            box-shadow: none;
+            border: none;
+            margin: 0;
+            position: relative;
+            overflow: visible;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .architect-selection-header {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .architect-selection-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .architect-selection-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 0;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .architect-search-section {
+            margin-bottom: 20px;
+        }
+
+        .search-bar-container {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .search-input-group {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input-group .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 14px;
+            z-index: 2;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #ffffff;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+            font-weight: 400;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .search-input::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .filter-toggle-btn {
+            background: #f9fafb;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .filter-toggle-btn:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .architect-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .architect-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: border-color 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .architect-card:hover {
+            border-color: #3b82f6;
+        }
+
+        .architect-card.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .selection-indicator {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .architect-card.selected .selection-indicator {
+            border-color: #10b981;
+            background: #10b981;
+        }
+
+        .architect-card.selected .selection-indicator::after {
+            content: '✓';
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .architect-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 0;
+        }
+
+        .architect-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .architect-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #e5e7eb;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .architect-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .architect-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1f2937;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .architect-email {
+            color: #6b7280;
+            font-size: 13px;
+            word-break: break-all;
+            font-weight: 400;
+        }
+
+        .architect-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .rating-stars {
+            color: #f59e0b;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        .rating-text {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .rating-count {
+            font-size: 11px;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .architect-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .architect-tag {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .architect-tag.specialization {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        .architect-tag.experience {
+            background: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .architect-action-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .architect-action-btn:hover {
+            background: #2563eb;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .architect-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .search-bar-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .filter-toggle-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="architect-selection-container">
+        <div class="architect-selection-header">
+            <h3 class="architect-selection-title">Choose Your Architect</h3>
+            <p class="architect-selection-subtitle">Select one or more architects to work on your project</p>
+        </div>
+
+        <div class="architect-search-section">
+            <div class="search-bar-container">
+                <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input placeholder="Search by name, company, or email..." class="search-input" type="text" value="">
+                </div>
+                <button class="filter-toggle-btn">
+                    <i class="fas fa-filter"></i>
+                    Filters
+                </button>
+            </div>
+        </div>
+
+        <div class="architect-grid">
+            <div class="architect-card">
+                <div class="selection-indicator"></div>
+                <div class="architect-card-header">
+                    <div class="architect-info">
+                        <div class="architect-avatar">SJ</div>
+                        <div class="architect-details">
+                            <h4 class="architect-name">Savio Joseph</h4>
+                            <p class="architect-email">saviojoseph2026@mca.ajce.in</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="architect-rating">
+                    <div class="rating-stars">☆☆☆☆☆</div>
+                    <span class="rating-text">No rating</span>
+                    <span class="rating-count">(0 reviews)</span>
+                </div>
+                <div class="architect-tags">
+                    <span class="architect-tag specialization">
+                        <i class="fas fa-briefcase"></i>
+                        Urban Planner
+                    </span>
+                    <span class="architect-tag experience">
+                        <i class="fas fa-calendar-alt"></i>
+                        0 years
+                    </span>
+                </div>
+                <button class="architect-action-btn">
+                    <i class="fas fa-eye"></i>
+                    View Details
+                </button>
+            </div>
+
+            <div class="architect-card">
+                <div class="selection-indicator"></div>
+                <div class="architect-card-header">
+                    <div class="architect-info">
+                        <div class="architect-avatar">LN</div>
+                        <div class="architect-details">
+                            <h4 class="architect-name">Linsha Nadir</h4>
+                            <p class="architect-email">linshan2026@mca.ajce.in</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="architect-rating">
+                    <div class="rating-stars">☆☆☆☆☆</div>
+                    <span class="rating-text">No rating</span>
+                    <span class="rating-count">(0 reviews)</span>
+                </div>
+                <div class="architect-tags">
+                    <span class="architect-tag specialization">
+                        <i class="fas fa-briefcase"></i>
+                        Interior Design
+                    </span>
+                    <span class="architect-tag experience">
+                        <i class="fas fa-calendar-alt"></i>
+                        0 years
+                    </span>
+                </div>
+                <button class="architect-action-btn">
+                    <i class="fas fa-eye"></i>
+                    View Details
+                </button>
+            </div>
+
+            <div class="architect-card">
+                <div class="selection-indicator"></div>
+                <div class="architect-card-header">
+                    <div class="architect-info">
+                        <div class="architect-avatar">ST</div>
+                        <div class="architect-details">
+                            <h4 class="architect-name">shijin thomas</h4>
+                            <p class="architect-email">thomasshijin3@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="architect-rating">
+                    <div class="rating-stars">★★★★★</div>
+                    <span class="rating-text">5.0/5</span>
+                    <span class="rating-count">(1 reviews)</span>
+                </div>
+                <div class="architect-tags">
+                    <span class="architect-tag specialization">
+                        <i class="fas fa-briefcase"></i>
+                        Commercial
+                    </span>
+                    <span class="architect-tag experience">
+                        <i class="fas fa-calendar-alt"></i>
+                        3 years
+                    </span>
+                </div>
+                <button class="architect-action-btn">
+                    <i class="fas fa-eye"></i>
+                    View Details
+                </button>
+            </div>
+
+            <div class="architect-card">
+                <div class="selection-indicator"></div>
+                <div class="architect-card-header">
+                    <div class="architect-info">
+                        <div class="architect-avatar">ST</div>
+                        <div class="architect-details">
+                            <h4 class="architect-name">Shijin Thomas</h4>
+                            <p class="architect-email">shijinthomas1501@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="architect-rating">
+                    <div class="rating-stars">★★★★☆</div>
+                    <span class="rating-text">4.9/5</span>
+                    <span class="rating-count">(10 reviews)</span>
+                </div>
+                <div class="architect-tags">
+                    <span class="architect-tag specialization">
+                        <i class="fas fa-briefcase"></i>
+                        Residential
+                    </span>
+                    <span class="architect-tag experience">
+                        <i class="fas fa-calendar-alt"></i>
+                        3 years
+                    </span>
+                </div>
+                <button class="architect-action-btn">
+                    <i class="fas fa-eye"></i>
+                    View Details
+                </button>
+            </div>
+
+            <div class="architect-card">
+                <div class="selection-indicator"></div>
+                <div class="architect-card-header">
+                    <div class="architect-info">
+                        <div class="architect-avatar">AM</div>
+                        <div class="architect-details">
+                            <h4 class="architect-name">APARNA K SANTHOSH MCA2024-2026</h4>
+                            <p class="architect-email">aparnaksanthosh2026@mca.ajce.in</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="architect-rating">
+                    <div class="rating-stars">☆☆☆☆☆</div>
+                    <span class="rating-text">No rating</span>
+                    <span class="rating-count">(0 reviews)</span>
+                </div>
+                <div class="architect-tags"></div>
+                <button class="architect-action-btn">
+                    <i class="fas fa-eye"></i>
+                    View Details
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple interaction for demonstration
+        document.addEventListener('DOMContentLoaded', function() {
+            const architectCards = document.querySelectorAll('.architect-card');
+            
+            architectCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                architectCards.forEach(card => {
+                    const name = card.querySelector('.architect-name').textContent.toLowerCase();
+                    const email = card.querySelector('.architect-email').textContent.toLowerCase();
+                    
+                    if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

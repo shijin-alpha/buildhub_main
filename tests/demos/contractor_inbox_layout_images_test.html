@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Inbox Layout Images Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-section {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .test-section:last-child {
+            border-bottom: none;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-button.success {
+            background: #10b981;
+        }
+        .test-button.danger {
+            background: #ef4444;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f9fafb;
+            border-left: 4px solid #d1d5db;
+        }
+        .result.success {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+        .result.error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+        .inbox-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .inbox-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .inbox-title {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .inbox-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .layout-images {
+            margin-bottom: 16px;
+        }
+        .images-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 8px;
+            border: 1px solid #3b82f6;
+        }
+        .primary-image {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: #f9fafb;
+            margin-bottom: 16px;
+        }
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+        }
+        .thumbnail {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+        .thumbnail img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .thumbnail-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 6px;
+            font-size: 11px;
+            text-align: center;
+        }
+        .project-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .project-card {
+            padding: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .project-card h5 {
+            margin: 0 0 12px 0;
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .project-detail {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Contractor Inbox Layout Images Test</h1>
+            <p>Testing enhanced layout image display in contractor inbox</p>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">1. Test Contractor Inbox API</div>
+            <p>Fetch contractor inbox items and check for layout images.</p>
+            <button class="test-button" onclick="testContractorInbox()">Test Contractor Inbox</button>
+            <div id="inbox-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. Test Layout Image Extraction</div>
+            <p>Test the enhanced image extraction logic from different payload formats.</p>
+            <button class="test-button" onclick="testImageExtraction()">Test Image Extraction</button>
+            <div id="extraction-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. Simulate Enhanced Inbox Display</div>
+            <p>Simulate how the enhanced inbox would display layout images.</p>
+            <button class="test-button" onclick="simulateInboxDisplay()">Simulate Display</button>
+            <div id="display-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">4. Test Image URL Processing</div>
+            <p>Test the assetUrl function and image URL processing.</p>
+            <button class="test-button" onclick="testImageUrls()">Test Image URLs</button>
+            <div id="url-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate assetUrl function
+        function assetUrl(path) {
+            if (!path) return path;
+            if (/^https?:\/\//i.test(path)) return path;
+            const phpOrigin = window.location.port === '3000' ? 'http://localhost' : '';
+            return `${phpOrigin}/${String(path).replace(/^\/?/, '')}`;
+        }
+
+        async function testContractorInbox() {
+            const resultDiv = document.getElementById('inbox-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div>🔄 Fetching contractor inbox...</div>';
+
+            try {
+                // Test with contractor ID 37 (Shijin Thomas)
+                const response = await fetch('/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37', {
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const items = result.items || [];
+                    let itemsWithImages = 0;
+                    let totalImages = 0;
+
+                    items.forEach(item => {
+                        const payload = item.payload || {};
+                        let imageCount = 0;
+
+                        // Count layout_images
+                        if (payload.layout_images && Array.isArray(payload.layout_images)) {
+                            imageCount += payload.layout_images.length;
+                        }
+
+                        // Count forwarded_design files
+                        if (payload.forwarded_design && Array.isArray(payload.forwarded_design.files)) {
+                            imageCount += payload.forwarded_design.files.length;
+                        }
+
+                        // Count layout_image_url
+                        if (payload.layout_image_url) {
+                            imageCount += 1;
+                        }
+
+                        if (imageCount > 0) {
+                            itemsWithImages++;
+                            totalImages += imageCount;
+                        }
+                    });
+
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <div><strong>✅ Inbox Retrieved Successfully</strong></div>
+                        <div>Total inbox items: ${items.length}</div>
+                        <div>Items with images: ${itemsWithImages}</div>
+                        <div>Total images found: ${totalImages}</div>
+                        <div style="margin-top: 15px;">
+                            <strong>Recent Items with Images:</strong>
+                            ${items.filter(item => {
+                                const payload = item.payload || {};
+                                return payload.layout_images || payload.forwarded_design?.files || payload.layout_image_url;
+                            }).slice(0, 3).map(item => `
+                                <div style="margin: 8px 0; padding: 8px; background: #f0f9ff; border-radius: 4px;">
+                                    <strong>ID ${item.id}:</strong> ${item.title || 'Layout Request'}<br>
+                                    <small>From: ${item.homeowner_name || 'Unknown'} • ${new Date(item.created_at).toLocaleDateString()}</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<div><strong>❌ Error:</strong> ${result.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<div><strong>❌ Network Error:</strong> ${error.message}</div>`;
+            }
+        }
+
+        function testImageExtraction() {
+            const resultDiv = document.getElementById('extraction-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div>🔄 Testing image extraction logic...</div>';
+
+            // Test different payload formats
+            const testPayloads = [
+                {
+                    name: 'House Plan with layout_images',
+                    payload: {
+                        layout_images: [
+                            { url: '/uploads/plan1.jpg', name: 'Floor Plan 1' },
+                            { url: '/uploads/plan2.jpg', name: 'Floor Plan 2' }
+                        ],
+                        plan_name: 'Modern Villa'
+                    }
+                },
+                {
+                    name: 'Forwarded Design with files',
+                    payload: {
+                        forwarded_design: {
+                            files: [
+                                { url: '/uploads/design1.png', name: 'Design 1' },
+                                { path: '/uploads/design2.png', name: 'Design 2' }
+                            ],
+                            title: 'Custom Design'
+                        }
+                    }
+                },
+                {
+                    name: 'Single layout_image_url',
+                    payload: {
+                        layout_image_url: '/uploads/single_layout.jpg',
+                        plan_name: 'Simple Layout'
+                    }
+                },
+                {
+                    name: 'Mixed sources',
+                    payload: {
+                        layout_images: [
+                            { url: '/uploads/main.jpg', name: 'Main Plan' }
+                        ],
+                        forwarded_design: {
+                            files: [
+                                { url: '/uploads/detail.jpg', name: 'Detail View' }
+                            ]
+                        },
+                        layout_image_url: '/uploads/overview.jpg'
+                    }
+                }
+            ];
+
+            let results = [];
+
+            testPayloads.forEach(test => {
+                const payload = test.payload;
+                let layoutImages = [];
+
+                // Apply the enhanced extraction logic
+                if (payload.layout_images && Array.isArray(payload.layout_images)) {
+                    layoutImages = payload.layout_images;
+                }
+
+                if (payload.forwarded_design && Array.isArray(payload.forwarded_design.files)) {
+                    layoutImages = [...layoutImages, ...payload.forwarded_design.files];
+                }
+
+                if (payload.layout_image_url) {
+                    layoutImages.push({ url: payload.layout_image_url, name: 'Layout Image' });
+                }
+
+                results.push({
+                    name: test.name,
+                    imageCount: layoutImages.length,
+                    images: layoutImages
+                });
+            });
+
+            resultDiv.className = 'result success';
+            resultDiv.innerHTML = `
+                <div><strong>✅ Image Extraction Test Complete</strong></div>
+                ${results.map(result => `
+                    <div style="margin: 12px 0; padding: 12px; background: #f0f9ff; border-radius: 6px;">
+                        <strong>${result.name}:</strong> ${result.imageCount} images found<br>
+                        <small>Images: ${result.images.map(img => img.name || 'Unnamed').join(', ')}</small>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function simulateInboxDisplay() {
+            const resultDiv = document.getElementById('display-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div>🔄 Simulating enhanced inbox display...</div>';
+
+            // Simulate inbox item with multiple images
+            const mockItem = {
+                id: 123,
+                title: 'New Layout Request',
+                homeowner_name: 'John Doe',
+                homeowner_email: 'john@example.com',
+                created_at: new Date().toISOString(),
+                message: 'Please provide an estimate for this modern villa design. I need construction to start by March.',
+                payload: {
+                    layout_images: [
+                        { url: 'https://via.placeholder.com/400x300/3b82f6/ffffff?text=Main+Floor+Plan', name: 'Main Floor Plan' },
+                        { url: 'https://via.placeholder.com/120x80/10b981/ffffff?text=Front+View', name: 'Front Elevation' },
+                        { url: 'https://via.placeholder.com/120x80/f59e0b/ffffff?text=Side+View', name: 'Side Elevation' }
+                    ],
+                    plan_name: 'Modern Villa Design',
+                    plot_dimensions: '40x60 feet',
+                    total_area: 2400,
+                    technical_details: {
+                        structural: {
+                            foundation_type: 'RCC Foundation',
+                            wall_thickness: '9 inch brick walls'
+                        }
+                    }
+                }
+            };
+
+            const layoutImages = mockItem.payload.layout_images;
+            const primaryImage = layoutImages[0];
+
+            resultDiv.className = 'result success';
+            resultDiv.innerHTML = `
+                <div><strong>✅ Enhanced Inbox Display Simulation</strong></div>
+                <div class="inbox-item">
+                    <div class="inbox-header">
+                        <div>
+                            <div class="inbox-title">📋 ${mockItem.title}</div>
+                            <div class="inbox-meta">From: ${mockItem.homeowner_name} • ${mockItem.homeowner_email}</div>
+                        </div>
+                        <div class="inbox-meta">${new Date(mockItem.created_at).toLocaleDateString()}</div>
+                    </div>
+                    
+                    <div class="layout-images">
+                        <div class="images-header">
+                            <span style="font-size: 20px; margin-right: 8px;">🏗️</span>
+                            <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #1e40af;">
+                                Layout Images (${layoutImages.length})
+                            </h4>
+                        </div>
+                        
+                        <img src="${primaryImage.url}" alt="${primaryImage.name}" class="primary-image">
+                        
+                        ${layoutImages.length > 1 ? `
+                            <div class="thumbnail-grid">
+                                ${layoutImages.slice(1).map(img => `
+                                    <div class="thumbnail">
+                                        <img src="${img.url}" alt="${img.name}">
+                                        <div class="thumbnail-label">${img.name}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="project-grid">
+                        <div class="project-card">
+                            <h5>📋 Project Details</h5>
+                            <div class="project-detail"><strong>Plan:</strong> ${mockItem.payload.plan_name}</div>
+                            <div class="project-detail"><strong>Plot:</strong> ${mockItem.payload.plot_dimensions}</div>
+                            <div class="project-detail"><strong>Area:</strong> ${mockItem.payload.total_area} sq ft</div>
+                        </div>
+                        <div class="project-card" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-color: #bfdbfe;">
+                            <h5 style="color: #1e40af;">👤 Homeowner Info</h5>
+                            <div class="project-detail"><strong>Name:</strong> ${mockItem.homeowner_name}</div>
+                            <div class="project-detail"><strong>Email:</strong> ${mockItem.homeowner_email}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 20px; margin-right: 8px;">💬</span>
+                            <strong style="color: #1e40af; font-size: 15px;">Message from Homeowner</strong>
+                        </div>
+                        <div style="color: #1e3a8a; line-height: 1.6; font-size: 14px; padding-left: 28px;">
+                            ${mockItem.message}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function testImageUrls() {
+            const resultDiv = document.getElementById('url-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div>🔄 Testing image URL processing...</div>';
+
+            const testUrls = [
+                '/buildhub/backend/uploads/designs/image1.jpg',
+                'buildhub/backend/uploads/plans/plan1.png',
+                'http://localhost/buildhub/backend/uploads/layouts/layout1.jpg',
+                'https://example.com/external-image.jpg',
+                null,
+                undefined,
+                ''
+            ];
+
+            const results = testUrls.map(url => ({
+                original: url,
+                processed: assetUrl(url),
+                isValid: !!assetUrl(url)
+            }));
+
+            resultDiv.className = 'result success';
+            resultDiv.innerHTML = `
+                <div><strong>✅ Image URL Processing Test</strong></div>
+                <div style="margin-top: 15px;">
+                    <strong>URL Processing Results:</strong>
+                    ${results.map(result => `
+                        <div style="margin: 8px 0; padding: 8px; background: ${result.isValid ? '#f0fdf4' : '#fef2f2'}; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                            <strong>Original:</strong> ${result.original || 'null/undefined'}<br>
+                            <strong>Processed:</strong> ${result.processed || 'null/undefined'}<br>
+                            <strong>Valid:</strong> ${result.isValid ? '✅' : '❌'}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Auto-run initial test
+        window.addEventListener('load', () => {
+            console.log('🧪 Contractor Inbox Layout Images Test loaded');
+        });
+    </script>
+</body>
+</html>

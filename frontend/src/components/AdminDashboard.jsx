@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminPaymentVerification from './AdminPaymentVerification.jsx';
 import '../styles/AdminDashboard.css';
 import '../styles/BlueGlassTheme.css';
 import '../styles/SoftSidebar.css';
@@ -1163,6 +1164,14 @@ const AdminDashboard = () => {
           </a>
           <a 
             href="#" 
+            className={`nav-item sb-item ${activeTab === 'payments' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setActiveTab('payments'); }}
+          >
+            <span className="nav-icon sb-icon"><Icon name="check" /></span>
+            Payment Verification
+          </a>
+          <a 
+            href="#" 
             className={`nav-item sb-item ${activeTab === 'reports' ? 'active' : ''}`}
             onClick={(e) => { e.preventDefault(); setActiveTab('reports'); }}
           >
@@ -1208,6 +1217,7 @@ const AdminDashboard = () => {
             {activeTab === 'users' && renderUsers()}
             {activeTab === 'pending' && renderPendingUsers()}
             {activeTab === 'materials' && renderMaterials()}
+            {activeTab === 'payments' && <AdminPaymentVerification />}
             {activeTab === 'reports' && (
               <div className="admin-support-container">
                 <div className="admin-support-header">

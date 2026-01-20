@@ -372,6 +372,9 @@ try {
             }
         }
 
+        // Update project status based on progress
+        updateProjectStatus($db, $project_id, $stage_status, $completion_percentage, $stage_name);
+
         // Create notification for homeowner
         $notification_type = $stage_status === 'Completed' ? 'stage_completed' : 'progress_update';
         $notification_title = $stage_status === 'Completed' 
@@ -460,4 +463,88 @@ try {
     error_log("Progress update error: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error occurred']);
 }
+
+/**
+ * Update project status based on progress updates
+ */
+function updateProjectStatus($db, $project_id, $stage_status, $completion_percentage, $stage_name) {
+    try {
+        // Check if construction_projects table exists, if not use contractor_send_estimates
+        $tableCheck = $db->query("SHOW TABLES LIKE 'construction_projects'");
+        $useConstructionProjects = $tableCheck->rowCount() > 0;
+        
+        if ($useConstructionProjects) {
+            // Update construction_projects table
+            $currentStatus = 'created';
+            
+            // Determine new status based on progress
+            if ($completion_percentage > 0) {
+                $currentStatus = 'in_progress';
+            }
+            
+            // Check if all stages are completed (simplified check)
+            if ($stage_status === 'Completed' && $completion_percentage >= 100) {
+                // Check if this might be the final stage
+                $stageCheck = $db->prepare("
+                    SELECT COUNT(DISTINCT stage_name) as completed_stages
+                    FROM construction_progress_updates 
+                    WHERE project_id = :project_id AND stage_status = 'Completed'
+                ");
+                $stageCheck->bindValue(':project_id', $project_id, PDO::PARAM_INT);
+                $stageCheck->execute();
+                $completedStages = $stageCheck->fetch(PDO::FETCH_ASSOC);
+                
+                // If we have 6+ completed stages, consider project completed
+                if ($completedStages && $completedStages['completed_stages'] >= 6) {
+                    $currentStatus = 'completed';
+                }
+            }
+            
+            // Update project status and completion percentage
+            $updateProject = $db->prepare("
+                UPDATE construction_projects 
+                SET status = :status, 
+                    completion_percentage = (
+                        SELECT AVG(completion_percentage) 
+                        FROM construction_progress_updates 
+                        WHERE project_id = :project_id
+                    ),
+                    current_stage = :current_stage,
+                    last_update_date = NOW(),
+                    updated_at = NOW()
+                WHERE estimate_id = :project_id
+            ");
+            $updateProject->bindValue(':status', $currentStatus, PDO::PARAM_STR);
+            $updateProject->bindValue(':project_id', $project_id, PDO::PARAM_INT);
+            $updateProject->bindValue(':current_stage', $stage_name, PDO::PARAM_STR);
+            $updateProject->execute();
+        } else {
+            // Fallback: Update contractor_send_estimates table
+            $currentStatus = 'accepted';
+            
+            if ($completion_percentage > 0) {
+                $currentStatus = 'in_progress';
+            }
+            
+            if ($stage_status === 'Completed' && $completion_percentage >= 100) {
+                $currentStatus = 'construction_completed';
+            }
+            
+            $updateEstimate = $db->prepare("
+                UPDATE contractor_send_estimates 
+                SET status = :status 
+                WHERE id = :project_id
+            ");
+            $updateEstimate->bindValue(':status', $currentStatus, PDO::PARAM_STR);
+            $updateEstimate->bindValue(':project_id', $project_id, PDO::PARAM_INT);
+            $updateEstimate->execute();
+        }
+        
+        return true;
+    } catch (Exception $e) {
+        error_log("Error updating project status: " . $e->getMessage());
+        return false;
+    }
+}
+
 ?>

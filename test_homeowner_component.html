@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Homeowner Component</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .success { border-left: 4px solid #28a745; background-color: #d4edda; }
+        .error { border-left: 4px solid #dc3545; background-color: #f8d7da; }
+        .info { border-left: 4px solid #17a2b8; background-color: #d1ecf1; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .report-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .report-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px 12px 0 0;
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e3f2fd;
+            color: #007bff;
+            border: 1px solid rgba(0, 123, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Homeowner Progress Reports Component Test</h1>
+        <p>Testing the homeowner progress reports display functionality</p>
+
+        <div class="test-section info">
+            <h3>📋 Test API Data Fetch</h3>
+            <p>Fetch progress reports data and display in component format</p>
+            <button onclick="testComponentDisplay()">Test Component Display</button>
+            <div id="componentResult" class="result"></div>
+        </div>
+
+        <div class="test-section info">
+            <h3>🎨 Test Report Cards Rendering</h3>
+            <p>Render report cards with actual data</p>
+            <button onclick="renderReportCards()">Render Report Cards</button>
+            <div id="cardsContainer"></div>
+        </div>
+
+        <div class="test-section info">
+            <h3>🔍 Test Modal Functionality</h3>
+            <p>Test report details modal</p>
+            <button onclick="testModalDisplay()">Test Modal</button>
+            <div id="modalTest"></div>
+        </div>
+    </div>
+
+    <script>
+        let progressReports = [];
+
+        async function testComponentDisplay() {
+            const resultDiv = document.getElementById('componentResult');
+            resultDiv.textContent = 'Fetching data and testing component display...';
+            
+            try {
+                const homeownerId = 28;
+                const response = await fetch(`/buildhub/backend/api/homeowner/get_progress_updates.php?homeowner_id=${homeownerId}&limit=10`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Transform the data like the React component does
+                    const transformedReports = data.data.progress_updates.map(update => ({
+                        id: update.id,
+                        project_id: update.project_id,
+                        contractor_id: update.contractor_id,
+                        contractor_name: update.contractor_name,
+                        project_name: `Project ${update.project_id} - ${update.construction_stage}`,
+                        report_type: 'daily',
+                        period_start: update.update_date,
+                        period_end: update.update_date,
+                        created_at: update.created_at,
+                        status: 'sent',
+                        summary: {
+                            total_days: 1,
+                            total_workers: update.total_workers || 0,
+                            total_hours: update.working_hours || 0,
+                            progress_percentage: update.cumulative_completion_percentage || 0,
+                            photos_count: update.photos ? update.photos.length : 0,
+                            stage: update.construction_stage,
+                            work_description: update.work_done_today,
+                            weather: update.weather_condition,
+                            incremental_progress: update.incremental_completion_percentage
+                        },
+                        has_photos: (update.photos && update.photos.length > 0) || false,
+                        full_update_data: update
+                    }));
+                    
+                    progressReports = transformedReports;
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Component Data Ready!\n\nTransformed ${transformedReports.length} reports:\n\n${transformedReports.map(r => 
+                        `📋 Report ${r.id}: ${r.contractor_name} - ${r.summary.stage} (${r.summary.progress_percentage}%)`
+                    ).join('\n')}\n\nData structure is ready for React component rendering.`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ API Error: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        function renderReportCards() {
+            const container = document.getElementById('cardsContainer');
+            
+            if (progressReports.length === 0) {
+                container.innerHTML = '<p style="color: #dc3545;">⚠️ No data available. Please run "Test Component Display" first.</p>';
+                return;
+            }
+            
+            container.innerHTML = '<h4>📊 Rendered Report Cards:</h4>';
+            
+            progressReports.forEach(report => {
+                const card = document.createElement('div');
+                card.className = 'report-card';
+                card.style.cursor = 'pointer';
+                
+                card.innerHTML = `
+                    <div class="report-header">
+                        <div>
+                            <h3 style="margin: 0 0 8px 0; color: #2c3e50; display: flex; align-items: center; gap: 8px;">
+                                📅 ${report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)} Report
+                            </h3>
+                            <p style="margin: 0; color: #6c757d; font-size: 14px; font-weight: 500;">
+                                ${report.project_name}
+                            </p>
+                        </div>
+                        <span class="status-badge">📤 Sent</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; color: #6c757d;">
+                            <div><strong>Contractor:</strong> ${report.contractor_name}</div>
+                            <div><strong>Submitted:</strong> ${new Date(report.created_at).toLocaleDateString('en-IN')}</div>
+                            <div><strong>Period Start:</strong> ${new Date(report.period_start).toLocaleDateString('en-IN')}</div>
+                            <div><strong>Period End:</strong> ${new Date(report.period_end).toLocaleDateString('en-IN')}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px;">📋 Daily Progress Summary</h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px; margin-bottom: 10px;">
+                            <div><strong>Stage:</strong> ${report.summary.stage}</div>
+                            <div><strong>Total Progress:</strong> ${report.summary.progress_percentage}%</div>
+                            <div><strong>Daily Progress:</strong> +${report.summary.incremental_progress}%</div>
+                            <div><strong>Workers:</strong> ${report.summary.total_workers}</div>
+                            <div><strong>Working Hours:</strong> ${report.summary.total_hours}h</div>
+                            <div><strong>Weather:</strong> ${report.summary.weather}</div>
+                        </div>
+                        <div style="background: white; padding: 10px; border-radius: 6px; font-size: 12px; border: 1px solid #e9ecef;">
+                            <strong>Work Done:</strong> ${report.summary.work_description.length > 100 ? 
+                                report.summary.work_description.substring(0, 100) + '...' : 
+                                report.summary.work_description}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 12px; color: #6c757d;">
+                            ${report.has_photos ? '📸 Contains Photos' : ''}
+                        </div>
+                        <div style="color: #007bff; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                            👁️ View Details
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    alert(`Report Details:\n\nID: ${report.id}\nContractor: ${report.contractor_name}\nStage: ${report.summary.stage}\nProgress: ${report.summary.progress_percentage}%\nWork Done: ${report.summary.work_description}`);
+                });
+                
+                container.appendChild(card);
+            });
+        }
+
+        function testModalDisplay() {
+            const modalTest = document.getElementById('modalTest');
+            
+            if (progressReports.length === 0) {
+                modalTest.innerHTML = '<p style="color: #dc3545;">⚠️ No data available. Please run "Test Component Display" first.</p>';
+                return;
+            }
+            
+            const report = progressReports[0];
+            
+            // Create modal overlay
+            const modalOverlay = document.createElement('div');
+            modalOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                padding: 20px;
+            `;
+            
+            modalOverlay.innerHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 16px;
+                    max-width: 800px;
+                    width: 100%;
+                    max-height: 90vh;
+                    overflow: auto;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                ">
+                    <div style="
+                        padding: 24px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border-radius: 16px 16px 0 0;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    ">
+                        <div>
+                            <h2 style="margin: 0 0 8px 0;">📅 Daily Progress Report - ${report.full_update_data.construction_stage}</h2>
+                            <p style="margin: 0; opacity: 0.9;">
+                                Submitted by ${report.contractor_name} on ${new Date(report.created_at).toLocaleDateString('en-IN')}
+                            </p>
+                        </div>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="
+                            background: rgba(255,255,255,0.2);
+                            border: none;
+                            color: white;
+                            font-size: 24px;
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            cursor: pointer;
+                        ">×</button>
+                    </div>
+                    
+                    <div style="padding: 24px;">
+                        <div style="
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 12px;
+                            margin-bottom: 24px;
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                            gap: 15px;
+                        ">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #28a745;">+${report.full_update_data.incremental_completion_percentage}%</div>
+                                <div style="font-size: 12px; color: #6c757d;">Daily Progress</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #667eea;">${report.full_update_data.cumulative_completion_percentage}%</div>
+                                <div style="font-size: 12px; color: #6c757d;">Total Progress</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #ffc107;">${report.full_update_data.working_hours}h</div>
+                                <div style="font-size: 12px; color: #6c757d;">Working Hours</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #17a2b8;">${report.full_update_data.total_workers}</div>
+                                <div style="font-size: 12px; color: #6c757d;">Workers</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 24px;">
+                            <h3 style="color: #2c3e50; border-bottom: 2px solid #e9ecef; padding-bottom: 10px;">🏗️ Work Completed Today</h3>
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; line-height: 1.6;">
+                                ${report.full_update_data.work_done_today}
+                            </div>
+                        </div>
+                        
+                        <div style="
+                            margin-top: 30px;
+                            padding: 20px;
+                            background: #e3f2fd;
+                            border-radius: 8px;
+                            border: 1px solid #bbdefb;
+                            text-align: center;
+                        ">
+                            <h4 style="margin: 0 0 15px 0; color: #1976d2;">✅ Report Reviewed</h4>
+                            <p style="margin: 0; font-size: 14px; color: #424242;">
+                                This daily progress report has been successfully submitted and is available for your review.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modalOverlay.className = 'modal-overlay';
+            document.body.appendChild(modalOverlay);
+            
+            modalTest.innerHTML = '<p style="color: #28a745;">✅ Modal displayed successfully! Click the × button to close it.</p>';
+        }
+
+        // Auto-run first test on page load
+        window.onload = function() {
+            console.log('🏠 Homeowner Component Test Page Loaded');
+            testComponentDisplay();
+        };
+    </script>
+</body>
+</html>
+</content>

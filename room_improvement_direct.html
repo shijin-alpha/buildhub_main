@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Improvement Assistant - Direct Access</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+        
+        .access-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .option-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #3b82f6;
+            transition: transform 0.2s ease;
+        }
+        
+        .option-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .option-card h3 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+        }
+        
+        .option-card p {
+            margin: 0 0 15px 0;
+            color: #64748b;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .status-check {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+        }
+        
+        .status-good {
+            color: #059669;
+        }
+        
+        .status-warning {
+            color: #d97706;
+        }
+        
+        .instructions {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin: 0 0 15px 0;
+            color: #92400e;
+        }
+        
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+            color: #78350f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Room Improvement Assistant</h1>
+            <p>AI-Powered Room Analysis with Conceptual Visualization</p>
+        </div>
+        
+        <div class="status-check">
+            <h3>🔍 System Status Check</h3>
+            <div class="status-item">
+                <span>AI Service (Python FastAPI)</span>
+                <span id="ai-status" class="status-warning">Checking...</span>
+            </div>
+            <div class="status-item">
+                <span>Web Server (Apache/PHP)</span>
+                <span id="web-status" class="status-warning">Checking...</span>
+            </div>
+            <div class="status-item">
+                <span>Conceptual Images</span>
+                <span id="image-status" class="status-warning">Checking...</span>
+            </div>
+        </div>
+        
+        <div class="access-options">
+            <div class="option-card">
+                <h3>🚀 Quick Test</h3>
+                <p>Test the Room Improvement Assistant with a sample image to verify the Visual Reference section shows the generated conceptual image.</p>
+                <a href="/buildhub/test_visual_reference_final.html" class="btn" target="_blank">Run Quick Test</a>
+            </div>
+            
+            <div class="option-card">
+                <h3>🎨 Main Application</h3>
+                <p>Access the full BuildHub application where the Room Improvement Assistant is integrated into the homeowner dashboard.</p>
+                <a href="/buildhub/frontend/dist/index.html" class="btn" target="_blank">Open Main App</a>
+            </div>
+            
+            <div class="option-card">
+                <h3>🔧 Direct API Test</h3>
+                <p>Test the backend API directly to verify image generation and data structure.</p>
+                <a href="#" onclick="testAPI()" class="btn btn-secondary">Test API</a>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 How to Access Room Improvement Assistant in Main App</h3>
+            <ol>
+                <li><strong>Open Main App:</strong> Click "Open Main App" above</li>
+                <li><strong>Navigate to Homeowner Dashboard:</strong> Look for homeowner/user login or dashboard</li>
+                <li><strong>Find Room Improvement:</strong> Look for "Room Improvement", "AI Assistant", or similar button</li>
+                <li><strong>Upload Image:</strong> Select a room photo (JPG/PNG, max 5MB)</li>
+                <li><strong>Choose Room Type:</strong> Select bedroom, living room, kitchen, etc.</li>
+                <li><strong>Analyze:</strong> Click analyze and wait for results</li>
+                <li><strong>Check Visual Reference:</strong> Scroll to "🖼️ Visual Reference" section</li>
+                <li><strong>Verify Image:</strong> You should see both text description AND generated conceptual image</li>
+            </ol>
+        </div>
+        
+        <div id="test-results" style="display: none;">
+            <h3>🧪 API Test Results</h3>
+            <div id="api-results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Check system status on page load
+        window.addEventListener('load', checkSystemStatus);
+        
+        async function checkSystemStatus() {
+            // Check AI Service
+            try {
+                const aiResponse = await fetch('http://127.0.0.1:8000/health');
+                const aiData = await aiResponse.json();
+                document.getElementById('ai-status').textContent = aiData.status === 'healthy' ? '✅ Healthy' : '❌ Unhealthy';
+                document.getElementById('ai-status').className = aiData.status === 'healthy' ? 'status-good' : 'status-warning';
+            } catch (error) {
+                document.getElementById('ai-status').textContent = '❌ Offline';
+                document.getElementById('ai-status').className = 'status-warning';
+            }
+            
+            // Check Web Server
+            try {
+                const webResponse = await fetch('/buildhub/backend/api/homeowner/analyze_room_improvement.php', {
+                    method: 'POST',
+                    body: new FormData() // Empty form to test endpoint
+                });
+                document.getElementById('web-status').textContent = webResponse.status < 500 ? '✅ Running' : '❌ Error';
+                document.getElementById('web-status').className = webResponse.status < 500 ? 'status-good' : 'status-warning';
+            } catch (error) {
+                document.getElementById('web-status').textContent = '❌ Offline';
+                document.getElementById('web-status').className = 'status-warning';
+            }
+            
+            // Check Images
+            try {
+                const imageResponse = await fetch('/buildhub/uploads/conceptual_images/placeholder_bedroom_20260113_211938.png');
+                document.getElementById('image-status').textContent = imageResponse.ok ? '✅ Accessible' : '❌ Not Found';
+                document.getElementById('image-status').className = imageResponse.ok ? 'status-good' : 'status-warning';
+            } catch (error) {
+                document.getElementById('image-status').textContent = '❌ Error';
+                document.getElementById('image-status').className = 'status-warning';
+            }
+        }
+        
+        async function testAPI() {
+            const resultsDiv = document.getElementById('test-results');
+            const apiResults = document.getElementById('api-results');
+            
+            resultsDiv.style.display = 'block';
+            apiResults.innerHTML = '<p>🔄 Testing API...</p>';
+            
+            try {
+                // Create test image
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 300;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, 400, 300);
+                ctx.fillStyle = '#333';
+                ctx.font = '20px Arial';
+                ctx.fillText('Test Room', 150, 150);
+                
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                
+                const formData = new FormData();
+                formData.append('room_type', 'bedroom');
+                formData.append('improvement_notes', 'Direct API test');
+                formData.append('room_image', blob, 'test_room.jpg');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/analyze_room_improvement.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const conceptual = data.analysis.ai_enhancements?.conceptual_visualization;
+                    let html = '<div style="background: #d4edda; padding: 15px; border-radius: 5px; color: #155724;">';
+                    html += '<h4>✅ API Test Successful!</h4>';
+                    html += `<p><strong>Visual Reference:</strong> ${data.analysis.visual_reference ? 'Present' : 'Missing'}</p>`;
+                    html += `<p><strong>Conceptual Image:</strong> ${conceptual?.success ? 'Generated' : 'Failed'}</p>`;
+                    if (conceptual?.image_url) {
+                        html += `<p><strong>Image URL:</strong> ${conceptual.image_url}</p>`;
+                        html += `<img src="http://localhost${conceptual.image_url}" alt="Generated image" style="max-width: 300px; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0;">`;
+                    }
+                    html += '</div>';
+                    apiResults.innerHTML = html;
+                } else {
+                    apiResults.innerHTML = `<div style="background: #f8d7da; padding: 15px; border-radius: 5px; color: #721c24;">
+                        <h4>❌ API Test Failed</h4>
+                        <p><strong>Error:</strong> ${data.message}</p>
+                    </div>`;
+                }
+                
+            } catch (error) {
+                apiResults.innerHTML = `<div style="background: #f8d7da; padding: 15px; border-radius: 5px; color: #721c24;">
+                    <h4>❌ API Test Error</h4>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                </div>`;
+            }
+        }
+    </script>
+</body>
+</html>

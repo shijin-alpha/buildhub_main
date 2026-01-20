@@ -1,4 +1,9 @@
 <?php
+// Suppress warnings to prevent JSON corruption
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', 0);
+
+
 header('Content-Type: application/json');
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 if ($origin) { 
@@ -50,16 +55,15 @@ try {
             cse.total_cost,
             cse.timeline,
             cse.materials,
+            cse.structured,
+            cls.homeowner_id as cse_homeowner_id,
             u_homeowner.first_name as homeowner_first_name,
             u_homeowner.last_name as homeowner_last_name,
-            u_homeowner.email as homeowner_email,
-            lr.plot_size,
-            lr.budget_range,
-            lr.requirements as project_requirements
+            u_homeowner.email as homeowner_email
         FROM construction_progress_updates cpu
         LEFT JOIN contractor_send_estimates cse ON cpu.project_id = cse.id
-        LEFT JOIN users u_homeowner ON cpu.homeowner_id = u_homeowner.id
-        LEFT JOIN layout_requests lr ON cse.layout_request_id = lr.id
+        LEFT JOIN contractor_layout_sends cls ON cse.send_id = cls.id
+        LEFT JOIN users u_homeowner ON COALESCE(cpu.homeowner_id, cls.homeowner_id) = u_homeowner.id
         {$whereClause}
         ORDER BY cpu.created_at DESC
         LIMIT :limit OFFSET :offset
@@ -83,6 +87,16 @@ try {
         $update['photo_urls'] = array_map(function($path) {
             return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . '/buildhub/backend' . $path;
         }, $update['photos']);
+        
+        // Extract project details from structured JSON if available
+        if (!empty($update['structured'])) {
+            $structured = json_decode($update['structured'], true);
+            if ($structured) {
+                $update['plot_size'] = $structured['plot_size'] ?? null;
+                $update['budget_range'] = $structured['budget_range'] ?? null;
+                $update['project_requirements'] = $structured['requirements'] ?? null;
+            }
+        }
 
         // Format dates
         $update['created_at_formatted'] = date('M j, Y g:i A', strtotime($update['created_at']));
@@ -118,6 +132,7 @@ try {
 
         // Clean up sensitive data
         unset($update['photo_paths']);
+        unset($update['structured']); // Remove raw JSON from response
     }
 
     // Get total count for pagination
@@ -142,18 +157,17 @@ try {
                 cse.total_cost,
                 cse.timeline,
                 cse.materials,
+                cse.structured,
                 cse.status as project_status,
+                cls.homeowner_id,
                 u_homeowner.first_name as homeowner_first_name,
                 u_homeowner.last_name as homeowner_last_name,
-                lr.plot_size,
-                lr.budget_range,
-                lr.requirements,
                 COUNT(cpu.id) as total_updates,
                 MAX(cpu.completion_percentage) as latest_progress,
                 MAX(cpu.created_at) as last_update
             FROM contractor_send_estimates cse
-            LEFT JOIN users u_homeowner ON cse.homeowner_id = u_homeowner.id
-            LEFT JOIN layout_requests lr ON cse.layout_request_id = lr.id
+            LEFT JOIN contractor_layout_sends cls ON cse.send_id = cls.id
+            LEFT JOIN users u_homeowner ON cls.homeowner_id = u_homeowner.id
             LEFT JOIN construction_progress_updates cpu ON cse.id = cpu.project_id
             WHERE cse.id = :project_id AND cse.contractor_id = :contractor_id
             GROUP BY cse.id
@@ -165,9 +179,22 @@ try {
         $project_summary = $summaryStmt->fetch(PDO::FETCH_ASSOC);
 
         if ($project_summary) {
+            // Extract project details from structured JSON
+            if (!empty($project_summary['structured'])) {
+                $structured = json_decode($project_summary['structured'], true);
+                if ($structured) {
+                    $project_summary['plot_size'] = $structured['plot_size'] ?? null;
+                    $project_summary['budget_range'] = $structured['budget_range'] ?? null;
+                    $project_summary['requirements'] = $structured['requirements'] ?? null;
+                }
+            }
+            
             $project_summary['last_update_formatted'] = $project_summary['last_update'] 
                 ? date('M j, Y g:i A', strtotime($project_summary['last_update']))
                 : 'No updates yet';
+                
+            // Clean up
+            unset($project_summary['structured']);
         }
     }
 

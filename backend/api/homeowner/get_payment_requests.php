@@ -25,34 +25,36 @@ try {
     $status = $_GET['status'] ?? 'all';
     
     // Build query based on filters
-    $whereClause = "WHERE ppr.homeowner_id = :homeowner_id";
+    $whereClause = "WHERE homeowner_id = :homeowner_id";
     $params = [':homeowner_id' => $homeowner_id];
     
     if ($project_id) {
-        $whereClause .= " AND ppr.project_id = :project_id";
+        $whereClause .= " AND project_id = :project_id";
         $params[':project_id'] = $project_id;
     }
     
     if ($status !== 'all') {
-        $whereClause .= " AND ppr.status = :status";
+        $whereClause .= " AND status = :status";
         $params[':status'] = $status;
     }
     
     // Get payment requests with project and contractor details
     $query = "
         SELECT 
-            ppr.*,
-            cse.total_cost as project_total_cost,
-            cse.homeowner_first_name,
-            cse.homeowner_last_name,
-            cse.contractor_first_name,
-            cse.contractor_last_name,
-            cse.plot_size,
-            cse.budget_range,
+            spr.*,
+            spr.total_project_cost as project_total_cost,
             
             -- Contractor details
-            u.email as contractor_email,
-            u.phone as contractor_phone,
+            u_contractor.first_name as contractor_first_name,
+            u_contractor.last_name as contractor_last_name,
+            u_contractor.email as contractor_email,
+            u_contractor.phone as contractor_phone,
+            
+            -- Homeowner details
+            u_homeowner.first_name as homeowner_first_name,
+            u_homeowner.last_name as homeowner_last_name,
+            u_homeowner.email as homeowner_email,
+            u_homeowner.phone as homeowner_phone,
             
             -- Stage details
             csp.typical_percentage,
@@ -60,19 +62,19 @@ try {
             csp.description as stage_description,
             
             -- Time calculations
-            DATEDIFF(NOW(), ppr.request_date) as days_since_request,
+            DATEDIFF(NOW(), spr.request_date) as days_since_request,
             
             CASE 
-                WHEN ppr.status = 'pending' AND DATEDIFF(NOW(), ppr.request_date) > 7 THEN TRUE
+                WHEN spr.status = 'pending' AND DATEDIFF(NOW(), spr.request_date) > 7 THEN TRUE
                 ELSE FALSE
             END as is_overdue
             
-        FROM project_stage_payment_requests ppr
-        LEFT JOIN contractor_send_estimates cse ON ppr.project_id = cse.id
-        LEFT JOIN users u ON ppr.contractor_id = u.id
-        LEFT JOIN construction_stage_payments csp ON ppr.stage_name = csp.stage_name
+        FROM stage_payment_requests spr
+        LEFT JOIN users u_contractor ON spr.contractor_id = u_contractor.id
+        LEFT JOIN users u_homeowner ON spr.homeowner_id = u_homeowner.id
+        LEFT JOIN construction_stage_payments csp ON spr.stage_name COLLATE utf8mb4_unicode_ci = csp.stage_name
         $whereClause
-        ORDER BY ppr.request_date DESC
+        ORDER BY spr.request_date DESC
     ";
     
     $stmt = $db->prepare($query);
@@ -91,7 +93,7 @@ try {
             COALESCE(SUM(CASE WHEN status = 'approved' THEN requested_amount END), 0) as approved_amount,
             COALESCE(SUM(CASE WHEN status = 'paid' THEN requested_amount END), 0) as paid_amount,
             COUNT(CASE WHEN status = 'pending' AND DATEDIFF(NOW(), request_date) > 7 THEN 1 END) as overdue_requests
-        FROM project_stage_payment_requests 
+        FROM stage_payment_requests 
         $whereClause
     ";
     
@@ -104,23 +106,22 @@ try {
     if (!$project_id) {
         $projectQuery = "
             SELECT 
-                cse.id as project_id,
-                cse.homeowner_first_name,
-                cse.homeowner_last_name,
-                cse.contractor_first_name,
-                cse.contractor_last_name,
-                cse.total_cost,
-                cse.plot_size,
-                cse.budget_range,
-                COUNT(ppr.id) as total_requests,
-                COUNT(CASE WHEN ppr.status = 'pending' THEN 1 END) as pending_requests,
-                COALESCE(SUM(CASE WHEN ppr.status = 'paid' THEN ppr.requested_amount END), 0) as total_paid,
-                COALESCE(SUM(CASE WHEN ppr.status = 'pending' THEN ppr.requested_amount END), 0) as total_pending
-            FROM contractor_send_estimates cse
-            LEFT JOIN project_stage_payment_requests ppr ON cse.id = ppr.project_id
-            WHERE cse.homeowner_id = :homeowner_id
-            GROUP BY cse.id
-            ORDER BY cse.id DESC
+                spr.project_id,
+                u_contractor.first_name as contractor_first_name,
+                u_contractor.last_name as contractor_last_name,
+                u_homeowner.first_name as homeowner_first_name,
+                u_homeowner.last_name as homeowner_last_name,
+                MAX(spr.total_project_cost) as total_cost,
+                COUNT(spr.id) as total_requests,
+                COUNT(CASE WHEN spr.status = 'pending' THEN 1 END) as pending_requests,
+                COALESCE(SUM(CASE WHEN spr.status = 'paid' THEN spr.requested_amount END), 0) as total_paid,
+                COALESCE(SUM(CASE WHEN spr.status = 'pending' THEN spr.requested_amount END), 0) as total_pending
+            FROM stage_payment_requests spr
+            LEFT JOIN users u_contractor ON spr.contractor_id = u_contractor.id
+            LEFT JOIN users u_homeowner ON spr.homeowner_id = u_homeowner.id
+            WHERE spr.homeowner_id = :homeowner_id
+            GROUP BY spr.project_id, spr.contractor_id, spr.homeowner_id
+            ORDER BY spr.project_id DESC
         ";
         
         $projectStmt = $db->prepare($projectQuery);
@@ -131,19 +132,39 @@ try {
     // Format the response data
     foreach ($requests as &$request) {
         $request['requested_amount'] = (float)$request['requested_amount'];
-        $request['percentage_of_total'] = (float)$request['percentage_of_total'];
         $request['completion_percentage'] = (float)$request['completion_percentage'];
-        $request['project_total_cost'] = (float)$request['project_total_cost'];
+        $request['total_project_cost'] = (float)$request['total_project_cost'];
         $request['typical_percentage'] = (float)$request['typical_percentage'];
         $request['is_overdue'] = (bool)$request['is_overdue'];
         
+        // Add percentage_of_total calculation
+        if ($request['total_project_cost'] > 0) {
+            $request['percentage_of_total'] = ($request['requested_amount'] / $request['total_project_cost']) * 100;
+        } else {
+            $request['percentage_of_total'] = 0;
+        }
+        
         // Format dates
         $request['request_date_formatted'] = date('M j, Y g:i A', strtotime($request['request_date']));
-        if ($request['homeowner_response_date']) {
-            $request['homeowner_response_date_formatted'] = date('M j, Y g:i A', strtotime($request['homeowner_response_date']));
+        if ($request['response_date']) {
+            $request['homeowner_response_date_formatted'] = date('M j, Y g:i A', strtotime($request['response_date']));
         }
+        
+        // Format receipt information
+        if ($request['receipt_file_path']) {
+            $request['receipt_files'] = json_decode($request['receipt_file_path'], true);
+        } else {
+            $request['receipt_files'] = null;
+        }
+        
+        // Format payment date
         if ($request['payment_date']) {
-            $request['payment_date_formatted'] = date('M j, Y g:i A', strtotime($request['payment_date']));
+            $request['payment_date_formatted'] = date('M j, Y', strtotime($request['payment_date']));
+        }
+        
+        // Format verification timestamp
+        if ($request['verified_at']) {
+            $request['verified_at_formatted'] = date('M j, Y g:i A', strtotime($request['verified_at']));
         }
     }
     

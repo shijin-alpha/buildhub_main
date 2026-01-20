@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Inbox Estimation Form - Interactive Test</title>
+    <style>
+        /* Enhanced Inbox Estimation Form Styles */
+        .estimate-form {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-radius: 16px;
+          padding: 24px;
+          margin-top: 16px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          border: 2px solid #e2e8f0;
+          transition: all 0.3s ease;
+        }
+
+        .estimate-form:hover {
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+          transform: translateY(-2px);
+        }
+
+        /* BuildHub Seal Enhancement */
+        .buildhub-seal {
+          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+          transition: all 0.3s ease;
+        }
+
+        .buildhub-seal:hover {
+          transform: scale(1.05);
+          filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+        }
+
+        /* Section Titles */
+        .estimate-form .section-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 24px 0 16px 0;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .estimate-form .section-title::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s ease;
+        }
+
+        .estimate-form .section-title:hover::before {
+          left: 100%;
+        }
+
+        /* Grid Layouts */
+        .estimate-form .grid-2 {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+
+        .estimate-form .grid-3 {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+
+        .estimate-form .grid-4 {
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1.5fr;
+          gap: 12px;
+          align-items: center;
+        }
+
+        /* Enhanced Input Styles */
+        .estimate-form input,
+        .estimate-form select,
+        .estimate-form textarea {
+          padding: 14px 16px;
+          border: 2px solid #e2e8f0;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 500;
+          background: white;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .estimate-form input:focus,
+        .estimate-form select:focus,
+        .estimate-form textarea:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+          transform: translateY(-1px);
+          background: #fefefe;
+        }
+
+        .estimate-form input:hover,
+        .estimate-form select:hover,
+        .estimate-form textarea:hover {
+          border-color: #cbd5e0;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Estimate Line Enhancement */
+        .estimate-form .estimate-line {
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+          margin-bottom: 16px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .estimate-form .estimate-line::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 4px;
+          height: 100%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          transform: scaleY(0);
+          transition: transform 0.3s ease;
+        }
+
+        .estimate-form .estimate-line:hover {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+          transform: translateY(-2px);
+          border-color: #667eea;
+        }
+
+        .estimate-form .estimate-line:hover::before {
+          transform: scaleY(1);
+        }
+
+        /* Readonly Amount Fields */
+        .estimate-form input[readonly] {
+          background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+          border-color: #10b981;
+          color: #065f46;
+          font-weight: 700;
+          text-align: right;
+          cursor: default;
+        }
+
+        .estimate-form input[readonly]:hover {
+          background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+          transform: none;
+        }
+
+        /* Totals Section */
+        .estimate-form .totals {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 16px;
+          margin: 24px 0;
+          padding: 24px;
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+          border-radius: 16px;
+          border: 2px solid #3b82f6;
+          box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+        }
+
+        .estimate-form .totals input {
+          font-size: 16px;
+          font-weight: 700;
+          text-align: center;
+          background: white;
+          border-color: #3b82f6;
+          color: #1e40af;
+        }
+
+        .estimate-form .grand-total {
+          background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+          color: white !important;
+          border-color: #1e293b !important;
+          font-size: 18px !important;
+          font-weight: 800 !important;
+          box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3) !important;
+        }
+
+        /* Textarea Enhancements */
+        .estimate-form textarea {
+          resize: vertical;
+          min-height: 80px;
+          line-height: 1.6;
+        }
+
+        .estimate-form textarea:focus {
+          min-height: 120px;
+        }
+
+        /* Labels */
+        .estimate-form label {
+          font-weight: 700;
+          color: #374151;
+          font-size: 15px;
+          margin-bottom: 8px;
+          display: block;
+        }
+
+        /* Muted Text */
+        .estimate-form .muted {
+          color: #6b7280;
+          font-size: 14px;
+          font-style: italic;
+          margin-bottom: 16px;
+          padding: 12px 16px;
+          background: #f9fafb;
+          border-radius: 8px;
+          border-left: 4px solid #d1d5db;
+        }
+
+        /* Action Buttons */
+        .estimate-form .actions {
+          display: flex;
+          justify-content: center;
+          gap: 16px;
+          margin-top: 32px;
+          padding: 24px;
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-radius: 16px;
+          border: 2px solid #e2e8f0;
+        }
+
+        .estimate-form .btn {
+          padding: 14px 28px;
+          border: none;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .estimate-form .btn::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        .estimate-form .btn:hover::before {
+          width: 300px;
+          height: 300px;
+        }
+
+        .estimate-form .btn-secondary {
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+          color: #475569;
+          border: 2px solid #cbd5e0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .estimate-form .btn-secondary:hover {
+          background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+          border-color: #94a3b8;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .estimate-form .btn-primary {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: 2px solid #667eea;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .estimate-form .btn-primary:hover {
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          border-color: #5a67d8;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Animation for form appearance */
+        @keyframes slideInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .estimate-form {
+          animation: slideInUp 0.5s ease-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .estimate-form .grid-2 {
+            grid-template-columns: 1fr;
+          }
+          
+          .estimate-form .grid-4 {
+            grid-template-columns: 1fr;
+            gap: 8px;
+          }
+          
+          .estimate-form .actions {
+            flex-direction: column;
+          }
+          
+          .estimate-form .btn {
+            width: 100%;
+            justify-content: center;
+          }
+          
+          .estimate-form .totals {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        /* Demo page styling */
+        body {
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          margin: 0;
+          padding: 20px;
+          min-height: 100vh;
+        }
+
+        .demo-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 20px;
+          padding: 30px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .demo-header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        .demo-header h1 {
+          color: #1e293b;
+          font-size: 2.5rem;
+          font-weight: 900;
+          margin: 0 0 10px 0;
+        }
+
+        .demo-header p {
+          color: #64748b;
+          font-size: 1.1rem;
+          margin: 0;
+        }
+
+        .buildhub-seal {
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 900;
+          font-size: 24px;
+          margin: 0 auto;
+        }
+
+        .inbox-item {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+
+        .inbox-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .inbox-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0;
+        }
+
+        .inbox-meta {
+          color: #64748b;
+          font-size: 14px;
+        }
+
+        details {
+          margin-top: 16px !important;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          border: 2px solid #e2e8f0;
+          transition: all 0.3s ease;
+          background: white;
+        }
+
+        details:hover {
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+          transform: translateY(-2px);
+          border-color: #667eea;
+        }
+
+        details[open] {
+          box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+          border-color: #667eea;
+        }
+
+        details summary {
+          cursor: pointer !important;
+          padding: 16px 24px !important;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          border: none !important;
+          border-radius: 0 !important;
+          font-size: 18px !important;
+          font-weight: 700 !important;
+          color: white !important;
+          transition: all 0.3s ease !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          position: relative !important;
+          overflow: hidden !important;
+          user-select: none;
+        }
+
+        details summary::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s ease;
+        }
+
+        details summary:hover::before {
+          left: 100%;
+        }
+
+        details summary:hover {
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        details summary:active {
+          transform: translateY(0);
+        }
+
+        /* Custom arrow for details */
+        details summary::marker,
+        details summary::-webkit-details-marker {
+          display: none;
+        }
+
+        details summary::after {
+          content: '▼';
+          margin-left: auto;
+          font-size: 14px;
+          transition: transform 0.3s ease;
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        details[open] summary::after {
+          transform: rotate(180deg);
+          color: white;
+        }
+
+        /* Pulse animation for the summary */
+        @keyframes summaryPulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+          }
+          70% {
+            box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+          }
+        }
+
+        details summary {
+          animation: summaryPulse 3s infinite;
+        }
+
+        details[open] summary {
+          animation: none;
+        }
+
+        /* Enhanced Inbox Estimation Form Styles */
+        .estimate-form {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-radius: 0 0 16px 16px;
+          padding: 24px;
+          margin-top: 0;
+          box-shadow: none;
+          border: none;
+          transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🏗️ Enhanced Inbox Estimation Form</h1>
+            <p>Interactive and visually appealing estimation form with auto-calculations</p>
+        </div>
+
+        <div class="inbox-item">
+            <div class="inbox-header">
+                <div class="buildhub-seal">BH</div>
+                <div>
+                    <h3 class="inbox-title">Construction Project Request</h3>
+                    <div class="inbox-meta">From: John Doe • Project: 2BHK Villa • Location: Bangalore</div>
+                </div>
+            </div>
+
+            <details open>
+                <summary>📝 Create Estimate</summary>
+                
+                <form class="estimate-form" onsubmit="event.preventDefault(); alert('Estimate submitted successfully!');">
+                    <!-- BuildHub Estimation Seal -->
+                    <div style="display: flex; justify-content: center; margin-bottom: 20px; padding: 20px 0;">
+                        <div class="buildhub-seal">BH</div>
+                    </div>
+                    
+                    <!-- 1. Basic Project Information -->
+                    <div class="section-title">1. Basic Project Information</div>
+                    <div class="grid-2">
+                        <input name="project_name" placeholder="Project Name" value="2BHK Villa Construction" />
+                        <input name="project_address" placeholder="Project Address / Location" value="Whitefield, Bangalore" />
+                        <input name="plot_size" placeholder="Plot Size (sq.ft / sq.m)" value="1200 sq.ft" />
+                        <input name="built_up_area" placeholder="Built-up Area (sq.ft / sq.m)" value="900 sq.ft" />
+                        <select name="floors">
+                            <option value="" disabled>Number of Floors</option>
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                        <input name="estimation_date" type="date" value="2024-01-15" />
+                        <input name="client_name" placeholder="Client / Homeowner Name" value="John Doe" />
+                        <input name="client_contact" placeholder="Contact Info" value="+91-9876543210" />
+                    </div>
+
+                    <!-- 2. Material Costs -->
+                    <div class="section-title">2. Material Costs</div>
+                    <div class="muted">Tip: enter numeric amounts anywhere in the field. The calculator sums the numbers it finds.</div>
+                    <div class="grid-3">
+                        <div class="estimate-line grid-4">
+                            <input name="cement_name" placeholder="Cement grade (OPC 43/53, PPC)" value="OPC 43 Grade" />
+                            <input name="cement_qty" placeholder="Qty (bags)" value="50" oninput="calculateAmount(this)" />
+                            <input name="cement_rate" placeholder="Rate (₹ per bag)" value="400" oninput="calculateAmount(this)" />
+                            <input name="cement_amount" placeholder="Amount (auto)" value="20000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="sand_name" placeholder="Sand type (River/M-sand)" value="River Sand" />
+                            <input name="sand_qty" placeholder="Qty (m³)" value="5" oninput="calculateAmount(this)" />
+                            <input name="sand_rate" placeholder="Rate (₹ per m³)" value="2000" oninput="calculateAmount(this)" />
+                            <input name="sand_amount" placeholder="Amount (auto)" value="10000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="bricks_name" placeholder="Bricks/Blocks (Clay/AAC)" value="Clay Bricks" />
+                            <input name="bricks_qty" placeholder="Qty (nos)" value="2000" oninput="calculateAmount(this)" />
+                            <input name="bricks_rate" placeholder="Rate (₹ per 1000)" value="8" oninput="calculateAmount(this)" />
+                            <input name="bricks_amount" placeholder="Amount (auto)" value="16000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="steel_name" placeholder="Steel/TMT (8/10/12mm)" value="TMT 10mm" />
+                            <input name="steel_qty" placeholder="Qty (kg)" value="800" oninput="calculateAmount(this)" />
+                            <input name="steel_rate" placeholder="Rate (₹ per kg)" value="68" oninput="calculateAmount(this)" />
+                            <input name="steel_amount" placeholder="Amount (auto)" value="54400" readonly />
+                        </div>
+                    </div>
+
+                    <!-- 3. Labor Charges -->
+                    <div class="section-title">3. Labor Charges</div>
+                    <div class="grid-3">
+                        <div class="estimate-line grid-4">
+                            <input name="mason_name" placeholder="Masonry work" value="Masonry Work" />
+                            <input name="mason_qty" placeholder="Qty (m³ / days)" value="1" oninput="calculateAmount(this)" />
+                            <input name="mason_rate" placeholder="Rate (₹ per unit)" value="15000" oninput="calculateAmount(this)" />
+                            <input name="mason_amount" placeholder="Amount (auto)" value="15000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="plumber_name" placeholder="Plumbing" value="Plumbing Work" />
+                            <input name="plumber_qty" placeholder="Qty (fittings / rooms)" value="1" oninput="calculateAmount(this)" />
+                            <input name="plumber_rate" placeholder="Rate (₹ per fitting)" value="12000" oninput="calculateAmount(this)" />
+                            <input name="plumber_amount" placeholder="Amount (auto)" value="12000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="electrical_name" placeholder="Electrical" value="Electrical Work" />
+                            <input name="electrical_qty" placeholder="Qty (points / rooms)" value="1" oninput="calculateAmount(this)" />
+                            <input name="electrical_rate" placeholder="Rate (₹ per point/room)" value="10000" oninput="calculateAmount(this)" />
+                            <input name="electrical_amount" placeholder="Amount (auto)" value="10000" readonly />
+                        </div>
+                    </div>
+
+                    <!-- 4. Totals -->
+                    <div class="section-title">4. Total Estimation</div>
+                    <div class="totals">
+                        <input name="materials_total" placeholder="Material Costs Total" value="100400" readonly />
+                        <input name="labor_total" placeholder="Labor Charges Total" value="37000" readonly />
+                        <input name="utilities_total" placeholder="Utilities & Fixtures Total" value="25000" readonly />
+                        <input name="misc_total" placeholder="Miscellaneous Total" value="8000" readonly />
+                        <input class="grand-total" name="grand_total" placeholder="Grand Total" value="170400" readonly />
+                    </div>
+
+                    <!-- 5. Notes -->
+                    <div class="section-title">5. Notes for Homeowner</div>
+                    <textarea name="notes" placeholder="Prices approximate; quantities based on layout; payment schedule; taxes; warranties" rows="3">Prices are approximate and may vary based on market conditions. Payment schedule: 30% advance, 40% on foundation completion, 30% on project completion. All materials will be of standard quality. Project timeline: 8-10 weeks.</textarea>
+
+                    <!-- Actions -->
+                    <div class="actions">
+                        <button class="btn btn-secondary" type="button" onclick="resetForm()">🔄 Reset</button>
+                        <button class="btn btn-primary" type="button" onclick="downloadPDF()">📄 Download PDF</button>
+                        <button class="btn btn-primary" type="submit">✅ Submit Estimate</button>
+                    </div>
+                </form>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        function calculateAmount(input) {
+            const row = input.closest('.estimate-line');
+            const qtyInput = row.querySelector('input[name*="qty"]');
+            const rateInput = row.querySelector('input[name*="rate"]');
+            const amountInput = row.querySelector('input[name*="amount"]');
+            
+            if (qtyInput && rateInput && amountInput) {
+                const qty = parseFloat(qtyInput.value) || 0;
+                const rate = parseFloat(rateInput.value) || 0;
+                const amount = qty * rate;
+                amountInput.value = amount > 0 ? amount.toString() : '';
+                
+                // Add visual feedback
+                amountInput.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)';
+                amountInput.style.borderColor = '#f59e0b';
+                
+                setTimeout(() => {
+                    amountInput.style.background = 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)';
+                    amountInput.style.borderColor = '#10b981';
+                }, 500);
+            }
+        }
+
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form?')) {
+                document.querySelector('.estimate-form').reset();
+            }
+        }
+
+        function downloadPDF() {
+            alert('PDF download functionality would be implemented here. The form data would be converted to a professional PDF estimate.');
+        }
+
+        // Add interactive hover effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const estimateLines = document.querySelectorAll('.estimate-line');
+            
+            estimateLines.forEach(line => {
+                line.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.1)';
+                });
+                
+                line.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+                });
+            });
+
+            // Add focus effects to inputs
+            const inputs = document.querySelectorAll('.estimate-form input, .estimate-form textarea, .estimate-form select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.background = 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.background = '';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

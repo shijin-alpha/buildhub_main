@@ -52,10 +52,12 @@ try {
     
     // Get payment request details and verify ownership
     $requestCheck = $db->prepare("
-        SELECT ppr.*, cse.contractor_first_name, cse.contractor_last_name
-        FROM project_stage_payment_requests ppr
-        LEFT JOIN contractor_send_estimates cse ON ppr.project_id = cse.id
-        WHERE ppr.id = :request_id AND ppr.homeowner_id = :homeowner_id AND ppr.status = 'pending'
+        SELECT spr.*, 
+               u_contractor.first_name as contractor_first_name, 
+               u_contractor.last_name as contractor_last_name
+        FROM stage_payment_requests spr
+        LEFT JOIN users u_contractor ON spr.contractor_id = u_contractor.id
+        WHERE spr.id = :request_id AND spr.homeowner_id = :homeowner_id AND spr.status = 'pending'
         LIMIT 1
     ");
     $requestCheck->bindValue(':request_id', $request_id, PDO::PARAM_INT);
@@ -72,9 +74,9 @@ try {
     $new_status = $action === 'approve' ? 'approved' : 'rejected';
     
     $updateStmt = $db->prepare("
-        UPDATE project_stage_payment_requests 
+        UPDATE stage_payment_requests 
         SET status = :status, 
-            homeowner_response_date = NOW(),
+            response_date = NOW(),
             homeowner_notes = :homeowner_notes,
             rejection_reason = :rejection_reason
         WHERE id = :request_id

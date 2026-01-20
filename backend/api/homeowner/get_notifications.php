@@ -42,26 +42,67 @@ try {
     ";
     $pdo->exec($createTableSQL);
     
-    // Get all notifications for the user
+    // Create homeowner_notifications table if it doesn't exist
+    $createHomeownerNotificationsSQL = "
+        CREATE TABLE IF NOT EXISTS homeowner_notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            homeowner_id INT NOT NULL,
+            contractor_id INT NULL,
+            type VARCHAR(50) DEFAULT 'acknowledgment',
+            title VARCHAR(255) NOT NULL,
+            message TEXT NOT NULL,
+            status ENUM('unread', 'read') DEFAULT 'unread',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX(homeowner_id), INDEX(status), INDEX(type)
+        )
+    ";
+    $pdo->exec($createHomeownerNotificationsSQL);
+    
+    // Get all notifications for the user from both tables
     $stmt = $pdo->prepare("
-        SELECT * FROM notifications 
+        SELECT 
+            id,
+            type,
+            title,
+            message,
+            related_id,
+            CASE WHEN is_read = 1 THEN 1 ELSE 0 END as is_read,
+            created_at,
+            'general' as source
+        FROM notifications 
         WHERE user_id = ? 
+        
+        UNION ALL
+        
+        SELECT 
+            id,
+            type,
+            title,
+            message,
+            contractor_id as related_id,
+            CASE WHEN status = 'read' THEN 1 ELSE 0 END as is_read,
+            created_at,
+            'contractor_acknowledgment' as source
+        FROM homeowner_notifications 
+        WHERE homeowner_id = ?
+        
         ORDER BY created_at DESC 
         LIMIT 50
     ");
-    $stmt->execute([$user_id]);
+    $stmt->execute([$user_id, $user_id]);
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get unread count
+    // Get unread count from both tables
     $unreadStmt = $pdo->prepare("
-        SELECT COUNT(*) as unread_count 
-        FROM notifications 
-        WHERE user_id = ? AND is_read = FALSE
+        SELECT 
+            (SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = FALSE) +
+            (SELECT COUNT(*) FROM homeowner_notifications WHERE homeowner_id = ? AND status = 'unread') 
+            as unread_count
     ");
-    $unreadStmt->execute([$user_id]);
+    $unreadStmt->execute([$user_id, $user_id]);
     $unreadResult = $unreadStmt->fetch(PDO::FETCH_ASSOC);
     
-    // Get counts by type for badges
+    // Get counts by type for badges from both tables
     $countsStmt = $pdo->prepare("
         SELECT 
             type,
@@ -70,8 +111,18 @@ try {
         FROM notifications 
         WHERE user_id = ? 
         GROUP BY type
+        
+        UNION ALL
+        
+        SELECT 
+            type,
+            COUNT(*) as count,
+            SUM(CASE WHEN status = 'unread' THEN 1 ELSE 0 END) as unread_count
+        FROM homeowner_notifications 
+        WHERE homeowner_id = ? 
+        GROUP BY type
     ");
-    $countsStmt->execute([$user_id]);
+    $countsStmt->execute([$user_id, $user_id]);
     $counts = $countsStmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Format counts for easy access

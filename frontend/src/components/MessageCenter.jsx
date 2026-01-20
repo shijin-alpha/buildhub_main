@@ -53,13 +53,18 @@ const MessageCenter = ({ isOpen, onClose, userId }) => {
     }
   };
 
-  const markAsRead = async (notificationIds) => {
+  const markAsRead = async (notificationIds, sources = null) => {
     try {
+      const payload = { notification_ids: notificationIds };
+      if (sources) {
+        payload.source = sources;
+      }
+      
       await fetch('/buildhub/backend/api/homeowner/mark_notifications_read.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ notification_ids: notificationIds })
+        body: JSON.stringify(payload)
       });
       loadNotifications();
     } catch (error) {
@@ -69,6 +74,7 @@ const MessageCenter = ({ isOpen, onClose, userId }) => {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case 'acknowledgment': return '✅';
       case 'estimate_received': return '💰';
       case 'layout_approved': return '✅';
       case 'construction_started': return '🏗️';
@@ -76,6 +82,7 @@ const MessageCenter = ({ isOpen, onClose, userId }) => {
       case 'message_received': return '📥';
       case 'payment_required': return '💳';
       case 'project_completed': return '🎉';
+      case 'contractor_acknowledgment': return '🤝';
       default: return '📢';
     }
   };
@@ -149,7 +156,7 @@ const MessageCenter = ({ isOpen, onClose, userId }) => {
                     className={`notification-item ${!notification.is_read ? 'unread' : ''}`}
                     onClick={() => {
                       if (!notification.is_read) {
-                        markAsRead([notification.id]);
+                        markAsRead([notification.id], [notification.source]);
                       }
                     }}
                   >
@@ -251,8 +258,10 @@ const MessageCenter = ({ isOpen, onClose, userId }) => {
             <button 
               className="mark-all-read-btn"
               onClick={() => {
-                const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
-                markAsRead(unreadIds);
+                const unreadNotifications = notifications.filter(n => !n.is_read);
+                const unreadIds = unreadNotifications.map(n => n.id);
+                const unreadSources = unreadNotifications.map(n => n.source);
+                markAsRead(unreadIds, unreadSources);
               }}
             >
               Mark All as Read

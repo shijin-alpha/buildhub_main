@@ -67,7 +67,7 @@ try {
     $upd->bindValue(':eid', $estimateId, PDO::PARAM_INT);
     $upd->execute();
 
-    // If homeowner accepted, send email notification to contractor
+    // If homeowner accepted, create project and send email notification to contractor
     if ($action === 'accept' && !empty($row['contractor_email'])) {
         $contractorName = trim($row['contractor_first_name'] . ' ' . $row['contractor_last_name']);
         $homeownerName = trim($row['homeowner_first_name'] . ' ' . $row['homeowner_last_name']);
@@ -79,9 +79,32 @@ try {
         if (!empty($row['structured'])) {
             $structured = json_decode($row['structured'], true);
         }
+
+        // Automatically create project from accepted estimate
+        try {
+            $createProjectUrl = 'http://localhost/buildhub/backend/api/contractor/create_project_from_estimate.php';
+            $projectData = json_encode(['estimate_id' => $estimateId]);
+            
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'POST',
+                    'header' => 'Content-Type: application/json',
+                    'content' => $projectData
+                ]
+            ]);
+            
+            $projectResult = file_get_contents($createProjectUrl, false, $context);
+            $projectResponse = json_decode($projectResult, true);
+            
+            if (!$projectResponse || !$projectResponse['success']) {
+                error_log("Failed to create project for estimate $estimateId: " . ($projectResponse['message'] ?? 'Unknown error'));
+            }
+        } catch (Exception $e) {
+            error_log("Error creating project for estimate $estimateId: " . $e->getMessage());
+        }
         
         // Build email subject and message
-        $subject = "Estimate Accepted - Ready to Start Work - BuildHub";
+        $subject = "Estimate Accepted - Project Created - BuildHub";
         
         $emailBody = "<!DOCTYPE html>
         <html>
@@ -110,8 +133,8 @@ try {
                 <div class='content-box'>
                     <h3>Great News!</h3>
                     <p>Dear $contractorName,</p>
-                    <p><strong>$homeownerName</strong> has accepted your estimate and is ready to proceed with the construction project.</p>
-                    <p>You can now start the work as discussed in your estimate.</p>
+                    <p><strong>$homeownerName</strong> has accepted your estimate and a construction project has been automatically created in your dashboard.</p>
+                    <p>You can now view the complete project details in your Construction section and start coordinating the work.</p>
                 </div>
                 
                 <div class='details'>
@@ -129,14 +152,14 @@ try {
                 </div>
                 
                 <div style='text-align: center; margin: 30px 0;'>
-                    <p style='background: #007bff; color: white; padding: 12px 30px; border-radius: 5px; display: inline-block;'>
-                        Ready to Start Construction
+                    <p style='background: #28a745; color: white; padding: 12px 30px; border-radius: 5px; display: inline-block;'>
+                        🏗️ Project Created - Ready to Start Construction
                     </p>
                 </div>
                 
                 <div class='footer'>
                     <p>This email was sent from BuildHub.</p>
-                    <p>Please log in to your contractor dashboard to view full project details and coordinate with the homeowner.</p>
+                    <p>Please log in to your contractor dashboard and check the <strong>Construction</strong> section to view your new project with complete details including technical specifications, layout plans, and homeowner information.</p>
                 </div>
             </div>
         </body>
@@ -144,6 +167,73 @@ try {
         
         // Send email to contractor
         @sendMail($row['contractor_email'], $subject, $emailBody);
+        
+        // Also send confirmation email to homeowner
+        $homeownerSubject = "✅ Estimate Accepted - Project Initiated - BuildHub";
+        $homeownerEmailBody = "<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
+                .header h1 { margin: 0; font-size: 2.5em; }
+                .header h2 { margin: 10px 0 0 0; }
+                .content-box { background: #d4edda; padding: 25px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 20px; }
+                .content-box h3 { color: #155724; margin-top: 0; }
+                .details { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px; }
+                .details p { margin: 10px 0; }
+                .next-steps { background: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff; margin-bottom: 20px; }
+                .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #666; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1>✅</h1>
+                    <h2>Estimate Accepted Successfully!</h2>
+                </div>
+                
+                <div class='content-box'>
+                    <h3>Thank You!</h3>
+                    <p>Dear $homeownerName,</p>
+                    <p>Your estimate acceptance has been processed successfully. We've notified <strong>$contractorName</strong> and they will contact you soon to begin your construction project.</p>
+                </div>
+                
+                <div class='details'>
+                    <h3>Project Summary:</h3>
+                    <p><strong>Contractor:</strong> $contractorName</p>
+                    <p><strong>Project Cost:</strong> $totalCost</p>
+                    <p><strong>Timeline:</strong> $timeline</p>
+                </div>
+                
+                <div class='next-steps'>
+                    <h3>What Happens Next?</h3>
+                    <ol>
+                        <li>Your contractor has been notified and will contact you soon</li>
+                        <li>A construction project has been created in the contractor's system</li>
+                        <li>You'll receive regular progress updates throughout construction</li>
+                        <li>You can track project progress through your homeowner dashboard</li>
+                    </ol>
+                </div>
+                
+                <div style='text-align: center; margin: 30px 0;'>
+                    <p style='background: #007bff; color: white; padding: 12px 30px; border-radius: 5px; display: inline-block;'>
+                        🏠 Your Construction Project is Ready to Begin!
+                    </p>
+                </div>
+                
+                <div class='footer'>
+                    <p>Thank you for choosing BuildHub for your construction project!</p>
+                    <p>If you have any questions, please contact us at support@buildhub.com</p>
+                </div>
+            </div>
+        </body>
+        </html>";
+        
+        // Send confirmation email to homeowner
+        @sendMail($row['homeowner_email'], $homeownerSubject, $homeownerEmailBody);
     }
 
     echo json_encode(['success' => true]);

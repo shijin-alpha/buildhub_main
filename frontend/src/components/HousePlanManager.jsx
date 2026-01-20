@@ -281,6 +281,42 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
     }
   };
 
+  // Real-time refresh functionality
+  const [refreshInterval, setRefreshInterval] = useState(null);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
+
+  // Auto-refresh plans every 30 seconds when in list view
+  useEffect(() => {
+    if (view === 'list') {
+      const interval = setInterval(() => {
+        loadPlans();
+        setLastRefresh(Date.now());
+      }, 30000); // Refresh every 30 seconds
+      
+      setRefreshInterval(interval);
+      
+      return () => {
+        if (interval) {
+          clearInterval(interval);
+        }
+      };
+    } else {
+      // Clear interval when not in list view
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        setRefreshInterval(null);
+      }
+    }
+  }, [view]);
+
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    showInfo('Refreshing', 'Updating house plans...');
+    await loadPlans();
+    setLastRefresh(Date.now());
+    showSuccess('Refreshed', 'House plans updated successfully');
+  };
+
   useEffect(() => {
     loadPlans();
     if (layoutRequestId) {
@@ -341,9 +377,15 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
 
   const handlePlanSaved = (result) => {
     setView('list');
+    // Immediately refresh plans to show the latest changes
     loadPlans();
     // Show success toast notification
     showSuccess('Plan Saved', 'Your house plan has been saved successfully!');
+    
+    // Trigger a refresh of the parent dashboard if callback is provided
+    if (window.refreshDashboard) {
+      window.refreshDashboard();
+    }
   };
 
   const handleSubmitPlan = async (planId) => {
@@ -468,8 +510,18 @@ const HousePlanManager = ({ layoutRequestId = null, onClose }) => {
               <p>{requestInfo.plot_size} • {requestInfo.budget_range}</p>
             </div>
           )}
+          <div className="refresh-info">
+            <small>Last updated: {new Date(lastRefresh).toLocaleTimeString()}</small>
+          </div>
         </div>
         <div className="header-actions">
+          <button 
+            onClick={handleManualRefresh} 
+            className="refresh-btn"
+            title="Refresh house plans"
+          >
+            🔄 Refresh
+          </button>
           <button onClick={handleCreateNew} className="create-btn">
             Create New Plan
           </button>

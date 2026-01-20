@@ -6,3 +6,10 @@ node_modules/
 
 # Environment variables
 .env
+*.env
+!.env.example
+ai_service/.env
+
+# Documentation files
+*.md
+

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Contractor House Plans API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .plan-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+        }
+        .contractor-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Contractor House Plans API Test</h1>
+        <p>This page tests the contractor house plans functionality after database setup.</p>
+
+        <div class="test-section info">
+            <h2>📋 Test Status</h2>
+            <div id="status">Ready to test...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 Database Setup Check</h2>
+            <button onclick="checkDatabaseSetup()">Check Database Tables</button>
+            <div id="dbStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🏠 Test API Response</h2>
+            <button onclick="testAPI()">Test Contractor House Plans API</button>
+            <div id="apiResponse"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Sample Data</h2>
+            <button onclick="createSampleData()">Create Sample Data</button>
+            <div id="sampleDataStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Final Test</h2>
+            <button onclick="runFullTest()">Run Complete Test</button>
+            <div id="fullTestResults"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        async function checkDatabaseSetup() {
+            updateStatus('Checking database setup...', 'info');
+            const dbStatusDiv = document.getElementById('dbStatus');
+            
+            try {
+                const response = await fetch('/buildhub/backend/debug_contractor_house_plans.php');
+                const text = await response.text();
+                
+                if (text.includes('✅')) {
+                    dbStatusDiv.innerHTML = `<div class="success">
+                        <h3>✅ Database Setup Complete</h3>
+                        <details>
+                            <summary>View Details</summary>
+                            <pre>${text}</pre>
+                        </details>
+                    </div>`;
+                    updateStatus('Database setup verified successfully!', 'success');
+                } else {
+                    dbStatusDiv.innerHTML = `<div class="error">
+                        <h3>❌ Database Issues Found</h3>
+                        <pre>${text}</pre>
+                    </div>`;
+                    updateStatus('Database setup has issues. Check the details above.', 'error');
+                }
+            } catch (error) {
+                dbStatusDiv.innerHTML = `<div class="error">
+                    <h3>❌ Error Checking Database</h3>
+                    <p>Error: ${error.message}</p>
+                </div>`;
+                updateStatus('Failed to check database setup.', 'error');
+            }
+        }
+
+        async function testAPI() {
+            updateStatus('Testing API...', 'info');
+            const apiDiv = document.getElementById('apiResponse');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/architect/get_contractor_house_plans.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    apiDiv.innerHTML = `<div class="success">
+                        <h3>✅ API Working Successfully</h3>
+                        <p><strong>Summary:</strong></p>
+                        <ul>
+                            <li>Total Plans: ${result.summary.total_plans}</li>
+                            <li>Total Contractors: ${result.summary.total_contractors}</li>
+                            <li>Active Estimates: ${result.summary.active_estimates}</li>
+                            <li>Completed Estimates: ${result.summary.completed_estimates}</li>
+                        </ul>
+                        ${result.house_plans.length > 0 ? renderHousePlans(result.house_plans) : '<p>No house plans with contractor work found.</p>'}
+                        <details>
+                            <summary>View Raw Response</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    </div>`;
+                    updateStatus('API test successful!', 'success');
+                } else {
+                    apiDiv.innerHTML = `<div class="error">
+                        <h3>❌ API Error</h3>
+                        <p><strong>Message:</strong> ${result.message}</p>
+                        ${result.debug ? `<p><strong>Debug:</strong> ${result.debug}</p>` : ''}
+                        <details>
+                            <summary>View Raw Response</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    </div>`;
+                    updateStatus('API test failed. Check the error details.', 'error');
+                }
+            } catch (error) {
+                apiDiv.innerHTML = `<div class="error">
+                    <h3>❌ Network Error</h3>
+                    <p>Error: ${error.message}</p>
+                </div>`;
+                updateStatus('Failed to test API.', 'error');
+            }
+        }
+
+        function renderHousePlans(plans) {
+            return `
+                <div>
+                    <h4>📋 House Plans with Contractor Work:</h4>
+                    ${plans.map(plan => `
+                        <div class="plan-card">
+                            <h5>🏠 ${plan.plan_name}</h5>
+                            <p><strong>Size:</strong> ${plan.plot_width}' × ${plan.plot_height}' (${plan.total_area} sq ft)</p>
+                            <p><strong>Status:</strong> ${plan.plan_status}</p>
+                            
+                            ${plan.homeowner ? `
+                                <div>
+                                    <strong>👤 Client:</strong> ${plan.homeowner.name} (${plan.homeowner.email})
+                                </div>
+                            ` : ''}
+                            
+                            <div>
+                                <strong>🏗️ Contractor Work (${plan.contractor_work.length}):</strong>
+                                ${plan.contractor_work.map(work => `
+                                    <div class="contractor-item">
+                                        <strong>${work.contractor.name}</strong> - ${work.contractor.email}
+                                        ${work.estimate ? `
+                                            <br>💰 Estimate: ₹${parseFloat(work.estimate.estimate_amount || 0).toLocaleString()} 
+                                            (${work.estimate.estimate_status})
+                                        ` : ''}
+                                        ${work.send_details ? `
+                                            <br>📅 Sent: ${new Date(work.send_details.sent_at).toLocaleDateString()}
+                                        ` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function createSampleData() {
+            updateStatus('Creating sample data...', 'info');
+            const sampleDiv = document.getElementById('sampleDataStatus');
+            
+            try {
+                const response = await fetch('/buildhub/backend/setup_contractor_tables.php');
+                const text = await response.text();
+                
+                if (text.includes('✅ Setup Complete!')) {
+                    sampleDiv.innerHTML = `<div class="success">
+                        <h3>✅ Sample Data Created</h3>
+                        <p>Sample contractor engagements and estimates have been created.</p>
+                        <details>
+                            <summary>View Setup Details</summary>
+                            <div>${text}</div>
+                        </details>
+                    </div>`;
+                    updateStatus('Sample data created successfully!', 'success');
+                } else {
+                    sampleDiv.innerHTML = `<div class="error">
+                        <h3>⚠️ Setup Issues</h3>
+                        <div>${text}</div>
+                    </div>`;
+                    updateStatus('Sample data creation had some issues.', 'error');
+                }
+            } catch (error) {
+                sampleDiv.innerHTML = `<div class="error">
+                    <h3>❌ Error Creating Sample Data</h3>
+                    <p>Error: ${error.message}</p>
+                </div>`;
+                updateStatus('Failed to create sample data.', 'error');
+            }
+        }
+
+        async function runFullTest() {
+            updateStatus('Running complete test suite...', 'info');
+            const resultsDiv = document.getElementById('fullTestResults');
+            
+            let results = [];
+            
+            // Test 1: Database Setup
+            try {
+                const dbResponse = await fetch('/buildhub/backend/debug_contractor_house_plans.php');
+                const dbText = await dbResponse.text();
+                results.push({
+                    test: 'Database Setup',
+                    status: dbText.includes('✅') ? 'PASS' : 'FAIL',
+                    details: dbText.includes('✅') ? 'All required tables exist' : 'Missing tables or configuration issues'
+                });
+            } catch (error) {
+                results.push({
+                    test: 'Database Setup',
+                    status: 'ERROR',
+                    details: error.message
+                });
+            }
+
+            // Test 2: API Response
+            try {
+                const apiResponse = await fetch('/buildhub/backend/api/architect/get_contractor_house_plans.php');
+                const apiResult = await apiResponse.json();
+                results.push({
+                    test: 'API Response',
+                    status: apiResult.success ? 'PASS' : 'FAIL',
+                    details: apiResult.success ? 
+                        `API working. Found ${apiResult.summary.total_plans} plans with contractor work.` :
+                        `API error: ${apiResult.message}`
+                });
+            } catch (error) {
+                results.push({
+                    test: 'API Response',
+                    status: 'ERROR',
+                    details: error.message
+                });
+            }
+
+            // Test 3: Frontend Integration
+            results.push({
+                test: 'Frontend Integration',
+                status: 'INFO',
+                details: 'Frontend is running on http://localhost:3001 - Check the House Plans tab in the architect dashboard'
+            });
+
+            // Display results
+            const passCount = results.filter(r => r.status === 'PASS').length;
+            const totalTests = results.filter(r => r.status !== 'INFO').length;
+            
+            resultsDiv.innerHTML = `
+                <div class="${passCount === totalTests ? 'success' : 'error'}">
+                    <h3>🧪 Test Results: ${passCount}/${totalTests} Passed</h3>
+                    ${results.map(result => `
+                        <div style="margin: 10px 0; padding: 10px; border-left: 4px solid ${
+                            result.status === 'PASS' ? '#28a745' : 
+                            result.status === 'FAIL' ? '#dc3545' : 
+                            result.status === 'ERROR' ? '#fd7e14' : '#17a2b8'
+                        }; background: #f8f9fa;">
+                            <strong>${result.test}:</strong> 
+                            <span style="color: ${
+                                result.status === 'PASS' ? '#28a745' : 
+                                result.status === 'FAIL' ? '#dc3545' : 
+                                result.status === 'ERROR' ? '#fd7e14' : '#17a2b8'
+                            };">${result.status}</span>
+                            <br><small>${result.details}</small>
+                        </div>
+                    `).join('')}
+                    
+                    ${passCount === totalTests ? `
+                        <div style="margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 4px;">
+                            <h4>🎉 All Tests Passed!</h4>
+                            <p>The contractor house plans feature is working correctly. You can now:</p>
+                            <ul>
+                                <li>View the architect dashboard at <a href="http://localhost:3001" target="_blank">http://localhost:3001</a></li>
+                                <li>Navigate to the "House Plans" tab</li>
+                                <li>See the "House Plans in Construction" section</li>
+                                <li>View contractor work and homeowner details</li>
+                            </ul>
+                        </div>
+                    ` : `
+                        <div style="margin-top: 20px; padding: 15px; background: #f8d7da; border-radius: 4px;">
+                            <h4>⚠️ Some Tests Failed</h4>
+                            <p>Please check the failed tests above and resolve the issues.</p>
+                        </div>
+                    `}
+                </div>
+            `;
+
+            updateStatus(
+                passCount === totalTests ? 
+                'All tests passed! Feature is working correctly.' : 
+                `${passCount}/${totalTests} tests passed. Check failed tests above.`,
+                passCount === totalTests ? 'success' : 'error'
+            );
+        }
+
+        // Auto-run database check on page load
+        window.addEventListener('load', () => {
+            updateStatus('Page loaded. Ready to test contractor house plans functionality.', 'info');
+        });
+    </script>
+</body>
+</html>

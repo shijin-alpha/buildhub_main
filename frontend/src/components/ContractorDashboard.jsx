@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/ContractorDashboard.css';
+import '../styles/InboxEstimationForm.css';
 import '../styles/BlueGlassTheme.css';
 import '../styles/SoftSidebar.css';
+import '../styles/PaymentHistory.css';
 import './WidgetColors.css';
 import { badgeClass, formatStatus } from '../utils/status';
 import { useToast } from './ToastProvider.jsx';
@@ -14,10 +16,14 @@ import ProgressTimeline from './ProgressTimeline';
 import EnhancedProgressUpdate from './EnhancedProgressUpdate';
 import ProgressReportGenerator from './ProgressReportGenerator';
 import ContractorPaymentManager from './ContractorPaymentManager';
+import StagePaymentWithdrawals from './StagePaymentWithdrawals';
+import SimplePaymentRequestForm from './SimplePaymentRequestForm.jsx';
+import PaymentHistory from './PaymentHistory.jsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 import ConfirmModal from './ConfirmModal';
+import EstimationForm from './EstimationForm';
 
 const ContractorDashboard = () => {
   const navigate = useNavigate();
@@ -25,6 +31,7 @@ const ContractorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [user, setUser] = useState(null);
   const [layoutRequests, setLayoutRequests] = useState([]);
+  const [recentPaidPayments, setRecentPaidPayments] = useState([]);
   const [inbox, setInbox] = useState([]);
   const [ackDateById, setAckDateById] = useState({});
   const [ackOpenById, setAckOpenById] = useState({});
@@ -46,8 +53,15 @@ const ContractorDashboard = () => {
   const [miscTotal, setMiscTotal] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
   const [recentReportUrl, setRecentReportUrl] = useState('');
+  
+  // Draft functionality
+  const [draftData, setDraftData] = useState({});
+  const [lastSaved, setLastSaved] = useState({});
+  const [autoSaveTimeout, setAutoSaveTimeout] = useState(null);
   const [progressView, setProgressView] = useState('submit'); // 'submit' or 'timeline'
   const [showReportGenerator, setShowReportGenerator] = useState(false);
+  const [currentEstimationItem, setCurrentEstimationItem] = useState(null);
+  const [showEstimationForm, setShowEstimationForm] = useState(false);
   
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState({
@@ -80,10 +94,148 @@ const ContractorDashboard = () => {
     });
   };
 
+  // Estimation form handlers
+  const openEstimationForm = (inboxItem) => {
+    setCurrentEstimationItem(inboxItem);
+    setShowEstimationForm(true);
+  };
+
+  const closeEstimationForm = () => {
+    setShowEstimationForm(false);
+    setCurrentEstimationItem(null);
+  };
+
+  const handleEstimateSubmit = async (estimateData) => {
+    try {
+      const response = await fetch('/buildhub/backend/api/contractor/submit_estimate.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(estimateData)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success(`Estimate submitted successfully! Total: ₹${result.data.total_cost?.toLocaleString('en-IN') || '0'}`);
+        closeEstimationForm();
+        
+        // Refresh inbox and estimates
+        const me = JSON.parse(sessionStorage.getItem('user') || '{}');
+        if (me?.id) {
+          try {
+            const r = await fetch(`/buildhub/backend/api/contractor/get_inbox.php?contractor_id=${me.id}`, { credentials: 'include' });
+            const j = await r.json().catch(() => ({}));
+            if (j?.success) setInbox(Array.isArray(j.items) ? j.items : []);
+          } catch {}
+          
+          try {
+            const r2 = await fetch(`/buildhub/backend/api/contractor/get_my_estimates.php?contractor_id=${me.id}`, { credentials: 'include' });
+            const j2 = await r2.json().catch(() => ({}));
+            if (j2?.success) setMyEstimates(Array.isArray(j2.estimates) ? j2.estimates : []);
+          } catch {}
+        }
+      } else {
+        toast.error(result.message || 'Failed to submit estimate');
+      }
+    } catch (error) {
+      console.error('Error submitting estimate:', error);
+      toast.error('Error submitting estimate. Please try again.');
+    }
+  };
+
   const autoGrow = (el) => {
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
+  };
+
+  // Draft functionality
+  const saveDraft = async (sendId, formData) => {
+    try {
+      const me = JSON.parse(sessionStorage.getItem('user') || '{}');
+      if (!me.id || !sendId) return;
+
+      const response = await fetch('/buildhub/backend/api/contractor/save_estimate_draft.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          contractor_id: me.id,
+          send_id: sendId,
+          draft_data: formData
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setLastSaved(prev => ({ ...prev, [sendId]: new Date().toLocaleTimeString() }));
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
+    }
+  };
+
+  const loadDraft = async (sendId) => {
+    try {
+      const me = JSON.parse(sessionStorage.getItem('user') || '{}');
+      if (!me.id || !sendId) return null;
+
+      const response = await fetch(`/buildhub/backend/api/contractor/save_estimate_draft.php?contractor_id=${me.id}&send_id=${sendId}`, {
+        credentials: 'include'
+      });
+
+      const result = await response.json();
+      if (result.success && result.draft_data) {
+        setDraftData(prev => ({ ...prev, [sendId]: result.draft_data }));
+        setLastSaved(prev => ({ ...prev, [sendId]: new Date(result.last_saved).toLocaleTimeString() }));
+        return result.draft_data;
+      }
+    } catch (error) {
+      console.error('Error loading draft:', error);
+    }
+    return null;
+  };
+
+  const handleFormChange = (sendId, formEl) => {
+    if (!formEl) return;
+
+    // Clear existing timeout
+    if (autoSaveTimeout) {
+      clearTimeout(autoSaveTimeout);
+    }
+
+    // Collect form data
+    const formData = {};
+    const inputs = formEl.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+      if (input.name && input.value) {
+        formData[input.name] = input.value;
+      }
+    });
+
+    // Update local state
+    setDraftData(prev => ({ ...prev, [sendId]: formData }));
+
+    // Auto-save after 2 seconds of inactivity
+    const timeout = setTimeout(() => {
+      saveDraft(sendId, formData);
+    }, 2000);
+
+    setAutoSaveTimeout(timeout);
+  };
+
+  const populateFormFromDraft = (formEl, draftData) => {
+    if (!formEl || !draftData) return;
+
+    Object.entries(draftData).forEach(([name, value]) => {
+      const input = formEl.querySelector(`[name="${name}"]`);
+      if (input && !input.readOnly) { // Don't override readonly fields
+        input.value = value;
+        // Trigger change event to update calculations
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
   };
 
   const buildEstimateReport = async (formEl) => {
@@ -344,9 +496,9 @@ const ContractorDashboard = () => {
         <div class="estimate-info">
           <div class="info-section">
             <h3>Project Details</h3>
-            <p><strong>Project Name:</strong> ${get('project_name') || 'Construction Project'}</p>
-            <p><strong>Location:</strong> ${get('location') || 'Project Location'}</p>
-            <p><strong>Client:</strong> ${get('client_name') || 'Client Name'}</p>
+            <p><strong>Project Name:</strong> ${get('structured[project_name]') || get('project_name') || 'Construction Project'}</p>
+            <p><strong>Location:</strong> ${get('structured[project_address]') || get('location') || 'Project Location'}</p>
+            <p><strong>Client:</strong> ${get('structured[client_name]') || get('client_name') || 'Client Name'}</p>
             <p><strong>Project Type:</strong> ${get('project_type') || 'Residential/Commercial'}</p>
         </div>
           <div class="info-section">
@@ -562,6 +714,30 @@ const ContractorDashboard = () => {
     };
   }, []);
 
+  // Load drafts for inbox items
+  useEffect(() => {
+    const loadDraftsForInbox = async () => {
+      for (const item of inbox) {
+        if (item.id && item.acknowledged_at) {
+          await loadDraft(item.id);
+        }
+      }
+    };
+    
+    if (inbox.length > 0) {
+      loadDraftsForInbox();
+    }
+  }, [inbox]);
+
+  // Cleanup auto-save timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+      }
+    };
+  }, [autoSaveTimeout]);
+
   const recalcTotalsFromForm = (formEl) => {
     if (!formEl) return;
     // Compute per-line amounts for each section (qty * rate)
@@ -638,12 +814,17 @@ const ContractorDashboard = () => {
           const j4 = await r4.json().catch(() => ({}));
           if (mounted && j4?.success) setConstructionEstimates(Array.isArray(j4.estimates) ? j4.estimates : []);
           
-          // Also fetch detailed construction information
-          const r5 = await fetch(`/buildhub/backend/api/contractor/get_construction_details.php?contractor_id=${me.id}`, { credentials: 'include' });
+          // Also fetch construction projects
+          const r5 = await fetch(`/buildhub/backend/api/contractor/get_projects.php?contractor_id=${me.id}`, { credentials: 'include' });
           const j5 = await r5.json().catch(() => ({}));
           if (mounted && j5?.success) {
-            setConstructionDetails(Array.isArray(j5.construction_projects) ? j5.construction_projects : []);
+            setConstructionDetails(Array.isArray(j5.data.projects) ? j5.data.projects : []);
           }
+          
+          // Fetch recent paid payments
+          const r6 = await fetch(`/buildhub/backend/api/contractor/get_recent_paid_payments.php?limit=2`, { credentials: 'include' });
+          const j6 = await r6.json().catch(() => ({}));
+          if (mounted && j6?.success) setRecentPaidPayments(Array.isArray(j6.payments) ? j6.payments : []);
         }
       } catch {}
       try {
@@ -955,6 +1136,21 @@ const ContractorDashboard = () => {
     return { href, isImage, name: first.original || first.stored };
   };
 
+  const getTimeAgo = (date) => {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString();
+  };
+
   const fetchMyProposals = async () => {
     try {
       const response = await fetch('/buildhub/backend/api/contractor/get_my_proposals.php');
@@ -1041,51 +1237,162 @@ const ContractorDashboard = () => {
       {/* Recent Cost Requests */}
       <div className="section-card">
         <div className="section-header">
-          <h2>Recent Cost Requests</h2>
+          <h2>💰 Recent Cost Requests</h2>
           <p>Latest layout approvals requiring cost estimates</p>
         </div>
         <div className="section-content">
           {loading ? (
             <div className="loading">Loading requests...</div>
           ) : layoutRequests.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">📭</div>
-              <h3>No Requests Available</h3>
-              <p>Check back later for new project opportunities!</p>
+            <div>
+              <div className="empty-state">
+                <div className="empty-icon">📭</div>
+                <h3>No Cost Requests Available</h3>
+                <p>Check back later for new project opportunities!</p>
+              </div>
+              
+              {/* Show Recent Paid Payments */}
+              {recentPaidPayments.length > 0 && (
+                <div style={{ marginTop: '32px' }}>
+                  <div className="section-header" style={{ marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1e293b', margin: '0 0 6px 0' }}>
+                      💸 Recent Paid Payments
+                    </h3>
+                    <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
+                      Your latest completed payments
+                    </p>
+                  </div>
+                  
+                  <div className="recent-payments-grid">
+                    {recentPaidPayments.map(payment => {
+                      const paymentDate = new Date(payment.payment_date || payment.updated_at);
+                      const timeAgo = getTimeAgo(paymentDate);
+                      
+                      return (
+                        <div key={payment.id} className="payment-card">
+                          <div className="payment-card-header">
+                            <div className="payment-icon">💰</div>
+                            <div className="payment-badge">
+                              <span className="badge-paid">PAID</span>
+                            </div>
+                          </div>
+                          
+                          <div className="payment-card-body">
+                            <h4 className="payment-title">{payment.stage_name}</h4>
+                            <p className="payment-project">{payment.project_name}</p>
+                            
+                            <div className="payment-info">
+                              <div className="info-row">
+                                <span className="info-icon">👤</span>
+                                <span className="info-text">{payment.homeowner_name}</span>
+                              </div>
+                              <div className="info-row">
+                                <span className="info-icon">💵</span>
+                                <span className="info-text">₹{payment.paid_amount.toLocaleString('en-IN')}</span>
+                              </div>
+                              <div className="info-row">
+                                <span className="info-icon">📍</span>
+                                <span className="info-text">{payment.project_location}</span>
+                              </div>
+                              <div className="info-row">
+                                <span className="info-icon">🕒</span>
+                                <span className="info-text">{timeAgo}</span>
+                              </div>
+                            </div>
+                            
+                            {payment.work_description && (
+                              <p className="payment-desc">{payment.work_description}</p>
+                            )}
+                          </div>
+                          
+                          <div className="payment-card-footer">
+                            <div className="verification-status">
+                              {payment.verification_status === 'verified' ? (
+                                <span className="status-verified">✅ Verified</span>
+                              ) : payment.verification_status === 'rejected' ? (
+                                <span className="status-rejected">❌ Rejected</span>
+                              ) : (
+                                <span className="status-pending">⏳ Pending Verification</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="item-list">
-              {layoutRequests.slice(0, 5).map(request => {
+            <div className="cost-requests-grid">
+              {layoutRequests.slice(0, 6).map(request => {
                 const summary = getForwardedSummary(request);
                 const thumb = getForwardedThumb(request);
+                const createdDate = new Date(request.created_at);
+                const timeAgo = getTimeAgo(createdDate);
+                
                 return (
-                <div key={request.id} className="list-item">
-                  <div className="item-image">
-                    {thumb?.isImage ? (
-                      <img src={thumb.href} alt={thumb.name} style={{width:48, height:48, objectFit:'cover', borderRadius:6}} />
-                    ) : (
-                      '🏠'
-                    )}
+                <div key={request.id} className="cost-request-card">
+                  <div className="cost-request-header">
+                    <div className="cost-request-image">
+                      {thumb?.isImage ? (
+                        <img src={thumb.href} alt={thumb.name} />
+                      ) : request.selected_layout_image ? (
+                        <img src={request.selected_layout_image} alt="Layout" />
+                      ) : (
+                        <div className="placeholder-image">🏠</div>
+                      )}
+                    </div>
+                    <div className="cost-request-badge">
+                      <span className="badge-new">NEW</span>
+                    </div>
                   </div>
-                  <div className="item-content">
-                    <h4 className="item-title">{summary.title}</h4>
-                    {summary.hasDesc && (
-                      <p className="item-subtitle">{summary.short}</p>
-                    )}
-                    <p className="item-meta">By {request.homeowner_name} • {request.plot_size} • Budget: ₹{request.budget_range}</p>
-                    <button className="btn btn-secondary" style={{marginTop:6}} onClick={() => setShowRequestDetails(prev => ({...prev, [request.id]: !prev[request.id]}))}>
-                      {showRequestDetails[request.id] ? 'Hide Details' : 'View Details'}
-                    </button>
-                    {showRequestDetails[request.id] && (
-                      <div className="details-panel">
-                        {renderForwardedDesign(request)}
+                  
+                  <div className="cost-request-body">
+                    <h4 className="cost-request-title">{summary.title || request.selected_layout_title || 'Layout Request'}</h4>
+                    
+                    <div className="cost-request-info">
+                      <div className="info-row">
+                        <span className="info-icon">👤</span>
+                        <span className="info-text">{request.homeowner_name}</span>
                       </div>
+                      <div className="info-row">
+                        <span className="info-icon">📐</span>
+                        <span className="info-text">{request.plot_size}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-icon">💵</span>
+                        <span className="info-text">₹{request.budget_range}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-icon">🕒</span>
+                        <span className="info-text">{timeAgo}</span>
+                      </div>
+                    </div>
+                    
+                    {summary.hasDesc && (
+                      <p className="cost-request-desc">{summary.short}</p>
                     )}
                   </div>
-                  <div className="item-actions">
-                    <span className={`status-badge ${badgeClass(request.status)}`}>{formatStatus(request.status)}</span>
-                    <button className="btn btn-primary" onClick={() => navigate(`/contractor/estimate?layout_request_id=${request.id}`)}>Submit Estimate</button>
+                  
+                  <div className="cost-request-footer">
+                    <button 
+                      className="btn-view-details" 
+                      onClick={() => setShowRequestDetails(prev => ({...prev, [request.id]: !prev[request.id]}))}>
+                      {showRequestDetails[request.id] ? '👁️ Hide Details' : '👁️ View Details'}
+                    </button>
+                    <button 
+                      className="btn-submit-estimate" 
+                      onClick={() => navigate(`/contractor/estimate?layout_request_id=${request.id}`)}>
+                      📝 Submit Estimate
+                    </button>
                   </div>
+                  
+                  {showRequestDetails[request.id] && (
+                    <div className="cost-request-details">
+                      {renderForwardedDesign(request)}
+                    </div>
+                  )}
                 </div>
               );})}
             </div>
@@ -1241,7 +1548,23 @@ const ContractorDashboard = () => {
     const payload = item.payload || {};
     const fd = payload.forwarded_design || null;
     const firstFile = fd && Array.isArray(fd.files) && fd.files[0] ? fd.files[0] : null;
-    const rawImg = payload.layout_image_url || (firstFile && (firstFile.url || firstFile.path || (typeof firstFile === 'string' ? firstFile : null)));
+    
+    // Prioritize layout image URL from multiple sources
+    let rawImg = null;
+    if (item.layout_image_url) {
+      rawImg = item.layout_image_url;
+    } else if (payload.layout_image_url) {
+      rawImg = payload.layout_image_url;
+    } else if (firstFile && (firstFile.url || firstFile.path)) {
+      rawImg = firstFile.url || firstFile.path;
+    } else if (typeof firstFile === 'string') {
+      rawImg = firstFile;
+    } else if (payload.layout_images && Array.isArray(payload.layout_images) && payload.layout_images[0]) {
+      // Try to get from layout_images array
+      const firstLayoutImg = payload.layout_images[0];
+      rawImg = firstLayoutImg.url || firstLayoutImg.path || `/buildhub/backend/uploads/house_plans/${firstLayoutImg.stored || firstLayoutImg.original}`;
+    }
+    
     const img = assetUrl(rawImg);
     const technical = item.technical_details || fd?.technical_details || payload.technical_details || null;
     const floor = payload.floor_details || null;
@@ -1549,21 +1872,30 @@ const ContractorDashboard = () => {
           <div style={{display:'flex', alignItems:'center', gap:8}}>
             <div className="muted" style={{fontSize:'0.85rem'}}>{formatDate(item.created_at)}</div>
             {item.acknowledged_at ? (
-              <span className="status-badge accepted" title={`Due: ${item.due_date || '—'}`}>Acknowledged</span>
+              <div style={{display:'flex', alignItems:'center', gap:8}}>
+                <span className="status-badge accepted" title={`Due: ${item.due_date || '—'}`}>Acknowledged</span>
+              </div>
             ) : (
               <div style={{display:'flex', alignItems:'center', gap:6}}>
                 {!ackOpenById[item.id] && (
-                  <button className="btn btn-primary" onClick={()=> setAckOpenById(prev=>({...prev, [item.id]: true}))}>Acknowledge</button>
+                  <button 
+                    className="btn btn-primary acknowledge-button" 
+                    onClick={()=> setAckOpenById(prev=>({...prev, [item.id]: true}))}
+                  >
+                    ⚡ Acknowledge Request
+                  </button>
                 )}
                 {ackOpenById[item.id] && (
-                  <>
+                  <div className="acknowledgment-form">
+                    <span>Due Date:</span>
                     <input 
                       type="date" 
                       value={ackDateById[item.id] || ''}
                       onChange={(e)=> setAckDateById(prev=>({...prev, [item.id]: e.target.value}))}
-                      style={{padding:'6px 8px', border:'1px solid #e5e7eb', borderRadius:6}}
                     />
-                    <button className="btn btn-primary" onClick={async ()=>{
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={async ()=>{
                       const me = JSON.parse(sessionStorage.getItem('user') || '{}');
                       try {
                         const response = await fetch('/buildhub/backend/api/contractor/acknowledge_inbox_item.php', {
@@ -1591,9 +1923,14 @@ const ContractorDashboard = () => {
                         if (j?.success) setInbox(Array.isArray(j.items) ? j.items : []);
                       } catch {}
                       setAckOpenById(prev=>({...prev, [item.id]: false}));
-                    }}>Confirm</button>
-                    <button className="btn btn-secondary" onClick={()=> setAckOpenById(prev=>({...prev, [item.id]: false}))}>Cancel</button>
-                  </>
+                    }}>✅ Confirm</button>
+                    <button 
+                      className="btn btn-secondary" 
+                      onClick={()=> setAckOpenById(prev=>({...prev, [item.id]: false}))}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -1646,9 +1983,140 @@ const ContractorDashboard = () => {
         <div className="card-body" style={{display:'grid',gridTemplateColumns:'160px 1fr',gap:16, padding: '20px'}}>
           <div>
             {img ? (
-              <img src={img} alt="Layout preview" style={{width:'160px',height:'120px',objectFit:'cover',borderRadius:8,border:'1px solid #eee'}} onError={(e)=>{ e.currentTarget.style.display='none'; }} />
+              <div style={{position: 'relative'}}>
+                <img 
+                  src={img} 
+                  alt="Layout preview" 
+                  style={{
+                    width:'160px',
+                    height:'120px',
+                    objectFit:'cover',
+                    borderRadius:8,
+                    border:'2px solid #3b82f6',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                  }} 
+                  onError={(e)=>{ e.currentTarget.style.display='none'; }} 
+                />
+                <div style={{
+                  position: 'absolute',
+                  bottom: '4px',
+                  left: '4px',
+                  right: '4px',
+                  background: 'rgba(59, 130, 246, 0.9)',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  textAlign: 'center'
+                }}>
+                  📐 Layout Plan
+                </div>
+                <div style={{
+                  position: 'absolute',
+                  top: '6px',
+                  right: '6px',
+                  display: 'flex',
+                  gap: '6px'
+                }}>
+                  <button
+                    onClick={() => window.open(img, '_blank')}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '8px 10px',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                      color: '#1e40af',
+                      fontWeight: '600',
+                      minWidth: '36px',
+                      minHeight: '36px'
+                    }}
+                    title="View full size"
+                  >
+                    🔍
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        // Extract image name from URL for the new API
+                        const me = JSON.parse(sessionStorage.getItem('user') || '{}');
+                        let imageName = '';
+                        
+                        // Try to extract image name from the current img URL
+                        if (img.includes('/buildhub/backend/uploads/house_plans/')) {
+                          imageName = img.split('/buildhub/backend/uploads/house_plans/')[1];
+                        } else if (img.includes('serve_layout_image.php')) {
+                          const urlParams = new URLSearchParams(img.split('?')[1]);
+                          imageName = urlParams.get('image');
+                        }
+                        
+                        if (imageName) {
+                          const downloadUrl = `/buildhub/backend/api/contractor/serve_layout_image.php?contractor_id=${me.id}&image=${encodeURIComponent(imageName)}&download=1`;
+                          const link = document.createElement('a');
+                          link.href = downloadUrl;
+                          link.download = imageName;
+                          link.target = '_blank';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          toast.success('Layout image downloaded!');
+                        } else {
+                          // Fallback to old method if image name extraction fails
+                          const response = await fetch(img);
+                          const blob = await response.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `layout_image_${Date.now()}.png`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(url);
+                          toast.success('Layout image downloaded!');
+                        }
+                      } catch (error) {
+                        toast.error('Failed to download image');
+                        console.error('Download error:', error);
+                      }
+                    }}
+                    style={{
+                      background: 'rgba(16, 185, 129, 0.95)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '8px 10px',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                      color: 'white',
+                      fontWeight: '600',
+                      minWidth: '36px',
+                      minHeight: '36px'
+                    }}
+                    title="Download image"
+                  >
+                    📥
+                  </button>
+                </div>
+              </div>
             ) : (
-              <div style={{width:'160px',height:'120px',display:'grid',placeItems:'center',border:'1px dashed #ddd',borderRadius:8}}>No image</div>
+              <div style={{
+                width:'160px',
+                height:'120px',
+                display:'grid',
+                placeItems:'center',
+                border:'2px dashed #e5e7eb',
+                borderRadius:8,
+                background: '#f9fafb',
+                color: '#6b7280'
+              }}>
+                <div style={{textAlign: 'center'}}>
+                  <div style={{fontSize: '24px', marginBottom: '4px'}}>📋</div>
+                  <div style={{fontSize: '12px'}}>No layout image</div>
+                </div>
+              </div>
             )}
           </div>
           <div style={{display:'grid',gap:6}}>
@@ -1711,6 +2179,278 @@ const ContractorDashboard = () => {
                 </div>
               </details>
             )}
+            
+            {/* Layout Images Section - Prominent display for contractor estimation */}
+            {(payload.layout_images && Array.isArray(payload.layout_images) && payload.layout_images.length > 0) && (
+              <div style={{
+                marginTop: '12px',
+                padding: '16px',
+                background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                borderRadius: '8px',
+                border: '2px solid #3b82f6'
+              }}>
+                <div style={{display: 'flex', alignItems: 'center', marginBottom: '12px'}}>
+                  <span style={{fontSize: '20px', marginRight: '8px'}}>📐</span>
+                  <strong style={{color: '#1e40af', fontSize: '15px'}}>Layout Images for Estimation</strong>
+                </div>
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px'}}>
+                  {payload.layout_images.map((layoutImg, idx) => {
+                    // Better image name extraction with fallbacks
+                    let imageName = layoutImg.stored || layoutImg.original || layoutImg.name;
+                    let fileName = layoutImg.original || layoutImg.name;
+                    
+                    // If not found in layout_images, try to get from technical_details
+                    if (!imageName && payload.technical_details && payload.technical_details.layout_image) {
+                      const techLayoutImg = payload.technical_details.layout_image;
+                      imageName = techLayoutImg.stored || techLayoutImg.name;
+                      fileName = techLayoutImg.name || techLayoutImg.original;
+                    }
+                    
+                    // Extract from URL if still not found
+                    if (!imageName && layoutImg.url) {
+                      const urlParts = layoutImg.url.split('/');
+                      imageName = urlParts[urlParts.length - 1];
+                    }
+                    
+                    // Final fallback
+                    if (!imageName) {
+                      imageName = `layout_${idx + 1}.png`;
+                    }
+                    if (!fileName) {
+                      fileName = imageName;
+                    }
+                    
+                    // Use the new image serving API with fallback to direct URL
+                    const me = JSON.parse(sessionStorage.getItem('user') || '{}');
+                    let imgUrl, downloadUrl;
+                    
+                    if (imageName && imageName !== 'undefined' && me.id) {
+                      imgUrl = `/buildhub/backend/api/contractor/serve_layout_image.php?contractor_id=${me.id}&image=${encodeURIComponent(imageName)}`;
+                      downloadUrl = `/buildhub/backend/api/contractor/serve_layout_image.php?contractor_id=${me.id}&image=${encodeURIComponent(imageName)}&download=1`;
+                    } else {
+                      // Fallback to direct URL
+                      imgUrl = assetUrl(layoutImg.url || layoutImg.path || `/buildhub/backend/uploads/house_plans/${imageName}`);
+                      downloadUrl = imgUrl;
+                    }
+                    
+                    const downloadImage = async () => {
+                      try {
+                        if (downloadUrl.includes('serve_layout_image.php')) {
+                          // Use the API download
+                          const link = document.createElement('a');
+                          link.href = downloadUrl;
+                          link.download = fileName;
+                          link.target = '_blank';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        } else {
+                          // Fallback to fetch method
+                          const response = await fetch(imgUrl);
+                          const blob = await response.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = fileName;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(url);
+                        }
+                        toast.success(`Downloaded: ${fileName}`);
+                      } catch (error) {
+                        toast.error('Failed to download image');
+                        console.error('Download error:', error);
+                      }
+                    };
+                    
+                    return (
+                      <div key={idx} style={{position: 'relative', border: '2px solid #3b82f6', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0,0,0,0.1)'}}>
+                        <img
+                          src={imgUrl}
+                          alt={`Layout ${idx + 1}`}
+                          style={{
+                            width: '100%',
+                            height: '120px',
+                            objectFit: 'cover',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => window.open(imgUrl, '_blank')}
+                          onError={(e) => { 
+                            console.error('Image load error for:', imgUrl);
+                            console.error('Layout image data:', layoutImg);
+                            // Try fallback URL
+                            const fallbackUrl = assetUrl(`/buildhub/backend/uploads/house_plans/${imageName}`);
+                            if (e.currentTarget.src !== fallbackUrl) {
+                              e.currentTarget.src = fallbackUrl;
+                            } else {
+                              e.currentTarget.style.display = 'none';
+                            }
+                          }}
+                        />
+                        
+                        {/* Action buttons overlay - Increased size */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          display: 'flex',
+                          gap: '6px'
+                        }}>
+                          <button
+                            onClick={() => window.open(imgUrl, '_blank')}
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.95)',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '8px 10px',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                              color: '#1e40af',
+                              fontWeight: '600',
+                              minWidth: '36px',
+                              minHeight: '36px'
+                            }}
+                            title="View full size"
+                          >
+                            🔍
+                          </button>
+                          <button
+                            onClick={downloadImage}
+                            style={{
+                              background: 'rgba(16, 185, 129, 0.95)',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '8px 10px',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                              color: 'white',
+                              fontWeight: '600',
+                              minWidth: '36px',
+                              minHeight: '36px'
+                            }}
+                            title="Download image"
+                          >
+                            📥
+                          </button>
+                        </div>
+                        
+                        {/* Image name label */}
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '0',
+                          left: '0',
+                          right: '0',
+                          background: 'rgba(30, 64, 175, 0.95)',
+                          color: 'white',
+                          padding: '6px 8px',
+                          fontSize: '11px',
+                          textAlign: 'center',
+                          fontWeight: '600'
+                        }}>
+                          {fileName}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{
+                  marginTop: '12px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#1e40af',
+                    fontStyle: 'italic'
+                  }}>
+                    💡 Click 🔍 to view full size • Click 📥 to download
+                  </div>
+                  {payload.layout_images.length > 1 && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const me = JSON.parse(sessionStorage.getItem('user') || '{}');
+                          for (let i = 0; i < payload.layout_images.length; i++) {
+                            const layoutImg = payload.layout_images[i];
+                            
+                            // Better image name extraction with fallbacks
+                            let imageName = layoutImg.stored || layoutImg.original || layoutImg.name;
+                            let fileName = layoutImg.original || layoutImg.name;
+                            
+                            // If not found in layout_images, try to get from technical_details
+                            if (!imageName && payload.technical_details && payload.technical_details.layout_image) {
+                              const techLayoutImg = payload.technical_details.layout_image;
+                              imageName = techLayoutImg.stored || techLayoutImg.name;
+                              fileName = techLayoutImg.name || techLayoutImg.original;
+                            }
+                            
+                            // Extract from URL if still not found
+                            if (!imageName && layoutImg.url) {
+                              const urlParts = layoutImg.url.split('/');
+                              imageName = urlParts[urlParts.length - 1];
+                            }
+                            
+                            // Final fallback
+                            if (!imageName) {
+                              imageName = `layout_${i + 1}.png`;
+                            }
+                            if (!fileName) {
+                              fileName = imageName;
+                            }
+                            
+                            let downloadUrl;
+                            if (imageName && imageName !== 'undefined' && me.id) {
+                              downloadUrl = `/buildhub/backend/api/contractor/serve_layout_image.php?contractor_id=${me.id}&image=${encodeURIComponent(imageName)}&download=1`;
+                            } else {
+                              downloadUrl = assetUrl(layoutImg.url || layoutImg.path || `/buildhub/backend/uploads/house_plans/${imageName}`);
+                            }
+                            
+                            // Add delay between downloads to avoid browser blocking
+                            setTimeout(() => {
+                              try {
+                                const link = document.createElement('a');
+                                link.href = downloadUrl;
+                                link.download = fileName;
+                                link.target = '_blank';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              } catch (error) {
+                                console.error(`Failed to download ${fileName}:`, error);
+                              }
+                            }, i * 500); // 500ms delay between downloads
+                          }
+                          toast.success(`Downloading ${payload.layout_images.length} layout images...`);
+                        } catch (error) {
+                          toast.error('Failed to download images');
+                          console.error('Bulk download error:', error);
+                        }
+                      }}
+                      style={{
+                        background: '#10b981',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '10px 16px',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                        minHeight: '40px'
+                      }}
+                      title="Download all layout images"
+                    >
+                      📥 Download All ({payload.layout_images.length})
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            
             {technical && (
               <div style={{marginTop: 16}}>
                 <TechnicalDetailsDisplay technicalDetails={technical} startExpanded={false} />
@@ -1760,21 +2500,82 @@ const ContractorDashboard = () => {
               </details>
             )}
 
-            {/* Submit Estimate for this send */}
-            <details style={{marginTop: '12px'}}>
-              <summary style={{
-                cursor: 'pointer',
-                padding: '12px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-                borderRadius: '6px',
-                fontWeight: '600',
-                fontSize: '14px',
-                color: '#1e40af',
-                border: '1px solid #cbd5e1'
-              }}>
-                📋 Submit Estimate
-              </summary>
-              <form ref={estimateFormRef} className="estimate-form" onInput={(e)=>{ try { recalcTotalsFromForm(e.currentTarget); } catch(_) {} }} onSubmit={async (e)=>{
+            {/* Submit Estimate for this send - Only show if acknowledged */}
+            {item.acknowledged_at ? (
+              <div style={{marginTop: '12px'}}>
+                {/* Estimation Form */}
+                <details 
+                  style={{marginTop: '12px'}}
+                  onToggle={(e) => {
+                    if (e.target.open && estimateFormRef.current) {
+                      // Load and populate draft when details is opened
+                      setTimeout(() => {
+                        const form = estimateFormRef.current;
+                        
+                        // Always ensure project name and client info are set correctly
+                        const projectNameInput = form.querySelector('[name="structured[project_name]"]');
+                        const clientNameInput = form.querySelector('[name="structured[client_name]"]');
+                        const clientContactInput = form.querySelector('[name="structured[client_contact]"]');
+                        
+                        if (projectNameInput) {
+                          projectNameInput.value = `${item?.homeowner_name || 'Homeowner'} Construction`;
+                        }
+                        if (clientNameInput) {
+                          clientNameInput.value = item?.homeowner_name || '';
+                        }
+                        if (clientContactInput && !clientContactInput.value) {
+                          clientContactInput.value = item?.homeowner_email || '';
+                        }
+                        
+                        // Then load draft data (but don't override readonly fields)
+                        const draft = draftData[item?.id];
+                        if (draft) {
+                          populateFormFromDraft(form, draft);
+                        }
+                      }, 100);
+                    }
+                  }}
+                >
+                  <summary style={{
+                    cursor: 'pointer',
+                    padding: '8px 12px',
+                    background: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#374151',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <span>📝 Create Estimate</span>
+                    {draftData[item?.id] && (
+                      <span style={{
+                        fontSize: '12px',
+                        color: '#10b981',
+                        fontWeight: '600',
+                        background: '#ecfdf5',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        border: '1px solid #a7f3d0'
+                      }}>
+                        💾 Draft {lastSaved[item?.id] && `• ${lastSaved[item?.id]}`}
+                      </span>
+                    )}
+                  </summary>
+              
+              <form 
+                ref={estimateFormRef} 
+                className="estimate-form" 
+                onInput={(e) => { 
+                  try { 
+                    recalcTotalsFromForm(e.currentTarget);
+                    // Auto-save draft on input changes
+                    handleFormChange(item?.id, e.currentTarget);
+                  } catch(_) {} 
+                }} 
+                onSubmit={async (e) => {
                 e.preventDefault();
                 const me = JSON.parse(sessionStorage.getItem('user') || '{}');
                 const form = e.currentTarget;
@@ -1824,8 +2625,33 @@ const ContractorDashboard = () => {
                   });
                   const json = await res.json();
                   if (json?.success) {
-                    toast.success('Estimate submitted');
+                    toast.success('Estimate submitted successfully!');
                     form.reset();
+                    
+                    // Clear draft data for this send
+                    const sendId = Number(sid);
+                    setDraftData(prev => {
+                      const newData = { ...prev };
+                      delete newData[sendId];
+                      return newData;
+                    });
+                    setLastSaved(prev => {
+                      const newData = { ...prev };
+                      delete newData[sendId];
+                      return newData;
+                    });
+                    
+                    // Refresh My Estimates section
+                    try {
+                      const me = JSON.parse(sessionStorage.getItem('user') || '{}');
+                      if (me?.id) {
+                        const r2 = await fetch(`/buildhub/backend/api/contractor/get_my_estimates.php?contractor_id=${me.id}`, { credentials: 'include' });
+                        const j2 = await r2.json().catch(() => ({}));
+                        if (j2?.success) setMyEstimates(Array.isArray(j2.estimates) ? j2.estimates : []);
+                      }
+                    } catch (refreshError) {
+                      console.error('Error refreshing estimates:', refreshError);
+                    }
                   } else {
                     toast.error(json?.message || 'Failed to submit');
                   }
@@ -1848,7 +2674,19 @@ const ContractorDashboard = () => {
                 {/* 1. Basic Project Information */}
                 <div className="section-title">1. Basic Project Information</div>
                 <div className="grid-2">
-                  <input name="structured[project_name]" placeholder="Project Name" list="bh_project_names" />
+                  <input 
+                    name="structured[project_name]" 
+                    placeholder="Project Name" 
+                    list="bh_project_names" 
+                    defaultValue={`${item?.homeowner_name || 'Homeowner'} Construction`}
+                    readOnly
+                    style={{
+                      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                      border: '2px solid #3b82f6',
+                      color: '#1e40af',
+                      fontWeight: '600'
+                    }}
+                  />
                   <input name="structured[project_address]" placeholder="Project Address / Location" />
                   <input name="structured[plot_size]" placeholder="Plot Size (sq.ft / sq.m)" />
                   <input name="structured[built_up_area]" placeholder="Built-up Area (sq.ft / sq.m)" />
@@ -1860,14 +2698,36 @@ const ContractorDashboard = () => {
                     <option value="4">4</option>
                   </select>
                   <input name="structured[estimation_date]" type="date" placeholder="Estimation Date" />
-                  <input name="structured[client_name]" placeholder="Client / Homeowner Name" />
-                  <input name="structured[client_contact]" placeholder="Contact Info" />
+                  <input 
+                    name="structured[client_name]" 
+                    placeholder="Client / Homeowner Name" 
+                    defaultValue={item?.homeowner_name || ''}
+                    readOnly
+                    style={{
+                      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                      border: '2px solid #3b82f6',
+                      color: '#1e40af',
+                      fontWeight: '600'
+                    }}
+                  />
+                  <input 
+                    name="structured[client_contact]" 
+                    placeholder="Contact Info" 
+                    defaultValue={item?.homeowner_email || ''}
+                  />
                 </div>
 
                 {/* 2. Material Costs */}
                 <div className="section-title" style={{marginTop:8}}>2. Material Costs</div>
                 <div className="muted" style={{marginTop:4}}>Tip: enter numeric amounts anywhere in the field (e.g., "OPC 53 - 60000"). The calculator sums the numbers it finds.</div>
-                <div className="grid-3" onInput={(e)=>{ try { recalcTotalsFromForm(e.currentTarget.closest('form')); } catch(_) {} }}>
+                <div 
+                  className="grid-3" 
+                  onInput={(e) => { 
+                    try { 
+                      recalcTotalsFromForm(e.currentTarget.closest('form')); 
+                    } catch(_) {} 
+                  }}
+                >
                   <div className="estimate-line grid-4">
                     <input name="structured[materials][cement][name]" placeholder="Cement grade (OPC 43/53, PPC)" list="bh_cement" />
                     <input name="structured[materials][cement][qty]" placeholder="Qty (bags) e.g., 50" />
@@ -1932,7 +2792,14 @@ const ContractorDashboard = () => {
 
                 {/* 3. Labor Charges */}
                 <div className="section-title" style={{marginTop:8}}>3. Labor Charges</div>
-                <div className="grid-3" onInput={(e)=>{ try { recalcTotalsFromForm(e.currentTarget.closest('form')); } catch(_) {} }}>
+                <div 
+                  className="grid-3" 
+                  onInput={(e) => { 
+                    try { 
+                      recalcTotalsFromForm(e.currentTarget.closest('form')); 
+                    } catch(_) {} 
+                  }}
+                >
                   <div className="estimate-line grid-4">
                     <input name="structured[labor][mason][name]" placeholder="Masonry work" list="bh_labor_mason" />
                     <input name="structured[labor][mason][qty]" placeholder="Qty (m³ / days)" />
@@ -1985,7 +2852,14 @@ const ContractorDashboard = () => {
 
                 {/* 4. Utilities & Fixtures */}
                 <div className="section-title" style={{marginTop:8}}>4. Utilities & Fixtures</div>
-                <div className="grid-3" onInput={(e)=>{ try { recalcTotalsFromForm(e.currentTarget.closest('form')); } catch(_) {} }}>
+                <div 
+                  className="grid-3" 
+                  onInput={(e) => { 
+                    try { 
+                      recalcTotalsFromForm(e.currentTarget.closest('form')); 
+                    } catch(_) {} 
+                  }}
+                >
                   <div className="estimate-line grid-4">
                     <input name="structured[utilities][sanitary][name]" placeholder="Sanitary fittings" list="bh_util_sanitary" />
                     <input name="structured[utilities][sanitary][qty]" placeholder="Qty (sets)" />
@@ -2045,7 +2919,14 @@ const ContractorDashboard = () => {
 
                 {/* 5. Miscellaneous Costs */}
                 <div className="section-title" style={{marginTop:8}}>5. Miscellaneous Costs</div>
-                <div className="grid-3" onInput={(e)=>{ try { recalcTotalsFromForm(e.currentTarget.closest('form')); } catch(_) {} }}>
+                <div 
+                  className="grid-3" 
+                  onInput={(e) => { 
+                    try { 
+                      recalcTotalsFromForm(e.currentTarget.closest('form')); 
+                    } catch(_) {} 
+                  }}
+                >
                   <div className="estimate-line grid-4">
                     <input name="structured[misc][transport][name]" placeholder="Transport (local/long-haul)" list="bh_misc_transport" />
                     <input name="structured[misc][transport][qty]" placeholder="Qty (trips)" />
@@ -2099,7 +2980,14 @@ const ContractorDashboard = () => {
 
                 {/* 6. Totals */}
                 <div className="section-title" style={{marginTop:8}}>6. Total Estimation</div>
-                <div className="totals" onInput={(e)=>{ try { recalcTotalsFromForm(e.currentTarget.closest('form')); } catch(_) {} }}>
+                <div 
+                  className="totals" 
+                  onInput={(e) => { 
+                    try { 
+                      recalcTotalsFromForm(e.currentTarget.closest('form')); 
+                    } catch(_) {} 
+                  }}
+                >
                   <input name="structured[totals][materials]" placeholder="Material Costs Total" value={materialsTotal || ''} readOnly style={{border:'1px solid #e5e7eb', borderRadius:6, padding:8}} />
                   <input name="structured[totals][labor]" placeholder="Labor Charges Total" value={laborTotal || ''} readOnly style={{border:'1px solid #e5e7eb', borderRadius:6, padding:8}} />
                   <input name="structured[totals][utilities]" placeholder="Utilities & Fixtures Total" value={utilitiesTotal || ''} readOnly style={{border:'1px solid #e5e7eb', borderRadius:6, padding:8}} />
@@ -2139,9 +3027,56 @@ const ContractorDashboard = () => {
                   <input name="attachments" type="file" multiple />
                 </div>
                 <div className="actions">
-                  <button className="btn btn-secondary" type="button" onClick={(e)=>{ const form = e.currentTarget.closest('form'); if (form) form.reset(); recalcTotalsFromForm(form); }}>Reset</button>
-                  <button className="btn btn-primary" type="button" onClick={async (e)=>{ const form = e.currentTarget.closest('form'); await buildEstimateReport(form); }}>Download PDF Report</button>
-                  <button className="btn btn-primary" type="submit">Submit Estimate</button>
+                  <button className="btn btn-secondary" type="button" onClick={(e)=>{ 
+                    const form = e.currentTarget.closest('form'); 
+                    if (form) {
+                      form.reset(); 
+                      recalcTotalsFromForm(form);
+                      // Clear draft data
+                      const sendId = item?.id;
+                      if (sendId) {
+                        setDraftData(prev => ({ ...prev, [sendId]: null }));
+                        setLastSaved(prev => ({ ...prev, [sendId]: null }));
+                      }
+                    }
+                  }}>🔄 Reset</button>
+                  {draftData[item?.id] && (
+                    <button className="btn btn-secondary" type="button" onClick={async () => {
+                      const sendId = item?.id;
+                      if (sendId && confirm('Are you sure you want to clear the saved draft?')) {
+                        try {
+                          // Clear from backend
+                          const me = JSON.parse(sessionStorage.getItem('user') || '{}');
+                          await fetch('/buildhub/backend/api/contractor/save_estimate_draft.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                              contractor_id: me.id,
+                              send_id: sendId,
+                              draft_data: {}
+                            })
+                          });
+                          
+                          // Clear from local state
+                          setDraftData(prev => ({ ...prev, [sendId]: null }));
+                          setLastSaved(prev => ({ ...prev, [sendId]: null }));
+                          
+                          // Reset form
+                          if (estimateFormRef.current) {
+                            estimateFormRef.current.reset();
+                            recalcTotalsFromForm(estimateFormRef.current);
+                          }
+                          
+                          toast.success('Draft cleared successfully');
+                        } catch (error) {
+                          toast.error('Error clearing draft');
+                        }
+                      }
+                    }}>🗑️ Clear Draft</button>
+                  )}
+                  <button className="btn btn-primary" type="button" onClick={async (e)=>{ const form = e.currentTarget.closest('form'); await buildEstimateReport(form); }}>📄 Download PDF Report</button>
+                  <button className="btn btn-primary" type="submit">✅ Submit Estimate</button>
                 </div>
 
                 {/* Predictive option sources (datalists) */}
@@ -2260,7 +3195,20 @@ const ContractorDashboard = () => {
                   <option value="Safety nets & signage" />
                 </datalist>
               </form>
-            </details>
+              </details>
+              </div>
+            ) : (
+              <div className="acknowledgment-required">
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px'}}>
+                  <span className="icon">⏳</span>
+                  <strong className="title">Acknowledgment Required</strong>
+                </div>
+                <p className="message">
+                  Please acknowledge this request first before submitting an estimate. 
+                  Use the "Acknowledge" button above to confirm receipt and set your completion timeline.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -2286,9 +3234,9 @@ const ContractorDashboard = () => {
                   setLoading(true);
                   try {
                     const me = JSON.parse(sessionStorage.getItem('user') || '{}');
-                    const r = await fetch(`/buildhub/backend/api/contractor/get_construction_details.php?contractor_id=${me.id}`, { credentials: 'include' });
+                    const r = await fetch(`/buildhub/backend/api/contractor/get_projects.php?contractor_id=${me.id}`, { credentials: 'include' });
                     const j = await r.json().catch(() => ({}));
-                    if (j?.success) setConstructionDetails(Array.isArray(j.projects) ? j.projects : []);
+                    if (j?.success) setConstructionDetails(Array.isArray(j.data.projects) ? j.data.projects : []);
                   } catch {}
                   setLoading(false);
                 }}
@@ -2350,7 +3298,7 @@ const ContractorDashboard = () => {
           ) : (
             <div className="construction-projects">
                 {constructionDetails.map(project => (
-                  <div key={project.estimate_id} className="construction-project-card">
+                  <div key={project.id} className="construction-project-card">
                     <div className="project-header">
                       <div className="project-icon">
                         <div style={{
@@ -2369,30 +3317,31 @@ const ContractorDashboard = () => {
                       </div>
                       <div className="project-title-section">
                         <h3 className="project-title">
-                          {project.structured?.project_name || `Project #${project.estimate_id}`}
+                          {project.project_name}
                         </h3>
                         <p className="project-subtitle">
-                          Construction approved for {project.homeowner.name}
+                          {project.project_description}
                         </p>
                         <div className="project-meta">
-                          <span className="meta-item">Total: ₹{project.structured?.totals?.grand || project.total_cost || 'TBD'}</span>
+                          <span className="meta-item">Total: {project.technical_summary.total_cost}</span>
                           <span className="meta-item">Timeline: {project.timeline || 'TBD'}</span>
-                          <span className="meta-item">Status: {project.estimate_status}</span>
+                          <span className="meta-item">Progress: {project.project_summary.progress}</span>
+                          <span className="meta-item">Status: {project.project_summary.status}</span>
                         </div>
                       </div>
                       <div className="project-actions" style={{display: 'flex', gap: '8px', flexWrap: 'wrap'}}>
                         <button 
                           className="btn btn-primary"
-                          onClick={() => setExpandedProject(expandedProject === project.estimate_id ? null : project.estimate_id)}
+                          onClick={() => setExpandedProject(expandedProject === project.id ? null : project.id)}
                         >
-                          {expandedProject === project.estimate_id ? 'Hide Details' : 'View Details'}
+                          {expandedProject === project.id ? 'Hide Details' : 'View Details'}
                         </button>
                         <button 
                           className="btn btn-secondary"
                           onClick={() => {
-                            const subject = `Construction Project Update - ${project.structured?.project_name || `Project #${project.estimate_id}`}`;
-                            const body = `Hi ${project.homeowner.name},\n\nI wanted to provide you with an update on your construction project.\n\nProject: ${project.structured?.project_name || `Project #${project.estimate_id}`}\nTotal Cost: ₹${project.structured?.totals?.grand || project.total_cost || 'TBD'}\nTimeline: ${project.timeline || 'TBD'}\n\nPlease let me know if you have any questions.\n\nBest regards,\n[Your Name]`;
-                            window.open(`mailto:${project.homeowner.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                            const subject = `Construction Project Update - ${project.project_name}`;
+                            const body = `Hi ${project.homeowner_name},\n\nI wanted to provide you with an update on your construction project.\n\nProject: ${project.project_name}\nTotal Cost: ${project.technical_summary.total_cost}\nTimeline: ${project.timeline || 'TBD'}\nCurrent Progress: ${project.project_summary.progress}\nCurrent Stage: ${project.project_summary.current_stage}\n\nPlease let me know if you have any questions.\n\nBest regards,\n[Your Name]`;
+                            window.open(`mailto:${project.homeowner_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
                           }}
                           title="Send email to homeowner"
                         >
@@ -2401,7 +3350,7 @@ const ContractorDashboard = () => {
                         <button 
                           className="btn btn-secondary"
                           onClick={() => {
-                            const message = `Project: ${project.structured?.project_name || `Project #${project.estimate_id}`}\nHomeowner: ${project.homeowner.name}\nEmail: ${project.homeowner.email}\nPhone: ${project.homeowner.phone || 'Not provided'}\nTotal Cost: ₹${project.structured?.totals?.grand || project.total_cost || 'TBD'}\nTimeline: ${project.timeline || 'TBD'}`;
+                            const message = `Project: ${project.project_name}\nHomeowner: ${project.homeowner_name}\nEmail: ${project.homeowner_email}\nPhone: ${project.homeowner_phone || 'Not provided'}\nTotal Cost: ${project.technical_summary.total_cost}\nTimeline: ${project.timeline || 'TBD'}\nProgress: ${project.project_summary.progress}\nStatus: ${project.project_summary.status}`;
                             navigator.clipboard.writeText(message).then(() => {
                               try { toast.success('Project details copied to clipboard!'); } catch {}
                             }).catch(() => {
@@ -2415,19 +3364,17 @@ const ContractorDashboard = () => {
                       </div>
                     </div>
 
-                    {expandedProject === project.estimate_id && (
+                    {expandedProject === project.id && (
                       <div className="project-details">
                         <div className="details-grid">
                           {/* Homeowner Information */}
                           <div className="detail-section">
                             <h4 className="section-title">👤 Homeowner Information</h4>
                             <div className="detail-content">
-                              <p><strong>Name:</strong> {project.homeowner.name}</p>
-                              <p><strong>Email:</strong> {project.homeowner.email}</p>
-                              <p><strong>Phone:</strong> {project.homeowner.phone || 'Not provided'}</p>
-                              <p><strong>Address:</strong> {project.homeowner.address || 'Not provided'}</p>
-                              {project.homeowner.city && <p><strong>City:</strong> {project.homeowner.city}</p>}
-                              {project.homeowner.state && <p><strong>State:</strong> {project.homeowner.state}</p>}
+                              <p><strong>Name:</strong> {project.homeowner_name}</p>
+                              <p><strong>Email:</strong> {project.homeowner_email}</p>
+                              <p><strong>Phone:</strong> {project.homeowner_phone || 'Not provided'}</p>
+                              <p><strong>Location:</strong> {project.project_location || 'Not provided'}</p>
                             </div>
                           </div>
 
@@ -2435,54 +3382,78 @@ const ContractorDashboard = () => {
                           <div className="detail-section">
                             <h4 className="section-title">🏠 Project Requirements</h4>
                             <div className="detail-content">
-                              {project.layout_request.plot_size && <p><strong>Plot Size:</strong> {project.layout_request.plot_size}</p>}
-                              {project.layout_request.budget_range && <p><strong>Budget Range:</strong> {project.layout_request.budget_range}</p>}
-                              {project.layout_request.location && <p><strong>Location:</strong> {project.layout_request.location}</p>}
-                              {project.layout_request.preferred_style && <p><strong>Preferred Style:</strong> {project.layout_request.preferred_style}</p>}
-                              {project.layout_request.requirements && <p><strong>Requirements:</strong> {project.layout_request.requirements}</p>}
-                              {project.layout_request.timeline && <p><strong>Timeline:</strong> {project.layout_request.timeline}</p>}
+                              {project.plot_size && <p><strong>Plot Size:</strong> {project.plot_size}</p>}
+                              {project.budget_range && <p><strong>Budget Range:</strong> {project.budget_range}</p>}
+                              {project.project_location && <p><strong>Location:</strong> {project.project_location}</p>}
+                              {project.preferred_style && <p><strong>Preferred Style:</strong> {project.preferred_style}</p>}
+                              {project.requirements && <p><strong>Requirements:</strong> {project.requirements}</p>}
+                              {project.timeline && <p><strong>Timeline:</strong> {project.timeline}</p>}
                             </div>
                           </div>
 
-
-                          {/* Accepted Estimate Details */}
+                          {/* Project Cost Details */}
                           <div className="detail-section">
-                            <h4 className="section-title">💰 Accepted Estimate</h4>
+                            <h4 className="section-title">💰 Cost Breakdown</h4>
                             <div className="detail-content">
-                              <p><strong>Total Cost:</strong> ₹{project.structured?.totals?.grand || project.total_cost || 'TBD'}</p>
+                              <p><strong>Total Cost:</strong> {project.technical_summary.total_cost}</p>
+                              <p><strong>Materials Cost:</strong> {project.technical_summary.materials_cost}</p>
+                              <p><strong>Labor Cost:</strong> {project.technical_summary.labor_cost}</p>
                               <p><strong>Timeline:</strong> {project.timeline || 'TBD'}</p>
-                              <p><strong>Status:</strong> {project.estimate_status}</p>
-                              <p><strong>Approved Date:</strong> {new Date(project.estimate_created_at).toLocaleString()}</p>
+                              <p><strong>Status:</strong> {project.project_summary.status}</p>
+                              <p><strong>Created Date:</strong> {project.created_date_formatted}</p>
                               {project.materials && <p><strong>Materials:</strong> {project.materials}</p>}
-                              {project.notes && <p><strong>Notes:</strong> {project.notes}</p>}
+                              {project.contractor_notes && <p><strong>Notes:</strong> {project.contractor_notes}</p>}
                             </div>
                           </div>
 
                           {/* Layout Information */}
-                          {project.architect_layout.layout_file && (
+                          {project.layout_data && (
                             <div className="detail-section">
-                              <h4 className="section-title">📐 Approved Layout</h4>
+                              <h4 className="section-title">📐 Layout & Technical Details</h4>
                               <div className="detail-content">
-                                <p><strong>Layout File:</strong> {project.architect_layout.layout_file}</p>
-                                {project.architect_layout.description && <p><strong>Description:</strong> {project.architect_layout.description}</p>}
-                                {project.architect_layout.notes && <p><strong>Layout Notes:</strong> {project.architect_layout.notes}</p>}
-                                <p><strong>Created:</strong> {new Date(project.architect_layout.created_at).toLocaleString()}</p>
+                                {project.layout_data.layout_image && (
+                                  <div style={{marginBottom: '12px'}}>
+                                    <p><strong>Layout Image:</strong></p>
+                                    <img 
+                                      src={`/buildhub/backend/api/contractor/serve_layout_image.php?contractor_id=${user?.id}&image=${project.layout_data.layout_image}`}
+                                      alt="Layout"
+                                      style={{maxWidth: '300px', maxHeight: '200px', border: '1px solid #ddd', borderRadius: '4px'}}
+                                      onError={(e) => {
+                                        e.target.style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                                {project.layout_data.layout_file && <p><strong>Layout File:</strong> {project.layout_data.layout_file}</p>}
+                                {project.layout_data.technical_details && <p><strong>Technical Details:</strong> {project.layout_data.technical_details}</p>}
                               </div>
                             </div>
                           )}
 
-                          {/* Construction Start Information */}
+                          {/* Progress Information */}
+                          <div className="detail-section">
+                            <h4 className="section-title">📊 Progress Status</h4>
+                            <div className="detail-content">
+                              <p><strong>Current Progress:</strong> {project.project_summary.progress}</p>
+                              <p><strong>Current Stage:</strong> {project.project_summary.current_stage}</p>
+                              <p><strong>Total Updates:</strong> {project.project_summary.updates_count}</p>
+                              <p><strong>Last Activity:</strong> {project.project_summary.last_activity}</p>
+                              <p><strong>Expected Completion:</strong> {project.expected_completion_formatted}</p>
+                            </div>
+                          </div>
+
+                          {/* Construction Management */}
                           <div className="detail-section construction-start">
-                            <h4 className="section-title">🚀 Construction Start Details</h4>
+                            <h4 className="section-title">🚀 Construction Management</h4>
                             <div className="detail-content">
                               <div className="construction-checklist">
-                                <h5>Pre-Construction Checklist:</h5>
+                                <h5>Project Status:</h5>
                                 <ul>
                                   <li>✅ Estimate approved by homeowner</li>
-                                  <li>✅ Layout/design approved</li>
-                                  <li>✅ Payment arrangements confirmed</li>
-                                  <li>✅ Site access granted</li>
-                                  <li>✅ Permits and approvals obtained</li>
+                                  <li>✅ Project created automatically</li>
+                                  <li>✅ Technical details available</li>
+                                  <li>✅ Layout plans included</li>
+                                  <li>✅ Ready for construction start</li>
                                 </ul>
                               </div>
                               <div className="next-steps">
@@ -2492,34 +3463,41 @@ const ContractorDashboard = () => {
                                   <li>Finalize construction timeline</li>
                                   <li>Arrange material delivery</li>
                                   <li>Set up construction site</li>
-                                  <li>Begin foundation work</li>
+                                  <li>Begin construction work</li>
+                                  <li>Submit regular progress updates</li>
                                 </ol>
                               </div>
                               <div className="construction-actions" style={{marginTop: '20px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0'}}>
-                                <h5 style={{margin: '0 0 12px 0', color: '#374151'}}>🚀 Ready to Start Construction?</h5>
+                                <h5 style={{margin: '0 0 12px 0', color: '#374151'}}>🚀 Project Management Actions</h5>
                                 <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
                                   <button 
                                     className="btn btn-success"
                                     onClick={() => {
-                                      const subject = `Construction Start Confirmation - ${project.structured?.project_name || `Project #${project.estimate_id}`}`;
-                                      const body = `Hi ${project.homeowner.name},\n\nI'm excited to confirm that we're ready to begin construction on your project!\n\nProject: ${project.structured?.project_name || `Project #${project.estimate_id}`}\nTotal Cost: ₹${project.structured?.totals?.grand || project.total_cost || 'TBD'}\nTimeline: ${project.timeline || 'TBD'}\n\nI'll be in touch soon to schedule the site visit and discuss the next steps.\n\nBest regards,\n[Your Name]`;
-                                      window.open(`mailto:${project.homeowner.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                                      const subject = `Construction Start Confirmation - ${project.project_name}`;
+                                      const body = `Hi ${project.homeowner_name},\n\nI'm excited to confirm that we're ready to begin construction on your project!\n\nProject: ${project.project_name}\nTotal Cost: ${project.technical_summary.total_cost}\nTimeline: ${project.timeline || 'TBD'}\nCurrent Progress: ${project.project_summary.progress}\n\nI'll be in touch soon to schedule the site visit and discuss the next steps.\n\nBest regards,\n[Your Name]`;
+                                      window.open(`mailto:${project.homeowner_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
                                     }}
                                   >
                                     📧 Confirm Start with Homeowner
                                   </button>
                                   <button 
                                     className="btn btn-primary"
+                                    onClick={() => setActiveTab('progress')}
+                                  >
+                                    📊 Submit Progress Update
+                                  </button>
+                                  <button 
+                                    className="btn btn-secondary"
                                     onClick={() => {
-                                      const message = `Construction Project Started\n\nProject: ${project.structured?.project_name || `Project #${project.estimate_id}`}\nHomeowner: ${project.homeowner.name}\nStart Date: ${new Date().toLocaleDateString()}\nTimeline: ${project.timeline || 'TBD'}\nTotal Cost: ₹${project.structured?.totals?.grand || project.total_cost || 'TBD'}`;
+                                      const message = `Construction Project Details\n\nProject: ${project.project_name}\nHomeowner: ${project.homeowner_name}\nStart Date: ${project.start_date_formatted}\nTimeline: ${project.timeline || 'TBD'}\nTotal Cost: ${project.technical_summary.total_cost}\nProgress: ${project.project_summary.progress}\nStatus: ${project.project_summary.status}`;
                                       navigator.clipboard.writeText(message).then(() => {
-                                        try { toast.success('Construction start details copied!'); } catch {}
+                                        try { toast.success('Project details copied!'); } catch {}
                                       }).catch(() => {
                                         try { toast.error('Failed to copy details'); } catch {}
                                       });
                                     }}
                                   >
-                                    📋 Copy Start Details
+                                    📋 Copy Project Details
                                   </button>
                                 </div>
                               </div>
@@ -2627,6 +3605,14 @@ const ContractorDashboard = () => {
   const renderProgressUpdates = () => {
     const handleUpdateSubmitted = (updateData) => {
       toast.success('Progress update submitted successfully!');
+      
+      // Trigger progress recalculation for homeowner dashboard
+      // This could be enhanced with WebSocket or real-time updates in the future
+      if (updateData && updateData.project_id) {
+        // Store the update timestamp for potential real-time sync
+        localStorage.setItem(`progress_update_${updateData.project_id}`, Date.now().toString());
+      }
+      
       // Optionally switch to timeline view to show the new update
       setProgressView('timeline');
     };
@@ -2659,10 +3645,16 @@ const ContractorDashboard = () => {
             💰 Request Payment
           </button>
           <button 
+            className={`toggle-btn ${progressView === 'history' ? 'active' : ''}`}
+            onClick={() => setProgressView('history')}
+          >
+            📋 Payment History
+          </button>
+          <button 
             className={`toggle-btn ${progressView === 'reports' ? 'active' : ''}`}
             onClick={() => setProgressView('reports')}
           >
-            📋 Generate Reports
+            📊 Generate Reports
           </button>
         </div>
 
@@ -2679,16 +3671,18 @@ const ContractorDashboard = () => {
           />
         ) : progressView === 'payment' ? (
           <div className="payment-section">
-            <div className="payment-header">
-              <h2>💰 Stage Payment Requests</h2>
-              <p>Request payments for completed construction stages and track payment status</p>
-            </div>
-            
-            <ContractorPaymentManager 
+            <SimplePaymentRequestForm 
               contractorId={user?.id}
               onPaymentRequested={(data) => {
-                toast.success(`Payment request submitted: ₹${data.requested_amount} for ${data.stage_name} stage`);
+                toast.success(`Payment request submitted successfully!`);
+                // Optionally refresh data or update UI
               }}
+            />
+          </div>
+        ) : progressView === 'history' ? (
+          <div className="payment-history-section">
+            <PaymentHistory 
+              contractorId={user?.id}
             />
           </div>
         ) : progressView === 'reports' ? (
@@ -2928,6 +3922,14 @@ const ContractorDashboard = () => {
         message={confirmModal.message}
         type={confirmModal.type}
       />
+
+      {/* Estimation Form Modal */}
+      <EstimationForm
+        isOpen={showEstimationForm}
+        onClose={closeEstimationForm}
+        inboxItem={currentEstimationItem}
+        onSubmit={handleEstimateSubmit}
+      />
     </div>
   );
 };
@@ -3156,7 +4158,11 @@ const ProposalItem = ({ proposal }) => {
 
 const EstimateListItem = ({ est, user, showConfirmation, toast }) => {
   let structured = null;
-  try { structured = est?.structured ? JSON.parse(est.structured) : null; } catch {}
+  try { 
+    // Try structured_data first (from API), then fallback to structured
+    const structuredStr = est?.structured_data || est?.structured;
+    structured = structuredStr ? JSON.parse(structuredStr) : null; 
+  } catch {}
   const s = structured || {};
   const money = (v) => {
     const n = parseFloat(v);

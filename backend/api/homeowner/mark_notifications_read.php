@@ -31,30 +31,81 @@ try {
     
     if (isset($input['notification_ids']) && is_array($input['notification_ids'])) {
         // Mark specific notifications as read
-        $placeholders = str_repeat('?,', count($input['notification_ids']) - 1) . '?';
-        $stmt = $pdo->prepare("
-            UPDATE notifications 
-            SET is_read = TRUE 
-            WHERE user_id = ? AND id IN ($placeholders)
-        ");
-        $params = array_merge([$user_id], $input['notification_ids']);
-        $stmt->execute($params);
+        // We need to handle both tables, so we'll check the source
+        if (isset($input['source']) && is_array($input['source'])) {
+            // Handle notifications with source information
+            foreach ($input['notification_ids'] as $index => $notificationId) {
+                $source = $input['source'][$index] ?? 'general';
+                
+                if ($source === 'contractor_acknowledgment') {
+                    // Update homeowner_notifications table
+                    $stmt = $pdo->prepare("
+                        UPDATE homeowner_notifications 
+                        SET status = 'read' 
+                        WHERE homeowner_id = ? AND id = ?
+                    ");
+                    $stmt->execute([$user_id, $notificationId]);
+                } else {
+                    // Update general notifications table
+                    $stmt = $pdo->prepare("
+                        UPDATE notifications 
+                        SET is_read = TRUE 
+                        WHERE user_id = ? AND id = ?
+                    ");
+                    $stmt->execute([$user_id, $notificationId]);
+                }
+            }
+        } else {
+            // Fallback: try to update both tables
+            $placeholders = str_repeat('?,', count($input['notification_ids']) - 1) . '?';
+            
+            // Update general notifications
+            $stmt = $pdo->prepare("
+                UPDATE notifications 
+                SET is_read = TRUE 
+                WHERE user_id = ? AND id IN ($placeholders)
+            ");
+            $params = array_merge([$user_id], $input['notification_ids']);
+            $stmt->execute($params);
+            
+            // Update homeowner notifications
+            $stmt2 = $pdo->prepare("
+                UPDATE homeowner_notifications 
+                SET status = 'read' 
+                WHERE homeowner_id = ? AND id IN ($placeholders)
+            ");
+            $stmt2->execute($params);
+        }
     } elseif (isset($input['type'])) {
-        // Mark all notifications of a specific type as read
+        // Mark all notifications of a specific type as read in both tables
         $stmt = $pdo->prepare("
             UPDATE notifications 
             SET is_read = TRUE 
             WHERE user_id = ? AND type = ?
         ");
         $stmt->execute([$user_id, $input['type']]);
+        
+        $stmt2 = $pdo->prepare("
+            UPDATE homeowner_notifications 
+            SET status = 'read' 
+            WHERE homeowner_id = ? AND type = ?
+        ");
+        $stmt2->execute([$user_id, $input['type']]);
     } else {
-        // Mark all notifications as read
+        // Mark all notifications as read in both tables
         $stmt = $pdo->prepare("
             UPDATE notifications 
             SET is_read = TRUE 
             WHERE user_id = ?
         ");
         $stmt->execute([$user_id]);
+        
+        $stmt2 = $pdo->prepare("
+            UPDATE homeowner_notifications 
+            SET status = 'read' 
+            WHERE homeowner_id = ?
+        ");
+        $stmt2->execute([$user_id]);
     }
     
     echo json_encode([

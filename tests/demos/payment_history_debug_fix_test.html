@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History Debug Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .warning {
+            color: #ffc107;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .projects-list, .payment-list {
+            margin-top: 20px;
+        }
+        .project-item, .payment-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Payment History Debug Fix Test</h1>
+        <p>Testing the fixed contractor projects and payment history APIs</p>
+        
+        <button onclick="testContractorProjects()">Test Contractor Projects API</button>
+        <button onclick="testPaymentHistory()">Test Payment History API</button>
+        <button onclick="clearResults()">Clear Results</button>
+        
+        <div id="debug-info" class="debug-info"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const contractorId = 29;
+        const projectId = 1; // Using a test project ID
+        
+        function log(message, type = 'info') {
+            const debugDiv = document.getElementById('debug-info');
+            const timestamp = new Date().toISOString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            debugDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('debug-info').innerHTML = '';
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testContractorProjects() {
+            log('🔄 Testing Contractor Projects API...', 'info');
+            
+            try {
+                const url = `/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${contractorId}`;
+                log(`Making request to: ${url}`, 'info');
+                
+                const response = await fetch(url);
+                log(`Response status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                const responseText = await response.text();
+                log(`Raw response (first 200 chars): ${responseText.substring(0, 200)}`, 'info');
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    log('✅ JSON parsing successful!', 'success');
+                } catch (parseError) {
+                    log(`❌ JSON parsing failed: ${parseError.message}`, 'error');
+                    log(`Full response: ${responseText}`, 'error');
+                    return;
+                }
+                
+                if (data.success) {
+                    log(`✅ API call successful! Found ${data.data.total_projects} projects`, 'success');
+                    displayProjects(data.data.projects);
+                } else {
+                    log(`❌ API returned error: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testPaymentHistory() {
+            log('🔄 Testing Payment History API...', 'info');
+            
+            try {
+                const url = `/buildhub/backend/api/contractor/get_payment_history.php?project_id=${projectId}`;
+                log(`Making request to: ${url}`, 'info');
+                
+                const response = await fetch(url);
+                log(`Response status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                const responseText = await response.text();
+                log(`Raw response (first 200 chars): ${responseText.substring(0, 200)}`, 'info');
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    log('✅ JSON parsing successful!', 'success');
+                } catch (parseError) {
+                    log(`❌ JSON parsing failed: ${parseError.message}`, 'error');
+                    log(`Full response: ${responseText}`, 'error');
+                    return;
+                }
+                
+                if (data.success) {
+                    log(`✅ API call successful! Found ${data.data.payment_requests.length} payment requests`, 'success');
+                    log(`💰 Total requested: ₹${data.data.summary.total_requested}`, 'info');
+                    log(`✅ Total approved: ₹${data.data.summary.total_approved}`, 'success');
+                    log(`💳 Total paid: ₹${data.data.summary.total_paid}`, 'success');
+                    displayPaymentHistory(data.data);
+                } else {
+                    log(`❌ API returned error: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayProjects(projects) {
+            const resultsDiv = document.getElementById('results');
+            let html = '<div class="container"><h2>📋 Projects Found</h2><div class="projects-list">';
+            
+            if (projects.length === 0) {
+                html += '<p>No projects found</p>';
+            } else {
+                projects.forEach(project => {
+                    html += `
+                        <div class="project-item">
+                            <h3>${project.project_name}</h3>
+                            <p><strong>ID:</strong> ${project.id}</p>
+                            <p><strong>Homeowner:</strong> ${project.homeowner_name}</p>
+                            <p><strong>Status:</strong> ${project.status}</p>
+                            <p><strong>Timeline:</strong> ${project.timeline}</p>
+                            <p><strong>Location:</strong> ${project.location || 'Not specified'}</p>
+                            <p><strong>Budget:</strong> ${project.budget_range || 'Not specified'}</p>
+                            <p><strong>Created:</strong> ${project.created_at}</p>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div></div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        function displayPaymentHistory(data) {
+            const resultsDiv = document.getElementById('results');
+            let html = '<div class="container"><h2>💰 Payment History</h2>';
+            
+            // Summary
+            html += `
+                <div class="debug-info">
+                    <strong>Summary:</strong>
+                    Total Requests: ${data.summary.total_requests}
+                    Total Requested: ₹${data.summary.total_requested}
+                    Total Approved: ₹${data.summary.total_approved}
+                    Total Paid: ₹${data.summary.total_paid}
+                    Pending: ${data.summary.pending_count}
+                    Approved: ${data.summary.approved_count}
+                    Rejected: ${data.summary.rejected_count}
+                </div>
+            `;
+            
+            html += '<div class="payment-list">';
+            
+            if (data.payment_requests.length === 0) {
+                html += '<p>No payment history found</p>';
+            } else {
+                data.payment_requests.forEach(payment => {
+                    html += `
+                        <div class="payment-item">
+                            <h3>${payment.stage_name}</h3>
+                            <p><strong>Amount:</strong> ₹${payment.requested_amount}</p>
+                            <p><strong>Status:</strong> ${payment.status}</p>
+                            <p><strong>Completion:</strong> ${payment.completion_percentage}%</p>
+                            <p><strong>Description:</strong> ${payment.work_description}</p>
+                            <p><strong>Request Date:</strong> ${payment.request_date}</p>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div></div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Auto-run tests on page load
+        window.onload = function() {
+            log('🚀 Payment History Debug Fix Test Started', 'info');
+            log(`Testing with contractor_id=${contractorId}, project_id=${projectId}`, 'info');
+            log('📋 Expected Results:', 'info');
+            log('- Projects: Should find 1 project for contractor 29', 'info');
+            log('- Payment History: Should find 3 payment requests for project 1', 'info');
+            log('  • Site Preparation (PAID) - ₹1,50,000', 'info');
+            log('  • Foundation Work (APPROVED) - ₹3,50,000', 'info');
+            log('  • Column Construction (PENDING) - ₹2,80,000', 'info');
+            log('- Total Expected: ₹7,80,000 requested, ₹4,70,000 approved/paid', 'info');
+        };
+    </script>
+</body>
+</html>

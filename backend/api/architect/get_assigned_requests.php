@@ -53,7 +53,7 @@ try {
               JOIN layout_requests lr ON lr.id = a.layout_request_id
               JOIN users u ON u.id = a.homeowner_id
               LEFT JOIN layout_library ll ON lr.selected_layout_id = ll.id
-              WHERE a.architect_id = :aid
+              WHERE a.architect_id = :aid AND lr.status != 'deleted'
               ORDER BY a.created_at DESC";
 
     $stmt = $db->prepare($query);

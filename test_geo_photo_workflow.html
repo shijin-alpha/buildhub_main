@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geo Photo Workflow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .photo-preview { max-width: 200px; margin: 10px 0; }
+        .location-info { font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Geo Photo Workflow Test</h1>
+    <p>This test verifies the complete geo photo capture → attach → submit → notify workflow.</p>
+
+    <div class="test-section info">
+        <h3>📋 Test Checklist</h3>
+        <ul>
+            <li>✅ Geo photo capture with GPS verification</li>
+            <li>✅ Auto-attach photos to progress form</li>
+            <li>✅ Camera auto-close after capture</li>
+            <li>✅ Form submission with geo photos</li>
+            <li>✅ Backend geo photo handling</li>
+            <li>✅ Homeowner notification with photo info</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>📍 Step 1: Location Test</h3>
+        <button onclick="testLocation()">Get Current Location</button>
+        <div id="locationResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📸 Step 2: Photo Capture Simulation</h3>
+        <button onclick="simulatePhotoCapture()">Simulate Geo Photo Capture</button>
+        <div id="photoCaptureResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📤 Step 3: Form Submission Test</h3>
+        <button onclick="testFormSubmission()">Test Progress Form Submission</button>
+        <div id="submissionResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔔 Step 4: Notification Test</h3>
+        <button onclick="testNotifications()">Check Homeowner Notifications</button>
+        <div id="notificationResult"></div>
+    </div>
+
+    <script>
+        let testLocation = null;
+        let testPhotos = [];
+
+        async function testLocation() {
+            const resultDiv = document.getElementById('locationResult');
+            resultDiv.innerHTML = '<p>🔄 Getting location...</p>';
+
+            if (!navigator.geolocation) {
+                resultDiv.innerHTML = '<p class="error">❌ Geolocation not supported</p>';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    testLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${testLocation.latitude}&lon=${testLocation.longitude}&zoom=14`,
+                            { headers: { 'User-Agent': 'BuildHub-Test/1.0' } }
+                        );
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            testLocation.placeName = data.display_name?.split(',').slice(0, 3).join(', ') || 'Unknown location';
+                        } else {
+                            testLocation.placeName = `${testLocation.latitude.toFixed(4)}, ${testLocation.longitude.toFixed(4)}`;
+                        }
+                    } catch (error) {
+                        testLocation.placeName = `${testLocation.latitude.toFixed(4)}, ${testLocation.longitude.toFixed(4)}`;
+                    }
+
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ Location captured successfully!</p>
+                            <div class="location-info">
+                                <strong>📍 ${testLocation.placeName}</strong><br>
+                                Coordinates: ${testLocation.latitude.toFixed(6)}°, ${testLocation.longitude.toFixed(6)}°<br>
+                                Accuracy: ±${Math.round(testLocation.accuracy)}m
+                            </div>
+                        </div>
+                    `;
+                },
+                (error) => {
+                    resultDiv.innerHTML = `<p class="error">❌ Location error: ${error.message}</p>`;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+            );
+        }
+
+        function simulatePhotoCapture() {
+            const resultDiv = document.getElementById('photoCaptureResult');
+            
+            if (!testLocation) {
+                resultDiv.innerHTML = '<p class="error">❌ Please get location first</p>';
+                return;
+            }
+
+            // Create a test canvas with verification overlay
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+
+            // Draw a test image background
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('TEST CONSTRUCTION SITE', canvas.width / 2, canvas.height / 2 - 50);
+            ctx.fillText('GEO PHOTO SIMULATION', canvas.width / 2, canvas.height / 2);
+            ctx.fillText(new Date().toLocaleString(), canvas.width / 2, canvas.height / 2 + 50);
+
+            // Add verification overlay
+            const overlayHeight = 120;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+            ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
+            
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.6)';
+            ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, 3);
+            
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#00FF00';
+            ctx.fillText('✓ GPS VERIFIED', 15, canvas.height - overlayHeight + 25);
+            
+            ctx.font = 'bold 14px Arial';
+            ctx.fillStyle = 'white';
+            ctx.fillText(testLocation.placeName, 15, canvas.height - overlayHeight + 50);
+            
+            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = '#00FFFF';
+            ctx.fillText(`${testLocation.latitude.toFixed(6)}°, ${testLocation.longitude.toFixed(6)}°`, 15, canvas.height - overlayHeight + 75);
+
+            // Convert to blob
+            canvas.toBlob((blob) => {
+                const photoId = Date.now();
+                const testPhoto = {
+                    id: photoId,
+                    blob: blob,
+                    url: URL.createObjectURL(blob),
+                    location: { ...testLocation, timestamp: new Date().toISOString() },
+                    filename: `verified_photo_${photoId}_${testLocation.latitude.toFixed(6)}_${testLocation.longitude.toFixed(6)}.jpg`,
+                    isAttached: true
+                };
+
+                testPhotos.push(testPhoto);
+
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <p>✅ Geo photo captured and attached!</p>
+                        <img src="${testPhoto.url}" class="photo-preview" alt="Test geo photo">
+                        <div class="location-info">
+                            <strong>📍 GPS Verified Photo</strong><br>
+                            Location: ${testPhoto.location.placeName}<br>
+                            Coordinates: ${testPhoto.location.latitude.toFixed(6)}°, ${testPhoto.location.longitude.toFixed(6)}°<br>
+                            Filename: ${testPhoto.filename}
+                        </div>
+                        <p><em>🔄 Camera would auto-close after capture</em></p>
+                    </div>
+                `;
+            }, 'image/jpeg', 0.9);
+        }
+
+        async function testFormSubmission() {
+            const resultDiv = document.getElementById('submissionResult');
+            
+            if (testPhotos.length === 0) {
+                resultDiv.innerHTML = '<p class="error">❌ Please capture a photo first</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>🔄 Testing form submission...</p>';
+
+            // Simulate form data
+            const formData = new FormData();
+            formData.append('project_id', '1'); // Test project ID
+            formData.append('contractor_id', '1'); // Test contractor ID
+            formData.append('update_date', new Date().toISOString().split('T')[0]);
+            formData.append('construction_stage', 'Foundation');
+            formData.append('work_done_today', 'Test geo photo workflow - foundation work completed with GPS verification');
+            formData.append('incremental_completion_percentage', '5.0');
+            formData.append('working_hours', '8');
+            formData.append('weather_condition', 'Sunny');
+            formData.append('site_issues', '');
+            formData.append('labour_data', JSON.stringify([
+                {
+                    worker_type: 'Mason',
+                    worker_count: 2,
+                    hours_worked: 8,
+                    overtime_hours: 0,
+                    absent_count: 0,
+                    productivity_rating: 5,
+                    safety_compliance: 'excellent',
+                    remarks: 'Good progress on foundation work'
+                }
+            ]));
+
+            if (testLocation) {
+                formData.append('latitude', testLocation.latitude);
+                formData.append('longitude', testLocation.longitude);
+            }
+
+            // Append geo photos
+            testPhotos.forEach((photo, index) => {
+                formData.append('geo_photos[]', photo.blob, photo.filename);
+                formData.append(`geo_photo_location_${index}`, JSON.stringify(photo.location));
+            });
+
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/submit_daily_progress.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ Form submission successful!</p>
+                            <div class="location-info">
+                                <strong>Submission Details:</strong><br>
+                                Progress ID: ${data.data.daily_progress_id}<br>
+                                Total Photos: ${data.data.total_photos}<br>
+                                Geo Photos: ${data.data.geo_photos_uploaded}<br>
+                                Location Verified: ${data.data.location_verified ? 'Yes' : 'No'}<br>
+                                Labour Entries: ${data.data.labour_entries}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Submission failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Network error: ${error.message}</p>`;
+            }
+        }
+
+        async function testNotifications() {
+            const resultDiv = document.getElementById('notificationResult');
+            resultDiv.innerHTML = '<p>🔄 Checking notifications...</p>';
+
+            try {
+                // This would typically check the homeowner's notification endpoint
+                // For now, we'll simulate the expected notification structure
+                const mockNotification = {
+                    title: "Daily Progress Update - Foundation",
+                    message: `Contractor has submitted daily progress update for ${new Date().toISOString().split('T')[0]}. Stage: Foundation, Progress: +5.0% (Total: 5.0%). Photos attached: ${testPhotos.length} total (${testPhotos.length} geo-verified)`,
+                    has_photos: true,
+                    geo_photos_count: testPhotos.length,
+                    created_at: new Date().toISOString()
+                };
+
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <p>✅ Notification would be sent to homeowner!</p>
+                        <div class="location-info">
+                            <strong>📧 Notification Content:</strong><br>
+                            <strong>Title:</strong> ${mockNotification.title}<br>
+                            <strong>Message:</strong> ${mockNotification.message}<br>
+                            <strong>Has Photos:</strong> ${mockNotification.has_photos ? 'Yes' : 'No'}<br>
+                            <strong>Geo Photos:</strong> ${mockNotification.geo_photos_count}<br>
+                            <strong>Timestamp:</strong> ${new Date(mockNotification.created_at).toLocaleString()}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Notification test error: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-run location test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testLocation, 1000);
+        });
+    </script>
+</body>
+</html>

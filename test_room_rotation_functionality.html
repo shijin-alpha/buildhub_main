@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Rotation Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-header {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        .test-steps {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .test-steps h4 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        .step {
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+        .expected-result {
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #28a745;
+            margin: 10px 0;
+        }
+        .keyboard-shortcuts {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .shortcut-key {
+            background: #495057;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .improvement-list {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #0ea5e9;
+        }
+        .improvement-list h4 {
+            color: #0369a1;
+            margin-top: 0;
+        }
+        .feature {
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+        .feature::before {
+            content: "✓ ";
+            color: #059669;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-header">🔄 Room Rotation Functionality Test</h1>
+        
+        <div class="test-section">
+            <h3>📋 Test Overview</h3>
+            <p>This test verifies that the room rotation feature in the HousePlanDrawer component is working correctly and provides a good user experience.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 What Was Fixed</h3>
+            <div class="improvement-list">
+                <h4>Rotation Handle Improvements:</h4>
+                <div class="feature">Increased rotation handle size from 12px to 16px for better clickability</div>
+                <div class="feature">Increased handle distance from room center (25px → 30px) for better visibility</div>
+                <div class="feature">Enhanced visual styling with thicker border and larger rotation icon</div>
+                <div class="feature">Improved rotation snapping from 15° to 5° increments for smoother rotation</div>
+                <div class="feature">Removed debug console logging for cleaner experience</div>
+                <div class="feature">Added visual feedback during rotation (red angle text)</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎮 Testing Instructions</h3>
+            
+            <div class="test-steps">
+                <h4>Step 1: Access House Plan Drawer</h4>
+                <div class="step">1. Navigate to the architect dashboard or house plan creation page</div>
+                <div class="step">2. Open the House Plan Drawer component</div>
+                <div class="step">3. Create a new plan or open an existing one</div>
+            </div>
+
+            <div class="test-steps">
+                <h4>Step 2: Add a Room</h4>
+                <div class="step">1. Select a room template from the left panel (e.g., "Bedroom")</div>
+                <div class="step">2. Click on the canvas to place the room</div>
+                <div class="step">3. The room should appear with default 0° rotation</div>
+            </div>
+
+            <div class="test-steps">
+                <h4>Step 3: Test Mouse Rotation</h4>
+                <div class="step">1. Click on the room to select it (blue border should appear)</div>
+                <div class="step">2. Look for the red rotation handle with ↻ icon outside the room</div>
+                <div class="step">3. Click and drag the red rotation handle</div>
+                <div class="step">4. The room should rotate smoothly in 5° increments</div>
+                <div class="step">5. The rotation angle should be displayed above the room</div>
+                <div class="step">6. During rotation, the angle text should turn red</div>
+            </div>
+
+            <div class="expected-result">
+                <strong>Expected Result:</strong> The room rotates smoothly as you drag the handle, with the angle snapping to 5° increments. The rotation handle should be easily clickable and visible.
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>⌨️ Keyboard Shortcuts Test</h3>
+            
+            <div class="keyboard-shortcuts">
+                <h4>New Rotation Shortcuts:</h4>
+                <div class="step"><span class="shortcut-key">R</span> - Rotate 15° clockwise</div>
+                <div class="step"><span class="shortcut-key">E</span> - Rotate 15° counter-clockwise</div>
+                <div class="step"><span class="shortcut-key">T</span> - Rotate 90° clockwise</div>
+                <div class="step"><span class="shortcut-key">Q</span> - Reset rotation to 0°</div>
+            </div>
+
+            <div class="test-steps">
+                <h4>Keyboard Testing Steps:</h4>
+                <div class="step">1. Select a room</div>
+                <div class="step">2. Press <span class="shortcut-key">R</span> key - room should rotate 15° clockwise</div>
+                <div class="step">3. Press <span class="shortcut-key">E</span> key - room should rotate 15° counter-clockwise</div>
+                <div class="step">4. Press <span class="shortcut-key">T</span> key - room should rotate 90° clockwise</div>
+                <div class="step">5. Press <span class="shortcut-key">Q</span> key - room should reset to 0° rotation</div>
+                <div class="step">6. Each action should show a notification with the new angle</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎛️ Room Properties Panel Test</h3>
+            
+            <div class="test-steps">
+                <h4>Panel Controls Testing:</h4>
+                <div class="step">1. Select a room to open the Room Properties panel on the left</div>
+                <div class="step">2. Find the "Rotation" section in the properties panel</div>
+                <div class="step">3. Test the angle input field - enter a custom angle (e.g., 45)</div>
+                <div class="step">4. Test the rotation buttons:</div>
+                <div class="step">   • ↺ -15° button (counter-clockwise)</div>
+                <div class="step">   • ↻ +15° button (clockwise)</div>
+                <div class="step">   • ↻ 90° button (90° clockwise)</div>
+                <div class="step">   • ⟲ Reset button (back to 0°)</div>
+            </div>
+
+            <div class="expected-result">
+                <strong>Expected Result:</strong> All rotation controls should work smoothly and update both the visual room and the angle display in real-time.
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Visual Feedback Test</h3>
+            
+            <div class="test-steps">
+                <h4>Visual Elements to Verify:</h4>
+                <div class="step">1. <strong>Rotation Handle:</strong> Red circle with ↻ icon, clearly visible and clickable</div>
+                <div class="step">2. <strong>Connection Line:</strong> Dashed line from room center to rotation handle</div>
+                <div class="step">3. <strong>Angle Display:</strong> Shows current rotation angle above the room</div>
+                <div class="step">4. <strong>Active Rotation:</strong> Angle text turns red during rotation</div>
+                <div class="step">5. <strong>Cursor Feedback:</strong> Cursor changes to crosshair when rotating</div>
+                <div class="step">6. <strong>Room Rendering:</strong> Room shape rotates correctly around its center</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚨 Common Issues to Check</h3>
+            
+            <div class="test-steps">
+                <h4>Potential Problems:</h4>
+                <div class="step">1. <strong>Handle Too Small:</strong> If rotation handle is hard to click, it may be too small</div>
+                <div class="step">2. <strong>Rotation Jumpy:</strong> If rotation feels jerky, snapping might be too aggressive</div>
+                <div class="step">3. <strong>No Visual Feedback:</strong> If angle doesn't show during rotation</div>
+                <div class="step">4. <strong>Keyboard Not Working:</strong> If shortcuts don't respond when room is selected</div>
+                <div class="step">5. <strong>Handle Position Wrong:</strong> If handle appears in wrong position relative to room</div>
+            </div>
+
+            <div class="expected-result">
+                <strong>All Issues Should Be Fixed:</strong> The rotation feature should now be smooth, responsive, and user-friendly with multiple interaction methods.
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Success Criteria</h3>
+            <div class="improvement-list">
+                <h4>The rotation feature passes if:</h4>
+                <div class="feature">Rotation handle is easily visible and clickable</div>
+                <div class="feature">Mouse rotation works smoothly with 5° snapping</div>
+                <div class="feature">All keyboard shortcuts (R, E, T, Q) work correctly</div>
+                <div class="feature">Room properties panel rotation controls work</div>
+                <div class="feature">Visual feedback is clear during rotation</div>
+                <div class="feature">Room rotates around its center point correctly</div>
+                <div class="feature">No console errors or debug messages appear</div>
+                <div class="feature">Rotation state persists when saving/loading plans</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive elements to make the test page more engaging
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers to shortcut keys for demonstration
+            const shortcutKeys = document.querySelectorAll('.shortcut-key');
+            shortcutKeys.forEach(key => {
+                key.addEventListener('click', function() {
+                    this.style.backgroundColor = '#28a745';
+                    setTimeout(() => {
+                        this.style.backgroundColor = '#495057';
+                    }, 200);
+                });
+            });
+
+            // Add a simple progress indicator
+            const features = document.querySelectorAll('.feature');
+            features.forEach((feature, index) => {
+                setTimeout(() => {
+                    feature.style.opacity = '0.5';
+                    feature.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => {
+                        feature.style.opacity = '1';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

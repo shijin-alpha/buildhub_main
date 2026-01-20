@@ -83,6 +83,25 @@ try {
         // Column might already exist
     }
 
+    // Extract layout images from technical details for contractor viewing
+    $layout_images = [];
+    $layout_image_url = null;
+    
+    if (isset($house_plan_data['technical_details']['layout_image']) && is_array($house_plan_data['technical_details']['layout_image'])) {
+        $layoutImage = $house_plan_data['technical_details']['layout_image'];
+        if (!empty($layoutImage['name']) && (!isset($layoutImage['uploaded']) || $layoutImage['uploaded'] === true)) {
+            $storedName = $layoutImage['stored'] ?? $layoutImage['name'];
+            $layout_image_url = '/buildhub/backend/uploads/house_plans/' . $storedName;
+            $layout_images[] = [
+                'original' => $layoutImage['name'],
+                'stored' => $storedName,
+                'url' => $layout_image_url,
+                'path' => $layout_image_url,
+                'type' => 'layout_image'
+            ];
+        }
+    }
+    
     // Prepare comprehensive payload for contractor
     $payload = [
         'type' => 'house_plan',
@@ -93,11 +112,19 @@ try {
         'technical_details' => $house_plan_data['technical_details'] ?? [],
         'plan_data' => $house_plan_data['plan_data'] ?? [],
         'architect_info' => $house_plan_data['architect_info'] ?? [],
-        'layout_images' => $house_plan_data['layout_images'] ?? [],
+        'layout_images' => $layout_images,
+        'layout_image_url' => $layout_image_url, // Primary layout image for quick display
         'notes' => $house_plan_data['notes'] ?? '',
         'message' => $message,
         'sent_at' => date('Y-m-d H:i:s'),
-        'homeowner_id' => $homeowner_id
+        'homeowner_id' => $homeowner_id,
+        // Add forwarded_design structure for compatibility with existing frontend
+        'forwarded_design' => [
+            'title' => $house_plan_data['plan_name'] ?? 'House Plan',
+            'description' => $house_plan_data['notes'] ?? 'House plan with technical specifications',
+            'technical_details' => $house_plan_data['technical_details'] ?? [],
+            'files' => $layout_images
+        ]
     ];
 
     // Insert the house plan send record

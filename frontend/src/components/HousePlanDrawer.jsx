@@ -43,13 +43,22 @@ const HousePlanDrawer = ({
 
   // Auto-save functionality state
   const [autoSaveTimer, setAutoSaveTimer] = useState(null);
+  const [periodicSaveTimer, setPeriodicSaveTimer] = useState(null);
   const [lastSaved, setLastSaved] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [autoSaveInProgress, setAutoSaveInProgress] = useState(false);
+
+  // Mouse interaction state
+  const [mouseDownTime, setMouseDownTime] = useState(null);
+  const [mouseDownPos, setMouseDownPos] = useState(null);
+  const [isDragCandidate, setIsDragCandidate] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
 
   // Tour and Help state
   const [showTour, setShowTour] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
 
   // Requirements display state
   const [showRequirements, setShowRequirements] = useState(true);
@@ -67,6 +76,7 @@ const HousePlanDrawer = ({
   const [currentFloor, setCurrentFloor] = useState(1);
   const [totalFloors, setTotalFloors] = useState(1);
   const [floorNames, setFloorNames] = useState({ 1: 'Ground Floor' });
+  const [floorOffsets, setFloorOffsets] = useState({ 1: { x: 0, y: 0 } }); // Custom positioning for each floor
 
   // Plan data - Initialize with proper handling of existing plan
   const [planData, setPlanData] = useState(() => {
@@ -106,6 +116,235 @@ const HousePlanDrawer = ({
   const GRID_SIZE = 20;
   const PIXELS_PER_FOOT = 20; // Layout scale: 1 foot = 20 pixels
   const RESIZE_HANDLE_SIZE = 8;
+  const ROTATION_HANDLE_SIZE = 16; // Larger rotation handle for better usability
+
+  // Helper functions that need to be available early
+  const loadRoomTemplates = async () => {
+    try {
+      const response = await fetch('/buildhub/backend/api/architect/get_room_templates.php');
+      const result = await response.json();
+      if (result.success) {
+        setRoomTemplates(result.grouped);
+      }
+    } catch (error) {
+      console.error('Error loading room templates:', error);
+    }
+  };
+
+  // Get color based on room type for better visual identification
+  const getRoomColor = (roomType) => {
+    const colorMap = {
+      // Bedrooms (Green tones)
+      'master_bedroom': '#c8e6c9',
+      'bedroom': '#dcedc8',
+      'bedrooms': '#dcedc8',
+      'guest_bedroom': '#e8f5e8',
+      'kids_bedroom': '#f1f8e9',
+      
+      // Bathrooms (Blue tones)
+      'master_bathroom': '#b3e5fc',
+      'bathroom': '#e1f5fe',
+      'bathrooms': '#e1f5fe',
+      'attached_bathroom': '#e3f2fd',
+      'powder_room': '#f0f8ff',
+      
+      // Kitchen (Pink/Red tones)
+      'kitchen': '#ffcdd2',
+      'modular_kitchen': '#f8bbd9',
+      'pantry': '#fce4ec',
+      
+      // Living Areas (Orange tones)
+      'living_room': '#ffe0b2',
+      'family_room': '#ffcc80',
+      'drawing_room': '#fff3e0',
+      'tv_lounge': '#ffe0b2',
+      
+      // Dining Areas (Purple tones)
+      'dining_room': '#e1bee7',
+      'breakfast_area': '#f3e5f5',
+      
+      // Utility Areas (Gray tones)
+      'utility_room': '#e0e0e0',
+      'laundry_room': '#eeeeee',
+      'store_room': '#f5f5f5',
+      'servant_room': '#e8eaf6',
+      
+      // Outdoor Areas (Light Green tones)
+      'balcony': '#c8e6c9',
+      'terrace': '#dcedc8',
+      'garden': '#e8f5e8',
+      'courtyard': '#f1f8e9',
+      
+      // Circulation Areas (Yellow tones)
+      'corridor': '#fff9c4',
+      'hallway': '#fff59d',
+      'passage': '#ffecb3',
+      'entrance_hall': '#ffe082',
+      'foyer': '#ffd54f',
+      
+      // Structural Elements (Brown tones)
+      'staircase': '#d7ccc8',
+      'spiral_staircase': '#bcaaa4',
+      'elevator_shaft': '#a1887f',
+      'column': '#8d6e63',
+      'beam_area': '#795548',
+      
+      // Other Special Rooms (Light Purple tones)
+      'study_room': '#e8eaf6',
+      'home_office': '#c5cae9',
+      'pooja_room': '#d1c4e9',
+      'prayer_room': '#b39ddb',
+      'home_theater': '#9575cd',
+      'gym': '#7e57c2',
+      'library': '#673ab7',
+      'music_room': '#5e35b1',
+      'workshop': '#512da8',
+      'safe_room': '#4527a0'
+    };
+    
+    return colorMap[roomType] || '#e3f2fd'; // Default light blue
+  };
+
+  const loadRequestInfo = async () => {
+    try {
+      let assignment = requestInfo;
+      
+      // If requestInfo is not passed, fetch it
+      if (!assignment && layoutRequestId) {
+        const response = await fetch(`/buildhub/backend/api/architect/get_assigned_requests.php`);
+        const result = await response.json();
+        
+        if (result.success) {
+          assignment = result.assignments?.find(a => 
+            a.layout_request_id === layoutRequestId || 
+            a.layout_request?.id === layoutRequestId
+          );
+        }
+      }
+      
+      if (assignment && assignment.layout_request) {
+        const request = assignment.layout_request;
+        
+        // Parse requirements to get room specifications
+        let requirements = null;
+        if (request.requirements) {
+          try {
+            requirements = typeof request.requirements === 'string' 
+              ? JSON.parse(request.requirements) 
+              : request.requirements;
+          } catch (e) {
+            console.error('Error parsing requirements:', e);
+          }
+        }
+        
+        // Set requirements data for display
+        setRequirementsData({
+          ...request,
+          homeowner_name: assignment.homeowner?.name || assignment.homeowner?.first_name + ' ' + assignment.homeowner?.last_name || 'Client',
+          parsed_requirements: requirements
+        });
+        
+        // Update plan data with request information
+        setPlanData(prev => ({
+          ...prev,
+          plan_name: `${assignment.homeowner?.name || 'Client'} House Plan`,
+          plot_width: parseFloat(request.plot_size) || 100,
+          plot_height: parseFloat(request.plot_size) || 100, // Assuming square plot if only one dimension
+          scale_ratio: prev.scale_ratio || 1.2 // Ensure scale_ratio is available
+        }));
+        
+        // Pre-populate rooms based on requirements
+        if (requirements) {
+          const prePopulatedRooms = [];
+          let roomId = 1;
+          let currentY = 50; // Starting Y position
+          const currentScaleRatio = 1.2; // Use default scale ratio during initialization
+          
+          // Handle floor_rooms if available
+          if (requirements.floor_rooms) {
+            Object.entries(requirements.floor_rooms).forEach(([floorKey, floorRooms]) => {
+              const floorNumber = parseInt(floorKey.replace('floor', ''));
+              let currentX = 50; // Starting X position for each floor
+              
+              Object.entries(floorRooms).forEach(([roomType, count]) => {
+                const roomCount = typeof count === 'number' ? count : 1;
+                
+                for (let i = 0; i < roomCount; i++) {
+                  const roomName = roomCount > 1 ? `${roomType.replace(/_/g, ' ')} ${i + 1}` : roomType.replace(/_/g, ' ');
+                  
+                  const floorOffset = floorOffsets[floorNumber] || { x: 0, y: (floorNumber - 1) * 300 }; // Default to 300px spacing if not set
+                  
+                  prePopulatedRooms.push({
+                    id: roomId++,
+                    name: roomName,
+                    type: roomType,
+                    x: currentX + floorOffset.x,
+                    y: currentY + floorOffset.y, // Use custom floor offset
+                    layout_width: 10, // Updated default layout width in feet
+                    layout_height: 10, // Updated default layout height in feet
+                    actual_width: 10 * currentScaleRatio,
+                    actual_height: 10 * currentScaleRatio,
+                    rotation: 0, // Add rotation property
+                    color: getRoomColor(roomType),
+                    floor: floorNumber
+                  });
+                  
+                  currentX += 140; // Space rooms horizontally
+                  if (currentX > 400) { // Wrap to next row
+                    currentX = 50;
+                    currentY += 120;
+                  }
+                }
+              });
+            });
+          } 
+          // Handle simple rooms list if floor_rooms not available
+          else if (requirements.rooms) {
+            const roomsList = typeof requirements.rooms === 'string' 
+              ? requirements.rooms.split(',').map(r => r.trim())
+              : requirements.rooms;
+            
+            let currentX = 50;
+            
+            roomsList.forEach((roomType) => {
+              prePopulatedRooms.push({
+                id: roomId++,
+                name: roomType.replace(/_/g, ' '),
+                type: roomType,
+                x: currentX,
+                y: currentY,
+                layout_width: 10, // Updated default layout width in feet
+                layout_height: 10, // Updated default layout height in feet
+                actual_width: 10 * currentScaleRatio,
+                actual_height: 10 * currentScaleRatio,
+                rotation: 0, // Add rotation property
+                color: getRoomColor(roomType),
+                floor: 1
+              });
+              
+              currentX += 140;
+              if (currentX > 400) {
+                currentX = 50;
+                currentY += 120;
+              }
+            });
+          }
+          
+          // Update plan data with pre-populated rooms
+          if (prePopulatedRooms.length > 0) {
+            setPlanData(prev => ({
+              ...prev,
+              rooms: prePopulatedRooms
+            }));
+            
+            showInfo('Rooms Pre-loaded', `Added ${prePopulatedRooms.length} rooms based on client requirements`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading request info:', error);
+    }
+  };
 
   useEffect(() => {
     loadRoomTemplates();
@@ -132,19 +371,40 @@ const HousePlanDrawer = ({
     return () => clearTimeout(timer);
   }, []); // Only run once on mount
 
-  // Warn user about unsaved changes when leaving
+  // Warn user about unsaved changes when leaving and auto-save
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = async (e) => {
       if (hasUnsavedChanges) {
+        // Try to save immediately before leaving
+        if (!autoSaveInProgress) {
+          try {
+            await handleAutoSave();
+          } catch (error) {
+            console.error('Failed to auto-save before leaving:', error);
+          }
+        }
+        
         e.preventDefault();
-        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-        return 'You have unsaved changes. Are you sure you want to leave?';
+        e.returnValue = 'You have unsaved changes. Your work has been auto-saved as a draft.';
+        return 'You have unsaved changes. Your work has been auto-saved as a draft.';
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      // Auto-save when tab becomes hidden (user switches tabs)
+      if (document.hidden && hasUnsavedChanges && !autoSaveInProgress) {
+        handleAutoSave();
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [hasUnsavedChanges, autoSaveInProgress]);
 
   // Handle existing plan changes (when switching between edit modes)
   useEffect(() => {
@@ -176,11 +436,13 @@ const HousePlanDrawer = ({
         setTotalFloors(parsedPlanData.floors.total_floors || 1);
         setCurrentFloor(parsedPlanData.floors.current_floor || 1);
         setFloorNames(parsedPlanData.floors.floor_names || { 1: 'Ground Floor' });
+        setFloorOffsets(parsedPlanData.floors.floor_offsets || { 1: { x: 0, y: 0 } });
       } else {
         // Initialize default floor info for existing plans without floor data
         setTotalFloors(1);
         setCurrentFloor(1);
         setFloorNames({ 1: 'Ground Floor' });
+        setFloorOffsets({ 1: { x: 0, y: 0 } });
       }
       
       console.log('Setting plan data:', newPlanData); // Debug log
@@ -268,6 +530,174 @@ const HousePlanDrawer = ({
     }
   }, [history, historyIndex, showInfo]);
 
+  // Define updateSelectedRoom early to avoid initialization errors
+  const updateSelectedRoom = (updates) => {
+    if (selectedRoom === null) return;
+
+    setPlanData(prev => ({
+      ...prev,
+      rooms: prev.rooms.map((room, index) => 
+        index === selectedRoom ? { ...room, ...updates } : room
+      )
+    }));
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const deleteSelectedRoom = () => {
+    if (selectedRoom === null) return;
+
+    const roomName = planData.rooms[selectedRoom]?.name || `Room ${selectedRoom + 1}`;
+    
+    setPlanData(prev => ({
+      ...prev,
+      rooms: prev.rooms.filter((_, index) => index !== selectedRoom)
+    }));
+
+    setSelectedRoom(null);
+    setHasUnsavedChanges(true);
+    showWarning('Room Deleted', `"${roomName}" has been removed from your plan`);
+    
+    // Save immediately after room deletion
+    setTimeout(() => saveImmediately(), 100);
+  };
+
+  // Helper functions for area calculations
+  const calculateTotalArea = () => {
+    return planData.rooms.reduce((total, room) => {
+      const area = measurementMode === 'actual' 
+        ? (room.actual_width || room.layout_width * planData.scale_ratio) * 
+          (room.actual_height || room.layout_height * planData.scale_ratio)
+        : room.layout_width * room.layout_height;
+      return total + area;
+    }, 0);
+  };
+
+  const calculateConstructionArea = () => {
+    return planData.rooms.reduce((total, room) => {
+      const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
+      const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
+      return total + (actualWidth * actualHeight);
+    }, 0);
+  };
+
+  // Enhanced auto-save function with retry logic
+  const handleAutoSave = async (retryCount = 0) => {
+    // Prevent multiple simultaneous auto-saves
+    if (autoSaveInProgress) {
+      return;
+    }
+
+    // Don't auto-save if there's no meaningful data
+    if (!planData.plan_name.trim() && planData.rooms.length === 0) {
+      return;
+    }
+
+    setAutoSaveInProgress(true);
+
+    try {
+      const payload = {
+        plan_name: planData.plan_name || `Draft Plan ${new Date().toLocaleString()}`,
+        layout_request_id: layoutRequestId,
+        plot_width: planData.plot_width,
+        plot_height: planData.plot_height,
+        plan_data: {
+          rooms: planData.rooms,
+          scale_ratio: planData.scale_ratio,
+          total_layout_area: calculateTotalArea(),
+          total_construction_area: calculateConstructionArea(),
+          floors: {
+            total_floors: totalFloors,
+            current_floor: currentFloor,
+            floor_names: floorNames,
+            floor_offsets: floorOffsets
+          }
+        },
+        notes: planData.notes,
+        status: 'draft' // Always save as draft for auto-save
+      };
+
+      const url = existingPlan 
+        ? '/buildhub/backend/api/architect/update_house_plan.php'
+        : '/buildhub/backend/api/architect/create_house_plan.php';
+
+      if (existingPlan) {
+        payload.plan_id = existingPlan.id;
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        throw new Error(`JSON parse error: ${parseError.message}`);
+      }
+      
+      if (result.success) {
+        setLastSaved(new Date());
+        setHasUnsavedChanges(false);
+        
+        // Show success message only occasionally to avoid spam
+        if (retryCount === 0) {
+          showInfo('Auto-saved', 'Your changes have been automatically saved as draft', 2000);
+        }
+        
+        // Trigger real-time dashboard refresh for auto-saves
+        if (window.refreshDashboard) {
+          setTimeout(() => window.refreshDashboard(), 1000);
+        }
+        
+        // If this was a new plan that got saved, update our reference
+        if (result.plan_id && !existingPlan) {
+          console.log('Auto-save created new plan with ID:', result.plan_id);
+        }
+      } else {
+        throw new Error(result.message || 'Auto-save failed');
+      }
+    } catch (error) {
+      console.error('Auto-save error:', error);
+      
+      // Retry logic - try up to 3 times with exponential backoff
+      if (retryCount < 3) {
+        const retryDelay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        setTimeout(() => {
+          handleAutoSave(retryCount + 1);
+        }, retryDelay);
+      } else {
+        // Show error only after all retries failed
+        showError('Auto-save Failed', 'Unable to save changes automatically. Please save manually.', 5000);
+      }
+    } finally {
+      setAutoSaveInProgress(false);
+    }
+  };
+
+  // Immediate save for critical actions (room creation, deletion, major changes)
+  const saveImmediately = async () => {
+    // Clear any pending auto-save timer
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer);
+      setAutoSaveTimer(null);
+    }
+    
+    // Save immediately
+    await handleAutoSave();
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -286,11 +716,42 @@ const HousePlanDrawer = ({
         e.preventDefault();
         deleteSelectedRoom();
       }
+      
+      // Rotation shortcuts for selected room
+      if (selectedRoom !== null) {
+        const currentRoom = planData.rooms[selectedRoom];
+        if (currentRoom) {
+          if (e.key === 'r' || e.key === 'R') {
+            e.preventDefault();
+            // R key: rotate 15° clockwise
+            const newRotation = ((currentRoom.rotation || 0) + 15) % 360;
+            updateSelectedRoom({ rotation: newRotation });
+            showInfo('Room Rotated', `Rotated ${currentRoom.name} to ${newRotation}°`);
+          } else if (e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+            // E key: rotate 15° counter-clockwise
+            const newRotation = ((currentRoom.rotation || 0) - 15 + 360) % 360;
+            updateSelectedRoom({ rotation: newRotation });
+            showInfo('Room Rotated', `Rotated ${currentRoom.name} to ${newRotation}°`);
+          } else if (e.key === 't' || e.key === 'T') {
+            e.preventDefault();
+            // T key: rotate 90° clockwise
+            const newRotation = ((currentRoom.rotation || 0) + 90) % 360;
+            updateSelectedRoom({ rotation: newRotation });
+            showInfo('Room Rotated', `Rotated ${currentRoom.name} to ${newRotation}°`);
+          } else if (e.key === 'q' || e.key === 'Q') {
+            e.preventDefault();
+            // Q key: reset rotation to 0°
+            updateSelectedRoom({ rotation: 0 });
+            showInfo('Rotation Reset', `Reset ${currentRoom.name} rotation to 0°`);
+          }
+        }
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, selectedRoom]);
+  }, [undo, redo, selectedRoom, planData.rooms, updateSelectedRoom, showInfo]);
 
   // Save to history when rooms change (but not during undo/redo)
   useEffect(() => {
@@ -303,9 +764,9 @@ const HousePlanDrawer = ({
     }
   }, [planData.rooms, saveToHistory, isUndoRedo]);
 
-  // Auto-save when plan data changes
+  // Auto-save when plan data changes (more aggressive timing)
   useEffect(() => {
-    if (planData.plan_name && planData.rooms.length > 0 && !isUndoRedo) {
+    if ((planData.plan_name || planData.rooms.length > 0) && !isUndoRedo) {
       setHasUnsavedChanges(true);
       
       // Clear existing timer
@@ -313,10 +774,10 @@ const HousePlanDrawer = ({
         clearTimeout(autoSaveTimer);
       }
       
-      // Set new timer for auto-save (30 seconds after last change)
+      // Set new timer for auto-save (5 seconds after last change - much faster)
       const timer = setTimeout(() => {
         handleAutoSave();
-      }, 30000);
+      }, 5000); // Reduced from 30000 to 5000 (5 seconds)
       
       setAutoSaveTimer(timer);
     }
@@ -326,7 +787,24 @@ const HousePlanDrawer = ({
         clearTimeout(autoSaveTimer);
       }
     };
-  }, [planData, isUndoRedo]);
+  }, [planData, isUndoRedo, totalFloors, floorNames, floorOffsets]); // Added more dependencies
+
+  // Periodic auto-save every 2 minutes (as backup)
+  useEffect(() => {
+    const periodicTimer = setInterval(() => {
+      if (hasUnsavedChanges && !autoSaveInProgress) {
+        handleAutoSave();
+      }
+    }, 120000); // Every 2 minutes
+    
+    setPeriodicSaveTimer(periodicTimer);
+    
+    return () => {
+      if (periodicTimer) {
+        clearInterval(periodicTimer);
+      }
+    };
+  }, [hasUnsavedChanges, autoSaveInProgress]);
 
   // Define drawing functions first
   const drawGrid = () => {
@@ -409,81 +887,7 @@ const HousePlanDrawer = ({
     return (usePound ? '#' : '') + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
   };
 
-  // Get color based on room type for better visual identification
-  const getRoomColor = (roomType) => {
-    const colorMap = {
-      // Bedrooms (Green tones)
-      'master_bedroom': '#c8e6c9',
-      'bedroom': '#dcedc8',
-      'bedrooms': '#dcedc8',
-      'guest_bedroom': '#e8f5e8',
-      'kids_bedroom': '#f1f8e9',
-      
-      // Bathrooms (Blue tones)
-      'master_bathroom': '#b3e5fc',
-      'bathroom': '#e1f5fe',
-      'bathrooms': '#e1f5fe',
-      'attached_bathroom': '#e3f2fd',
-      'powder_room': '#f0f8ff',
-      
-      // Kitchen (Pink/Red tones)
-      'kitchen': '#ffcdd2',
-      'modular_kitchen': '#f8bbd9',
-      'pantry': '#fce4ec',
-      
-      // Living Areas (Orange tones)
-      'living_room': '#ffe0b2',
-      'family_room': '#ffcc80',
-      'drawing_room': '#fff3e0',
-      'tv_lounge': '#ffe0b2',
-      
-      // Dining Areas (Purple tones)
-      'dining_room': '#e1bee7',
-      'breakfast_area': '#f3e5f5',
-      
-      // Utility Areas (Gray tones)
-      'utility_room': '#e0e0e0',
-      'laundry_room': '#eeeeee',
-      'store_room': '#f5f5f5',
-      'servant_room': '#e8eaf6',
-      
-      // Outdoor Areas (Light Green tones)
-      'balcony': '#c8e6c9',
-      'terrace': '#dcedc8',
-      'garden': '#e8f5e8',
-      'courtyard': '#f1f8e9',
-      
-      // Circulation Areas (Yellow tones)
-      'corridor': '#fff9c4',
-      'hallway': '#fff59d',
-      'passage': '#ffecb3',
-      'entrance_hall': '#ffe082',
-      'foyer': '#ffd54f',
-      
-      // Structural Elements (Brown tones)
-      'staircase': '#d7ccc8',
-      'spiral_staircase': '#bcaaa4',
-      'elevator_shaft': '#a1887f',
-      'column': '#8d6e63',
-      'beam_area': '#795548',
-      
-      // Other Special Rooms (Light Purple tones)
-      'study_room': '#e8eaf6',
-      'home_office': '#c5cae9',
-      'pooja_room': '#d1c4e9',
-      'prayer_room': '#b39ddb',
-      'home_theater': '#9575cd',
-      'gym': '#7e57c2',
-      'library': '#673ab7',
-      'music_room': '#5e35b1',
-      'workshop': '#512da8',
-      'safe_room': '#4527a0'
-    };
-    
-    return colorMap[roomType] || '#e3f2fd'; // Default light blue
-  };
-
-  const drawRoom = (room, isSelected) => {
+  const drawRoom = (room, isSelected, isCurrentlyRotating = false) => {
     // Validate room properties to prevent non-finite values
     if (!room || typeof room.x !== 'number' || typeof room.y !== 'number' ||
         !isFinite(room.layout_width) || !isFinite(room.layout_height) ||
@@ -556,10 +960,10 @@ const HousePlanDrawer = ({
     // Room name
     canvas.fillText(room.name, centerX, centerY - 15);
     
-    // Show rotation angle if rotated
-    if (rotation !== 0) {
-      canvas.font = '9px Arial';
-      canvas.fillStyle = '#ff6b6b';
+    // Show rotation angle if rotated or currently rotating
+    if (rotation !== 0 || (isSelected && isCurrentlyRotating)) {
+      canvas.font = '10px Arial';
+      canvas.fillStyle = isCurrentlyRotating ? '#ff0000' : '#ff6b6b';
       canvas.fillText(`↻ ${rotation}°`, centerX, centerY - 30);
     }
     
@@ -624,13 +1028,14 @@ const HousePlanDrawer = ({
   const drawRotationHandle = (x, y, width, height, rotation) => {
     const centerX = x + width / 2;
     const centerY = y + height / 2;
-    const handleDistance = Math.max(width, height) / 2 + 20;
+    const handleDistance = Math.max(width, height) / 2 + 30; // Increased distance for better visibility
     
-    // Calculate rotation handle position
-    const handleX = centerX + Math.cos((rotation - 90) * Math.PI / 180) * handleDistance;
-    const handleY = centerY + Math.sin((rotation - 90) * Math.PI / 180) * handleDistance;
+    // Calculate rotation handle position (always at the top of the room when rotation is 0)
+    const handleAngle = (rotation - 90) * Math.PI / 180;
+    const handleX = centerX + Math.cos(handleAngle) * handleDistance;
+    const handleY = centerY + Math.sin(handleAngle) * handleDistance;
     
-    // Draw connection line
+    // Draw connection line from room center to handle
     canvas.strokeStyle = '#ff6b6b';
     canvas.lineWidth = 2;
     canvas.setLineDash([5, 5]);
@@ -640,20 +1045,20 @@ const HousePlanDrawer = ({
     canvas.stroke();
     canvas.setLineDash([]);
     
-    // Draw rotation handle
+    // Draw rotation handle circle (larger and more visible)
     canvas.fillStyle = '#ff6b6b';
     canvas.strokeStyle = '#fff';
-    canvas.lineWidth = 2;
+    canvas.lineWidth = 3;
     canvas.beginPath();
-    canvas.arc(handleX, handleY, RESIZE_HANDLE_SIZE, 0, 2 * Math.PI);
+    canvas.arc(handleX, handleY, ROTATION_HANDLE_SIZE, 0, 2 * Math.PI);
     canvas.fill();
     canvas.stroke();
     
-    // Draw rotation icon
+    // Draw rotation icon (curved arrow) - larger and more visible
     canvas.fillStyle = '#fff';
-    canvas.font = '12px Arial';
+    canvas.font = 'bold 16px Arial';
     canvas.textAlign = 'center';
-    canvas.fillText('↻', handleX, handleY + 4);
+    canvas.fillText('↻', handleX, handleY + 5);
   };
 
   const drawMeasurements = () => {
@@ -715,14 +1120,16 @@ const HousePlanDrawer = ({
     const currentFloorRooms = getCurrentFloorRooms();
     currentFloorRooms.forEach((room) => {
       const roomIndex = planData.rooms.findIndex(r => r.id === room.id);
-      drawRoom(room, roomIndex === selectedRoom);
+      const isSelected = roomIndex === selectedRoom;
+      const isCurrentlyRotating = isSelected && isRotating;
+      drawRoom(room, isSelected, isCurrentlyRotating);
     });
 
     // Draw measurements if enabled
     if (showMeasurements) {
       drawMeasurements();
     }
-  }, [canvas, planData, selectedRoom, showMeasurements, measurementMode, highlightedRoomType]);
+  }, [canvas, planData, selectedRoom, showMeasurements, measurementMode, highlightedRoomType, isRotating]);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -786,18 +1193,6 @@ const HousePlanDrawer = ({
     return () => window.removeEventListener('resize', handleResize);
   }, [drawCanvas, planData.plot_width, planData.plot_height]);
 
-  const loadRoomTemplates = async () => {
-    try {
-      const response = await fetch('/buildhub/backend/api/architect/get_room_templates.php');
-      const result = await response.json();
-      if (result.success) {
-        setRoomTemplates(result.grouped);
-      }
-    } catch (error) {
-      console.error('Error loading room templates:', error);
-    }
-  };
-
   // Helper function to format budget display
   const formatBudget = (budget) => {
     if (!budget) return 'N/A';
@@ -819,145 +1214,6 @@ const HousePlanDrawer = ({
     });
     
     return totalRooms;
-  };
-
-  const loadRequestInfo = async () => {
-    try {
-      let assignment = requestInfo;
-      
-      // If requestInfo is not passed, fetch it
-      if (!assignment && layoutRequestId) {
-        const response = await fetch(`/buildhub/backend/api/architect/get_assigned_requests.php`);
-        const result = await response.json();
-        
-        if (result.success) {
-          assignment = result.assignments?.find(a => 
-            a.layout_request_id === layoutRequestId || 
-            a.layout_request?.id === layoutRequestId
-          );
-        }
-      }
-      
-      if (assignment && assignment.layout_request) {
-        const request = assignment.layout_request;
-        
-        // Parse requirements to get room specifications
-        let requirements = null;
-        if (request.requirements) {
-          try {
-            requirements = typeof request.requirements === 'string' 
-              ? JSON.parse(request.requirements) 
-              : request.requirements;
-          } catch (e) {
-            console.error('Error parsing requirements:', e);
-          }
-        }
-        
-        // Set requirements data for display
-        setRequirementsData({
-          ...request,
-          homeowner_name: assignment.homeowner?.name || assignment.homeowner?.first_name + ' ' + assignment.homeowner?.last_name || 'Client',
-          parsed_requirements: requirements
-        });
-        
-        // Update plan data with request information
-        setPlanData(prev => ({
-          ...prev,
-          plan_name: `${assignment.homeowner?.name || 'Client'} House Plan`,
-          plot_width: parseFloat(request.plot_size) || 100,
-          plot_height: parseFloat(request.plot_size) || 100, // Assuming square plot if only one dimension
-          scale_ratio: prev.scale_ratio || 1.2 // Ensure scale_ratio is available
-        }));
-        
-        // Pre-populate rooms based on requirements
-        if (requirements) {
-          const prePopulatedRooms = [];
-          let roomId = 1;
-          let currentY = 50; // Starting Y position
-          const currentScaleRatio = 1.2; // Use default scale ratio during initialization
-          
-          // Handle floor_rooms if available
-          if (requirements.floor_rooms) {
-            Object.entries(requirements.floor_rooms).forEach(([floorKey, floorRooms]) => {
-              const floorNumber = parseInt(floorKey.replace('floor', ''));
-              let currentX = 50; // Starting X position for each floor
-              
-              Object.entries(floorRooms).forEach(([roomType, count]) => {
-                const roomCount = typeof count === 'number' ? count : 1;
-                
-                for (let i = 0; i < roomCount; i++) {
-                  const roomName = roomCount > 1 ? `${roomType.replace(/_/g, ' ')} ${i + 1}` : roomType.replace(/_/g, ' ');
-                  
-                  prePopulatedRooms.push({
-                    id: roomId++,
-                    name: roomName,
-                    type: roomType,
-                    x: currentX,
-                    y: currentY + (floorNumber - 1) * 200, // Offset floors vertically
-                    layout_width: 10, // Updated default layout width in feet
-                    layout_height: 10, // Updated default layout height in feet
-                    actual_width: 10 * currentScaleRatio,
-                    actual_height: 10 * currentScaleRatio,
-                    rotation: 0, // Add rotation property
-                    color: getRoomColor(roomType),
-                    floor: floorNumber
-                  });
-                  
-                  currentX += 140; // Space rooms horizontally
-                  if (currentX > 400) { // Wrap to next row
-                    currentX = 50;
-                    currentY += 120;
-                  }
-                }
-              });
-            });
-          } 
-          // Handle simple rooms list if floor_rooms not available
-          else if (requirements.rooms) {
-            const roomsList = typeof requirements.rooms === 'string' 
-              ? requirements.rooms.split(',').map(r => r.trim())
-              : requirements.rooms;
-            
-            let currentX = 50;
-            
-            roomsList.forEach((roomType) => {
-              prePopulatedRooms.push({
-                id: roomId++,
-                name: roomType.replace(/_/g, ' '),
-                type: roomType,
-                x: currentX,
-                y: currentY,
-                layout_width: 10, // Updated default layout width in feet
-                layout_height: 10, // Updated default layout height in feet
-                actual_width: 10 * currentScaleRatio,
-                actual_height: 10 * currentScaleRatio,
-                rotation: 0, // Add rotation property
-                color: getRoomColor(roomType),
-                floor: 1
-              });
-              
-              currentX += 140;
-              if (currentX > 400) {
-                currentX = 50;
-                currentY += 120;
-              }
-            });
-          }
-          
-          // Update plan data with pre-populated rooms
-          if (prePopulatedRooms.length > 0) {
-            setPlanData(prev => ({
-              ...prev,
-              rooms: prePopulatedRooms
-            }));
-            
-            showInfo('Rooms Pre-loaded', `Added ${prePopulatedRooms.length} rooms based on client requirements`);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error loading request info:', error);
-    }
   };
 
   const snapToGrid = (value) => {
@@ -1020,13 +1276,15 @@ const HousePlanDrawer = ({
   const getRotationHandle = (x, y, roomX, roomY, roomWidth, roomHeight, rotation) => {
     const centerX = roomX + roomWidth / 2;
     const centerY = roomY + roomHeight / 2;
-    const handleDistance = Math.max(roomWidth, roomHeight) / 2 + 20;
+    const handleDistance = Math.max(roomWidth, roomHeight) / 2 + 30; // Match the increased distance
     
-    const handleX = centerX + Math.cos((rotation - 90) * Math.PI / 180) * handleDistance;
-    const handleY = centerY + Math.sin((rotation - 90) * Math.PI / 180) * handleDistance;
+    const handleAngle = (rotation - 90) * Math.PI / 180;
+    const handleX = centerX + Math.cos(handleAngle) * handleDistance;
+    const handleY = centerY + Math.sin(handleAngle) * handleDistance;
     
     const distance = Math.sqrt(Math.pow(x - handleX, 2) + Math.pow(y - handleY, 2));
-    return distance <= RESIZE_HANDLE_SIZE ? 'rotate' : null;
+    // Use the larger rotation handle size for better clickability
+    return distance <= ROTATION_HANDLE_SIZE ? 'rotate' : null;
   };
 
   const handleRoomRotation = (event) => {
@@ -1045,20 +1303,27 @@ const HousePlanDrawer = ({
     const centerX = roomX + roomWidth / 2;
     const centerY = roomY + roomHeight / 2;
     
-    // Calculate angle from center to mouse
-    const angle = Math.atan2(coords.y - centerY, coords.x - centerX) * 180 / Math.PI;
+    // Calculate angle from center to mouse position
+    let angle = Math.atan2(coords.y - centerY, coords.x - centerX) * 180 / Math.PI;
     
-    // Snap to 15-degree increments
-    const snappedAngle = Math.round(angle / 15) * 15;
+    // Normalize angle to 0-360 degrees
+    if (angle < 0) {
+      angle += 360;
+    }
     
-    updateSelectedRoom({ rotation: snappedAngle });
+    // Adjust angle to make rotation more intuitive (0 degrees = top)
+    angle = (angle + 90) % 360;
+    
+    // Snap to 5-degree increments for smoother rotation (reduced from 15 degrees)
+    const snappedAngle = Math.round(angle / 5) * 5;
+    
+    // Ensure angle stays within 0-359 range
+    const finalAngle = snappedAngle % 360;
+    
+    updateSelectedRoom({ rotation: finalAngle });
   };
 
-  // Add state for tracking mouse interactions
-  const [mouseDownTime, setMouseDownTime] = useState(null);
-  const [mouseDownPos, setMouseDownPos] = useState(null);
-  const [isDragCandidate, setIsDragCandidate] = useState(false);
-  const [isRotating, setIsRotating] = useState(false);
+
 
   const handleCanvasMouseDown = (event) => {
     const coords = getCanvasCoordinates(event);
@@ -1314,6 +1579,9 @@ const HousePlanDrawer = ({
     setSelectedRoom(planData.rooms.length);
     setHasUnsavedChanges(true);
     showSuccess('Room Added', `${template.name} has been added to ${floorNames[currentFloor] || `Floor ${currentFloor}`}`);
+    
+    // Save immediately after room addition
+    setTimeout(() => saveImmediately(), 100);
   };
 
   // Quick room addition for common circulation and structural elements
@@ -1352,131 +1620,6 @@ const HousePlanDrawer = ({
     showSuccess('Element Added', `${name} has been added to ${floorNames[currentFloor] || `Floor ${currentFloor}`}`);
   };
 
-  const updateSelectedRoom = (updates) => {
-    if (selectedRoom === null) return;
-
-    setPlanData(prev => ({
-      ...prev,
-      rooms: prev.rooms.map((room, index) => 
-        index === selectedRoom ? { ...room, ...updates } : room
-      )
-    }));
-    
-    setHasUnsavedChanges(true);
-  };
-
-  const deleteSelectedRoom = () => {
-    if (selectedRoom === null) return;
-
-    const roomName = planData.rooms[selectedRoom]?.name || `Room ${selectedRoom + 1}`;
-    
-    setPlanData(prev => ({
-      ...prev,
-      rooms: prev.rooms.filter((_, index) => index !== selectedRoom)
-    }));
-
-    setSelectedRoom(null);
-    setHasUnsavedChanges(true);
-    showWarning('Room Deleted', `"${roomName}" has been removed from your plan`);
-    // History will be saved automatically by the useEffect
-  };
-
-  const calculateTotalArea = () => {
-    return planData.rooms.reduce((total, room) => {
-      const area = measurementMode === 'actual' 
-        ? (room.actual_width || room.layout_width * planData.scale_ratio) * 
-          (room.actual_height || room.layout_height * planData.scale_ratio)
-        : room.layout_width * room.layout_height;
-      return total + area;
-    }, 0);
-  };
-
-  const calculateConstructionArea = () => {
-    return planData.rooms.reduce((total, room) => {
-      const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
-      const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
-      return total + (actualWidth * actualHeight);
-    }, 0);
-  };
-
-  // Auto-save function
-  const handleAutoSave = async () => {
-    if (!planData.plan_name.trim() || planData.rooms.length === 0) {
-      return;
-    }
-
-    try {
-      const payload = {
-        plan_name: planData.plan_name,
-        layout_request_id: layoutRequestId,
-        plot_width: planData.plot_width,
-        plot_height: planData.plot_height,
-        plan_data: {
-          rooms: planData.rooms,
-          scale_ratio: planData.scale_ratio,
-          total_layout_area: calculateTotalArea(),
-          total_construction_area: calculateConstructionArea(),
-          floors: {
-            total_floors: totalFloors,
-            current_floor: currentFloor,
-            floor_names: floorNames
-          }
-        },
-        notes: planData.notes,
-        status: 'draft'
-      };
-
-      const url = existingPlan 
-        ? '/buildhub/backend/api/architect/update_house_plan.php'
-        : '/buildhub/backend/api/architect/create_house_plan.php';
-
-      if (existingPlan) {
-        payload.plan_id = existingPlan.id;
-      }
-
-      console.log('Auto-saving plan...'); // Debug log
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'include', // Include session cookies
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        console.error('Auto-save HTTP error:', response.status, response.statusText);
-        return;
-      }
-
-      const responseText = await response.text();
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('Auto-save JSON parse error:', parseError);
-        return;
-      }
-      
-      if (result.success) {
-        setLastSaved(new Date());
-        setHasUnsavedChanges(false);
-        showInfo('Auto-saved', 'Your changes have been automatically saved');
-        
-        // If this was a new plan that got saved, update our reference
-        if (result.plan_id && !existingPlan) {
-          console.log('Auto-save created new plan with ID:', result.plan_id);
-        }
-      } else {
-        console.error('Auto-save failed:', result.message);
-      }
-    } catch (error) {
-      console.error('Auto-save error:', error);
-      // Don't show error notifications for auto-save failures to avoid spam
-    }
-  };
 
   const sendInboxMessage = async (recipientId, messageType, title, message, metadata = null, priority = 'normal') => {
     try {
@@ -1525,9 +1668,19 @@ const HousePlanDrawer = ({
       ...prev,
       [newFloorNumber]: `Floor ${newFloorNumber}`
     }));
+    
+    // Set default offset for new floor (can be customized later)
+    setFloorOffsets(prev => ({
+      ...prev,
+      [newFloorNumber]: { x: 0, y: newFloorNumber === 1 ? 0 : (newFloorNumber - 1) * 300 }
+    }));
+    
     setCurrentFloor(newFloorNumber);
     showSuccess('Floor Added', `Floor ${newFloorNumber} has been added to your plan`);
     setHasUnsavedChanges(true);
+    
+    // Save immediately after floor addition
+    setTimeout(() => saveImmediately(), 100);
   };
 
   const removeFloor = (floorNumber) => {
@@ -1572,6 +1725,67 @@ const HousePlanDrawer = ({
     setCurrentFloor(floorNumber);
     setSelectedRoom(null); // Deselect any selected room when switching floors
     showInfo('Floor Switched', `Now viewing ${floorNames[floorNumber] || `Floor ${floorNumber}`}`);
+  };
+
+  // Floor positioning functions
+  const updateFloorOffset = (floorNumber, offsetX, offsetY) => {
+    setFloorOffsets(prev => ({
+      ...prev,
+      [floorNumber]: { x: offsetX, y: offsetY }
+    }));
+    
+    // Update all rooms on this floor with the new offset
+    setPlanData(prev => ({
+      ...prev,
+      rooms: prev.rooms.map(room => {
+        if (room.floor === floorNumber) {
+          const baseX = room.x - (prev.floorOffsets?.[floorNumber]?.x || 0);
+          const baseY = room.y - (prev.floorOffsets?.[floorNumber]?.y || 0);
+          return {
+            ...room,
+            x: baseX + offsetX,
+            y: baseY + offsetY
+          };
+        }
+        return room;
+      })
+    }));
+    
+    setHasUnsavedChanges(true);
+    showInfo('Floor Repositioned', `${floorNames[floorNumber]} position updated`);
+  };
+
+  const resetFloorPosition = (floorNumber) => {
+    const defaultY = floorNumber === 1 ? 0 : (floorNumber - 1) * 300;
+    updateFloorOffset(floorNumber, 0, defaultY);
+  };
+
+  const moveFloorRooms = (floorNumber, deltaX, deltaY) => {
+    setPlanData(prev => ({
+      ...prev,
+      rooms: prev.rooms.map(room => {
+        if (room.floor === floorNumber) {
+          return {
+            ...room,
+            x: room.x + deltaX,
+            y: room.y + deltaY
+          };
+        }
+        return room;
+      })
+    }));
+    
+    // Update floor offset to reflect the move
+    const currentOffset = floorOffsets[floorNumber] || { x: 0, y: 0 };
+    setFloorOffsets(prev => ({
+      ...prev,
+      [floorNumber]: { 
+        x: currentOffset.x + deltaX, 
+        y: currentOffset.y + deltaY 
+      }
+    }));
+    
+    setHasUnsavedChanges(true);
   };
 
   const updateFloorName = (floorNumber, newName) => {
@@ -1898,6 +2112,16 @@ const HousePlanDrawer = ({
           `Your house plan "${planData.plan_name}" with technical details has been submitted to the homeowner for review.`
         );
         
+        // Trigger real-time dashboard refresh
+        if (window.refreshDashboard) {
+          setTimeout(() => window.refreshDashboard(), 500);
+        }
+        
+        // Trigger parent component refresh if available
+        if (window.refreshHousePlans) {
+          setTimeout(() => window.refreshHousePlans(), 500);
+        }
+        
         if (onSave) {
           setTimeout(() => onSave(result), 1500);
         }
@@ -2114,6 +2338,16 @@ const HousePlanDrawer = ({
           console.log('New plan created with ID:', result.plan_id);
         }
         
+        // Trigger real-time dashboard refresh
+        if (window.refreshDashboard) {
+          setTimeout(() => window.refreshDashboard(), 500);
+        }
+        
+        // Trigger parent component refresh if available
+        if (window.refreshHousePlans) {
+          setTimeout(() => window.refreshHousePlans(), 500);
+        }
+        
         if (onSave) {
           setTimeout(() => onSave(result), 1500); // Delay to show success message
         }
@@ -2170,7 +2404,12 @@ const HousePlanDrawer = ({
               ● Unsaved Changes
             </span>
           )}
-          {lastSaved && (
+          {autoSaveInProgress && (
+            <span className="auto-save-indicator" title="Auto-saving your changes">
+              💾 Auto-saving...
+            </span>
+          )}
+          {lastSaved && !hasUnsavedChanges && (
             <span className="last-saved" title={`Last saved: ${lastSaved.toLocaleTimeString()}`}>
               Last saved: {lastSaved.toLocaleTimeString()}
             </span>
@@ -2192,6 +2431,13 @@ const HousePlanDrawer = ({
               title="Open user manual"
             >
               📖 Help
+            </button>
+            <button 
+              onClick={() => setShowKeyboardShortcuts(true)}
+              className="action-btn shortcuts-btn"
+              title="View keyboard shortcuts"
+            >
+              ⌨️ Shortcuts
             </button>
           </div>
           
@@ -2254,13 +2500,6 @@ const HousePlanDrawer = ({
             </button>
             <button onClick={handleSubmitToHomeowner} disabled={loading} className="submit-btn">
               {loading ? 'Submitting...' : 'Submit to Homeowner'}
-            </button>
-            <button 
-              onClick={() => window.open('/buildhub/backend/test_house_plan_save.php', '_blank')}
-              className="test-btn"
-              title="Test backend connectivity"
-            >
-              🔧 Test Backend
             </button>
             <button onClick={onCancel} className="cancel-btn">Cancel</button>
           </div>
@@ -2490,16 +2729,22 @@ const HousePlanDrawer = ({
               </div>
               
               <div className="floor-tabs">
-                {Array.from({ length: totalFloors }, (_, i) => i + 1).map(floorNum => (
-                  <button
-                    key={floorNum}
-                    className={`floor-tab ${currentFloor === floorNum ? 'active' : ''}`}
-                    onClick={() => switchToFloor(floorNum)}
-                    title={`Switch to ${floorNames[floorNum] || `Floor ${floorNum}`}`}
-                  >
-                    {floorNum}
-                  </button>
-                ))}
+                {Array.from({ length: totalFloors }, (_, i) => i + 1).map(floorNum => {
+                  const hasCustomPosition = floorOffsets[floorNum] && 
+                    (floorOffsets[floorNum].x !== 0 || 
+                     floorOffsets[floorNum].y !== (floorNum === 1 ? 0 : (floorNum - 1) * 300));
+                  
+                  return (
+                    <button
+                      key={floorNum}
+                      className={`floor-tab ${currentFloor === floorNum ? 'active' : ''} ${hasCustomPosition ? 'has-custom-position' : ''}`}
+                      onClick={() => switchToFloor(floorNum)}
+                      title={`Switch to ${floorNames[floorNum] || `Floor ${floorNum}`}${hasCustomPosition ? ' (Custom Position)' : ''}`}
+                    >
+                      {floorNum}
+                    </button>
+                  );
+                })}
                 <button
                   className="floor-tab add-floor"
                   onClick={addNewFloor}
@@ -2550,6 +2795,109 @@ const HousePlanDrawer = ({
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+              
+              {/* Floor Positioning Controls */}
+              <div className="floor-positioning-section">
+                <h5>📐 Floor Position</h5>
+                <div className="positioning-controls">
+                  <div className="position-info">
+                    <span className="position-label">Current Position:</span>
+                    <span className="position-values">
+                      X: {floorOffsets[currentFloor]?.x || 0}px, 
+                      Y: {floorOffsets[currentFloor]?.y || 0}px
+                    </span>
+                  </div>
+                  
+                  <div className="position-inputs">
+                    <div className="position-input-group">
+                      <label>X Offset:</label>
+                      <input
+                        type="number"
+                        value={floorOffsets[currentFloor]?.x || 0}
+                        onChange={(e) => {
+                          const newX = parseInt(e.target.value) || 0;
+                          const currentY = floorOffsets[currentFloor]?.y || 0;
+                          updateFloorOffset(currentFloor, newX, currentY);
+                        }}
+                        className="position-input"
+                        step="10"
+                      />
+                      <span className="input-unit">px</span>
+                    </div>
+                    
+                    <div className="position-input-group">
+                      <label>Y Offset:</label>
+                      <input
+                        type="number"
+                        value={floorOffsets[currentFloor]?.y || 0}
+                        onChange={(e) => {
+                          const newY = parseInt(e.target.value) || 0;
+                          const currentX = floorOffsets[currentFloor]?.x || 0;
+                          updateFloorOffset(currentFloor, currentX, newY);
+                        }}
+                        className="position-input"
+                        step="10"
+                      />
+                      <span className="input-unit">px</span>
+                    </div>
+                  </div>
+                  
+                  <div className="position-buttons">
+                    <button
+                      className="position-btn move-btn"
+                      onClick={() => moveFloorRooms(currentFloor, 0, -50)}
+                      title="Move floor up"
+                    >
+                      ⬆️ Up
+                    </button>
+                    <button
+                      className="position-btn move-btn"
+                      onClick={() => moveFloorRooms(currentFloor, 0, 50)}
+                      title="Move floor down"
+                    >
+                      ⬇️ Down
+                    </button>
+                    <button
+                      className="position-btn move-btn"
+                      onClick={() => moveFloorRooms(currentFloor, -50, 0)}
+                      title="Move floor left"
+                    >
+                      ⬅️ Left
+                    </button>
+                    <button
+                      className="position-btn move-btn"
+                      onClick={() => moveFloorRooms(currentFloor, 50, 0)}
+                      title="Move floor right"
+                    >
+                      ➡️ Right
+                    </button>
+                  </div>
+                  
+                  <div className="position-presets">
+                    <button
+                      className="position-btn preset-btn"
+                      onClick={() => resetFloorPosition(currentFloor)}
+                      title="Reset to default position"
+                    >
+                      🔄 Reset Position
+                    </button>
+                    <button
+                      className="position-btn preset-btn"
+                      onClick={() => updateFloorOffset(currentFloor, 0, 400)}
+                      title="Move to bottom area"
+                    >
+                      📍 Bottom Area
+                    </button>
+                    <button
+                      className="position-btn preset-btn"
+                      onClick={() => updateFloorOffset(currentFloor, 500, 0)}
+                      title="Move to right side"
+                    >
+                      📍 Right Side
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3031,36 +3379,6 @@ const HousePlanDrawer = ({
             </div>
           )}
 
-          <div className="editor-status">
-            <h4>Editor Status</h4>
-            <div className="status-info">
-              <div className="status-item">
-                <span className="status-label">Selected:</span>
-                <span className="status-value">
-                  {selectedRoom !== null ? planData.rooms[selectedRoom]?.name || `Room ${selectedRoom + 1}` : 'None'}
-                </span>
-              </div>
-              <div className="status-item">
-                <span className="status-label">History:</span>
-                <span className="status-value">
-                  {historyIndex + 1} / {history.length}
-                </span>
-              </div>
-              <div className="status-item">
-                <span className="status-label">Can Undo:</span>
-                <span className={`status-value ${historyIndex > 0 ? 'enabled' : 'disabled'}`}>
-                  {historyIndex > 0 ? 'Yes' : 'No'}
-                </span>
-              </div>
-              <div className="status-item">
-                <span className="status-label">Can Redo:</span>
-                <span className={`status-value ${historyIndex < history.length - 1 ? 'enabled' : 'disabled'}`}>
-                  {historyIndex < history.length - 1 ? 'Yes' : 'No'}
-                </span>
-              </div>
-            </div>
-          </div>
-
           <div className="interaction-help">
             <h4>How to Use</h4>
             <ul>
@@ -3068,11 +3386,12 @@ const HousePlanDrawer = ({
               <li>🖱️ Click rooms to select them</li>
               <li>🔄 Drag rooms to move them</li>
               <li>📏 Drag blue handles to resize</li>
-              <li>↻ Drag red handle to rotate (15° snaps)</li>
+              <li>↻ Drag red handle to rotate (5° snaps)</li>
               <li>🔄 Click overlapping items to cycle selection</li>
               <li>🚪 Use door templates for openings</li>
               <li>⌨️ Ctrl+Z to undo, Ctrl+Y to redo</li>
               <li>🗑️ Delete key to remove selected room</li>
+              <li>🔄 R/E keys: rotate ±15°, T: rotate 90°, Q: reset rotation</li>
               <li>📐 Layout = Visual, Construction = Actual</li>
               <li>⚖️ Adjust scale ratio for realistic sizing</li>
             </ul>
@@ -3111,6 +3430,141 @@ const HousePlanDrawer = ({
           </div>
         </div>
       </div>
+
+      {/* Keyboard Shortcuts Modal */}
+      {showKeyboardShortcuts && (
+        <div className="modal-overlay" onClick={() => setShowKeyboardShortcuts(false)}>
+          <div className="keyboard-shortcuts-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>⌨️ Keyboard Shortcuts</h3>
+              <button 
+                className="modal-close-btn"
+                onClick={() => setShowKeyboardShortcuts(false)}
+                title="Close shortcuts"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="shortcuts-content">
+              <div className="shortcuts-section">
+                <h4>🎯 General Actions</h4>
+                <div className="shortcut-list">
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <kbd>Ctrl</kbd> + <kbd>Z</kbd>
+                    </span>
+                    <span className="shortcut-description">Undo last action</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <kbd>Ctrl</kbd> + <kbd>Y</kbd>
+                    </span>
+                    <span className="shortcut-description">Redo last undone action</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <kbd>Delete</kbd>
+                    </span>
+                    <span className="shortcut-description">Delete selected room</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="shortcuts-section">
+                <h4>🔄 Room Rotation</h4>
+                <div className="shortcut-list">
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <kbd>R</kbd>
+                    </span>
+                    <span className="shortcut-description">Rotate room 15° clockwise</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <kbd>E</kbd>
+                    </span>
+                    <span className="shortcut-description">Rotate room 15° counter-clockwise</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <kbd>T</kbd>
+                    </span>
+                    <span className="shortcut-description">Rotate room 90° clockwise</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <kbd>Q</kbd>
+                    </span>
+                    <span className="shortcut-description">Reset room rotation to 0°</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="shortcuts-section">
+                <h4>🖱️ Mouse Controls</h4>
+                <div className="shortcut-list">
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <span className="mouse-action">Click</span>
+                    </span>
+                    <span className="shortcut-description">Select room</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <span className="mouse-action">Drag</span>
+                    </span>
+                    <span className="shortcut-description">Move selected room</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <span className="mouse-action">Drag Blue Handle</span>
+                    </span>
+                    <span className="shortcut-description">Resize room</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <span className="shortcut-keys">
+                      <span className="mouse-action">Drag Red Handle</span>
+                    </span>
+                    <span className="shortcut-description">Rotate room (5° snaps)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="shortcuts-section">
+                <h4>💡 Tips</h4>
+                <div className="tips-list">
+                  <div className="tip-item">
+                    <span className="tip-icon">🎯</span>
+                    <span className="tip-text">Select a room first before using rotation shortcuts</span>
+                  </div>
+                  <div className="tip-item">
+                    <span className="tip-icon">🔄</span>
+                    <span className="tip-text">Click overlapping rooms multiple times to cycle selection</span>
+                  </div>
+                  <div className="tip-item">
+                    <span className="tip-icon">📐</span>
+                    <span className="tip-text">Use the properties panel for precise angle input</span>
+                  </div>
+                  <div className="tip-item">
+                    <span className="tip-icon">⚡</span>
+                    <span className="tip-text">Rotation handles appear outside selected rooms</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                className="modal-close-btn-primary"
+                onClick={() => setShowKeyboardShortcuts(false)}
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

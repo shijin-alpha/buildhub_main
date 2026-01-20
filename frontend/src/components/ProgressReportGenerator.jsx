@@ -340,9 +340,6 @@ const ProgressReportGenerator = ({ contractorId, onClose }) => {
                       <span>Hours: {update.working_hours}h</span>
                       <span>Weather: {update.weather_condition}</span>
                     </div>
-                    {update.materials_used && (
-                      <p><strong>Materials Used:</strong> {update.materials_used}</p>
-                    )}
                     {update.site_issues && (
                       <p><strong>Issues:</strong> {update.site_issues}</p>
                     )}

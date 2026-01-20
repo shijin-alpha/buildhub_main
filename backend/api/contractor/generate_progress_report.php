@@ -261,33 +261,9 @@ function calculateCosts($labourData, $dailyUpdates) {
 }
 
 function extractMaterials($dailyUpdates) {
-    $materials = [];
-    $materialCounts = [];
-    
-    foreach ($dailyUpdates as $update) {
-        if ($update['materials_used']) {
-            $materialsList = explode(',', $update['materials_used']);
-            foreach ($materialsList as $material) {
-                $material = trim($material);
-                if ($material) {
-                    if (!isset($materialCounts[$material])) {
-                        $materialCounts[$material] = 0;
-                    }
-                    $materialCounts[$material]++;
-                }
-            }
-        }
-    }
-    
-    foreach ($materialCounts as $material => $count) {
-        $materials[] = [
-            'name' => $material,
-            'quantity' => $count,
-            'unit' => 'days used'
-        ];
-    }
-    
-    return $materials;
+    // Materials tracking has been removed from daily progress updates
+    // This function is kept for backward compatibility but returns empty array
+    return [];
 }
 
 function generateQualityMetrics($dailyUpdates, $labourData) {

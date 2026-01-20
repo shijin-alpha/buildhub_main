@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor House Plans Section Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .feature-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .feature-section h3 {
+            margin: 0 0 1rem 0;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-list li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .feature-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .feature-text {
+            flex: 1;
+        }
+        
+        .feature-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-implemented {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-new {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .api-section {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .api-section h4 {
+            margin: 0 0 1rem 0;
+            color: #60a5fa;
+        }
+        
+        .code-block {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        
+        .data-structure {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .data-structure h4 {
+            margin: 0 0 1rem 0;
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ui-preview {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .ui-preview h4 {
+            margin: 0 0 1rem 0;
+            color: #0c4a6e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mock-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .mock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .mock-title {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .mock-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .mock-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .mock-section {
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .mock-section h5 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.875rem;
+            color: #374151;
+            font-weight: 600;
+        }
+        
+        .mock-detail {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .mock-label {
+            color: #6b7280;
+        }
+        
+        .mock-value {
+            color: #1f2937;
+            font-weight: 500;
+        }
+        
+        .mock-contractor {
+            background: #f1f5f9;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            margin-top: 0.75rem;
+        }
+        
+        .contractor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contractor-name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .contractor-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .success-indicator {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 1px solid #16a34a;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .success-indicator h4 {
+            margin: 0 0 0.5rem 0;
+            color: #166534;
+        }
+        
+        .success-indicator p {
+            margin: 0;
+            color: #166534;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🏗️ Contractor House Plans Section</h1>
+            <p>Enhanced "General House Plans" section showing contractor work and homeowner details</p>
+        </div>
+        
+        <div class="feature-section">
+            <h3>✨ New Features Implemented</h3>
+            <ul class="feature-list">
+                <li>
+                    <span class="feature-icon">🏗️</span>
+                    <span class="feature-text">Shows house plans being worked on by contractors</span>
+                    <span class="feature-status status-new">New</span>
+                </li>
+                <li>
+                    <span class="feature-icon">👤</span>
+                    <span class="feature-text">Displays homeowner details for each plan</span>
+                    <span class="feature-status status-new">New</span>
+                </li>
+                <li>
+                    <span class="feature-icon">📊</span>
+                    <span class="feature-text">Summary statistics (plans, contractors, estimates)</span>
+                    <span class="feature-status status-new">New</span>
+                </li>
+                <li>
+                    <span class="feature-icon">💰</span>
+                    <span class="feature-text">Contractor estimate status and amounts</span>
+                    <span class="feature-status status-new">New</span>
+                </li>
+                <li>
+                    <span class="feature-icon">📅</span>
+                    <span class="feature-text">Timeline tracking (sent, acknowledged, due dates)</span>
+                    <span class="feature-status status-new">New</span>
+                </li>
+                <li>
+                    <span class="feature-icon">🔄</span>
+                    <span class="feature-text">Real-time refresh functionality</span>
+                    <span class="feature-status status-implemented">Enhanced</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="api-section">
+            <h4>🔌 New API Endpoint</h4>
+            <div class="code-block">
+GET /buildhub/backend/api/architect/get_contractor_house_plans.php
+
+// Returns house plans created by architect that are being worked on by contractors
+// Includes homeowner details, contractor information, and estimate status
+            </div>
+        </div>
+        
+        <div class="data-structure">
+            <h4>📋 Data Structure</h4>
+            <div class="code-block">
+{
+  "success": true,
+  "house_plans": [
+    {
+      "house_plan_id": 123,
+      "plan_name": "Modern Family Home",
+      "plot_width": 40,
+      "plot_height": 60,
+      "total_area": 2400,
+      "plan_status": "approved",
+      "homeowner": {
+        "id": 456,
+        "name": "John Smith",
+        "email": "john@example.com",
+        "phone": "+1234567890"
+      },
+      "layout_request": {
+        "id": 789,
+        "budget_range": "₹50-75 Lakhs",
+        "location": "Bangalore",
+        "timeline": "6 months"
+      },
+      "contractor_work": [
+        {
+          "contractor": {
+            "id": 101,
+            "name": "ABC Construction",
+            "email": "abc@construction.com"
+          },
+          "estimate": {
+            "id": 202,
+            "status": "accepted",
+            "amount": 6500000,
+            "created_at": "2024-01-15",
+            "accepted_at": "2024-01-20"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_plans": 5,
+    "total_contractors": 8,
+    "active_estimates": 3,
+    "completed_estimates": 2
+  }
+}
+            </div>
+        </div>
+        
+        <div class="ui-preview">
+            <h4>🎨 UI Preview</h4>
+            <p>How the new section will look:</p>
+            
+            <!-- Mock Summary Stats -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; border: 1px solid #0ea5e9;">
+                <div style="display: flex; gap: 2rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #0c4a6e;">5</div>
+                        <div style="font-size: 0.8rem; color: #0369a1;">Plans in Work</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #0c4a6e;">8</div>
+                        <div style="font-size: 0.8rem; color: #0369a1;">Active Contractors</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #0c4a6e;">3</div>
+                        <div style="font-size: 0.8rem; color: #0369a1;">Pending Estimates</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #0c4a6e;">2</div>
+                        <div style="font-size: 0.8rem; color: #0369a1;">Completed Estimates</div>
+                    </div>
+                </div>
+                <button style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">🔄 Refresh</button>
+            </div>
+            
+            <!-- Mock Plan Card -->
+            <div class="mock-card">
+                <div class="mock-header">
+                    <div>
+                        <div class="mock-title">Modern Family Home</div>
+                        <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">40' × 60' • 2400 sq ft</div>
+                    </div>
+                    <div>
+                        <span class="mock-status">Approved</span>
+                        <button style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">📐 View Plan</button>
+                    </div>
+                </div>
+                
+                <div class="mock-info">
+                    <div class="mock-section">
+                        <h5>👤 Client Information</h5>
+                        <div class="mock-detail">
+                            <span class="mock-label">Name:</span>
+                            <span class="mock-value">John Smith</span>
+                        </div>
+                        <div class="mock-detail">
+                            <span class="mock-label">Email:</span>
+                            <span class="mock-value">john@example.com</span>
+                        </div>
+                        <div class="mock-detail">
+                            <span class="mock-label">Phone:</span>
+                            <span class="mock-value">+1234567890</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mock-section">
+                        <h5>📋 Project Details</h5>
+                        <div class="mock-detail">
+                            <span class="mock-label">Budget:</span>
+                            <span class="mock-value">₹50-75 Lakhs</span>
+                        </div>
+                        <div class="mock-detail">
+                            <span class="mock-label">Location:</span>
+                            <span class="mock-value">Bangalore</span>
+                        </div>
+                        <div class="mock-detail">
+                            <span class="mock-label">Timeline:</span>
+                            <span class="mock-value">6 months</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #f1f5f9; padding: 1rem; border-radius: 6px; border: 1px solid #d1d5db;">
+                    <h5 style="margin: 0 0 0.75rem 0; color: #374151; font-size: 0.9rem; font-weight: 600;">🏗️ Contractor Activity (2)</h5>
+                    
+                    <div class="mock-contractor">
+                        <div class="contractor-header">
+                            <div>
+                                <div class="contractor-name">ABC Construction</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">abc@construction.com</div>
+                            </div>
+                            <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">✅ Estimate Accepted</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #6b7280;">
+                            Amount: ₹65,00,000 • Submitted: Jan 15, 2024 • Accepted: Jan 20, 2024
+                        </div>
+                    </div>
+                    
+                    <div class="mock-contractor">
+                        <div class="contractor-header">
+                            <div>
+                                <div class="contractor-name">XYZ Builders</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">xyz@builders.com</div>
+                            </div>
+                            <span class="contractor-status">⏳ Estimate Pending</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #6b7280;">
+                            Sent: Jan 10, 2024 • Acknowledged: Jan 12, 2024 • Due: Jan 25, 2024
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="success-indicator">
+            <h4>✅ Implementation Complete!</h4>
+            <p>The "General House Plans" section now shows contractor work and homeowner details, providing architects with comprehensive visibility into their plans' construction progress.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>₹20 Lakh Payment Limit Test - BuildHub</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .limits-info {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 5px solid #28a745;
+        }
+        
+        .limits-info h4 {
+            margin-top: 0;
+            color: #155724;
+        }
+        
+        .test-scenarios {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .scenario-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .scenario-card:hover {
+            border-color: #3399cc;
+            background: #e3f2fd;
+            transform: translateY(-2px);
+        }
+        
+        .scenario-card.selected {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .scenario-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .scenario-description {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .scenario-method {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .method-single {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .method-split {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .amount-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 25px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+            border-radius: 10px;
+            border-left: 5px solid #3399cc;
+        }
+        
+        .payment-info {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3399cc;
+        }
+        
+        .payment-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 18px 35px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-button:hover {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            transform: translateY(-2px);
+        }
+        
+        .payment-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 ₹20 Lakh Payment Limit Test</h1>
+            <p>Test the updated payment system with ₹20 lakh single payment limit</p>
+        </div>
+        
+        <div class="limits-info">
+            <h4>✅ Updated Payment Limits</h4>
+            <p><strong>New Single Payment Limit:</strong> ₹20,00,000 (20 lakhs)</p>
+            <p><strong>Daily Limit:</strong> ₹1,00,00,000 (1 crore)</p>
+            <p><strong>Split Threshold:</strong> Payments above ₹20 lakhs will be split</p>
+            <p><strong>Your ₹10 lakh payment:</strong> Will now process as a single transaction ✅</p>
+        </div>
+        
+        <h3>🧪 Test Scenarios</h3>
+        <div class="test-scenarios">
+            <div class="scenario-card" data-amount="500000">
+                <div class="scenario-amount">₹5,00,000</div>
+                <div class="scenario-description">Standard payment within all limits</div>
+                <span class="scenario-method method-single">Single Payment</span>
+            </div>
+            
+            <div class="scenario-card" data-amount="1000000">
+                <div class="scenario-amount">₹10,00,000</div>
+                <div class="scenario-description">Your original amount - now single payment!</div>
+                <span class="scenario-method method-single">Single Payment ✅</span>
+            </div>
+            
+            <div class="scenario-card" data-amount="1500000">
+                <div class="scenario-amount">₹15,00,000</div>
+                <div class="scenario-description">Large single payment within new limit</div>
+                <span class="scenario-method method-single">Single Payment</span>
+            </div>
+            
+            <div class="scenario-card" data-amount="2000000">
+                <div class="scenario-amount">₹20,00,000</div>
+                <div class="scenario-description">Maximum single payment amount</div>
+                <span class="scenario-method method-single">Single Payment</span>
+            </div>
+            
+            <div class="scenario-card" data-amount="2500000">
+                <div class="scenario-amount">₹25,00,000</div>
+                <div class="scenario-description">Above limit - will be split into 2 payments</div>
+                <span class="scenario-method method-split">Split Payment (2x)</span>
+            </div>
+            
+            <div class="scenario-card" data-amount="5000000">
+                <div class="scenario-amount">₹50,00,000</div>
+                <div class="scenario-description">Large amount - will be split into 3 payments</div>
+                <span class="scenario-method method-split">Split Payment (3x)</span>
+            </div>
+        </div>
+        
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="paymentType">Payment Type:</label>
+                <select id="paymentType" required>
+                    <option value="stage_payment">Stage Payment to Contractor</option>
+                    <option value="technical_details">Technical Details Unlock</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">Payment Amount (₹):</label>
+                <input type="number" id="amount" step="0.01" min="1" value="1000000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" id="customerName" value="Test User" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerEmail">Customer Email:</label>
+                <input type="email" id="customerEmail" value="test@example.com" required>
+            </div>
+            
+            <div class="amount-display" id="amountDisplay">
+                ₹10,00,000.00
+            </div>
+            
+            <div class="payment-info" id="paymentInfo">
+                <h4>💡 Payment Analysis</h4>
+                <div id="paymentMessage">This amount will be processed as a single payment within the ₹20 lakh limit.</div>
+            </div>
+            
+            <button type="submit" class="payment-button" id="payButton">
+                🚀 Process Payment (₹20L Limit)
+            </button>
+        </form>
+        
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        // Form elements
+        const form = document.getElementById('paymentForm');
+        const amountInput = document.getElementById('amount');
+        const payButton = document.getElementById('payButton');
+        const statusDiv = document.getElementById('status');
+        const amountDisplay = document.getElementById('amountDisplay');
+        const paymentInfo = document.getElementById('paymentInfo');
+        const paymentMessage = document.getElementById('paymentMessage');
+        const scenarioCards = document.querySelectorAll('.scenario-card');
+        
+        const maxSingleAmount = 2000000; // ₹20,00,000
+        
+        // Format amount for display
+        function formatAmount(amount) {
+            return '₹' + amount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // Update display when amount changes
+        function updateDisplay() {
+            const amount = parseFloat(amountInput.value) || 0;
+            
+            // Update amount display
+            amountDisplay.textContent = formatAmount(amount);
+            
+            // Update payment analysis
+            if (amount <= maxSingleAmount) {
+                paymentMessage.innerHTML = `
+                    ✅ <strong>Single Payment</strong><br>
+                    This amount (${formatAmount(amount)}) is within the ₹20 lakh single payment limit.<br>
+                    Will be processed as one transaction through Razorpay.
+                `;
+                paymentInfo.style.borderLeftColor = '#28a745';
+                paymentInfo.style.background = '#d4edda';
+            } else {
+                const splits = Math.ceil(amount / maxSingleAmount);
+                const splitAmount = amount / splits;
+                paymentMessage.innerHTML = `
+                    ⚡ <strong>Split Payment Required</strong><br>
+                    Amount exceeds ₹20 lakh limit. Will be split into <strong>${splits} payments</strong><br>
+                    Each payment: approximately ${formatAmount(splitAmount)}
+                `;
+                paymentInfo.style.borderLeftColor = '#ffc107';
+                paymentInfo.style.background = '#fff3cd';
+            }
+            
+            // Update scenario card selection
+            scenarioCards.forEach(card => {
+                const cardAmount = parseInt(card.dataset.amount);
+                if (cardAmount === amount) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Handle scenario card clicks
+        scenarioCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const amount = parseInt(card.dataset.amount);
+                amountInput.value = amount;
+                updateDisplay();
+            });
+        });
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 15000);
+            }
+        }
+        
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            payButton.disabled = true;
+            payButton.innerHTML = '⏳ Processing...';
+            
+            const paymentData = {
+                payment_type: document.getElementById('paymentType').value,
+                reference_id: 1, // Test reference ID
+                amount: parseFloat(amountInput.value),
+                currency: 'INR',
+                country_code: 'IN',
+                customerName: document.getElementById('customerName').value,
+                customerEmail: document.getElementById('customerEmail').value
+            };
+            
+            try {
+                // Call smart payment API
+                const response = await fetch('/backend/api/homeowner/initiate_smart_payment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Payment initiation failed');
+                }
+                
+                if (result.payment_method === 'split') {
+                    // Redirect to split payment system
+                    showStatus(`
+                        ⚡ <strong>Split Payment Required</strong><br><br>
+                        Amount: ${formatAmount(paymentData.amount)}<br>
+                        Estimated Splits: ${result.data.estimated_splits}<br>
+                        Max Single Amount: ${formatAmount(result.data.max_single_amount)}<br><br>
+                        <strong>Next:</strong> Use the split payment system to complete this transaction.
+                    `, 'info');
+                    
+                } else {
+                    // Process single payment
+                    const orderData = result.data;
+                    
+                    const razorpayOptions = {
+                        key: orderData.razorpay_key_id,
+                        amount: orderData.amount,
+                        currency: orderData.currency,
+                        order_id: orderData.razorpay_order_id,
+                        name: 'BuildHub',
+                        description: orderData.description,
+                        image: '/frontend/assets/logo.png',
+                        prefill: {
+                            name: paymentData.customerName,
+                            email: paymentData.customerEmail
+                        },
+                        theme: {
+                            color: '#28a745'
+                        },
+                        handler: function(response) {
+                            console.log('Payment successful:', response);
+                            showStatus(`
+                                ✅ <strong>Payment Successful!</strong><br><br>
+                                <strong>Amount:</strong> ${formatAmount(paymentData.amount)}<br>
+                                <strong>Payment ID:</strong> ${response.razorpay_payment_id}<br>
+                                <strong>Order ID:</strong> ${response.razorpay_order_id}<br>
+                                <strong>Method:</strong> Single Payment (₹20L Limit)<br><br>
+                                Your payment has been processed successfully within the new ₹20 lakh limit!
+                            `, 'success');
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                showStatus('Payment cancelled by user', 'error');
+                            }
+                        }
+                    };
+                    
+                    if (typeof Razorpay === 'undefined') {
+                        throw new Error('Razorpay SDK not loaded');
+                    }
+                    
+                    const razorpay = new Razorpay(razorpayOptions);
+                    
+                    razorpay.on('payment.failed', function(response) {
+                        console.error('Payment failed:', response.error);
+                        showStatus(`
+                            ❌ <strong>Payment Failed</strong><br><br>
+                            <strong>Error:</strong> ${response.error.description}<br>
+                            <strong>Code:</strong> ${response.error.code}<br><br>
+                            Please try again or contact support if the issue persists.
+                        `, 'error');
+                    });
+                    
+                    razorpay.open();
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                showStatus(`
+                    ❌ <strong>Payment Initiation Failed</strong><br><br>
+                    <strong>Error:</strong> ${error.message}<br><br>
+                    Please check your connection and try again.
+                `, 'error');
+            } finally {
+                payButton.disabled = false;
+                payButton.innerHTML = '🚀 Process Payment (₹20L Limit)';
+            }
+        });
+        
+        // Add event listener for real-time updates
+        amountInput.addEventListener('input', updateDisplay);
+        
+        // Initial display update
+        updateDisplay();
+        
+        // Show initial info
+        showStatus(`
+            🎉 <strong>Payment Limit Updated!</strong><br><br>
+            The system now supports single payments up to <strong>₹20,00,000</strong>.<br>
+            Your ₹10,00,000 payment will now process as a single transaction!<br><br>
+            Select a test scenario above or enter a custom amount to test.
+        `, 'success');
+    </script>
+</body>
+</html>

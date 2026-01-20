@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Modal Positioning Fix Test - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+        }
+
+        /* Simulate header that might interfere */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Simulate footer that might interfere */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #343a40;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        /* Main content area */
+        .main-content {
+            margin: 80px 20px 70px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .test-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        /* Payment Details Modal - FIXED */
+        .payment-details-modal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(0, 0, 0, 0.8) !important;
+            padding: 20px !important;
+            overflow-y: auto !important;
+        }
+
+        .payment-details-modal .modal-content {
+            position: relative !important;
+            background: white !important;
+            border-radius: 16px !important;
+            max-width: 800px !important;
+            width: 100% !important;
+            max-height: calc(100vh - 40px) !important;
+            overflow-y: auto !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+            z-index: 1000000 !important;
+            margin: auto !important;
+        }
+
+        /* Payment Method Modal - FIXED */
+        .payment-method-modal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow-y: auto !important;
+            padding: 20px !important;
+        }
+
+        .payment-method-modal .modal-overlay {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(4px) !important;
+            z-index: 999999 !important;
+        }
+
+        .payment-method-modal .modal-content {
+            position: relative !important;
+            background: white !important;
+            border-radius: 12px !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+            max-width: 600px !important;
+            width: 90% !important;
+            max-height: calc(100vh - 40px) !important;
+            overflow-y: auto !important;
+            z-index: 1000000 !important;
+            margin: auto !important;
+        }
+
+        .modal-header {
+            padding: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000001;
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .modal-actions {
+            padding: 20px 24px;
+            border-top: 1px solid #e9ecef;
+            background: #f8f9fa;
+            border-radius: 0 0 16px 16px;
+            position: sticky;
+            bottom: 0;
+            z-index: 1000001;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .payment-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            background: #d4edda;
+            color: #28a745;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(40, 167, 69, 0.19);
+        }
+
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .method-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            text-align: center;
+        }
+
+        .method-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .method-card.recommended {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+        }
+
+        .method-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .method-info h4 {
+            margin: 0 0 8px 0;
+            color: #495057;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .method-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin: 0 0 12px 0;
+            line-height: 1.4;
+        }
+
+        .recommended-badge {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden !important;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Simulated Header -->
+    <div class="header">
+        <h1>🏗️ BuildHub - Header (z-index: 1000)</h1>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Payment Modal Positioning Fix Test</h1>
+        <p>This test demonstrates that both payment modals now appear above the header and footer with proper z-index values.</p>
+
+        <div class="test-section">
+            <h3>✅ Payment Details Modal - FIXED</h3>
+            <p>The payment details modal now has z-index: 999999 and appears above everything.</p>
+            <button class="btn" onclick="showPaymentDetailsModal()">
+                Show Payment Details Modal
+            </button>
+            <div id="paymentDetailsResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Payment Method Selector Modal - FIXED</h3>
+            <p>The payment method selector modal now has z-index: 999999 and appears above everything.</p>
+            <button class="btn secondary" onclick="showPaymentMethodModal()">
+                Show Payment Method Modal
+            </button>
+            <div id="paymentMethodResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Features Applied</h3>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li><strong>z-index: 999999</strong> - Much higher than header/footer (1000)</li>
+                <li><strong>Sticky header/footer</strong> - Modal content scrolls properly</li>
+                <li><strong>Body scroll prevention</strong> - Background doesn't scroll</li>
+                <li><strong>Click outside to close</strong> - Enhanced UX</li>
+                <li><strong>Escape key support</strong> - Keyboard accessibility</li>
+                <li><strong>Responsive design</strong> - Works on all screen sizes</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Simulated Footer -->
+    <div class="footer">
+        <p>Footer (z-index: 1000) - Should not interfere with fixed modals</p>
+    </div>
+
+    <!-- Payment Details Modal -->
+    <div id="paymentDetailsModal" class="payment-details-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>💰 Payment Request: Foundation Stage</h2>
+                    <p style="margin: 0; opacity: 0.9;">Requested by Shijin Thomas on 11 January 2026 at 09:23 pm</p>
+                </div>
+                <button class="close-btn" onclick="closePaymentDetailsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-summary">
+                    <div class="amount">₹50,000</div>
+                    <div style="font-size: 16px; color: #6c757d; margin-bottom: 12px;">
+                        20% of Foundation stage completed
+                    </div>
+                    <span class="status-badge">✅ Above Everything</span>
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <h3 style="color: #2c3e50; border-bottom: 2px solid #e9ecef; padding-bottom: 10px;">
+                        🏗️ Work Details
+                    </h3>
+                    <p>Foundation work including excavation, concrete pouring, and structural setup. Quality checks completed and safety compliance verified.</p>
+                    
+                    <h3 style="color: #2c3e50; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 20px;">
+                        ✅ Modal Positioning Fix Applied
+                    </h3>
+                    <ul style="padding-left: 20px; line-height: 1.6;">
+                        <li>z-index: 999999 - Appears above header/footer</li>
+                        <li>Sticky header and actions - Content scrolls properly</li>
+                        <li>Body scroll prevention - Background stays fixed</li>
+                        <li>Click outside or press Escape to close</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closePaymentDetailsModal()">💳 Pay ₹50,000</button>
+                <button class="btn secondary" onclick="closePaymentDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Method Modal -->
+    <div id="paymentMethodModal" class="payment-method-modal" style="display: none;">
+        <div class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>💰 Choose Payment Method</h2>
+                    <button class="close-btn" onclick="closePaymentMethodModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="payment-summary">
+                        <div class="amount">₹50,000</div>
+                        <span class="status-badge">✅ Fixed Positioning</span>
+                    </div>
+
+                    <div class="methods-grid">
+                        <div class="method-card recommended">
+                            <div class="method-icon">💳</div>
+                            <div class="method-info">
+                                <h4>Razorpay</h4>
+                                <p class="method-description">Instant payment with cards, UPI, wallets</p>
+                                <span class="recommended-badge">⭐ Recommended</span>
+                            </div>
+                        </div>
+                        <div class="method-card">
+                            <div class="method-icon">🏦</div>
+                            <div class="method-info">
+                                <h4>Bank Transfer</h4>
+                                <p class="method-description">Direct bank transfer with receipt upload</p>
+                            </div>
+                        </div>
+                        <div class="method-card">
+                            <div class="method-icon">📱</div>
+                            <div class="method-info">
+                                <h4>UPI</h4>
+                                <p class="method-description">Pay using UPI apps with QR code</p>
+                            </div>
+                        </div>
+                        <div class="method-card">
+                            <div class="method-icon">💵</div>
+                            <div class="method-info">
+                                <h4>Cash</h4>
+                                <p class="method-description">Cash payment with receipt verification</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 16px;">
+                        <h4 style="margin: 0 0 8px 0; color: #155724;">✅ Modal Positioning Fixed</h4>
+                        <p style="margin: 0; color: #155724; line-height: 1.5;">
+                            This modal now appears above the header and footer with z-index: 999999. 
+                            Body scroll is prevented and the modal is fully accessible.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn secondary" onclick="closePaymentMethodModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Payment Details Modal functions
+        function showPaymentDetailsModal() {
+            document.getElementById('paymentDetailsModal').style.display = 'flex';
+            document.body.classList.add('modal-open');
+            document.getElementById('paymentDetailsResult').innerHTML = 
+                '<div class="test-result success">✅ Payment details modal shown with z-index: 999999 - appears above everything!</div>';
+        }
+
+        function closePaymentDetailsModal() {
+            document.getElementById('paymentDetailsModal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+            document.getElementById('paymentDetailsResult').innerHTML = 
+                '<div class="test-result info">ℹ️ Payment details modal closed</div>';
+        }
+
+        // Payment Method Modal functions
+        function showPaymentMethodModal() {
+            document.getElementById('paymentMethodModal').style.display = 'flex';
+            document.body.classList.add('modal-open');
+            document.getElementById('paymentMethodResult').innerHTML = 
+                '<div class="test-result success">✅ Payment method modal shown with z-index: 999999 - appears above everything!</div>';
+        }
+
+        function closePaymentMethodModal() {
+            document.getElementById('paymentMethodModal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+            document.getElementById('paymentMethodResult').innerHTML = 
+                '<div class="test-result info">ℹ️ Payment method modal closed</div>';
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const paymentDetailsModal = document.getElementById('paymentDetailsModal');
+            const paymentMethodModal = document.getElementById('paymentMethodModal');
+            
+            if (event.target === paymentDetailsModal) {
+                closePaymentDetailsModal();
+            }
+            if (event.target === paymentMethodModal || event.target.classList.contains('modal-overlay')) {
+                closePaymentMethodModal();
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const paymentDetailsModal = document.getElementById('paymentDetailsModal');
+                const paymentMethodModal = document.getElementById('paymentMethodModal');
+                
+                if (paymentDetailsModal.style.display === 'flex') {
+                    closePaymentDetailsModal();
+                }
+                if (paymentMethodModal.style.display === 'flex') {
+                    closePaymentMethodModal();
+                }
+            }
+        });
+
+        console.log('Payment modal positioning fix test loaded - both modals now have z-index: 999999');
+    </script>
+</body>
+</html>

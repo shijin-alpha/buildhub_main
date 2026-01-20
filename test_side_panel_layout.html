@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side Panel Photo Layout Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Simulate the new layout */
+        .viewer-main-content {
+            display: flex;
+            gap: 25px;
+            min-height: 600px;
+            margin-top: 20px;
+        }
+        
+        .photos-section {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .photo-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .photo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+        
+        .photo-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .photo-preview {
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            background: #f8f9fa;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 48px;
+        }
+        
+        .photo-info {
+            padding: 15px;
+        }
+        
+        .place-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        
+        .coordinates {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+        
+        .timestamp-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        
+        /* Side Panel */
+        .photo-details-panel {
+            width: 420px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            max-height: calc(100vh - 200px);
+            position: sticky;
+            top: 20px;
+        }
+        
+        .photo-details-panel.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e9ecef;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .panel-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .close-panel-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 20px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .close-panel-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-photo-preview {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #f8f9fa;
+        }
+        
+        .panel-photo-preview img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 48px;
+        }
+        
+        .photo-details {
+            padding: 25px;
+            background: white;
+            flex: 1;
+        }
+        
+        .detail-section {
+            margin-bottom: 25px;
+        }
+        
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .detail-section h4 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1rem;
+            font-weight: 600;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+        
+        .detail-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-item .label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+        
+        .detail-item .value {
+            color: #2c3e50;
+            font-size: 0.9rem;
+            text-align: right;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .action-buttons button {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .maps-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        .panel-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 40px 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        
+        .panel-placeholder h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+            font-size: 1.2rem;
+        }
+        
+        .panel-placeholder p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            max-width: 280px;
+        }
+        
+        /* Demo Controls */
+        .demo-controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border: 1px solid #bbdefb;
+        }
+        
+        .demo-controls h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        
+        .demo-controls button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .viewer-main-content {
+                flex-direction: column;
+            }
+            
+            .photo-details-panel {
+                width: 100%;
+                max-height: 500px;
+                position: static;
+                order: -1;
+            }
+            
+            .photos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .photos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .photo-details-panel {
+                max-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Side Panel Photo Layout Demo</h1>
+        <p>New layout with photo details in a side panel instead of modal</p>
+        
+        <div class="demo-controls">
+            <h3>🎮 Demo Controls</h3>
+            <button onclick="selectPhoto(1)">Select Photo 1</button>
+            <button onclick="selectPhoto(2)">Select Photo 2</button>
+            <button onclick="selectPhoto(3)">Select Photo 3</button>
+            <button onclick="clearSelection()">Clear Selection</button>
+        </div>
+        
+        <div class="viewer-main-content">
+            <!-- Photos Section -->
+            <div class="photos-section">
+                <div class="photos-grid">
+                    <div class="photo-card" id="photo-1" onclick="selectPhoto(1)">
+                        <div class="photo-preview">📷</div>
+                        <div class="photo-info">
+                            <div class="place-name">📍 കൂട്ടുമ്മേൽ, Vaikom, കോട്ടയം ജില്ല</div>
+                            <div class="coordinates">9.791900, 76.400000</div>
+                            <div class="timestamp-info">
+                                <div>🕒 3 hours ago</div>
+                                <div>👷 Shijin Thomas</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-card" id="photo-2" onclick="selectPhoto(2)">
+                        <div class="photo-preview">📷</div>
+                        <div class="photo-info">
+                            <div class="place-name">📍 Construction Site, Kottayam</div>
+                            <div class="coordinates">9.591900, 76.520000</div>
+                            <div class="timestamp-info">
+                                <div>🕒 5 hours ago</div>
+                                <div>👷 Contractor Name</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-card" id="photo-3" onclick="selectPhoto(3)">
+                        <div class="photo-preview">📷</div>
+                        <div class="photo-info">
+                            <div class="place-name">📍 Foundation Work Area</div>
+                            <div class="coordinates">9.691900, 76.420000</div>
+                            <div class="timestamp-info">
+                                <div>🕒 1 day ago</div>
+                                <div>👷 Site Engineer</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-card" onclick="selectPhoto(4)">
+                        <div class="photo-preview">📷</div>
+                        <div class="photo-info">
+                            <div class="place-name">📍 Structural Work</div>
+                            <div class="coordinates">9.791900, 76.400000</div>
+                            <div class="timestamp-info">
+                                <div>🕒 2 days ago</div>
+                                <div>👷 Mason Team</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Side Panel -->
+            <div class="photo-details-panel" id="detailsPanel">
+                <div id="panelContent">
+                    <div class="panel-placeholder">
+                        <div class="placeholder-icon">📸</div>
+                        <h4>Select a Photo</h4>
+                        <p>Click on any photo to view its details, location information, and manage the file.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #d4edda; border-radius: 8px; border: 1px solid #c3e6cb;">
+            <h3 style="margin: 0 0 15px 0; color: #155724;">✨ New Side Panel Benefits:</h3>
+            <ul style="margin: 0; color: #155724; line-height: 1.6;">
+                <li><strong>Better UX:</strong> No modal overlay - details always visible</li>
+                <li><strong>Faster Navigation:</strong> Click between photos without closing/opening modals</li>
+                <li><strong>More Space:</strong> Larger photo grid with dedicated details area</li>
+                <li><strong>Responsive:</strong> Panel moves above photos on smaller screens</li>
+                <li><strong>Sticky Position:</strong> Panel stays in view while scrolling photos</li>
+                <li><strong>Enhanced Workflow:</strong> Compare photos while viewing details</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let selectedPhotoId = null;
+        
+        const photoData = {
+            1: {
+                filename: 'verified_photo_1768632470997_9.791900_76.400000.jpg',
+                place: 'കൂട്ടുമ്മേൽ, Vaikom, കോട്ടയം ജില്ല',
+                coordinates: '9.791900, 76.400000',
+                accuracy: '±50000m',
+                photoTaken: 'Jan 17, 2026 6:39 AM',
+                uploaded: 'Jan 17, 2026 1:00 PM',
+                timeAgo: '3 hours ago',
+                contractor: 'Shijin Thomas',
+                email: 'shijinthomas248@gmail.com',
+                size: '65.33 KB',
+                type: 'image/jpeg'
+            },
+            2: {
+                filename: 'construction_progress_001.jpg',
+                place: 'Construction Site, Kottayam',
+                coordinates: '9.591900, 76.520000',
+                accuracy: '±25m',
+                photoTaken: 'Jan 17, 2026 4:30 AM',
+                uploaded: 'Jan 17, 2026 11:00 AM',
+                timeAgo: '5 hours ago',
+                contractor: 'Contractor Name',
+                email: 'contractor@example.com',
+                size: '128.45 KB',
+                type: 'image/jpeg'
+            },
+            3: {
+                filename: 'foundation_work_progress.jpg',
+                place: 'Foundation Work Area',
+                coordinates: '9.691900, 76.420000',
+                accuracy: '±15m',
+                photoTaken: 'Jan 16, 2026 2:15 PM',
+                uploaded: 'Jan 16, 2026 6:30 PM',
+                timeAgo: '1 day ago',
+                contractor: 'Site Engineer',
+                email: 'engineer@site.com',
+                size: '95.67 KB',
+                type: 'image/jpeg'
+            }
+        };
+        
+        function selectPhoto(photoId) {
+            // Clear previous selection
+            document.querySelectorAll('.photo-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select new photo
+            const photoCard = document.getElementById(`photo-${photoId}`);
+            if (photoCard) {
+                photoCard.classList.add('selected');
+            }
+            
+            selectedPhotoId = photoId;
+            showPhotoDetails(photoId);
+        }
+        
+        function showPhotoDetails(photoId) {
+            const panel = document.getElementById('detailsPanel');
+            const content = document.getElementById('panelContent');
+            const data = photoData[photoId];
+            
+            if (!data) {
+                clearSelection();
+                return;
+            }
+            
+            content.innerHTML = `
+                <div class="panel-header">
+                    <h3>📸 Photo Details</h3>
+                    <button class="close-panel-btn" onclick="clearSelection()">×</button>
+                </div>
+                
+                <div class="panel-content">
+                    <div class="panel-photo-preview">
+                        <div style="width: 100%; height: 200px; background: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 48px;">📷</div>
+                    </div>
+                    
+                    <div class="photo-details">
+                        <div class="detail-section">
+                            <h4>📍 Location Information</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="label">Place:</span>
+                                    <span class="value">${data.place}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Coordinates:</span>
+                                    <span class="value">${data.coordinates}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Accuracy:</span>
+                                    <span class="value">${data.accuracy}</span>
+                                </div>
+                            </div>
+                            <button class="maps-btn">🗺️ View on Maps</button>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>🕒 Timing Information</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="label">Photo Taken:</span>
+                                    <span class="value">${data.photoTaken}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Uploaded:</span>
+                                    <span class="value">${data.uploaded}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Time Ago:</span>
+                                    <span class="value">${data.timeAgo}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>👷 Contractor Information</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="label">Name:</span>
+                                    <span class="value">${data.contractor}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Email:</span>
+                                    <span class="value">${data.email}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>📁 File Information</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="label">Filename:</span>
+                                    <span class="value">${data.filename}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Size:</span>
+                                    <span class="value">${data.size}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Type:</span>
+                                    <span class="value">${data.type}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="download-btn">💾 Download Photo</button>
+                                <button class="delete-btn">🗑️ Delete Photo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            panel.classList.add('visible');
+        }
+        
+        function clearSelection() {
+            document.querySelectorAll('.photo-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            const panel = document.getElementById('detailsPanel');
+            const content = document.getElementById('panelContent');
+            
+            content.innerHTML = `
+                <div class="panel-placeholder">
+                    <div class="placeholder-icon">📸</div>
+                    <h4>Select a Photo</h4>
+                    <p>Click on any photo to view its details, location information, and manage the file.</p>
+                </div>
+            `;
+            
+            panel.classList.remove('visible');
+            selectedPhotoId = null;
+        }
+        
+        // Initialize
+        window.onload = function() {
+            console.log('📸 Side Panel Layout Demo Loaded');
+        };
+    </script>
+</body>
+</html>
+</content>

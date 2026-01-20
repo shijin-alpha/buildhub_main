@@ -8,7 +8,6 @@ import {
   standardHourlyRates 
 } from '../utils/progressValidation.js';
 import GeoPhotoCapture from './GeoPhotoCapture.jsx';
-import StagePaymentRequest from './StagePaymentRequest.jsx';
 import '../styles/EnhancedProgress.css';
 
 const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
@@ -35,7 +34,6 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
     work_done_today: '',
     incremental_completion_percentage: '',
     working_hours: '8',
-    materials_used: '',
     weather_condition: '',
     site_issues: '',
     labour_data: []
@@ -167,13 +165,6 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
     weather_condition: {
       required: true,
       message: 'Please select weather condition'
-    },
-    
-    materials_used: {
-      validate: (value) => {
-        if (value && value.length > 500) return 'Materials description cannot exceed 500 characters';
-        return null;
-      }
     },
     
     site_issues: {
@@ -601,7 +592,7 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
     try {
       setLoadingProjects(true);
       const response = await fetch(
-        `http://localhost/buildhub/backend/api/contractor/get_assigned_projects.php?contractor_id=${contractorId}`,
+        `/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${contractorId}`,
         { credentials: 'include' }
       );
       const data = await response.json();
@@ -847,13 +838,16 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
     const newGeoPhotos = capturedPhotos.map(result => ({
       id: result.data.id,
       filename: result.data.filename,
-      url: `/buildhub/backend/uploads/geo_photos/${result.data.filename}`,
+      url: result.data.url, // Use the blob URL for immediate display
+      blob: result.data.blob, // Store the blob for form submission
       location: result.data.location,
-      timestamp: result.data.upload_timestamp
+      timestamp: result.data.timestamp,
+      isAttached: true // Mark as attached to form
     }));
     
     setGeoPhotos(prev => [...prev, ...newGeoPhotos]);
-    toast.success(`${capturedPhotos.length} geo-located photo(s) captured and sent to homeowner`);
+    setShowGeoPhotoCapture(false); // Auto-close camera
+    toast.success(`${capturedPhotos.length} photo(s) attached to progress form`);
   };
 
   const removeGeoPhoto = (index) => {
@@ -959,7 +953,6 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
       submitData.append('work_done_today', dailyForm.work_done_today);
       submitData.append('incremental_completion_percentage', dailyForm.incremental_completion_percentage);
       submitData.append('working_hours', dailyForm.working_hours);
-      submitData.append('materials_used', dailyForm.materials_used);
       submitData.append('weather_condition', dailyForm.weather_condition);
       submitData.append('site_issues', dailyForm.site_issues);
       submitData.append('labour_data', JSON.stringify(dailyForm.labour_data));
@@ -969,9 +962,17 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         submitData.append('longitude', location.longitude);
       }
 
-      // Append photos
+      // Append regular photos
       photos.forEach((photo, index) => {
         submitData.append('progress_photos[]', photo);
+      });
+
+      // Append attached geo photos
+      geoPhotos.forEach((geoPhoto, index) => {
+        if (geoPhoto.blob) {
+          submitData.append('geo_photos[]', geoPhoto.blob, geoPhoto.filename);
+          submitData.append(`geo_photo_location_${index}`, JSON.stringify(geoPhoto.location || {}));
+        }
       });
 
       const response = await fetch(
@@ -995,12 +996,12 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
           work_done_today: '',
           incremental_completion_percentage: '',
           working_hours: '8',
-          materials_used: '',
           weather_condition: '',
           site_issues: '',
           labour_data: []
         });
         setPhotos([]);
+        setGeoPhotos([]); // Clear attached geo photos
         
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -1122,7 +1123,7 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
   };
 
   const getSelectedProjectInfo = () => {
-    const project = projects.find(p => p.project_id == selectedProject);
+    const project = projects.find(p => (p.id || p.project_id) == selectedProject);
     return project || null;
   };
 
@@ -1152,85 +1153,17 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
               className={`project-select ${getFieldErrorClass('selectedProject')}`}
             >
               <option value="">Choose a project...</option>
-              {projects.map(project => (
-                <option key={project.project_id} value={project.project_id}>
-                  {project.project_display_name}
-                </option>
-              ))}
+              {projects.map(project => {
+                const projectId = project.id || project.project_id;
+                const projectName = project.project_name || project.project_display_name || 'Unnamed Project';
+                return (
+                  <option key={projectId} value={projectId}>
+                    {projectName}
+                  </option>
+                );
+              })}
             </select>
             {renderFieldError('selectedProject')}
-            
-            {/* Enhanced Project Details */}
-            {projects.length > 0 && (
-              <div className="available-projects-summary">
-                <h5>Available Projects ({projects.length})</h5>
-                <div className="projects-list">
-                  {projects.map(project => (
-                    <div 
-                      key={project.project_id} 
-                      className={`project-item ${selectedProject == project.project_id ? 'selected' : ''}`}
-                      onClick={() => setSelectedProject(project.project_id.toString())}
-                    >
-                      <div className="project-header">
-                        <div className="project-title">
-                          <strong>{project.project_summary.homeowner_name}</strong>
-                          <span className="project-status">{project.project_summary.status_display}</span>
-                        </div>
-                        <div className="project-progress">
-                          {project.project_summary.progress_summary}
-                        </div>
-                      </div>
-                      
-                      <div className="project-details-grid">
-                        <div className="detail-item">
-                          <span className="label">Plot:</span>
-                          <span className="value">{project.project_summary.plot_details}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="label">Location:</span>
-                          <span className="value">{project.project_summary.location}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="label">Budget:</span>
-                          <span className="value">{project.project_summary.total_cost_formatted}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="label">Timeline:</span>
-                          <span className="value">{project.project_summary.timeline}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="label">Last Update:</span>
-                          <span className="value">{project.project_summary.last_activity}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="label">Updates:</span>
-                          <span className="value">
-                            {project.daily_updates_count}D, {project.weekly_summaries_count}W, {project.monthly_reports_count}M
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="project-progress-bar">
-                        <div className="progress-bar">
-                          <div 
-                            className="progress-fill"
-                            style={{ width: `${project.latest_progress}%` }}
-                          ></div>
-                        </div>
-                        <span className="progress-text">{project.latest_progress}%</span>
-                      </div>
-                      
-                      {project.requirements && (
-                        <div className="project-requirements">
-                          <strong>Requirements:</strong> {project.requirements.substring(0, 100)}
-                          {project.requirements.length > 100 && '...'}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -1240,38 +1173,56 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         <div className="selected-project-info-card">
           {(() => {
             const projectInfo = getSelectedProjectInfo();
-            return projectInfo ? (
+            if (!projectInfo) return null;
+            
+            // Handle both API response formats and extract from structured_data if available
+            const structured = projectInfo.structured_data || {};
+            
+            const homeownerName = projectInfo.homeowner_name || structured.client_name || projectInfo.project_summary?.homeowner_name || 'Unknown';
+            const statusDisplay = projectInfo.status || projectInfo.project_summary?.status_display || 'N/A';
+            const contractorName = projectInfo.project_summary?.contractor_name || 'N/A';
+            const homeownerEmail = projectInfo.homeowner_email || 'N/A';
+            const homeownerPhone = projectInfo.homeowner_phone || structured.client_contact || 'N/A';
+            const contractorEmail = projectInfo.contractor_email || 'N/A';
+            const plotSize = projectInfo.plot_size || structured.plot_size || 'N/A';
+            const builtUpArea = projectInfo.built_up_area || structured.built_up_area || 'N/A';
+            const floors = projectInfo.floors || structured.floors || 'N/A';
+            const location = projectInfo.location || structured.project_address || 'N/A';
+            
+            return (
               <div className="selected-project-details">
                 <div className="project-info-header">
                   <h4>Selected Project Details</h4>
                   <div className="project-status-badge">
-                    {projectInfo.project_summary.status_display}
+                    {statusDisplay}
                   </div>
                 </div>
                 
                 <div className="project-participants">
                   <div className="participant">
-                    <strong>Homeowner:</strong> {projectInfo.project_summary.homeowner_name}
+                    <strong>Homeowner:</strong> {homeownerName}
                     <br />
-                    <small>📧 {projectInfo.homeowner_email} | 📱 {projectInfo.homeowner_phone}</small>
+                    <small>📧 {homeownerEmail} | 📱 {homeownerPhone}</small>
                   </div>
                   <div className="participant">
-                    <strong>Contractor:</strong> {projectInfo.project_summary.contractor_name}
+                    <strong>Contractor:</strong> {contractorName}
                     <br />
-                    <small>📧 {projectInfo.contractor_email}</small>
+                    <small>📧 {contractorEmail}</small>
                   </div>
                 </div>
                 
                 <div className="project-info-grid">
                   <div className="info-card">
                     <strong>Plot Details</strong>
-                    <div>{projectInfo.project_summary.plot_details}</div>
+                    <div>Plot Size: {plotSize}</div>
+                    {builtUpArea !== 'N/A' && <div>Built-up Area: {builtUpArea}</div>}
+                    {floors !== 'N/A' && <div>Floors: {floors}</div>}
                     <small>Style: {projectInfo.preferred_style || 'Not specified'}</small>
                   </div>
                   
                   <div className="info-card">
                     <strong>Location</strong>
-                    <div>{projectInfo.project_summary.location}</div>
+                    <div>{location}</div>
                     {projectInfo.project_address && (
                       <small>📍 GPS: {projectInfo.project_address}</small>
                     )}
@@ -1279,35 +1230,35 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                   
                   <div className="info-card">
                     <strong>Budget & Cost</strong>
-                    <div>Budget: {projectInfo.budget_range}</div>
-                    <div>Estimate: {projectInfo.project_summary.total_cost_formatted}</div>
+                    <div>Budget: {projectInfo.budget_range || 'N/A'}</div>
+                    <div>Estimate: {projectInfo.estimate_cost ? `₹${projectInfo.estimate_cost.toLocaleString('en-IN')}` : (projectInfo.project_summary?.total_cost_formatted || 'N/A')}</div>
                   </div>
                   
                   <div className="info-card">
                     <strong>Timeline</strong>
                     <div>Requested: {projectInfo.requested_timeline || 'Not specified'}</div>
-                    <div>Estimate: {projectInfo.project_summary.timeline}</div>
+                    <div>Estimate: {projectInfo.timeline || projectInfo.project_summary?.timeline || 'N/A'}</div>
                   </div>
                   
                   <div className="info-card">
                     <strong>Progress Status</strong>
-                    <div>{projectInfo.project_summary.progress_summary}</div>
-                    <div>Completed Stages: {projectInfo.completed_stages}</div>
+                    <div>{(projectInfo.completion_percentage || projectInfo.latest_progress || 0)}% complete</div>
+                    <div>Completed Stages: {projectInfo.completed_stages || 0}</div>
                   </div>
                   
                   <div className="info-card">
                     <strong>Update History</strong>
-                    <div>Daily: {projectInfo.daily_updates_count} updates</div>
-                    <div>Weekly: {projectInfo.weekly_summaries_count} summaries</div>
-                    <div>Monthly: {projectInfo.monthly_reports_count} reports</div>
-                    <small>Last: {projectInfo.project_summary.last_activity}</small>
+                    <div>Daily: {projectInfo.daily_updates_count || 0} updates</div>
+                    <div>Weekly: {projectInfo.weekly_summaries_count || 0} summaries</div>
+                    <div>Monthly: {projectInfo.monthly_reports_count || 0} reports</div>
+                    <small>Last: {projectInfo.updated_at || projectInfo.project_summary?.last_activity || 'N/A'}</small>
                   </div>
                 </div>
                 
                 <div className="project-overall-progress">
                   <div className="progress-header">
                     <strong>Overall Progress</strong>
-                    <span>{projectInfo.latest_progress}%</span>
+                    <span>{projectInfo.completion_percentage || projectInfo.latest_progress || 0}%</span>
                   </div>
                   <div className="progress-bar-large">
                     <div 
@@ -1326,13 +1277,13 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                 
                 <div className="project-dates">
                   <small>
-                    <strong>Request Date:</strong> {projectInfo.request_date_formatted} | 
-                    <strong> Estimate Date:</strong> {projectInfo.estimate_date_formatted} | 
-                    <strong> Acknowledged:</strong> {projectInfo.acknowledged_date_formatted}
+                    <strong>Request Date:</strong> {projectInfo.request_date_formatted || 'N/A'} | 
+                    <strong> Estimate Date:</strong> {projectInfo.estimate_date_formatted || 'N/A'} | 
+                    <strong> Acknowledged:</strong> {projectInfo.acknowledged_date_formatted || 'N/A'}
                   </small>
                 </div>
               </div>
-            ) : null;
+            );
           })()}
         </div>
       )}
@@ -1485,23 +1436,6 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                 ))}
               </select>
               {renderFieldError('weather_condition')}
-            </div>
-            
-            <div className={`form-group ${getFieldErrorClass('materials_used')}`}>
-              <label htmlFor="materials_used">Materials Used</label>
-              <input
-                type="text"
-                id="materials_used"
-                name="materials_used"
-                value={dailyForm.materials_used}
-                onChange={handleDailyInputChange}
-                onBlur={() => markFieldTouched('materials_used')}
-                placeholder="e.g., Cement bags, Steel bars, Bricks..."
-                className={getFieldErrorClass('materials_used')}
-                maxLength="500"
-              />
-              <div className="field-info">{dailyForm.materials_used.length}/500 characters</div>
-              {renderFieldError('materials_used')}
             </div>
           </div>
 
@@ -1755,6 +1689,18 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                     <span className="value">{labour.safety_compliance.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                   </div>
                 </div>
+                
+                {/* Add Worker Button after each entry */}
+                <div className="add-worker-after-entry">
+                  <button 
+                    type="button" 
+                    onClick={addLabourEntry}
+                    className="add-labour-btn-inline"
+                    title="Add another worker type"
+                  >
+                    + Add Another Worker Type
+                  </button>
+                </div>
               </div>
             ))}
 
@@ -1810,26 +1756,7 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
             )}
           </div>
 
-          {/* Stage Payment Request Section */}
-          {dailyForm.construction_stage && selectedProject && (
-            <div className="stage-payment-section">
-              <div className="section-header">
-                <h5>💰 Stage Payment Request</h5>
-                <p>Request payment for completed {dailyForm.construction_stage} stage work</p>
-              </div>
-              
-              <StagePaymentRequest 
-                projectId={selectedProject}
-                stageName={dailyForm.construction_stage}
-                contractorId={contractorId}
-                completionPercentage={dailyForm.incremental_completion_percentage}
-                workDescription={dailyForm.work_done_today}
-                onPaymentRequested={(data) => {
-                  toast.success(`Payment request submitted: ₹${data.requested_amount} for ${data.stage_name} stage`);
-                }}
-              />
-            </div>
-          )}
+
 
           {/* Enhanced Photo Upload Section */}
           <div className="photo-upload-section">

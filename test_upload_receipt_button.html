@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Receipt Button Test - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        /* Payment History Styles */
+        .history-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stage-info h5 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .completion-percentage {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            background-color: rgb(212, 237, 218);
+            color: rgb(40, 167, 69);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(40, 167, 69, 0.125);
+        }
+
+        .request-date {
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: 10px;
+        }
+
+        .history-item-content {
+            padding: 20px;
+        }
+
+        .payment-amounts {
+            margin-bottom: 15px;
+        }
+
+        .amount-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .amount-label {
+            font-size: 14px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .amount-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .work-description, .contractor-notes, .homeowner-response {
+            margin-bottom: 15px;
+        }
+
+        .work-description h6, .contractor-notes h6, .homeowner-response h6 {
+            margin: 0 0 8px 0;
+            color: #495057;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .work-description p, .contractor-notes p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .response-details {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+        }
+
+        .response-status {
+            margin-bottom: 8px;
+        }
+
+        .response-date {
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+
+        .adjustment-text {
+            margin: 4px 0 0 0;
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        /* Receipt Pending Styles */
+        .receipt-pending {
+            background: #fff3cd;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-top: 16px;
+        }
+
+        .receipt-pending-message {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .pending-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .pending-text strong {
+            display: block;
+            color: #856404;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .pending-text p {
+            margin: 0;
+            color: #856404;
+            font-size: 13px;
+        }
+
+        .receipt-upload-action {
+            display: flex;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .btn-upload-receipt {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-upload-receipt:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-upload-receipt:active {
+            transform: translateY(0);
+        }
+
+        .timeline-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .timeline-item {
+            font-size: 12px;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        @media (max-width: 768px) {
+            .history-item-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .timeline-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .receipt-pending-message {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📤 Upload Receipt Button Test</h1>
+            <p>Testing the new upload receipt button in payment history</p>
+        </div>
+
+        <div class="content">
+            <div class="test-section">
+                <h3>🎯 Feature Added</h3>
+                <p>Added an "Upload Receipt" button in the payment history section for approved payments that are awaiting receipt upload.</p>
+                
+                <div class="result info">
+                    ✅ Button added to PaymentHistory.jsx component<br>
+                    ✅ CSS styles added to PaymentHistory.css<br>
+                    ✅ Handler function implemented with multiple options<br>
+                    ✅ Responsive design for mobile devices
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>📋 Sample Payment History Item</h3>
+                <p>This shows how the upload receipt button appears in the payment history:</p>
+            </div>
+
+            <!-- Sample Payment History Item -->
+            <div class="history-item">
+                <div class="history-item-header">
+                    <div class="stage-info">
+                        <h5 class="stage-name">🏗️ Foundation Stage</h5>
+                        <span class="completion-percentage">20% Complete</span>
+                    </div>
+                    <div class="status-info">
+                        <span class="status-badge">✅ Approved</span>
+                        <span class="request-date">Requested: 11 Jan 2026, 10:26 am</span>
+                    </div>
+                </div>
+                
+                <div class="history-item-content">
+                    <div class="payment-amounts">
+                        <div class="amount-item">
+                            <span class="amount-label">Requested:</span>
+                            <span class="amount-value requested">₹10,00,000</span>
+                        </div>
+                    </div>
+                    
+                    <div class="work-description">
+                        <h6>Work Description:</h6>
+                        <p>Foundation work including excavation, concrete pouring, and structural setup completed as per specifications.</p>
+                    </div>
+                    
+                    <div class="contractor-notes">
+                        <h6>Your Notes:</h6>
+                        <p>Foundation work completed successfully with quality checks passed.</p>
+                    </div>
+                    
+                    <div class="homeowner-response">
+                        <h6>🏠 Homeowner Response:</h6>
+                        <div class="response-details">
+                            <div class="response-status">
+                                <strong>Decision:</strong> 
+                                <span class="status-badge">✅ Approved</span>
+                                <span class="response-date">on 11 Jan 2026, 06:57 pm</span>
+                            </div>
+                            <div class="amount-adjustment">
+                                <strong>Amount Adjustment:</strong>
+                                <p class="adjustment-text">Approved amount differs from requested amount.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- NEW: Receipt Pending Section with Upload Button -->
+                    <div class="receipt-pending">
+                        <div class="receipt-pending-message">
+                            <span class="pending-icon">⏳</span>
+                            <div class="pending-text">
+                                <strong>Awaiting Payment Receipt</strong>
+                                <p>Homeowner needs to upload payment receipt for verification</p>
+                            </div>
+                        </div>
+                        <div class="receipt-upload-action">
+                            <button 
+                                class="btn-upload-receipt"
+                                onclick="handleUploadReceipt()"
+                            >
+                                📤 Upload Receipt
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="history-item-footer" style="padding: 20px; background: #f8f9fa; border-top: 1px solid #e9ecef;">
+                    <div class="timeline-info">
+                        <span class="timeline-item">📅 Requested: 11 Jan 2026, 10:26 am</span>
+                        <span class="timeline-item">📋 Responded: 11 Jan 2026, 06:57 pm</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔧 Implementation Details</h3>
+                <ul style="padding-left: 20px; line-height: 1.8;">
+                    <li><strong>Component:</strong> frontend/src/components/PaymentHistory.jsx</li>
+                    <li><strong>Styles:</strong> frontend/src/styles/PaymentHistory.css</li>
+                    <li><strong>Button Location:</strong> Inside receipt-pending section for approved payments without receipts</li>
+                    <li><strong>Handler Function:</strong> handleUploadReceipt() with multiple implementation options</li>
+                    <li><strong>Responsive:</strong> Mobile-friendly design with proper spacing</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <h3>🚀 Handler Options</h3>
+                <p>The handleUploadReceipt function provides three implementation options:</p>
+                <ol style="padding-left: 20px; line-height: 1.8;">
+                    <li><strong>New Tab/Window:</strong> Opens upload page in new tab (current default)</li>
+                    <li><strong>Same Window:</strong> Navigate to upload page in same window</li>
+                    <li><strong>Modal:</strong> Show upload modal overlay (can be implemented)</li>
+                </ol>
+                
+                <div id="testResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleUploadReceipt() {
+            const testResult = document.getElementById('testResult');
+            
+            // Simulate the actual handler behavior
+            const paymentData = {
+                id: 123,
+                stage_name: 'Foundation',
+                approved_amount: 1000000
+            };
+            
+            const uploadUrl = `/buildhub/upload-receipt?payment_id=${paymentData.id}&stage=${paymentData.stage_name}&amount=${paymentData.approved_amount}`;
+            
+            testResult.innerHTML = `
+                <div class="result success" style="margin-top: 15px;">
+                    ✅ Upload Receipt button clicked!<br><br>
+                    <strong>Payment Details:</strong><br>
+                    • Stage: ${paymentData.stage_name}<br>
+                    • Amount: ₹${paymentData.approved_amount.toLocaleString('en-IN')}<br>
+                    • Upload URL: ${uploadUrl}<br><br>
+                    <em>In the actual implementation, this would open the receipt upload page.</em>
+                </div>
+            `;
+            
+            // Show toast-like notification
+            showNotification('Upload Receipt', `Ready to upload receipt for ${paymentData.stage_name} stage payment of ₹${paymentData.approved_amount.toLocaleString('en-IN')}`);
+        }
+
+        function showNotification(title, message) {
+            // Create a simple notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                max-width: 300px;
+                font-size: 14px;
+                font-weight: 500;
+            `;
+            notification.innerHTML = `<strong>${title}</strong><br>${message}`;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Upload Receipt Button Test loaded!');
+        });
+    </script>
+</body>
+</html>

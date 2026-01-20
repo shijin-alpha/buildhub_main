@@ -1,0 +1,106 @@
+/* Payment Request Tab Styles */
+.payment-request-tab {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-header {
+  padding: 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 0;
+}
+
+.tab-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.tab-header p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.payment-request-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+}
+
+.loading-message {
+  text-align: center;
+  max-width: 400px;
+}
+
+.loading-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.loading-message h4 {
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  font-size: 1.3rem;
+}
+
+.loading-message p {
+  color: #7f8c8d;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Integration with existing payment section */
+.payment-section .payment-request-tab {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.payment-section .payment-request-tab .tab-header {
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tab-header {
+    padding: 15px;
+  }
+  
+  .tab-header h3 {
+    font-size: 1.3rem;
+  }
+  
+  .tab-header p {
+    font-size: 0.9rem;
+  }
+  
+  .payment-request-loading {
+    padding: 40px 15px;
+  }
+  
+  .loading-icon {
+    font-size: 2.5rem;
+  }
+  
+  .loading-message h4 {
+    font-size: 1.2rem;
+  }
+  
+  .loading-message p {
+    font-size: 0.9rem;
+  }
+}

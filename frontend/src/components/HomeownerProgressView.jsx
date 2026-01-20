@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProgressTimeline from './ProgressTimeline';
+import HomeownerPaymentWithdrawals from './HomeownerPaymentWithdrawals';
 import '../styles/HomeownerProgress.css';
 
 const HomeownerProgressView = ({ homeownerId }) => {
@@ -8,6 +9,7 @@ const HomeownerProgressView = ({ homeownerId }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [activeTab, setActiveTab] = useState('progress'); // 'progress', 'payments', 'reports'
 
   useEffect(() => {
     loadProgressData();
@@ -108,6 +110,28 @@ const HomeownerProgressView = ({ homeownerId }) => {
         </div>
       ) : (
         <div className="progress-content">
+          {/* Tab Navigation */}
+          <div className="progress-tabs">
+            <button 
+              className={`tab-btn ${activeTab === 'progress' ? 'active' : ''}`}
+              onClick={() => setActiveTab('progress')}
+            >
+              📊 Progress Updates
+            </button>
+            <button 
+              className={`tab-btn ${activeTab === 'payments' ? 'active' : ''}`}
+              onClick={() => setActiveTab('payments')}
+            >
+              💰 Payment Withdrawals
+            </button>
+            <button 
+              className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
+              onClick={() => setActiveTab('reports')}
+            >
+              📋 Reports
+            </button>
+          </div>
+
           {/* Project Selection */}
           <div className="project-selector">
             <label htmlFor="project-select">Select Project:</label>
@@ -190,14 +214,40 @@ const HomeownerProgressView = ({ homeownerId }) => {
             ))}
           </div>
 
-          {/* Progress Timeline */}
-          {selectedProject && (
+          {/* Tab Content */}
+          {activeTab === 'progress' && selectedProject && (
             <div className="timeline-section">
               <ProgressTimeline 
                 homeownerId={homeownerId}
                 projectId={selectedProject}
                 userRole="homeowner"
               />
+            </div>
+          )}
+
+          {activeTab === 'payments' && (
+            <div className="payments-section">
+              <HomeownerPaymentWithdrawals 
+                homeownerId={homeownerId}
+                projectId={selectedProject || null}
+              />
+            </div>
+          )}
+
+          {activeTab === 'reports' && (
+            <div className="reports-section">
+              <div className="coming-soon">
+                <h3>📋 Construction Reports</h3>
+                <p>Detailed construction reports and documentation will be available here.</p>
+                <p>This section will include:</p>
+                <ul>
+                  <li>Weekly progress reports</li>
+                  <li>Quality inspection reports</li>
+                  <li>Material usage reports</li>
+                  <li>Cost analysis reports</li>
+                  <li>Timeline compliance reports</li>
+                </ul>
+              </div>
             </div>
           )}
         </div>

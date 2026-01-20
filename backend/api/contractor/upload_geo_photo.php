@@ -44,14 +44,37 @@ try {
         exit;
     }
     
-    // Verify project exists and contractor is assigned
+    // Verify project exists and contractor is assigned - check multiple tables
     $projectStmt = $pdo->prepare("
-        SELECT p.*, h.id as homeowner_id, h.first_name, h.last_name, h.email
-        FROM layout_requests p
-        LEFT JOIN users h ON p.homeowner_id = h.id
-        WHERE p.id = ? AND p.contractor_id = ? AND p.status = 'acknowledged'
+        SELECT 
+            cse.id as project_id,
+            cse.homeowner_id,
+            cse.contractor_id,
+            h.id as homeowner_id,
+            h.first_name, 
+            h.last_name, 
+            h.email
+        FROM contractor_send_estimates cse
+        LEFT JOIN users h ON cse.homeowner_id = h.id
+        WHERE cse.id = ? AND cse.contractor_id = ?
+        
+        UNION
+        
+        SELECT 
+            lr.id as project_id,
+            lr.homeowner_id,
+            lr.contractor_id,
+            h.id as homeowner_id,
+            h.first_name, 
+            h.last_name, 
+            h.email
+        FROM layout_requests lr
+        LEFT JOIN users h ON lr.homeowner_id = h.id
+        WHERE lr.id = ? AND lr.contractor_id = ?
+        
+        LIMIT 1
     ");
-    $projectStmt->execute([$project_id, $contractor_id]);
+    $projectStmt->execute([$project_id, $contractor_id, $project_id, $contractor_id]);
     $project = $projectStmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$project) {

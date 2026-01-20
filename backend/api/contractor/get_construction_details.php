@@ -1,4 +1,9 @@
 <?php
+// Suppress warnings to prevent JSON corruption
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', 0);
+
+
 header('Content-Type: application/json');
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 if ($origin) { header('Access-Control-Allow-Origin: ' . $origin); header('Vary: Origin'); } else { header('Access-Control-Allow-Origin: http://localhost'); }

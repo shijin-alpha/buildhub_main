@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Homeowner Reports Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .success { border-left: 4px solid #28a745; background-color: #d4edda; }
+        .error { border-left: 4px solid #dc3545; background-color: #f8d7da; }
+        .info { border-left: 4px solid #17a2b8; background-color: #d1ecf1; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Homeowner Progress Reports Test</h1>
+        <p>Testing the homeowner progress reports display functionality</p>
+
+        <div class="test-section info">
+            <h3>📋 Test Progress Reports API</h3>
+            <p>Test if the homeowner can fetch and display progress reports</p>
+            <button onclick="testProgressReportsAPI()">Test API Call</button>
+            <div id="apiResult" class="result"></div>
+        </div>
+
+        <div class="test-section info">
+            <h3>🔍 Test Report Details Modal</h3>
+            <p>Test if report details modal displays correctly</p>
+            <button onclick="testReportModal()">Test Modal Display</button>
+            <div id="modalResult" class="result"></div>
+        </div>
+
+        <div class="test-section info">
+            <h3>📊 Test Data Structure</h3>
+            <p>Verify the data structure matches expected format</p>
+            <button onclick="testDataStructure()">Test Data Structure</button>
+            <div id="dataResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testProgressReportsAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.textContent = 'Testing API call...';
+            
+            try {
+                const homeownerId = 28; // Test homeowner ID
+                const response = await fetch(`/buildhub/backend/api/homeowner/get_progress_updates.php?homeowner_id=${homeownerId}&limit=10`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ API Success!\n\nFound ${data.data.progress_updates.length} progress updates\nTotal projects: ${data.data.projects.length}\nGeo photos: ${data.data.geo_photos.length}\n\nSample update:\n${JSON.stringify(data.data.progress_updates[0] || {}, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ API Error: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Network Error: ${error.message}`;
+            }
+        }
+
+        async function testReportModal() {
+            const resultDiv = document.getElementById('modalResult');
+            resultDiv.textContent = 'Testing modal functionality...';
+            
+            try {
+                // First get some data
+                const homeownerId = 28;
+                const response = await fetch(`/buildhub/backend/api/homeowner/get_progress_updates.php?homeowner_id=${homeownerId}&limit=1`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data.progress_updates.length > 0) {
+                    const update = data.data.progress_updates[0];
+                    
+                    // Transform to report format (same as in component)
+                    const transformedReport = {
+                        id: update.id,
+                        project_id: update.project_id,
+                        contractor_id: update.contractor_id,
+                        contractor_name: update.contractor_name,
+                        project_name: `Project ${update.project_id} - ${update.construction_stage}`,
+                        report_type: 'daily',
+                        created_at: update.created_at,
+                        status: 'sent',
+                        
+                        // Daily progress specific details
+                        update_date: update.update_date,
+                        construction_stage: update.construction_stage,
+                        work_done_today: update.work_done_today,
+                        incremental_completion: update.incremental_completion_percentage,
+                        cumulative_completion: update.cumulative_completion_percentage,
+                        working_hours: update.working_hours,
+                        weather_condition: update.weather_condition,
+                        site_issues: update.site_issues,
+                        
+                        // Labour information
+                        worker_types: update.worker_types_array || [],
+                        total_workers: update.total_workers || 0,
+                        avg_productivity: update.avg_productivity || 0,
+                        labour_entries_count: update.labour_entries_count || 0,
+                        
+                        // Location information
+                        location_verified: update.location_verified,
+                        location_status: update.location_status,
+                        
+                        // Photos
+                        photos: update.photos || [],
+                        has_photos: (update.photos && update.photos.length > 0) || false
+                    };
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Modal Data Ready!\n\nReport ID: ${transformedReport.id}\nContractor: ${transformedReport.contractor_name}\nStage: ${transformedReport.construction_stage}\nProgress: ${transformedReport.cumulative_completion}%\nWorkers: ${transformedReport.total_workers}\nPhotos: ${transformedReport.photos.length}\n\nData structure looks correct for modal display.`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ No progress updates found for testing modal`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Modal Test Error: ${error.message}`;
+            }
+        }
+
+        async function testDataStructure() {
+            const resultDiv = document.getElementById('dataResult');
+            resultDiv.textContent = 'Testing data structure...';
+            
+            try {
+                const homeownerId = 28;
+                const response = await fetch(`/buildhub/backend/api/homeowner/get_progress_updates.php?homeowner_id=${homeownerId}&limit=1`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data.progress_updates.length > 0) {
+                    const update = data.data.progress_updates[0];
+                    
+                    // Check required fields
+                    const requiredFields = [
+                        'id', 'project_id', 'contractor_id', 'contractor_name',
+                        'update_date', 'construction_stage', 'work_done_today',
+                        'incremental_completion_percentage', 'cumulative_completion_percentage',
+                        'working_hours', 'weather_condition', 'created_at'
+                    ];
+                    
+                    const missingFields = requiredFields.filter(field => !update.hasOwnProperty(field));
+                    const presentFields = requiredFields.filter(field => update.hasOwnProperty(field));
+                    
+                    if (missingFields.length === 0) {
+                        resultDiv.className = 'result success';
+                        resultDiv.textContent = `✅ Data Structure Valid!\n\nAll required fields present:\n${presentFields.join(', ')}\n\nOptional fields:\n- Photos: ${update.photos ? update.photos.length : 0}\n- Worker types: ${update.worker_types_array ? update.worker_types_array.length : 0}\n- Labour entries: ${update.labour_entries_count || 0}`;
+                    } else {
+                        resultDiv.className = 'result error';
+                        resultDiv.textContent = `❌ Missing Fields: ${missingFields.join(', ')}\n\nPresent fields: ${presentFields.join(', ')}`;
+                    }
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ No data available for structure testing`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Structure Test Error: ${error.message}`;
+            }
+        }
+
+        // Auto-run tests on page load
+        window.onload = function() {
+            console.log('🏠 Homeowner Reports Test Page Loaded');
+            console.log('Click the test buttons to verify functionality');
+        };
+    </script>
+</body>
+</html>
+</content>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 05, 2026 at 06:22 PM
+-- Generation Time: Jan 11, 2026 at 12:28 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -223,6 +223,55 @@ CREATE TABLE `construction_progress_updates` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `construction_projects`
+--
+
+CREATE TABLE `construction_projects` (
+  `id` int(11) NOT NULL,
+  `estimate_id` int(11) NOT NULL,
+  `contractor_id` int(11) NOT NULL,
+  `homeowner_id` int(11) NOT NULL,
+  `project_name` varchar(255) NOT NULL,
+  `project_description` text DEFAULT NULL,
+  `total_cost` decimal(15,2) DEFAULT NULL,
+  `timeline` varchar(255) DEFAULT NULL,
+  `status` enum('created','in_progress','completed','on_hold','cancelled') DEFAULT 'created',
+  `start_date` date DEFAULT NULL,
+  `expected_completion_date` date DEFAULT NULL,
+  `actual_completion_date` date DEFAULT NULL,
+  `materials` text DEFAULT NULL,
+  `cost_breakdown` text DEFAULT NULL,
+  `structured_data` longtext DEFAULT NULL,
+  `contractor_notes` text DEFAULT NULL,
+  `homeowner_name` varchar(255) DEFAULT NULL,
+  `homeowner_email` varchar(255) DEFAULT NULL,
+  `homeowner_phone` varchar(50) DEFAULT NULL,
+  `project_location` text DEFAULT NULL,
+  `plot_size` varchar(100) DEFAULT NULL,
+  `budget_range` varchar(100) DEFAULT NULL,
+  `preferred_style` varchar(100) DEFAULT NULL,
+  `requirements` text DEFAULT NULL,
+  `layout_id` int(11) DEFAULT NULL,
+  `design_id` int(11) DEFAULT NULL,
+  `layout_images` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`layout_images`)),
+  `technical_details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`technical_details`)),
+  `current_stage` varchar(100) DEFAULT 'Planning',
+  `completion_percentage` decimal(5,2) DEFAULT 0.00,
+  `last_update_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `construction_projects`
+--
+
+INSERT INTO `construction_projects` (`id`, `estimate_id`, `contractor_id`, `homeowner_id`, `project_name`, `project_description`, `total_cost`, `timeline`, `status`, `start_date`, `expected_completion_date`, `actual_completion_date`, `materials`, `cost_breakdown`, `structured_data`, `contractor_notes`, `homeowner_name`, `homeowner_email`, `homeowner_phone`, `project_location`, `plot_size`, `budget_range`, `preferred_style`, `requirements`, `layout_id`, `design_id`, `layout_images`, `technical_details`, `current_stage`, `completion_percentage`, `last_update_date`, `created_at`, `updated_at`) VALUES
+(1, 36, 29, 28, 'SHIJIN THOMAS MCA2024-2026 Construction', 'Construction project for SHIJIN THOMAS MCA2024-2026', NULL, '6 months', 'created', NULL, '2026-07-10', NULL, NULL, NULL, '{\"project_name\":\"SHIJIN THOMAS MCA2024-2026 Construction\",\"project_address\":\"\",\"plot_size\":\"\",\"built_up_area\":\"\",\"floors\":\"\",\"estimation_date\":\"\",\"client_name\":\"SHIJIN THOMAS MCA2024-2026\",\"client_contact\":\"shijinthomas2026@mca.ajce.in\",\"materials\":{\"cement\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"sand\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"bricks\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"steel\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"aggregate\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"tiles\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"paint\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"doors\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"windows\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"others\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"}},\"labor\":{\"mason\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"plaster\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"painting\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"electrical\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"plumbing\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"flooring\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"roofing\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"others\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"}},\"utilities\":{\"sanitary\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"kitchen\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"electrical_fixtures\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"water_tank\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"hvac\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"gas_water\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"others1\":{\"name\":\"\",\"amount\":\"\"},\"others2\":{\"name\":\"\",\"amount\":\"\"},\"others3\":{\"name\":\"\",\"amount\":\"\"}},\"misc\":{\"transport\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"contingency\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"fees\":{\"name\":\"\",\"amount\":\"\"},\"cleaning\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"safety\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"others1\":{\"name\":\"\",\"amount\":\"\"},\"others2\":{\"name\":\"\",\"amount\":\"\"},\"others3\":{\"name\":\"\",\"amount\":\"\"}},\"totals\":{\"materials\":\"\",\"labor\":\"\",\"utilities\":\"\",\"misc\":\"\",\"grand\":\"\"},\"brands\":\"\"}', NULL, 'SHIJIN THOMAS MCA2024-2026', 'shijinthomas2026@mca.ajce.in', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Planning', 0.00, '2026-01-11 09:01:07', '2026-01-11 09:01:07', '2026-01-11 09:01:07');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `construction_stage_payments`
 --
 
@@ -292,6 +341,46 @@ INSERT INTO `contractor_assignment_hides` (`id`, `assignment_id`, `contractor_id
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `contractor_estimates`
+--
+
+CREATE TABLE `contractor_estimates` (
+  `id` int(11) NOT NULL,
+  `contractor_id` int(11) NOT NULL,
+  `homeowner_id` int(11) NOT NULL,
+  `send_id` int(11) DEFAULT NULL,
+  `project_name` varchar(255) DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `client_name` varchar(255) DEFAULT NULL,
+  `client_contact` varchar(255) DEFAULT NULL,
+  `project_type` varchar(100) DEFAULT NULL,
+  `timeline` varchar(100) DEFAULT NULL,
+  `materials_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`materials_data`)),
+  `labor_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`labor_data`)),
+  `utilities_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`utilities_data`)),
+  `misc_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`misc_data`)),
+  `totals_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`totals_data`)),
+  `structured_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`structured_data`)),
+  `materials` text DEFAULT NULL,
+  `cost_breakdown` text DEFAULT NULL,
+  `total_cost` decimal(15,2) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `terms` text DEFAULT NULL,
+  `status` enum('draft','submitted','accepted','rejected') DEFAULT 'submitted',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `contractor_estimates`
+--
+
+INSERT INTO `contractor_estimates` (`id`, `contractor_id`, `homeowner_id`, `send_id`, `project_name`, `location`, `client_name`, `client_contact`, `project_type`, `timeline`, `materials_data`, `labor_data`, `utilities_data`, `misc_data`, `totals_data`, `structured_data`, `materials`, `cost_breakdown`, `total_cost`, `notes`, `terms`, `status`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 1, 'Test Construction Project', '123 Test Street, Test City', 'Test Homeowner', 'test@example.com', NULL, '90 days', '{\"cement\":{\"name\":\"Cement (OPC 43 Grade)\",\"qty\":\"50\",\"rate\":\"400\",\"amount\":\"20000\"},\"sand\":{\"name\":\"Sand (River Sand)\",\"qty\":\"5\",\"rate\":\"2000\",\"amount\":\"10000\"},\"bricks\":{\"name\":\"Bricks (Red Clay)\",\"qty\":\"2000\",\"rate\":\"8\",\"amount\":\"16000\"}}', '{\"masonry\":{\"name\":\"Masonry Work\",\"qty\":\"1\",\"rate\":\"15000\",\"amount\":\"15000\"},\"plumbing\":{\"name\":\"Plumbing Work\",\"qty\":\"1\",\"rate\":\"12000\",\"amount\":\"12000\"},\"electrical\":{\"name\":\"Electrical Work\",\"qty\":\"1\",\"rate\":\"10000\",\"amount\":\"10000\"}}', '{\"sanitary\":{\"name\":\"Sanitary Fixtures\",\"qty\":\"1\",\"rate\":\"8000\",\"amount\":\"8000\"}}', '{\"transport\":{\"name\":\"Transportation\",\"qty\":\"1\",\"rate\":\"5000\",\"amount\":\"5000\"},\"contingency\":{\"name\":\"Contingency (5%)\",\"qty\":\"1\",\"rate\":\"4600\",\"amount\":\"4600\"}}', '{\"materials\":46000,\"labor\":37000,\"utilities\":8000,\"misc\":9600,\"grand\":100600}', '{\"project_name\":\"Test Construction Project\",\"project_address\":\"123 Test Street, Test City\",\"client_name\":\"Test Homeowner\",\"client_contact\":\"test@example.com\",\"plot_size\":\"2000 sq.ft\",\"built_up_area\":\"1500 sq.ft\",\"floors\":\"2\",\"materials\":{\"cement\":{\"name\":\"Cement (OPC 43 Grade)\",\"qty\":\"50\",\"rate\":\"400\",\"amount\":\"20000\"},\"sand\":{\"name\":\"Sand (River Sand)\",\"qty\":\"5\",\"rate\":\"2000\",\"amount\":\"10000\"},\"bricks\":{\"name\":\"Bricks (Red Clay)\",\"qty\":\"2000\",\"rate\":\"8\",\"amount\":\"16000\"}},\"labor\":{\"masonry\":{\"name\":\"Masonry Work\",\"qty\":\"1\",\"rate\":\"15000\",\"amount\":\"15000\"},\"plumbing\":{\"name\":\"Plumbing Work\",\"qty\":\"1\",\"rate\":\"12000\",\"amount\":\"12000\"},\"electrical\":{\"name\":\"Electrical Work\",\"qty\":\"1\",\"rate\":\"10000\",\"amount\":\"10000\"}},\"utilities\":{\"sanitary\":{\"name\":\"Sanitary Fixtures\",\"qty\":\"1\",\"rate\":\"8000\",\"amount\":\"8000\"}},\"misc\":{\"transport\":{\"name\":\"Transportation\",\"qty\":\"1\",\"rate\":\"5000\",\"amount\":\"5000\"},\"contingency\":{\"name\":\"Contingency (5%)\",\"qty\":\"1\",\"rate\":\"4600\",\"amount\":\"4600\"}},\"totals\":{\"materials\":46000,\"labor\":37000,\"utilities\":8000,\"misc\":9600,\"grand\":100600}}', '', '', 100600.00, 'Test estimate for verification purposes', NULL, 'submitted', '2026-01-11 08:16:49', '2026-01-11 08:16:49');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `contractor_estimate_payments`
 --
 
@@ -320,7 +409,8 @@ INSERT INTO `contractor_estimate_payments` (`id`, `homeowner_id`, `estimate_id`,
 (4, 28, 23, 100.00, 'INR', 'pending', 'order_RUPM026os9UPez', NULL, NULL, '2025-10-17 04:27:09', '2025-10-17 04:27:09'),
 (5, 28, 23, 100.00, 'INR', 'pending', 'order_RUPM938N3JrLkg', NULL, NULL, '2025-10-17 04:27:17', '2025-10-17 04:27:17'),
 (6, 28, 23, 100.00, 'INR', 'completed', 'order_RUPMAqBPPW7d3g', 'pay_RUPMLP1qU84Keo', 'aba39dcaab8f1e203fea5f9a6d1cbfaa2a63bb739c639bd27c4b3f756c73c469', '2025-10-17 04:27:18', '2025-10-17 04:27:41'),
-(7, 28, 29, 100.00, 'INR', 'completed', 'order_RYCR5ty0D6TYJs', 'pay_RYCRjYXFJlUXRe', '5bc87cca642a3a65d6d996a4ca52e6f43cb0d215244105ece379df912a7d4b28', '2025-10-26 18:24:58', '2025-10-26 18:26:05');
+(7, 28, 29, 100.00, 'INR', 'completed', 'order_RYCR5ty0D6TYJs', 'pay_RYCRjYXFJlUXRe', '5bc87cca642a3a65d6d996a4ca52e6f43cb0d215244105ece379df912a7d4b28', '2025-10-26 18:24:58', '2025-10-26 18:26:05'),
+(8, 28, 36, 100.00, 'INR', 'completed', 'order_S2VioyxYfbn8eX', 'pay_S2ViyrtlfJEmde', '52b75a522f7b72367d0a3d416e49aeb9a3f63edf1dd8b503a85af1f148070352', '2026-01-11 08:46:59', '2026-01-11 08:47:24');
 
 -- --------------------------------------------------------
 
@@ -358,6 +448,7 @@ CREATE TABLE `contractor_layout_sends` (
   `homeowner_id` int(11) DEFAULT NULL,
   `layout_id` int(11) DEFAULT NULL,
   `design_id` int(11) DEFAULT NULL,
+  `house_plan_id` int(11) DEFAULT NULL,
   `message` text DEFAULT NULL,
   `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -369,15 +460,16 @@ CREATE TABLE `contractor_layout_sends` (
 -- Dumping data for table `contractor_layout_sends`
 --
 
-INSERT INTO `contractor_layout_sends` (`id`, `contractor_id`, `homeowner_id`, `layout_id`, `design_id`, `message`, `payload`, `created_at`, `acknowledged_at`, `due_date`) VALUES
-(3, 37, 28, NULL, NULL, NULL, '{\"layout_id\":null,\"design_id\":null,\"message\":null,\"forwarded_design\":{\"id\":21,\"title\":\"nbn\",\"description\":\"\",\"files\":[{\"original\":\"4.png\",\"stored\":\"68e51548c6d1c5.76863274_1759843656.png\",\"ext\":\"png\",\"path\":\"/buildhub/backend/uploads/designs/68e51548c6d1c5.76863274_1759843656.png\"}],\"technical_details\":{\"floor_plans\":{\"living_room_dimensions\":\"24 × 18 ft\",\"master_bedroom_dimensions\":\"18 × 14 ft\"},\"structural\":{\"foundation_outline\":\"Isolated footings; basement optional\",\"roof_outline\":\"Flat + partial sloped accents; terrace deck\"},\"construction\":{\"wall_thickness\":\"External 250–300 mm with high insulation; internal 115–150 mm\",\"ceiling_heights\":\"Ground 3.4 m; Upper 3.2 m\",\"building_codes\":\"High energy performance; local villa standards\",\"critical_instructions\":\"Provision for home automation and solar PV\"},\"meta\":{\"building_type\":\"residential\"},\"elevations\":{\"front_elevation\":\"Monolithic volumes; concealed gutters; frameless corners\",\"height_details\":\"Clear height 3.0 m; floor-to-floor 3.2 m\"}},\"created_at\":\"2025-10-07 18:57:36\"},\"layout_image_url\":null}', '2025-10-07 16:03:31', '2025-10-07 21:33:55', '2025-10-16'),
-(7, 37, 28, NULL, NULL, NULL, '{\"layout_id\":null,\"design_id\":null,\"message\":null,\"forwarded_design\":{\"id\":22,\"title\":\"hgvv\",\"description\":\"\",\"files\":[{\"original\":\"2.png\",\"stored\":\"68ef98b6b90964.28887100_1760532662.png\",\"ext\":\"png\",\"path\":\"/buildhub/backend/uploads/designs/68ef98b6b90964.28887100_1760532662.png\"}],\"technical_details\":{\"floor_plans\":{\"living_room_dimensions\":\"20 × 15 ft\",\"master_bedroom_dimensions\":\"16 × 12 ft\",\"layout_description\":\" jhg\",\"kitchen_dimensions\":\"12 × 10 ft\"},\"structural\":{\"load_bearing_walls\":\"Reinforced concrete walls at cores; 200 mm slabs\",\"column_positions\":\"8 m grid; edge columns 300×600 mm\",\"foundation_outline\":\"Isolated footings; M30 concrete\",\"roof_outline\":\"Flat RCC slab with insulation\"},\"construction\":{\"wall_thickness\":\"External 230 mm RCC + insulation + plaster; Internal 115 mm block\",\"ceiling_heights\":\"Living 3.1 m; Bedrooms 3.0 m; Kitchen 2.9 m\",\"building_codes\":\"IBC 2021 / IS 456 as applicable\",\"critical_instructions\":\"Use Fe500 rebars; cover as per exposure class XC2\"},\"meta\":{\"building_type\":\"residential\"},\"elevations\":{\"front_elevation\":\"Monolithic volumes; concealed gutters; frameless corners\",\"height_details\":\"Clear height 3.0 m; floor-to-floor 3.2 m\"}},\"created_at\":\"2025-10-15 18:21:02\"},\"layout_image_url\":null,\"floor_details\":null}', '2025-10-21 10:32:49', NULL, NULL),
-(10, 51, 48, 99, NULL, 'Project for 3BHK modern house in Bangalore. Please provide detailed estimate.', NULL, '2025-12-21 08:25:23', '2025-12-16 09:25:23', NULL),
-(11, 52, 49, 100, NULL, 'Traditional 4BHK house project in Mumbai. Vastu compliant design required.', NULL, '2025-12-21 08:25:23', '2025-12-18 09:25:23', NULL),
-(12, 53, 50, 101, NULL, 'Compact 2BHK house project in Delhi. Space optimization is key.', NULL, '2025-12-21 08:25:23', '2025-12-14 09:25:23', NULL),
-(13, 51, 48, 99, NULL, 'Project for 3BHK modern house in Bangalore. Please provide detailed estimate.', NULL, '2025-12-30 06:04:26', '2025-12-25 07:04:26', NULL),
-(14, 52, 49, 100, NULL, 'Traditional 4BHK house project in Mumbai. Vastu compliant design required.', NULL, '2025-12-30 06:04:26', '2025-12-27 07:04:26', NULL),
-(15, 53, 50, 101, NULL, 'Compact 2BHK house project in Delhi. Space optimization is key.', NULL, '2025-12-30 06:04:26', '2025-12-23 07:04:26', NULL);
+INSERT INTO `contractor_layout_sends` (`id`, `contractor_id`, `homeowner_id`, `layout_id`, `design_id`, `house_plan_id`, `message`, `payload`, `created_at`, `acknowledged_at`, `due_date`) VALUES
+(3, 37, 28, NULL, NULL, NULL, NULL, '{\"layout_id\":null,\"design_id\":null,\"message\":null,\"forwarded_design\":{\"id\":21,\"title\":\"nbn\",\"description\":\"\",\"files\":[{\"original\":\"4.png\",\"stored\":\"68e51548c6d1c5.76863274_1759843656.png\",\"ext\":\"png\",\"path\":\"/buildhub/backend/uploads/designs/68e51548c6d1c5.76863274_1759843656.png\"}],\"technical_details\":{\"floor_plans\":{\"living_room_dimensions\":\"24 × 18 ft\",\"master_bedroom_dimensions\":\"18 × 14 ft\"},\"structural\":{\"foundation_outline\":\"Isolated footings; basement optional\",\"roof_outline\":\"Flat + partial sloped accents; terrace deck\"},\"construction\":{\"wall_thickness\":\"External 250–300 mm with high insulation; internal 115–150 mm\",\"ceiling_heights\":\"Ground 3.4 m; Upper 3.2 m\",\"building_codes\":\"High energy performance; local villa standards\",\"critical_instructions\":\"Provision for home automation and solar PV\"},\"meta\":{\"building_type\":\"residential\"},\"elevations\":{\"front_elevation\":\"Monolithic volumes; concealed gutters; frameless corners\",\"height_details\":\"Clear height 3.0 m; floor-to-floor 3.2 m\"}},\"created_at\":\"2025-10-07 18:57:36\"},\"layout_image_url\":null}', '2025-10-07 16:03:31', '2025-10-07 21:33:55', '2025-10-16'),
+(7, 37, 28, NULL, NULL, NULL, NULL, '{\"layout_id\":null,\"design_id\":null,\"message\":null,\"forwarded_design\":{\"id\":22,\"title\":\"hgvv\",\"description\":\"\",\"files\":[{\"original\":\"2.png\",\"stored\":\"68ef98b6b90964.28887100_1760532662.png\",\"ext\":\"png\",\"path\":\"/buildhub/backend/uploads/designs/68ef98b6b90964.28887100_1760532662.png\"}],\"technical_details\":{\"floor_plans\":{\"living_room_dimensions\":\"20 × 15 ft\",\"master_bedroom_dimensions\":\"16 × 12 ft\",\"layout_description\":\" jhg\",\"kitchen_dimensions\":\"12 × 10 ft\"},\"structural\":{\"load_bearing_walls\":\"Reinforced concrete walls at cores; 200 mm slabs\",\"column_positions\":\"8 m grid; edge columns 300×600 mm\",\"foundation_outline\":\"Isolated footings; M30 concrete\",\"roof_outline\":\"Flat RCC slab with insulation\"},\"construction\":{\"wall_thickness\":\"External 230 mm RCC + insulation + plaster; Internal 115 mm block\",\"ceiling_heights\":\"Living 3.1 m; Bedrooms 3.0 m; Kitchen 2.9 m\",\"building_codes\":\"IBC 2021 / IS 456 as applicable\",\"critical_instructions\":\"Use Fe500 rebars; cover as per exposure class XC2\"},\"meta\":{\"building_type\":\"residential\"},\"elevations\":{\"front_elevation\":\"Monolithic volumes; concealed gutters; frameless corners\",\"height_details\":\"Clear height 3.0 m; floor-to-floor 3.2 m\"}},\"created_at\":\"2025-10-15 18:21:02\"},\"layout_image_url\":null,\"floor_details\":null}', '2025-10-21 10:32:49', NULL, NULL),
+(10, 51, 48, 99, NULL, NULL, 'Project for 3BHK modern house in Bangalore. Please provide detailed estimate.', NULL, '2025-12-21 08:25:23', '2025-12-16 09:25:23', NULL),
+(11, 52, 49, 100, NULL, NULL, 'Traditional 4BHK house project in Mumbai. Vastu compliant design required.', NULL, '2025-12-21 08:25:23', '2025-12-18 09:25:23', NULL),
+(12, 53, 50, 101, NULL, NULL, 'Compact 2BHK house project in Delhi. Space optimization is key.', NULL, '2025-12-21 08:25:23', '2025-12-14 09:25:23', NULL),
+(13, 51, 48, 99, NULL, NULL, 'Project for 3BHK modern house in Bangalore. Please provide detailed estimate.', NULL, '2025-12-30 06:04:26', '2025-12-25 07:04:26', NULL),
+(14, 52, 49, 100, NULL, NULL, 'Traditional 4BHK house project in Mumbai. Vastu compliant design required.', NULL, '2025-12-30 06:04:26', '2025-12-27 07:04:26', NULL),
+(15, 53, 50, 101, NULL, NULL, 'Compact 2BHK house project in Delhi. Space optimization is key.', NULL, '2025-12-30 06:04:26', '2025-12-23 07:04:26', NULL),
+(18, 29, 28, NULL, NULL, 11, 'Hi! I\'d like to get a construction estimate for this house plan: \"SHIJIN THOMAS MCA2024-2026 House Plan\". Please review the attached technical details and layout images.', '{\"type\":\"house_plan\",\"house_plan_id\":11,\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan\",\"plot_dimensions\":\"20\' \\u00d7 20\'\",\"total_area\":0,\"technical_details\":{\"foundation_type\":\"RCC\",\"structure_type\":\"RCC Frame\",\"wall_material\":\"Brick\",\"roofing_type\":\"RCC Slab\",\"flooring_type\":\"Ceramic Tiles\",\"wall_thickness\":\"9\",\"ceiling_height\":\"10\",\"door_height\":\"7\",\"window_height\":\"4\",\"electrical_load\":\"5\",\"water_connection\":\"Municipal\",\"sewage_connection\":\"Municipal\",\"construction_cost\":\"5000000\",\"construction_duration\":\"8-12\",\"unlock_price\":\"8000\",\"special_features\":\"\",\"construction_notes\":\"\",\"compliance_certificates\":\"Building Permit, NOC\",\"exterior_finish\":\"Paint\",\"interior_finish\":\"Paint\",\"kitchen_type\":\"Modular\",\"bathroom_fittings\":\"Standard\",\"earthquake_resistance\":\"Zone III Compliant\",\"fire_safety\":\"Standard\",\"ventilation\":\"Natural + Exhaust Fans\",\"site_area\":\"2500\",\"built_up_area\":\"18\",\"carpet_area\":\"\",\"setback_front\":\"\",\"setback_rear\":\"\",\"setback_left\":\"\",\"setback_right\":\"\",\"beam_size\":\"9x12\",\"column_size\":\"9x12\",\"slab_thickness\":\"5\",\"footing_depth\":\"4 feet\",\"electrical_points\":\"\",\"plumbing_fixtures\":\"\",\"hvac_system\":\"Split AC\",\"solar_provision\":\"No\",\"main_door_material\":\"Teak Wood\",\"window_material\":\"UPVC\",\"staircase_material\":\"RCC with Granite\",\"compound_wall\":\"Yes\",\"building_plan_approval\":\"Required\",\"environmental_clearance\":\"Not Required\",\"fire_noc\":\"Required\",\"layout_image\":{\"file\":null,\"name\":\"SHIJIN_THOMAS_MCA2024_2026_House_Plan_layout (1).png\",\"size\":1220939,\"type\":\"image\\/png\",\"preview\":\"blob:http:\\/\\/localhost:3000\\/0b385194-7d8a-4027-98f4-d22d44cfd6d2\",\"uploaded\":true,\"pending_upload\":false,\"stored\":\"11_layout_image_695d380adfae7.png\",\"upload_time\":\"2026-01-06 17:27:54\"},\"elevation_images\":[],\"section_drawings\":[],\"renders_3d\":[]},\"plan_data\":{\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan\",\"plot_width\":20,\"plot_height\":20,\"rooms\":[],\"scale_ratio\":1.2,\"total_layout_area\":0,\"total_construction_area\":0,\"floors\":{\"total_floors\":1,\"current_floor\":1,\"floor_names\":{\"1\":\"Ground Floor\"}}},\"architect_info\":{\"name\":\"Shijin Thomas\",\"email\":\"shijinthomas1501@gmail.com\",\"specialization\":\"Residential\"},\"layout_images\":[{\"type\":\"layout_image\",\"filename\":\"11_layout_image_695d380adfae7.png\",\"original_name\":\"SHIJIN_THOMAS_MCA2024_2026_House_Plan_layout (1).png\",\"url\":\"\\/buildhub\\/backend\\/uploads\\/house_plans\\/11_layout_image_695d380adfae7.png\"}],\"notes\":\"Upload Design with Technical Details\",\"message\":\"Hi! I\'d like to get a construction estimate for this house plan: \\\"SHIJIN THOMAS MCA2024-2026 House Plan\\\". Please review the attached technical details and layout images.\",\"sent_at\":\"2026-01-07 16:00:37\",\"homeowner_id\":28}', '2026-01-07 15:00:37', '2026-01-07 20:31:44', '2026-01-08');
 
 -- --------------------------------------------------------
 
@@ -474,7 +566,8 @@ INSERT INTO `contractor_send_estimates` (`id`, `send_id`, `contractor_id`, `mate
 (32, 12, 53, 'Cement: 120 bags, Steel: 1.5 tons, Bricks: 10000 pieces, Sand: 75 cubic feet, Aggregate: 100 cubic feet', 'Foundation: ₹2,00,000, Structure: ₹3,50,000, Brickwork: ₹1,50,000, Roofing: ₹1,50,000, Electrical: ₹1,00,000, Plumbing: ₹75,000, Finishing: ₹1,75,000', 1200000.00, '5 months', 'Compact and efficient design with space optimization. All basic amenities included.', 'accepted', '2025-12-21 08:25:23', NULL, NULL, NULL),
 (33, 10, 51, 'Cement: 200 bags, Steel: 2 tons, Bricks: 15000 pieces, Sand: 100 cubic feet, Aggregate: 150 cubic feet', 'Foundation: ₹3,00,000, Structure: ₹5,00,000, Brickwork: ₹2,50,000, Roofing: ₹2,00,000, Electrical: ₹1,50,000, Plumbing: ₹1,00,000, Finishing: ₹2,00,000', 1700000.00, '7 months', 'Complete construction with all modern amenities. Includes electrical, plumbing, and basic finishing work.', 'accepted', '2025-12-30 06:04:26', NULL, NULL, NULL),
 (34, 11, 52, 'Cement: 300 bags, Steel: 3 tons, Bricks: 25000 pieces, Sand: 150 cubic feet, Aggregate: 200 cubic feet, Marble: 2000 sq ft', 'Foundation: ₹4,50,000, Structure: ₹7,50,000, Brickwork: ₹4,00,000, Roofing: ₹3,00,000, Electrical: ₹2,50,000, Plumbing: ₹2,00,000, Finishing: ₹4,50,000', 2800000.00, '9 months', 'Traditional design with vastu compliance. Premium materials and finishes included.', 'accepted', '2025-12-30 06:04:26', NULL, NULL, NULL),
-(35, 12, 53, 'Cement: 120 bags, Steel: 1.5 tons, Bricks: 10000 pieces, Sand: 75 cubic feet, Aggregate: 100 cubic feet', 'Foundation: ₹2,00,000, Structure: ₹3,50,000, Brickwork: ₹1,50,000, Roofing: ₹1,50,000, Electrical: ₹1,00,000, Plumbing: ₹75,000, Finishing: ₹1,75,000', 1200000.00, '5 months', 'Compact and efficient design with space optimization. All basic amenities included.', 'accepted', '2025-12-30 06:04:26', NULL, NULL, NULL);
+(35, 12, 53, 'Cement: 120 bags, Steel: 1.5 tons, Bricks: 10000 pieces, Sand: 75 cubic feet, Aggregate: 100 cubic feet', 'Foundation: ₹2,00,000, Structure: ₹3,50,000, Brickwork: ₹1,50,000, Roofing: ₹1,50,000, Electrical: ₹1,00,000, Plumbing: ₹75,000, Finishing: ₹1,75,000', 1200000.00, '5 months', 'Compact and efficient design with space optimization. All basic amenities included.', 'accepted', '2025-12-30 06:04:26', NULL, NULL, NULL),
+(36, 18, 29, NULL, NULL, NULL, '6 months', NULL, 'project_created', '2026-01-11 08:09:25', '{\"project_name\":\"SHIJIN THOMAS MCA2024-2026 Construction\",\"project_address\":\"\",\"plot_size\":\"\",\"built_up_area\":\"\",\"floors\":\"\",\"estimation_date\":\"\",\"client_name\":\"SHIJIN THOMAS MCA2024-2026\",\"client_contact\":\"shijinthomas2026@mca.ajce.in\",\"materials\":{\"cement\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"sand\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"bricks\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"steel\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"aggregate\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"tiles\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"paint\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"doors\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"windows\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"others\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"}},\"labor\":{\"mason\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"plaster\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"painting\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"electrical\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"plumbing\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"flooring\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"roofing\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"others\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"}},\"utilities\":{\"sanitary\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"kitchen\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"electrical_fixtures\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"water_tank\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"hvac\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"gas_water\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"others1\":{\"name\":\"\",\"amount\":\"\"},\"others2\":{\"name\":\"\",\"amount\":\"\"},\"others3\":{\"name\":\"\",\"amount\":\"\"}},\"misc\":{\"transport\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"contingency\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"fees\":{\"name\":\"\",\"amount\":\"\"},\"cleaning\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"safety\":{\"name\":\"\",\"qty\":\"\",\"rate\":\"\",\"amount\":\"\"},\"others1\":{\"name\":\"\",\"amount\":\"\"},\"others2\":{\"name\":\"\",\"amount\":\"\"},\"others3\":{\"name\":\"\",\"amount\":\"\"}},\"totals\":{\"materials\":\"\",\"labor\":\"\",\"utilities\":\"\",\"misc\":\"\",\"grand\":\"\"},\"brands\":\"\"}', NULL, '2026-01-11 14:31:07');
 
 -- --------------------------------------------------------
 
@@ -618,6 +711,28 @@ INSERT INTO `design_comments` (`id`, `design_id`, `user_id`, `message`, `created
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `estimate_drafts`
+--
+
+CREATE TABLE `estimate_drafts` (
+  `id` int(11) NOT NULL,
+  `contractor_id` int(11) NOT NULL,
+  `send_id` int(11) NOT NULL,
+  `draft_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`draft_data`)),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `estimate_drafts`
+--
+
+INSERT INTO `estimate_drafts` (`id`, `contractor_id`, `send_id`, `draft_data`, `created_at`, `updated_at`) VALUES
+(1, 29, 18, '{\"send_id\":\"18\",\"contractor_id\":\"29\",\"structured[project_name]\":\"SHIJIN THOMAS MCA2024-2026 Construction\",\"structured[client_name]\":\"SHIJIN THOMAS MCA2024-2026\",\"structured[client_contact]\":\"shijinthomas2026@mca.ajce.in\",\"timeline\":\"6 months\"}', '2026-01-11 08:03:34', '2026-01-11 08:09:23');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `geo_photos`
 --
 
@@ -670,7 +785,13 @@ CREATE TABLE `homeowner_notifications` (
 --
 
 INSERT INTO `homeowner_notifications` (`id`, `homeowner_id`, `contractor_id`, `type`, `title`, `message`, `status`, `created_at`) VALUES
-(1, 28, 29, 'acknowledgment', 'Contractor Acknowledged Your Layout', 'Shijin Thomas acknowledged your layout at 2025-10-26 19:19:55.\nDue date: December 25, 2025', 'unread', '2025-10-26 18:19:55');
+(1, 28, 29, 'acknowledgment', 'Contractor Acknowledged Your Layout', 'Shijin Thomas acknowledged your layout at 2025-10-26 19:19:55.\nDue date: December 25, 2025', 'unread', '2025-10-26 18:19:55'),
+(2, 28, 29, 'acknowledgment', 'Contractor Acknowledged Your Layout', 'Shijin Thomas acknowledged your layout at 2026-01-06 18:10:49.\nDue date: not specified', 'unread', '2026-01-06 17:10:49'),
+(3, 28, 29, 'acknowledgment', 'Contractor Acknowledged Your Layout', 'Shijin Thomas acknowledged your layout at 2026-01-06 18:10:53.\nDue date: January 8, 2026', 'unread', '2026-01-06 17:10:53'),
+(4, 28, 29, 'acknowledgment', 'Contractor Acknowledged Your Layout', 'Shijin Thomas acknowledged your layout at 2026-01-07 16:01:38.\nDue date: January 8, 2026', 'unread', '2026-01-07 15:01:38'),
+(5, 28, 29, 'acknowledgment', 'Contractor Acknowledged Your Layout', 'Shijin Thomas acknowledged your layout at 2026-01-07 16:01:41.\nDue date: January 8, 2026', 'unread', '2026-01-07 15:01:41'),
+(6, 28, 29, 'acknowledgment', 'Contractor Acknowledged Your Layout', 'Shijin Thomas acknowledged your layout at 2026-01-07 16:01:44.\nDue date: January 8, 2026', 'unread', '2026-01-07 15:01:44'),
+(7, 28, 37, 'acknowledgment', 'Contractor Acknowledged Your Layout', 'Shijin Thomas acknowledged your layout at 2026-01-07 16:40:39.\nDue date: January 15, 2026', 'unread', '2026-01-07 15:40:39');
 
 -- --------------------------------------------------------
 
@@ -686,21 +807,26 @@ CREATE TABLE `house_plans` (
   `plot_width` decimal(8,2) NOT NULL,
   `plot_height` decimal(8,2) NOT NULL,
   `plan_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`plan_data`)),
+  `technical_details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Stores comprehensive technical specifications including construction details, materials, MEP systems, etc.' CHECK (json_valid(`technical_details`)),
+  `layout_image` text DEFAULT NULL,
   `total_area` decimal(10,2) NOT NULL,
   `status` enum('draft','submitted','approved','rejected') DEFAULT 'draft',
   `version` int(11) DEFAULT 1,
   `parent_plan_id` int(11) DEFAULT NULL,
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `unlock_price` decimal(10,2) DEFAULT 8000.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `house_plans`
 --
 
-INSERT INTO `house_plans` (`id`, `architect_id`, `layout_request_id`, `plan_name`, `plot_width`, `plot_height`, `plan_data`, `total_area`, `status`, `version`, `parent_plan_id`, `notes`, `created_at`, `updated_at`) VALUES
-(3, 27, 105, 'SHIJIN THOMAS MCA2024-2026 House Plan', 52.00, 62.00, '{\"rooms\":[{\"id\":1,\"name\":\"master bedroom\",\"type\":\"master_bedroom\",\"x\":50,\"y\":50,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#c8e6c9\",\"floor\":1},{\"id\":2,\"name\":\"bedrooms\",\"type\":\"bedrooms\",\"x\":190,\"y\":50,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#dcedc8\",\"floor\":1},{\"id\":3,\"name\":\"bathrooms\",\"type\":\"bathrooms\",\"x\":330,\"y\":50,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#e1f5fe\",\"floor\":1},{\"id\":4,\"name\":\"attached bathroom\",\"type\":\"attached_bathroom\",\"x\":50,\"y\":170,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#e3f2fd\",\"floor\":1},{\"id\":5,\"name\":\"kitchen\",\"type\":\"kitchen\",\"x\":190,\"y\":170,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#ffcdd2\",\"floor\":1},{\"id\":6,\"name\":\"living room\",\"type\":\"living_room\",\"x\":330,\"y\":170,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#ffe0b2\",\"floor\":1},{\"id\":7,\"name\":\"dining room\",\"type\":\"dining_room\",\"x\":50,\"y\":290,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#e1bee7\",\"floor\":1},{\"id\":8,\"name\":\"store room\",\"type\":\"store_room\",\"x\":190,\"y\":290,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#f5f5f5\",\"floor\":1},{\"id\":9,\"name\":\"garage\",\"type\":\"garage\",\"x\":330,\"y\":290,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#e3f2fd\",\"floor\":1},{\"id\":10,\"name\":\"study room\",\"type\":\"study_room\",\"x\":50,\"y\":610,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#e8eaf6\",\"floor\":2},{\"id\":11,\"name\":\"prayer room\",\"type\":\"prayer_room\",\"x\":190,\"y\":610,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#b39ddb\",\"floor\":2},{\"id\":12,\"name\":\"guest room\",\"type\":\"guest_room\",\"x\":460,\"y\":840,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#e3f2fd\",\"floor\":2},{\"id\":13,\"name\":\"balcony\",\"type\":\"balcony\",\"x\":760,\"y\":800,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#c8e6c9\",\"floor\":2},{\"id\":14,\"name\":\"terrace\",\"type\":\"terrace\",\"x\":0,\"y\":820,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#dcedc8\",\"floor\":2},{\"id\":15,\"name\":\"bedrooms\",\"type\":\"bedrooms\",\"x\":320,\"y\":1040,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#dcedc8\",\"floor\":2},{\"id\":16,\"name\":\"bathrooms\",\"type\":\"bathrooms\",\"x\":520,\"y\":1020,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#e1f5fe\",\"floor\":2},{\"id\":17,\"name\":\"attached bathroom\",\"type\":\"attached_bathroom\",\"x\":80,\"y\":1040,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"color\":\"#e3f2fd\",\"floor\":2}],\"scale_ratio\":1.2,\"total_layout_area\":1700,\"total_construction_area\":2448}', 2448.00, 'draft', 1, NULL, '', '2026-01-05 17:06:30', '2026-01-05 17:21:00');
+INSERT INTO `house_plans` (`id`, `architect_id`, `layout_request_id`, `plan_name`, `plot_width`, `plot_height`, `plan_data`, `technical_details`, `layout_image`, `total_area`, `status`, `version`, `parent_plan_id`, `notes`, `created_at`, `updated_at`, `unlock_price`) VALUES
+(10, 27, 109, 'Test Upload Plan', 30.00, 40.00, '{\"plan_name\":\"Test Upload Plan\",\"plot_width\":30,\"plot_height\":40,\"rooms\":[],\"scale_ratio\":1.2,\"total_layout_area\":0,\"total_construction_area\":0,\"floors\":{\"total_floors\":1,\"current_floor\":1,\"floor_names\":{\"1\":\"Ground Floor\"}}}', '{\"foundation_type\":\"RCC\",\"structure_type\":\"RCC Frame\",\"construction_cost\":\"25,00,000\",\"unlock_price\":\"8000\",\"layout_image\":{\"name\":\"test_layout.png\",\"stored\":\"10_layout_image_test.png\",\"size\":70,\"type\":\"image\\/png\",\"uploaded\":true,\"pending_upload\":false,\"upload_time\":\"2026-01-06 17:23:50\"}}', NULL, 0.00, 'submitted', 1, NULL, 'Test plan for upload flow', '2026-01-06 16:23:50', '2026-01-06 16:23:50', 8000.00),
+(11, 27, 105, 'SHIJIN THOMAS MCA2024-2026 House Plan', 20.00, 20.00, '{\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan\",\"plot_width\":20,\"plot_height\":20,\"rooms\":[],\"scale_ratio\":1.2,\"total_layout_area\":0,\"total_construction_area\":0,\"floors\":{\"total_floors\":1,\"current_floor\":1,\"floor_names\":{\"1\":\"Ground Floor\"}}}', '{\"foundation_type\":\"RCC\",\"structure_type\":\"RCC Frame\",\"wall_material\":\"Brick\",\"roofing_type\":\"RCC Slab\",\"flooring_type\":\"Ceramic Tiles\",\"wall_thickness\":\"9\",\"ceiling_height\":\"10\",\"door_height\":\"7\",\"window_height\":\"4\",\"electrical_load\":\"5\",\"water_connection\":\"Municipal\",\"sewage_connection\":\"Municipal\",\"construction_cost\":\"5000000\",\"construction_duration\":\"8-12\",\"unlock_price\":\"8000\",\"special_features\":\"\",\"construction_notes\":\"\",\"compliance_certificates\":\"Building Permit, NOC\",\"exterior_finish\":\"Paint\",\"interior_finish\":\"Paint\",\"kitchen_type\":\"Modular\",\"bathroom_fittings\":\"Standard\",\"earthquake_resistance\":\"Zone III Compliant\",\"fire_safety\":\"Standard\",\"ventilation\":\"Natural + Exhaust Fans\",\"site_area\":\"2500\",\"built_up_area\":\"18\",\"carpet_area\":\"\",\"setback_front\":\"\",\"setback_rear\":\"\",\"setback_left\":\"\",\"setback_right\":\"\",\"beam_size\":\"9x12\",\"column_size\":\"9x12\",\"slab_thickness\":\"5\",\"footing_depth\":\"4 feet\",\"electrical_points\":\"\",\"plumbing_fixtures\":\"\",\"hvac_system\":\"Split AC\",\"solar_provision\":\"No\",\"main_door_material\":\"Teak Wood\",\"window_material\":\"UPVC\",\"staircase_material\":\"RCC with Granite\",\"compound_wall\":\"Yes\",\"building_plan_approval\":\"Required\",\"environmental_clearance\":\"Not Required\",\"fire_noc\":\"Required\",\"layout_image\":{\"file\":null,\"name\":\"SHIJIN_THOMAS_MCA2024_2026_House_Plan_layout (1).png\",\"size\":1220939,\"type\":\"image\\/png\",\"preview\":\"blob:http:\\/\\/localhost:3000\\/0b385194-7d8a-4027-98f4-d22d44cfd6d2\",\"uploaded\":true,\"pending_upload\":false,\"stored\":\"11_layout_image_695d380adfae7.png\",\"upload_time\":\"2026-01-06 17:27:54\"},\"elevation_images\":[],\"section_drawings\":[],\"renders_3d\":[]}', NULL, 0.00, 'submitted', 1, NULL, 'Upload Design with Technical Details', '2026-01-06 16:27:54', '2026-01-06 16:27:55', 8000.00),
+(12, 27, 105, 'SHIJIN THOMAS MCA2024-2026 House Plan', 51.00, 54.00, '{\"rooms\":[{\"id\":1,\"name\":\"master bedroom\",\"type\":\"master_bedroom\",\"x\":50,\"y\":50,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#c8e6c9\",\"floor\":1},{\"id\":2,\"name\":\"bedrooms\",\"type\":\"bedrooms\",\"x\":190,\"y\":50,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#dcedc8\",\"floor\":1},{\"id\":3,\"name\":\"bathrooms\",\"type\":\"bathrooms\",\"x\":330,\"y\":50,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#e1f5fe\",\"floor\":1},{\"id\":4,\"name\":\"attached bathroom\",\"type\":\"attached_bathroom\",\"x\":50,\"y\":170,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#e3f2fd\",\"floor\":1},{\"id\":5,\"name\":\"kitchen\",\"type\":\"kitchen\",\"x\":190,\"y\":170,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#ffcdd2\",\"floor\":1},{\"id\":6,\"name\":\"living room\",\"type\":\"living_room\",\"x\":330,\"y\":170,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#ffe0b2\",\"floor\":1},{\"id\":7,\"name\":\"dining room\",\"type\":\"dining_room\",\"x\":50,\"y\":290,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#e1bee7\",\"floor\":1},{\"id\":8,\"name\":\"store room\",\"type\":\"store_room\",\"x\":190,\"y\":290,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#f5f5f5\",\"floor\":1},{\"id\":9,\"name\":\"garage\",\"type\":\"garage\",\"x\":330,\"y\":290,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#e3f2fd\",\"floor\":1},{\"id\":10,\"name\":\"study room\",\"type\":\"study_room\",\"x\":50,\"y\":610,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#e8eaf6\",\"floor\":2},{\"id\":11,\"name\":\"prayer room\",\"type\":\"prayer_room\",\"x\":190,\"y\":610,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#b39ddb\",\"floor\":2},{\"id\":12,\"name\":\"guest room\",\"type\":\"guest_room\",\"x\":330,\"y\":610,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#e3f2fd\",\"floor\":2},{\"id\":13,\"name\":\"balcony\",\"type\":\"balcony\",\"x\":50,\"y\":730,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#c8e6c9\",\"floor\":2},{\"id\":14,\"name\":\"terrace\",\"type\":\"terrace\",\"x\":190,\"y\":730,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#dcedc8\",\"floor\":2},{\"id\":15,\"name\":\"bedrooms\",\"type\":\"bedrooms\",\"x\":330,\"y\":730,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#dcedc8\",\"floor\":2},{\"id\":16,\"name\":\"bathrooms\",\"type\":\"bathrooms\",\"x\":50,\"y\":850,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#e1f5fe\",\"floor\":2},{\"id\":17,\"name\":\"attached bathroom\",\"type\":\"attached_bathroom\",\"x\":190,\"y\":850,\"layout_width\":10,\"layout_height\":10,\"actual_width\":12,\"actual_height\":12,\"rotation\":0,\"color\":\"#e3f2fd\",\"floor\":2}],\"scale_ratio\":1.2,\"total_layout_area\":1700,\"total_construction_area\":2448,\"floors\":{\"total_floors\":1,\"current_floor\":1,\"floor_names\":{\"1\":\"Ground Floor\"}}}', NULL, NULL, 2448.00, 'draft', 1, NULL, '', '2026-01-07 06:08:46', '2026-01-07 06:08:46', 8000.00);
 
 -- --------------------------------------------------------
 
@@ -716,6 +842,44 @@ CREATE TABLE `house_plan_reviews` (
   `feedback` text DEFAULT NULL,
   `reviewed_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `house_plan_reviews`
+--
+
+INSERT INTO `house_plan_reviews` (`id`, `house_plan_id`, `homeowner_id`, `status`, `feedback`, `reviewed_at`) VALUES
+(7, 11, 28, 'pending', NULL, '2026-01-06 16:27:55');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `inbox_messages`
+--
+
+CREATE TABLE `inbox_messages` (
+  `id` int(11) NOT NULL,
+  `recipient_id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `message_type` varchar(50) NOT NULL DEFAULT 'general',
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metadata`)),
+  `priority` enum('low','normal','high','urgent') DEFAULT 'normal',
+  `is_read` tinyint(1) DEFAULT 0,
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `inbox_messages`
+--
+
+INSERT INTO `inbox_messages` (`id`, `recipient_id`, `sender_id`, `message_type`, `title`, `message`, `metadata`, `priority`, `is_read`, `read_at`, `created_at`, `updated_at`) VALUES
+(4, 28, 27, 'plan_submitted', 'House Plan Ready for Review - SHIJIN THOMAS MCA2024-2026 House Plan', 'Your architect has submitted a complete house plan \"SHIJIN THOMAS MCA2024-2026 House Plan\" with technical specifications. The plan includes 0 rooms covering 0 sq ft with estimated cost of 5000000. Please review and provide feedback.', '{\"plan_id\":7,\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan\",\"total_rooms\":0,\"total_area\":0,\"estimated_cost\":\"5000000\",\"construction_duration\":\"8-12\",\"architect_id\":27}', 'high', 0, NULL, '2026-01-06 09:27:06', '2026-01-06 09:27:06'),
+(5, 27, 28, 'house_plan_deleted', 'House Plan Deleted by Homeowner', 'The homeowner SHIJIN THOMAS MCA2024-2026 has deleted your house plan \"SHIJIN THOMAS MCA2024-2026 House Plan\". They may want a different design approach or have decided not to proceed with this plan.', '{\"house_plan_id\":7,\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan\",\"homeowner_id\":28,\"homeowner_name\":\"SHIJIN THOMAS MCA2024-2026\",\"action\":\"house_plan_deleted_by_homeowner\"}', 'normal', 0, NULL, '2026-01-06 14:47:10', '2026-01-06 14:47:10'),
+(7, 28, 27, 'plan_submitted', 'House Plan Ready for Review - SHIJIN THOMAS MCA2024-2026 House Plan', 'Your architect has submitted a complete house plan \"SHIJIN THOMAS MCA2024-2026 House Plan\" with technical specifications. The plan includes 0 rooms covering 0 sq ft with estimated cost of 5000000. Please review and provide feedback.', '{\"plan_id\":9,\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan\",\"total_rooms\":0,\"total_area\":0,\"estimated_cost\":\"5000000\",\"construction_duration\":\"8-12\",\"architect_id\":27}', 'high', 0, NULL, '2026-01-06 16:03:50', '2026-01-06 16:03:50'),
+(8, 28, 27, 'plan_submitted', 'House Plan Ready for Review - SHIJIN THOMAS MCA2024-2026 House Plan', 'Your architect has submitted a complete house plan \"SHIJIN THOMAS MCA2024-2026 House Plan\" with technical specifications. The plan includes 0 rooms covering 0 sq ft with estimated cost of 5000000. Please review and provide feedback.', '{\"plan_id\":11,\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan\",\"total_rooms\":0,\"total_area\":0,\"estimated_cost\":\"5000000\",\"construction_duration\":\"8-12\",\"architect_id\":27}', 'high', 0, NULL, '2026-01-06 16:27:55', '2026-01-06 16:27:55');
 
 -- --------------------------------------------------------
 
@@ -877,7 +1041,8 @@ INSERT INTO `layout_requests` (`id`, `user_id`, `homeowner_id`, `plot_size`, `bu
 (102, 48, 48, '30x40 feet', '₹15-20 lakhs', 'Need a 3BHK house with modern kitchen and spacious living room. Should have good ventilation and natural light.', 'Modern', 'pending', '2025-12-30 06:04:26', '2025-12-30 06:04:26', 'Bangalore, Karnataka', '6-8 months', NULL, 'custom', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (103, 49, 49, '40x60 feet', '₹25-30 lakhs', 'Want a traditional style house with 4 bedrooms and garden space. Prefer vastu compliant design.', 'Traditional', 'pending', '2025-12-30 06:04:26', '2025-12-30 06:04:26', 'Mumbai, Maharashtra', '8-10 months', NULL, 'custom', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (104, 50, 50, '25x30 feet', '₹10-15 lakhs', 'Compact 2BHK house with efficient space utilization. Need parking for 1 car.', 'Compact', 'pending', '2025-12-30 06:04:26', '2025-12-30 06:04:26', 'Delhi, India', '4-6 months', NULL, 'custom', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(105, 28, 28, '20', '50-75 Lakhs', '{\"plot_shape\":\"Rectangular\",\"topography\":\"Flat\",\"development_laws\":\"Standard\",\"family_needs\":\"\",\"rooms\":\"master_bedroom,bedrooms,bathrooms,attached_bathroom,kitchen,living_room,dining_room,study_room,prayer_room,guest_room,store_room,balcony,terrace,garage\",\"aesthetic\":\"Modern\",\"notes\":\"\",\"orientation\":null,\"site_considerations\":null,\"material_preferences\":null,\"budget_allocation\":null,\"num_floors\":\"2\",\"preferred_style\":\"Modern\",\"floor_rooms\":{\"floor1\":{\"master_bedroom\":1,\"bedrooms\":1,\"bathrooms\":1,\"attached_bathroom\":1,\"kitchen\":1,\"living_room\":1,\"dining_room\":1,\"store_room\":1,\"garage\":1},\"floor2\":{\"study_room\":1,\"prayer_room\":1,\"guest_room\":1,\"balcony\":1,\"terrace\":1,\"bedrooms\":1,\"bathrooms\":1,\"attached_bathroom\":1}},\"site_images\":[],\"reference_images\":[],\"room_images\":[]}', 'Modern', 'approved', '2026-01-05 16:33:31', '2026-01-05 16:35:28', 'Mumbai', '3-6 months', NULL, 'custom', NULL, '[]', '[]', '[]', NULL, NULL, NULL, NULL, '{\"floor1\":{\"master_bedroom\":1,\"bedrooms\":1,\"bathrooms\":1,\"attached_bathroom\":1,\"kitchen\":1,\"living_room\":1,\"dining_room\":1,\"store_room\":1,\"garage\":1},\"floor2\":{\"study_room\":1,\"prayer_room\":1,\"guest_room\":1,\"balcony\":1,\"terrace\":1,\"bedrooms\":1,\"bathrooms\":1,\"attached_bathroom\":1}}', '2', '2500');
+(105, 28, 28, '20', '50-75 Lakhs', '{\"plot_shape\":\"Rectangular\",\"topography\":\"Flat\",\"development_laws\":\"Standard\",\"family_needs\":\"\",\"rooms\":\"master_bedroom,bedrooms,bathrooms,attached_bathroom,kitchen,living_room,dining_room,study_room,prayer_room,guest_room,store_room,balcony,terrace,garage\",\"aesthetic\":\"Modern\",\"notes\":\"\",\"orientation\":null,\"site_considerations\":null,\"material_preferences\":null,\"budget_allocation\":null,\"num_floors\":\"2\",\"preferred_style\":\"Modern\",\"floor_rooms\":{\"floor1\":{\"master_bedroom\":1,\"bedrooms\":1,\"bathrooms\":1,\"attached_bathroom\":1,\"kitchen\":1,\"living_room\":1,\"dining_room\":1,\"store_room\":1,\"garage\":1},\"floor2\":{\"study_room\":1,\"prayer_room\":1,\"guest_room\":1,\"balcony\":1,\"terrace\":1,\"bedrooms\":1,\"bathrooms\":1,\"attached_bathroom\":1}},\"site_images\":[],\"reference_images\":[],\"room_images\":[]}', 'Modern', 'approved', '2026-01-05 16:33:31', '2026-01-07 10:35:27', 'Mumbai', '3-6 months', NULL, 'custom', NULL, '[]', '[]', '[]', NULL, NULL, NULL, NULL, '{\"floor1\":{\"master_bedroom\":1,\"bedrooms\":1,\"bathrooms\":1,\"attached_bathroom\":1,\"kitchen\":1,\"living_room\":1,\"dining_room\":1,\"store_room\":1,\"garage\":1},\"floor2\":{\"study_room\":1,\"prayer_room\":1,\"guest_room\":1,\"balcony\":1,\"terrace\":1,\"bedrooms\":1,\"bathrooms\":1,\"attached_bathroom\":1}}', '2', '2500'),
+(109, 19, 19, '30x40', '20-30 lakhs', 'Test request for upload flow', NULL, 'deleted', '2026-01-06 16:23:50', '2026-01-07 10:26:00', NULL, NULL, NULL, 'custom', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -895,13 +1060,6 @@ CREATE TABLE `layout_request_assignments` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `layout_request_assignments`
---
-
-INSERT INTO `layout_request_assignments` (`id`, `layout_request_id`, `homeowner_id`, `architect_id`, `message`, `status`, `created_at`, `updated_at`) VALUES
-(56, 105, 28, 27, NULL, 'accepted', '2026-01-05 16:33:31', '2026-01-05 16:35:28');
 
 -- --------------------------------------------------------
 
@@ -1006,6 +1164,13 @@ CREATE TABLE `messages` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `messages`
+--
+
+INSERT INTO `messages` (`id`, `from_user_id`, `to_user_id`, `subject`, `message`, `message_type`, `related_id`, `is_read`, `created_at`) VALUES
+(1, 37, 28, 'Layout Request Acknowledged - Test Layout', 'Hello! I have acknowledged your layout request for \'Test Layout\' and will begin working on your estimate. Expected completion: January 15, 2026. I\'ll keep you updated on the progress.', 'acknowledgment', NULL, 0, '2026-01-07 15:40:39');
+
 -- --------------------------------------------------------
 
 --
@@ -1020,16 +1185,35 @@ CREATE TABLE `notifications` (
   `message` text NOT NULL,
   `related_id` int(11) DEFAULT NULL,
   `is_read` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `metadata` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `notifications`
 --
 
-INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `related_id`, `is_read`, `created_at`) VALUES
-(1, 19, 'test_notification', 'Test Notification', 'This is a test notification created by the notification system test.', NULL, 0, '2025-12-30 09:45:32'),
-(2, 28, 'test_notification', 'Test Notification', 'This is a test notification created at 2025-12-30 11:00:56', NULL, 1, '2025-12-30 10:00:56');
+INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `related_id`, `is_read`, `created_at`, `metadata`) VALUES
+(1, 19, 'test_notification', 'Test Notification', 'This is a test notification created by the notification system test.', NULL, 0, '2025-12-30 09:45:32', NULL),
+(2, 28, 'test_notification', 'Test Notification', 'This is a test notification created at 2025-12-30 11:00:56', NULL, 1, '2025-12-30 10:00:56', NULL),
+(3, 28, 'house_plan_submitted', 'New House Plan Submitted', 'Architect has submitted a custom house plan: SHIJIN THOMAS MCA2024-2026 House Plan', 3, 0, '2026-01-06 07:36:28', NULL),
+(6, 28, 'house_plan_submitted', 'New House Plan with Technical Details', 'Your architect has submitted a complete house plan \"SHIJIN THOMAS MCA2024-2026 House Plan\" with technical specifications. The plan includes 0 rooms covering 0 sq ft with estimated cost of 5000000. Please review and provide feedback.', 7, 0, '2026-01-06 09:27:06', NULL),
+(7, 28, 'payment_success', 'Technical Details Unlocked', 'Payment of ₹8000.00 successful! Technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" are now unlocked and available for viewing.', 7, 0, '2026-01-06 10:45:18', NULL),
+(8, 27, 'technical_details_purchased', 'Technical Details Purchased', 'Homeowner has purchased technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" (₹8000.00). They now have full access to your technical specifications.', 7, 0, '2026-01-06 10:45:18', NULL),
+(9, 28, 'payment_success', 'Technical Details Unlocked', 'Payment of ₹8000.00 successful! Technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" are now unlocked and available for viewing.', 7, 0, '2026-01-06 13:25:41', NULL),
+(10, 27, 'technical_details_purchased', 'Technical Details Purchased', 'Homeowner has purchased technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" (₹8000.00). They now have full access to your technical specifications.', 7, 0, '2026-01-06 13:25:41', NULL),
+(12, 28, 'payment_success', 'Technical Details Unlocked', 'Payment of ₹8000.00 successful! Technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" are now unlocked and available for viewing.', 8, 0, '2026-01-06 15:13:00', NULL),
+(13, 27, 'technical_details_purchased', 'Technical Details Purchased', 'Homeowner has purchased technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" (₹8000.00). They now have full access to your technical specifications.', 8, 0, '2026-01-06 15:13:00', NULL),
+(14, 28, 'house_plan_submitted', 'New House Plan with Technical Details', 'Your architect has submitted a complete house plan \"SHIJIN THOMAS MCA2024-2026 House Plan\" with technical specifications. The plan includes 0 rooms covering 0 sq ft with estimated cost of 5000000. Please review and provide feedback.', 9, 0, '2026-01-06 16:03:50', NULL),
+(15, 28, 'payment_success', 'Technical Details Unlocked', 'Payment of ₹8000.00 successful! Technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" are now unlocked and available for viewing.', 9, 0, '2026-01-06 16:04:32', NULL),
+(16, 27, 'technical_details_purchased', 'Technical Details Purchased', 'Homeowner has purchased technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" (₹8000.00). They now have full access to your technical specifications.', 9, 0, '2026-01-06 16:04:32', NULL),
+(17, 28, 'house_plan_submitted', 'New House Plan with Technical Details', 'Your architect has submitted a complete house plan \"SHIJIN THOMAS MCA2024-2026 House Plan\" with technical specifications. The plan includes 0 rooms covering 0 sq ft with estimated cost of 5000000. Please review and provide feedback.', 11, 0, '2026-01-06 16:27:55', NULL),
+(18, 28, 'payment_success', 'Technical Details Unlocked', 'Payment of ₹8000.00 successful! Technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" are now unlocked and available for viewing.', 11, 0, '2026-01-06 16:28:39', NULL),
+(19, 27, 'technical_details_purchased', 'Technical Details Purchased', 'Homeowner has purchased technical details for \"SHIJIN THOMAS MCA2024-2026 House Plan\" (₹8000.00). They now have full access to your technical specifications.', 11, 0, '2026-01-06 16:28:39', NULL),
+(20, 29, 'house_plan_received', 'New House Plan for Estimate', 'You have received a house plan \"SHIJIN THOMAS MCA2024-2026 House Plan (House Plan)\" from a homeowner. Plot: 20.00 × 20.00, Area: 0 sq ft. Please review and provide your construction estimate.', 16, 0, '2026-01-06 17:10:28', '{\"send_id\":\"16\",\"house_plan_id\":11,\"homeowner_id\":28,\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan (House Plan)\",\"total_area\":0}'),
+(21, 29, 'house_plan_received', 'New House Plan for Estimate', 'You have received a house plan \"SHIJIN THOMAS MCA2024-2026 House Plan (House Plan)\" from a homeowner. Plot: 20.00 × 20.00, Area: 0 sq ft. Please review and provide your construction estimate.', 17, 0, '2026-01-07 05:37:58', '{\"send_id\":\"17\",\"house_plan_id\":11,\"homeowner_id\":28,\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan (House Plan)\",\"total_area\":0}'),
+(22, 29, 'house_plan_received', 'New House Plan for Estimate', 'You have received a house plan \"SHIJIN THOMAS MCA2024-2026 House Plan\" from a homeowner. Plot: 20\' × 20\', Area: 0 sq ft. Please review and provide your construction estimate.', 18, 0, '2026-01-07 15:00:37', '{\"send_id\":\"18\",\"house_plan_id\":11,\"homeowner_id\":28,\"plan_name\":\"SHIJIN THOMAS MCA2024-2026 House Plan\",\"total_area\":0}'),
+(23, 28, 'estimate_received', 'New Estimate Received', 'You have received a new estimate from Shijin Thomas for project: Your Project', 36, 0, '2026-01-11 08:09:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -1354,6 +1538,50 @@ INSERT INTO `room_templates` (`id`, `name`, `category`, `default_width`, `defaul
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `stage_payment_requests`
+--
+
+CREATE TABLE `stage_payment_requests` (
+  `id` int(11) NOT NULL,
+  `project_id` int(11) DEFAULT NULL,
+  `contractor_id` int(11) DEFAULT NULL,
+  `homeowner_id` int(11) DEFAULT NULL,
+  `stage_name` varchar(100) NOT NULL,
+  `requested_amount` decimal(12,2) NOT NULL,
+  `completion_percentage` decimal(5,2) NOT NULL,
+  `work_description` text NOT NULL,
+  `materials_used` text DEFAULT NULL,
+  `labor_count` int(11) NOT NULL,
+  `work_start_date` date DEFAULT NULL,
+  `work_end_date` date DEFAULT NULL,
+  `contractor_notes` text DEFAULT NULL,
+  `quality_check` tinyint(1) DEFAULT 0,
+  `safety_compliance` tinyint(1) DEFAULT 0,
+  `total_project_cost` decimal(12,2) DEFAULT NULL,
+  `status` enum('pending','approved','rejected','paid') DEFAULT 'pending',
+  `request_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `response_date` timestamp NULL DEFAULT NULL,
+  `homeowner_notes` text DEFAULT NULL,
+  `approved_amount` decimal(12,2) DEFAULT NULL,
+  `rejection_reason` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `stage_payment_requests`
+--
+
+INSERT INTO `stage_payment_requests` (`id`, `project_id`, `contractor_id`, `homeowner_id`, `stage_name`, `requested_amount`, `completion_percentage`, `work_description`, `materials_used`, `labor_count`, `work_start_date`, `work_end_date`, `contractor_notes`, `quality_check`, `safety_compliance`, `total_project_cost`, `status`, `request_date`, `response_date`, `homeowner_notes`, `approved_amount`, `rejection_reason`, `created_at`, `updated_at`) VALUES
+(1, 1, 29, 28, 'Foundation', 100000.00, 20.00, 'dfgfgdddddddddddddddddddddddddddf', 'gdd', 10, '2026-01-12', '2026-01-22', 'df', 1, 1, 1000000.00, 'pending', '2026-01-11 10:26:57', NULL, NULL, NULL, NULL, '2026-01-11 10:26:57', '2026-01-11 10:26:57'),
+(2, 105, 28, 28, 'Foundation', 300000.00, 100.00, 'Foundation work completed including excavation, concrete pouring, and plinth beam construction. All work done as per approved drawings.', 'Cement (50 bags), Steel bars (2 tons), Sand (10 cubic meters), Aggregate (15 cubic meters)', 8, '2024-01-01', '2024-01-15', 'Foundation work completed successfully. Quality checks passed. Ready for next stage.', 1, 1, NULL, 'paid', '2024-01-16 04:30:00', '2024-01-17 09:00:00', 'Excellent work quality. Foundation is strong and well-constructed. Approved full amount.', 300000.00, NULL, '2026-01-11 11:03:30', '2026-01-11 11:03:30'),
+(3, 105, 28, 28, 'Structure', 450000.00, 90.00, 'Structural work including column construction, beam work, and slab casting. Minor finishing work remaining.', 'Cement (80 bags), Steel bars (3.5 tons), Shuttering material, Concrete mix', 12, '2024-01-16', '2024-02-05', 'Structural work 90% complete. Minor finishing work will be completed in next 2 days.', 1, 1, NULL, 'approved', '2024-02-06 03:45:00', '2024-02-07 11:15:00', 'Good progress but some minor issues with beam alignment. Approved 90% of requested amount.', 400000.00, NULL, '2026-01-11 11:03:30', '2026-01-11 11:03:30'),
+(4, 105, 28, 28, 'Brickwork', 250000.00, 75.00, 'Brickwork for all walls including internal and external walls. Door and window frames installation in progress.', 'Red bricks (5000 pieces), Cement (30 bags), Sand (8 cubic meters), Door frames (5 units)', 10, '2024-02-06', '2024-02-25', 'Brickwork progressing well. 75% completed. Window frames pending delivery.', 1, 1, NULL, 'pending', '2024-02-26 06:00:00', NULL, NULL, NULL, NULL, '2026-01-11 11:03:30', '2026-01-11 11:03:30'),
+(5, 105, 28, 28, 'Electrical', 180000.00, 40.00, 'Electrical wiring work started. Conduit laying and main panel installation completed. Switch board work in progress.', 'Electrical wires (500 meters), Conduits (200 meters), Main panel (1 unit), Switch boards (8 units)', 4, '2024-02-20', '2024-03-10', 'Electrical work 40% complete. Need homeowner approval for additional switch points.', 0, 1, NULL, 'rejected', '2024-03-01 08:50:00', '2024-03-02 04:45:00', 'Work quality is not up to standard. Some wiring is not properly concealed. Please redo the work.', NULL, NULL, '2026-01-11 11:03:30', '2026-01-11 11:03:30');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `support_issues`
 --
 
@@ -1403,6 +1631,33 @@ CREATE TABLE `support_replies` (
 
 INSERT INTO `support_replies` (`id`, `issue_id`, `sender`, `user_id`, `message`, `created_at`) VALUES
 (1, 7, 'admin', NULL, 'we fix this very fatsely', '2025-12-30 09:34:31');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `technical_details_payments`
+--
+
+CREATE TABLE `technical_details_payments` (
+  `id` int(11) NOT NULL,
+  `house_plan_id` int(11) NOT NULL,
+  `homeowner_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `payment_status` enum('pending','completed','failed','refunded') DEFAULT 'pending',
+  `razorpay_order_id` varchar(255) DEFAULT NULL,
+  `razorpay_payment_id` varchar(255) DEFAULT NULL,
+  `razorpay_signature` varchar(255) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `technical_details_payments`
+--
+
+INSERT INTO `technical_details_payments` (`id`, `house_plan_id`, `homeowner_id`, `amount`, `payment_status`, `razorpay_order_id`, `razorpay_payment_id`, `razorpay_signature`, `payment_method`, `created_at`, `updated_at`) VALUES
+(11, 11, 28, 8000.00, 'completed', 'order_S0euVkSmOUlPd7', 'pay_S0eucmEkh9G8MT', 'd771ae7600ece0eb8a1889d9ba3984e35ac824112fb4269b72a559ece406f61b', 'razorpay', '2026-01-06 16:28:17', '2026-01-06 16:28:39');
 
 -- --------------------------------------------------------
 
@@ -1589,6 +1844,17 @@ ALTER TABLE `construction_progress_updates`
   ADD KEY `idx_created_at` (`created_at`);
 
 --
+-- Indexes for table `construction_projects`
+--
+ALTER TABLE `construction_projects`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `estimate_id` (`estimate_id`),
+  ADD KEY `idx_contractor_id` (`contractor_id`),
+  ADD KEY `idx_homeowner_id` (`homeowner_id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_estimate_id` (`estimate_id`);
+
+--
 -- Indexes for table `construction_stage_payments`
 --
 ALTER TABLE `construction_stage_payments`
@@ -1612,6 +1878,15 @@ ALTER TABLE `contractor_assignment_hides`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_assignment_contractor` (`assignment_id`,`contractor_id`),
   ADD KEY `idx_contractor` (`contractor_id`);
+
+--
+-- Indexes for table `contractor_estimates`
+--
+ALTER TABLE `contractor_estimates`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_contractor` (`contractor_id`),
+  ADD KEY `idx_homeowner` (`homeowner_id`),
+  ADD KEY `idx_send` (`send_id`);
 
 --
 -- Indexes for table `contractor_estimate_payments`
@@ -1703,6 +1978,13 @@ ALTER TABLE `design_comments`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `estimate_drafts`
+--
+ALTER TABLE `estimate_drafts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_draft` (`contractor_id`,`send_id`);
+
+--
 -- Indexes for table `geo_photos`
 --
 ALTER TABLE `geo_photos`
@@ -1741,6 +2023,18 @@ ALTER TABLE `house_plan_reviews`
   ADD PRIMARY KEY (`id`),
   ADD KEY `homeowner_id` (`homeowner_id`),
   ADD KEY `idx_plan_homeowner` (`house_plan_id`,`homeowner_id`);
+
+--
+-- Indexes for table `inbox_messages`
+--
+ALTER TABLE `inbox_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_recipient_id` (`recipient_id`),
+  ADD KEY `idx_sender_id` (`sender_id`),
+  ADD KEY `idx_message_type` (`message_type`),
+  ADD KEY `idx_is_read` (`is_read`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_priority` (`priority`);
 
 --
 -- Indexes for table `layout_library`
@@ -1920,6 +2214,12 @@ ALTER TABLE `room_templates`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `stage_payment_requests`
+--
+ALTER TABLE `stage_payment_requests`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `support_issues`
 --
 ALTER TABLE `support_issues`
@@ -1931,6 +2231,18 @@ ALTER TABLE `support_issues`
 ALTER TABLE `support_replies`
   ADD PRIMARY KEY (`id`),
   ADD KEY `issue_id` (`issue_id`);
+
+--
+-- Indexes for table `technical_details_payments`
+--
+ALTER TABLE `technical_details_payments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_payment` (`house_plan_id`,`homeowner_id`),
+  ADD KEY `idx_homeowner_payments` (`homeowner_id`),
+  ADD KEY `idx_house_plan_payments` (`house_plan_id`),
+  ADD KEY `idx_payment_status` (`payment_status`),
+  ADD KEY `idx_technical_payments_created` (`created_at`),
+  ADD KEY `idx_technical_payments_amount` (`amount`);
 
 --
 -- Indexes for table `users`
@@ -1982,6 +2294,12 @@ ALTER TABLE `construction_progress_updates`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `construction_projects`
+--
+ALTER TABLE `construction_projects`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `construction_stage_payments`
 --
 ALTER TABLE `construction_stage_payments`
@@ -2000,10 +2318,16 @@ ALTER TABLE `contractor_assignment_hides`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT for table `contractor_estimates`
+--
+ALTER TABLE `contractor_estimates`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `contractor_estimate_payments`
 --
 ALTER TABLE `contractor_estimate_payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `contractor_inbox`
@@ -2015,7 +2339,7 @@ ALTER TABLE `contractor_inbox`
 -- AUTO_INCREMENT for table `contractor_layout_sends`
 --
 ALTER TABLE `contractor_layout_sends`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `contractor_proposals`
@@ -2039,7 +2363,7 @@ ALTER TABLE `contractor_reviews`
 -- AUTO_INCREMENT for table `contractor_send_estimates`
 --
 ALTER TABLE `contractor_send_estimates`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `contractor_send_estimate_files`
@@ -2066,6 +2390,12 @@ ALTER TABLE `design_comments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+-- AUTO_INCREMENT for table `estimate_drafts`
+--
+ALTER TABLE `estimate_drafts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `geo_photos`
 --
 ALTER TABLE `geo_photos`
@@ -2075,19 +2405,25 @@ ALTER TABLE `geo_photos`
 -- AUTO_INCREMENT for table `homeowner_notifications`
 --
 ALTER TABLE `homeowner_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `house_plans`
 --
 ALTER TABLE `house_plans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `house_plan_reviews`
 --
 ALTER TABLE `house_plan_reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `inbox_messages`
+--
+ALTER TABLE `inbox_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `layout_library`
@@ -2111,13 +2447,13 @@ ALTER TABLE `layout_payments`
 -- AUTO_INCREMENT for table `layout_requests`
 --
 ALTER TABLE `layout_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
 
 --
 -- AUTO_INCREMENT for table `layout_request_assignments`
 --
 ALTER TABLE `layout_request_assignments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT for table `layout_technical_details`
@@ -2141,13 +2477,13 @@ ALTER TABLE `materials`
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `password_resets`
@@ -2210,6 +2546,12 @@ ALTER TABLE `room_templates`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
+-- AUTO_INCREMENT for table `stage_payment_requests`
+--
+ALTER TABLE `stage_payment_requests`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `support_issues`
 --
 ALTER TABLE `support_issues`
@@ -2220,6 +2562,12 @@ ALTER TABLE `support_issues`
 --
 ALTER TABLE `support_replies`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `technical_details_payments`
+--
+ALTER TABLE `technical_details_payments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -2249,6 +2597,14 @@ ALTER TABLE `admin_logs`
 ALTER TABLE `architect_layouts`
   ADD CONSTRAINT `architect_layouts_ibfk_1` FOREIGN KEY (`architect_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `architect_layouts_ibfk_2` FOREIGN KEY (`layout_request_id`) REFERENCES `layout_requests` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `construction_projects`
+--
+ALTER TABLE `construction_projects`
+  ADD CONSTRAINT `construction_projects_ibfk_1` FOREIGN KEY (`contractor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `construction_projects_ibfk_2` FOREIGN KEY (`homeowner_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `construction_projects_ibfk_3` FOREIGN KEY (`estimate_id`) REFERENCES `contractor_send_estimates` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `contractor_assignments`
@@ -2315,6 +2671,13 @@ ALTER TABLE `house_plans`
 ALTER TABLE `house_plan_reviews`
   ADD CONSTRAINT `house_plan_reviews_ibfk_1` FOREIGN KEY (`house_plan_id`) REFERENCES `house_plans` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `house_plan_reviews_ibfk_2` FOREIGN KEY (`homeowner_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `inbox_messages`
+--
+ALTER TABLE `inbox_messages`
+  ADD CONSTRAINT `inbox_messages_ibfk_1` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `inbox_messages_ibfk_2` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `layout_library`
@@ -2387,6 +2750,13 @@ ALTER TABLE `phase_worker_requirements`
 ALTER TABLE `progress_worker_assignments`
   ADD CONSTRAINT `progress_worker_assignments_ibfk_1` FOREIGN KEY (`progress_update_id`) REFERENCES `construction_progress_updates` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `progress_worker_assignments_ibfk_2` FOREIGN KEY (`worker_id`) REFERENCES `contractor_workers` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `technical_details_payments`
+--
+ALTER TABLE `technical_details_payments`
+  ADD CONSTRAINT `technical_details_payments_ibfk_1` FOREIGN KEY (`house_plan_id`) REFERENCES `house_plans` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `technical_details_payments_ibfk_2` FOREIGN KEY (`homeowner_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

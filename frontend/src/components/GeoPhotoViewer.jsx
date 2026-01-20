@@ -103,8 +103,11 @@ const GeoPhotoViewer = ({ projectId, homeownerId }) => {
   };
 
   const openInMaps = (latitude, longitude, placeName) => {
-    if (latitude && longitude) {
-      const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    
+    if (!isNaN(lat) && !isNaN(lng)) {
+      const url = `https://www.google.com/maps?q=${lat},${lng}`;
       window.open(url, '_blank');
     } else {
       toast.error('Location coordinates not available');
@@ -117,6 +120,40 @@ const GeoPhotoViewer = ({ projectId, homeownerId }) => {
       link.href = photo.photo_url;
       link.download = photo.original_filename;
       link.click();
+    }
+  };
+
+  const deletePhoto = async (photo) => {
+    if (!window.confirm(`Are you sure you want to delete this photo?\n\nFilename: ${photo.original_filename}\nLocation: ${photo.location.place_name || 'Unknown'}\n\nThis action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/buildhub/backend/api/homeowner/delete_geo_photo.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ photo_id: photo.id })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Photo deleted successfully');
+        // Remove photo from local state
+        setPhotos(prev => prev.filter(p => p.id !== photo.id));
+        // Close modal if this photo was selected
+        if (selectedPhoto && selectedPhoto.id === photo.id) {
+          setSelectedPhoto(null);
+        }
+        // Reload photos to update counts
+        loadPhotos();
+      } else {
+        toast.error('Failed to delete photo: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      toast.error('Error deleting photo');
     }
   };
 
@@ -193,188 +230,223 @@ const GeoPhotoViewer = ({ projectId, homeownerId }) => {
         </button>
       </div>
 
-      {/* Photos Grid */}
-      {photos.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">📷</div>
-          <h3>No Photos Yet</h3>
-          <p>Construction photos from your contractor will appear here with location details.</p>
-        </div>
-      ) : (
-        <div className="photos-grid">
-          {photos.map((photo) => (
-            <div 
-              key={photo.id} 
-              className={`photo-card ${!photo.viewing.viewed ? 'unviewed' : ''}`}
-              onClick={() => openPhotoModal(photo)}
-            >
-              {!photo.viewing.viewed && <div className="new-badge">NEW</div>}
-              
-              <div className="photo-preview">
-                {photo.file_exists && photo.photo_url ? (
-                  <img src={photo.photo_url} alt="Construction progress" />
-                ) : (
-                  <div className="photo-unavailable">
-                    <span>📷</span>
-                    <p>Photo unavailable</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="photo-info">
-                <div className="location-info">
-                  <div className="place-name">
-                    📍 {photo.location.place_name || 'Location unavailable'}
-                  </div>
-                  {photo.location.latitude && photo.location.longitude && (
-                    <div className="coordinates">
-                      {photo.location.latitude.toFixed(6)}, {photo.location.longitude.toFixed(6)}
-                    </div>
-                  )}
-                </div>
-                
-                <div className="timestamp-info">
-                  <div className="upload-time">
-                    🕒 {photo.timestamps.time_ago}
-                  </div>
-                  <div className="contractor-name">
-                    👷 {photo.contractor.name}
-                  </div>
-                </div>
-              </div>
+      {/* Main Content Area */}
+      <div className="viewer-main-content">
+        {/* Photos Grid */}
+        <div className="photos-section">
+          {photos.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📷</div>
+              <h3>No Photos Yet</h3>
+              <p>Construction photos from your contractor will appear here with location details.</p>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Photo Modal */}
-      {selectedPhoto && (
-        <div className="photo-modal-overlay" onClick={closePhotoModal}>
-          <div className="photo-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Construction Photo Details</h3>
-              <button className="close-btn" onClick={closePhotoModal}>×</button>
-            </div>
-            
-            <div className="modal-content">
-              <div className="photo-display">
-                {selectedPhoto.file_exists && selectedPhoto.photo_url ? (
-                  <img src={selectedPhoto.photo_url} alt="Construction progress" />
-                ) : (
-                  <div className="photo-unavailable-large">
-                    <span>📷</span>
-                    <p>Photo not available</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="photo-details">
-                <div className="detail-section">
-                  <h4>📍 Location Information</h4>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <span className="label">Place:</span>
-                      <span className="value">{selectedPhoto.location.place_name || 'Not available'}</span>
-                    </div>
-                    {selectedPhoto.location.latitude && selectedPhoto.location.longitude && (
-                      <>
-                        <div className="detail-item">
-                          <span className="label">Coordinates:</span>
-                          <span className="value">
-                            {selectedPhoto.location.latitude.toFixed(6)}, {selectedPhoto.location.longitude.toFixed(6)}
-                          </span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="label">Accuracy:</span>
-                          <span className="value">±{Math.round(selectedPhoto.location.accuracy || 0)}m</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
+          ) : (
+            <div className="photos-grid">
+              {photos.map((photo) => (
+                <div 
+                  key={photo.id} 
+                  className={`photo-card ${!photo.viewing.viewed ? 'unviewed' : ''} ${selectedPhoto && selectedPhoto.id === photo.id ? 'selected' : ''}`}
+                  onClick={() => openPhotoModal(photo)}
+                >
+                  {!photo.viewing.viewed && <div className="new-badge">NEW</div>}
                   
-                  {selectedPhoto.location.latitude && selectedPhoto.location.longitude && (
-                    <button 
-                      className="maps-btn"
-                      onClick={() => openInMaps(
-                        selectedPhoto.location.latitude, 
-                        selectedPhoto.location.longitude, 
-                        selectedPhoto.location.place_name
-                      )}
-                    >
-                      🗺️ View on Maps
-                    </button>
-                  )}
-                </div>
-                
-                <div className="detail-section">
-                  <h4>🕒 Timing Information</h4>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <span className="label">Photo Taken:</span>
-                      <span className="value">
-                        {selectedPhoto.timestamps.photo_taken_formatted || 'Not available'}
-                      </span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="label">Uploaded:</span>
-                      <span className="value">{selectedPhoto.timestamps.uploaded_formatted}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="label">Time Ago:</span>
-                      <span className="value">{selectedPhoto.timestamps.time_ago}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="detail-section">
-                  <h4>👷 Contractor Information</h4>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <span className="label">Name:</span>
-                      <span className="value">{selectedPhoto.contractor.name}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="label">Email:</span>
-                      <span className="value">{selectedPhoto.contractor.email}</span>
-                    </div>
-                    {selectedPhoto.contractor.phone && (
-                      <div className="detail-item">
-                        <span className="label">Phone:</span>
-                        <span className="value">{selectedPhoto.contractor.phone}</span>
+                  <div className="photo-preview">
+                    {photo.file_exists && photo.photo_url ? (
+                      <img src={photo.photo_url} alt="Construction progress" />
+                    ) : (
+                      <div className="photo-unavailable">
+                        <span>📷</span>
+                        <p>Photo unavailable</p>
                       </div>
                     )}
                   </div>
+                  
+                  <div className="photo-info">
+                    <div className="location-info">
+                      <div className="place-name">
+                        📍 {photo.location.place_name || 'Location unavailable'}
+                      </div>
+                      {photo.location.latitude && photo.location.longitude && (
+                        <div className="coordinates">
+                          {!isNaN(parseFloat(photo.location.latitude)) && !isNaN(parseFloat(photo.location.longitude)) ? 
+                            `${parseFloat(photo.location.latitude).toFixed(6)}, ${parseFloat(photo.location.longitude).toFixed(6)}` :
+                            'Coordinates unavailable'
+                          }
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="timestamp-info">
+                      <div className="upload-time">
+                        🕒 {photo.timestamps.time_ago}
+                      </div>
+                      <div className="contractor-name">
+                        👷 {photo.contractor.name}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="detail-section">
-                  <h4>📁 File Information</h4>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <span className="label">Filename:</span>
-                      <span className="value">{selectedPhoto.original_filename}</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Side Panel for Photo Details */}
+        <div className={`photo-details-panel ${selectedPhoto ? 'visible' : ''}`}>
+          {selectedPhoto ? (
+            <>
+              <div className="panel-header">
+                <h3>📸 Photo Details</h3>
+                <button className="close-panel-btn" onClick={() => setSelectedPhoto(null)}>×</button>
+              </div>
+              
+              <div className="panel-content">
+                {/* Photo Preview in Panel */}
+                <div className="panel-photo-preview">
+                  {selectedPhoto.file_exists && selectedPhoto.photo_url ? (
+                    <img src={selectedPhoto.photo_url} alt="Construction progress" />
+                  ) : (
+                    <div className="photo-unavailable-panel">
+                      <span>📷</span>
+                      <p>Photo not available</p>
                     </div>
-                    <div className="detail-item">
-                      <span className="label">Size:</span>
-                      <span className="value">{selectedPhoto.file_size_formatted}</span>
+                  )}
+                </div>
+
+                {/* Photo Details */}
+                <div className="photo-details">
+                  <div className="detail-section">
+                    <h4>📍 Location Information</h4>
+                    <div className="detail-grid">
+                      <div className="detail-item">
+                        <span className="label">Place:</span>
+                        <span className="value">{selectedPhoto.location.place_name || 'Not available'}</span>
+                      </div>
+                      {selectedPhoto.location.latitude && selectedPhoto.location.longitude && (
+                        <>
+                          <div className="detail-item">
+                            <span className="label">Coordinates:</span>
+                            <span className="value">
+                              {!isNaN(parseFloat(selectedPhoto.location.latitude)) && !isNaN(parseFloat(selectedPhoto.location.longitude)) ? 
+                                `${parseFloat(selectedPhoto.location.latitude).toFixed(6)}, ${parseFloat(selectedPhoto.location.longitude).toFixed(6)}` :
+                                'Coordinates unavailable'
+                              }
+                            </span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="label">Accuracy:</span>
+                            <span className="value">±{Math.round(selectedPhoto.location.accuracy || 0)}m</span>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="detail-item">
-                      <span className="label">Type:</span>
-                      <span className="value">{selectedPhoto.mime_type}</span>
+                    
+                    {selectedPhoto.location.latitude && selectedPhoto.location.longitude && (
+                      <button 
+                        className="maps-btn"
+                        onClick={() => openInMaps(
+                          selectedPhoto.location.latitude, 
+                          selectedPhoto.location.longitude, 
+                          selectedPhoto.location.place_name
+                        )}
+                      >
+                        🗺️ View on Maps
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="detail-section">
+                    <h4>🕒 Timing Information</h4>
+                    <div className="detail-grid">
+                      <div className="detail-item">
+                        <span className="label">Photo Taken:</span>
+                        <span className="value">
+                          {selectedPhoto.timestamps.photo_taken_formatted || 'Not available'}
+                        </span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Uploaded:</span>
+                        <span className="value">{selectedPhoto.timestamps.uploaded_formatted}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Time Ago:</span>
+                        <span className="value">{selectedPhoto.timestamps.time_ago}</span>
+                      </div>
                     </div>
                   </div>
                   
-                  {selectedPhoto.file_exists && selectedPhoto.photo_url && (
-                    <button 
-                      className="download-btn"
-                      onClick={() => downloadPhoto(selectedPhoto)}
-                    >
-                      💾 Download Photo
-                    </button>
-                  )}
+                  <div className="detail-section">
+                    <h4>👷 Contractor Information</h4>
+                    <div className="detail-grid">
+                      <div className="detail-item">
+                        <span className="label">Name:</span>
+                        <span className="value">{selectedPhoto.contractor.name}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Email:</span>
+                        <span className="value">{selectedPhoto.contractor.email}</span>
+                      </div>
+                      {selectedPhoto.contractor.phone && (
+                        <div className="detail-item">
+                          <span className="label">Phone:</span>
+                          <span className="value">{selectedPhoto.contractor.phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="detail-section">
+                    <h4>📁 File Information</h4>
+                    <div className="detail-grid">
+                      <div className="detail-item">
+                        <span className="label">Filename:</span>
+                        <span className="value">{selectedPhoto.original_filename}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Size:</span>
+                        <span className="value">{selectedPhoto.file_size_formatted}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Type:</span>
+                        <span className="value">{selectedPhoto.mime_type}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="action-buttons">
+                      {selectedPhoto.file_exists && selectedPhoto.photo_url && (
+                        <button 
+                          className="download-btn"
+                          onClick={() => downloadPhoto(selectedPhoto)}
+                        >
+                          💾 Download Photo
+                        </button>
+                      )}
+                      
+                      <button 
+                        className="delete-btn"
+                        onClick={() => deletePhoto(selectedPhoto)}
+                      >
+                        🗑️ Delete Photo
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </>
+          ) : (
+            <div className="panel-placeholder">
+              <div className="placeholder-icon">📸</div>
+              <h4>Select a Photo</h4>
+              <p>Click on any photo to view its details, location information, and manage the file.</p>
             </div>
-          </div>
+          )}
+        </div>
+      </div>
+
+      {/* Keep Modal for Full-Screen View (Optional) */}
+      {selectedPhoto && (
+        <div className="photo-modal-overlay" onClick={closePhotoModal} style={{ display: 'none' }}>
+          {/* Modal content remains the same but hidden by default */}
         </div>
       )}
     </div>

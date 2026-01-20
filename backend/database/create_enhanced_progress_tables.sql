@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS daily_progress_updates (
     incremental_completion_percentage DECIMAL(5,2) NOT NULL DEFAULT 0.00 CHECK (incremental_completion_percentage >= 0 AND incremental_completion_percentage <= 100),
     cumulative_completion_percentage DECIMAL(5,2) NOT NULL DEFAULT 0.00 CHECK (cumulative_completion_percentage >= 0 AND cumulative_completion_percentage <= 100),
     working_hours DECIMAL(4,2) NOT NULL DEFAULT 8.00,
-    materials_used TEXT NULL,
     weather_condition ENUM('Sunny', 'Cloudy', 'Rainy', 'Stormy', 'Foggy', 'Hot', 'Cold', 'Windy') NOT NULL,
     site_issues TEXT NULL,
     progress_photos JSON NULL,

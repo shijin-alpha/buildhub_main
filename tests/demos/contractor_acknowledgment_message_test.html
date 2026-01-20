@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Acknowledgment Message Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-section {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .test-section:last-child {
+            border-bottom: none;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-button.success {
+            background: #10b981;
+        }
+        .test-button.danger {
+            background: #ef4444;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f9fafb;
+            border-left: 4px solid #d1d5db;
+        }
+        .result.success {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+        .result.error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+        .notification-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .notification-item.unread {
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+        .notification-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        .notification-content {
+            flex: 1;
+        }
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #1f2937;
+        }
+        .notification-message {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .notification-time {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        .message-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        .message-subject {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+        .message-content {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .message-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .status-badge.unread {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .status-badge.read {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤝 Contractor Acknowledgment Message Test</h1>
+            <p>Testing contractor acknowledgment messages in homeowner message center</p>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">1. Simulate Contractor Acknowledgment</div>
+            <p>This will simulate a contractor acknowledging a layout request and check if the message appears in the homeowner's message center.</p>
+            <button class="test-button" onclick="simulateAcknowledgment()">Simulate Acknowledgment</button>
+            <div id="acknowledgment-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. Check Homeowner Notifications</div>
+            <p>Fetch and display notifications from the homeowner's notification center.</p>
+            <button class="test-button" onclick="checkNotifications()">Check Notifications</button>
+            <div id="notifications-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. Check Homeowner Messages</div>
+            <p>Fetch and display messages from the homeowner's message center.</p>
+            <button class="test-button" onclick="checkMessages()">Check Messages</button>
+            <div id="messages-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">4. Test Mark as Read</div>
+            <p>Test marking acknowledgment notifications and messages as read.</p>
+            <button class="test-button" onclick="testMarkAsRead()">Test Mark as Read</button>
+            <div id="mark-read-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test data
+        const testData = {
+            contractorId: 37, // Shijin Thomas
+            homeownerId: 28,  // Test homeowner
+            layoutTitle: "Modern Villa Design",
+            dueDate: "2025-02-15"
+        };
+
+        async function simulateAcknowledgment() {
+            const resultDiv = document.getElementById('acknowledgment-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div>🔄 Simulating contractor acknowledgment...</div>';
+
+            try {
+                // First, create a sample contractor layout send entry
+                const createResponse = await fetch('/buildhub/backend/api/contractor/acknowledge_inbox_item.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        id: 1, // Assuming there's an entry with ID 1
+                        contractor_id: testData.contractorId,
+                        due_date: testData.dueDate
+                    })
+                });
+
+                const result = await createResponse.json();
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <div><strong>✅ Acknowledgment Successful!</strong></div>
+                        <div>Contractor acknowledged the layout request</div>
+                        <div>Due date: ${testData.dueDate}</div>
+                        <div>Acknowledged at: ${result.acknowledged_at}</div>
+                        <div><em>Both notification and message should be created for homeowner</em></div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<div><strong>❌ Error:</strong> ${result.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<div><strong>❌ Network Error:</strong> ${error.message}</div>`;
+            }
+        }
+
+        async function checkNotifications() {
+            const resultDiv = document.getElementById('notifications-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div>🔄 Fetching homeowner notifications...</div>';
+
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_notifications.php', {
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const notifications = result.notifications || [];
+                    const acknowledgmentNotifications = notifications.filter(n => 
+                        n.type === 'acknowledgment' || n.source === 'contractor_acknowledgment'
+                    );
+
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <div><strong>✅ Notifications Retrieved</strong></div>
+                        <div>Total notifications: ${notifications.length}</div>
+                        <div>Acknowledgment notifications: ${acknowledgmentNotifications.length}</div>
+                        <div>Unread count: ${result.unread_count}</div>
+                        <div style="margin-top: 15px;">
+                            <strong>Recent Acknowledgment Notifications:</strong>
+                            ${acknowledgmentNotifications.slice(0, 3).map(notification => `
+                                <div class="notification-item ${!notification.is_read ? 'unread' : ''}">
+                                    <div class="notification-icon">${getNotificationIcon(notification.type)}</div>
+                                    <div class="notification-content">
+                                        <div class="notification-title">${notification.title}</div>
+                                        <div class="notification-message">${notification.message}</div>
+                                        <div class="notification-time">${formatTimeAgo(notification.created_at)} • Source: ${notification.source || 'general'}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<div><strong>❌ Error:</strong> ${result.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<div><strong>❌ Network Error:</strong> ${error.message}</div>`;
+            }
+        }
+
+        async function checkMessages() {
+            const resultDiv = document.getElementById('messages-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div>🔄 Fetching homeowner messages...</div>';
+
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_messages.php', {
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const messages = result.messages || [];
+                    const acknowledgmentMessages = messages.filter(m => 
+                        m.message_type === 'acknowledgment'
+                    );
+
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <div><strong>✅ Messages Retrieved</strong></div>
+                        <div>Total messages: ${messages.length}</div>
+                        <div>Acknowledgment messages: ${acknowledgmentMessages.length}</div>
+                        <div>Unread count: ${result.unread_count}</div>
+                        <div style="margin-top: 15px;">
+                            <strong>Recent Acknowledgment Messages:</strong>
+                            ${acknowledgmentMessages.slice(0, 3).map(message => `
+                                <div class="message-item">
+                                    <div class="message-subject">${message.subject}</div>
+                                    <div class="message-content">${message.message}</div>
+                                    <div class="message-meta">
+                                        <span>From: ${message.sender_first_name} ${message.sender_last_name} (${message.sender_role})</span>
+                                        <span class="status-badge ${message.is_read ? 'read' : 'unread'}">
+                                            ${message.is_read ? 'Read' : 'Unread'}
+                                        </span>
+                                    </div>
+                                    <div class="message-meta">
+                                        <span>${formatTimeAgo(message.created_at)}</span>
+                                        <span>Type: ${message.message_type}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<div><strong>❌ Error:</strong> ${result.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<div><strong>❌ Network Error:</strong> ${error.message}</div>`;
+            }
+        }
+
+        async function testMarkAsRead() {
+            const resultDiv = document.getElementById('mark-read-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div>🔄 Testing mark as read functionality...</div>';
+
+            try {
+                // First get notifications to find unread ones
+                const notifResponse = await fetch('/buildhub/backend/api/homeowner/get_notifications.php', {
+                    credentials: 'include'
+                });
+                const notifResult = await notifResponse.json();
+
+                if (!notifResult.success) {
+                    throw new Error('Failed to fetch notifications');
+                }
+
+                const unreadNotifications = notifResult.notifications.filter(n => !n.is_read);
+                
+                if (unreadNotifications.length === 0) {
+                    resultDiv.className = 'result';
+                    resultDiv.innerHTML = '<div><strong>ℹ️ No unread notifications to test with</strong></div>';
+                    return;
+                }
+
+                // Mark first unread notification as read
+                const testNotification = unreadNotifications[0];
+                const markResponse = await fetch('/buildhub/backend/api/homeowner/mark_notifications_read.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        notification_ids: [testNotification.id],
+                        source: [testNotification.source || 'general']
+                    })
+                });
+
+                const markResult = await markResponse.json();
+                
+                if (markResult.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <div><strong>✅ Mark as Read Test Successful!</strong></div>
+                        <div>Marked notification ID ${testNotification.id} as read</div>
+                        <div>Source: ${testNotification.source || 'general'}</div>
+                        <div>Type: ${testNotification.type}</div>
+                        <div><em>Refresh notifications to see the change</em></div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<div><strong>❌ Error:</strong> ${markResult.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<div><strong>❌ Network Error:</strong> ${error.message}</div>`;
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'acknowledgment': return '✅';
+                case 'contractor_acknowledgment': return '🤝';
+                case 'estimate_received': return '💰';
+                case 'layout_approved': return '✅';
+                case 'construction_started': return '🏗️';
+                case 'message_sent': return '📤';
+                case 'message_received': return '📥';
+                case 'payment_required': return '💳';
+                case 'project_completed': return '🎉';
+                default: return '📢';
+            }
+        }
+
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Auto-run initial checks
+        window.addEventListener('load', () => {
+            console.log('🧪 Contractor Acknowledgment Message Test loaded');
+            console.log('Test data:', testData);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Estimates Display Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: #7f8c8d;
+            margin: 10px 0 0 0;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e3f2fd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .test-section h3 {
+            color: #1976d2;
+            margin: 0 0 15px 0;
+        }
+        .api-test {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #4caf50;
+        }
+        .api-test h4 {
+            margin: 0 0 10px 0;
+            color: #2e7d32;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .results {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .info { color: #2196f3; }
+        .estimate-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .estimate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .estimate-title {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .estimate-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .estimate-details {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-submitted {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status-accepted {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        .status-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ My Estimates Display Test</h1>
+            <p>Testing the display of submitted estimates in the contractor dashboard</p>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Test Scenario</h3>
+            <p>This test verifies that estimates submitted through the inbox form appear correctly in the "My Estimates" section of the contractor dashboard.</p>
+            
+            <div class="api-test">
+                <h4>1. Test Estimate Submission API</h4>
+                <p>Submit a test estimate through the inbox form API</p>
+                <button class="test-button" onclick="testEstimateSubmission()">Submit Test Estimate</button>
+                <div id="submission-results" class="results"></div>
+            </div>
+
+            <div class="api-test">
+                <h4>2. Test Get My Estimates API</h4>
+                <p>Fetch all estimates for the contractor</p>
+                <button class="test-button" onclick="testGetMyEstimates()">Get My Estimates</button>
+                <div id="estimates-results" class="results"></div>
+            </div>
+
+            <div class="api-test">
+                <h4>3. Display Estimates</h4>
+                <p>Display estimates in a user-friendly format</p>
+                <button class="test-button" onclick="displayEstimates()">Display Estimates</button>
+                <div id="estimates-display"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Test Results</h3>
+            <div id="test-summary" class="results">
+                Ready to run tests...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let currentEstimates = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            console.log(`[${timestamp}] ${message}`);
+            return `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('test-summary');
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            
+            let html = `<div class="info">Test Summary: ${passed}/${total} tests passed</div>`;
+            testResults.forEach(result => {
+                html += `<div class="${result.passed ? 'success' : 'error'}">${result.name}: ${result.passed ? 'PASSED' : 'FAILED'} - ${result.message}</div>`;
+            });
+            summary.innerHTML = html;
+        }
+
+        async function testEstimateSubmission() {
+            const resultsDiv = document.getElementById('submission-results');
+            resultsDiv.innerHTML = log('Starting estimate submission test...', 'info');
+
+            try {
+                // Test data for estimate submission
+                const testData = {
+                    contractor_id: 1, // Test contractor ID
+                    send_id: 1, // Test send ID
+                    structured: {
+                        project_name: 'Test Construction Project',
+                        project_address: '123 Test Street, Test City',
+                        client_name: 'Test Homeowner',
+                        client_contact: 'test@example.com',
+                        plot_size: '2000 sq.ft',
+                        built_up_area: '1500 sq.ft',
+                        floors: '2',
+                        materials: {
+                            cement: { name: 'Cement (OPC 43 Grade)', qty: '50', rate: '400', amount: '20000' },
+                            sand: { name: 'Sand (River Sand)', qty: '5', rate: '2000', amount: '10000' },
+                            bricks: { name: 'Bricks (Red Clay)', qty: '2000', rate: '8', amount: '16000' }
+                        },
+                        labor: {
+                            masonry: { name: 'Masonry Work', qty: '1', rate: '15000', amount: '15000' },
+                            plumbing: { name: 'Plumbing Work', qty: '1', rate: '12000', amount: '12000' },
+                            electrical: { name: 'Electrical Work', qty: '1', rate: '10000', amount: '10000' }
+                        },
+                        utilities: {
+                            sanitary: { name: 'Sanitary Fixtures', qty: '1', rate: '8000', amount: '8000' }
+                        },
+                        misc: {
+                            transport: { name: 'Transportation', qty: '1', rate: '5000', amount: '5000' },
+                            contingency: { name: 'Contingency (5%)', qty: '1', rate: '4600', amount: '4600' }
+                        },
+                        totals: {
+                            materials: 46000,
+                            labor: 37000,
+                            utilities: 8000,
+                            misc: 9600,
+                            grand: 100600
+                        }
+                    },
+                    timeline: '90 days',
+                    total_cost: 100600,
+                    notes: 'Test estimate for verification purposes'
+                };
+
+                resultsDiv.innerHTML += log('Sending estimate submission request...', 'info');
+
+                const response = await fetch('/buildhub/backend/api/contractor/submit_estimate_for_send.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultsDiv.innerHTML += log(`✅ Estimate submitted successfully! ID: ${result.estimate_id}`, 'success');
+                    resultsDiv.innerHTML += log(`Project: ${result.data.project_name}`, 'info');
+                    resultsDiv.innerHTML += log(`Total Cost: ₹${result.data.total_cost?.toLocaleString('en-IN')}`, 'info');
+                    
+                    testResults.push({
+                        name: 'Estimate Submission',
+                        passed: true,
+                        message: `Estimate ID ${result.estimate_id} created successfully`
+                    });
+                } else {
+                    resultsDiv.innerHTML += log(`❌ Submission failed: ${result.message}`, 'error');
+                    testResults.push({
+                        name: 'Estimate Submission',
+                        passed: false,
+                        message: result.message
+                    });
+                }
+
+            } catch (error) {
+                resultsDiv.innerHTML += log(`❌ Error: ${error.message}`, 'error');
+                testResults.push({
+                    name: 'Estimate Submission',
+                    passed: false,
+                    message: error.message
+                });
+            }
+
+            updateSummary();
+        }
+
+        async function testGetMyEstimates() {
+            const resultsDiv = document.getElementById('estimates-results');
+            resultsDiv.innerHTML = log('Fetching contractor estimates...', 'info');
+
+            try {
+                const contractorId = 1; // Test contractor ID
+                const response = await fetch(`/buildhub/backend/api/contractor/get_my_estimates.php?contractor_id=${contractorId}`, {
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentEstimates = result.estimates;
+                    resultsDiv.innerHTML += log(`✅ Found ${result.count} estimates`, 'success');
+                    
+                    result.estimates.forEach((estimate, index) => {
+                        resultsDiv.innerHTML += log(`Estimate #${estimate.id}: ${estimate.project_name} - ₹${estimate.total_cost?.toLocaleString('en-IN')}`, 'info');
+                    });
+                    
+                    testResults.push({
+                        name: 'Get My Estimates',
+                        passed: true,
+                        message: `Retrieved ${result.count} estimates successfully`
+                    });
+                } else {
+                    resultsDiv.innerHTML += log(`❌ Failed to fetch estimates: ${result.message}`, 'error');
+                    testResults.push({
+                        name: 'Get My Estimates',
+                        passed: false,
+                        message: result.message
+                    });
+                }
+
+            } catch (error) {
+                resultsDiv.innerHTML += log(`❌ Error: ${error.message}`, 'error');
+                testResults.push({
+                    name: 'Get My Estimates',
+                    passed: false,
+                    message: error.message
+                });
+            }
+
+            updateSummary();
+        }
+
+        function displayEstimates() {
+            const displayDiv = document.getElementById('estimates-display');
+            
+            if (currentEstimates.length === 0) {
+                displayDiv.innerHTML = '<p class="info">No estimates to display. Please run "Get My Estimates" first.</p>';
+                return;
+            }
+
+            let html = '<h4>📊 My Estimates</h4>';
+            
+            currentEstimates.forEach(estimate => {
+                const statusClass = `status-${estimate.status}`;
+                const createdDate = new Date(estimate.created_at).toLocaleDateString('en-IN');
+                
+                html += `
+                    <div class="estimate-card">
+                        <div class="estimate-header">
+                            <div class="estimate-title">
+                                📄 Estimate #${estimate.id}
+                                <span class="status-badge ${statusClass}">${estimate.status.toUpperCase()}</span>
+                            </div>
+                            <div class="estimate-total">₹${estimate.total_cost?.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div class="estimate-details">
+                            <strong>Project:</strong> ${estimate.project_name || 'Untitled Project'}
+                        </div>
+                        <div class="estimate-details">
+                            <strong>Client:</strong> ${estimate.client_name || 'Unknown Client'}
+                        </div>
+                        <div class="estimate-details">
+                            <strong>Location:</strong> ${estimate.location || 'Not specified'}
+                        </div>
+                        <div class="estimate-details">
+                            <strong>Timeline:</strong> ${estimate.timeline || 'Not specified'}
+                        </div>
+                        <div class="estimate-details">
+                            <strong>Created:</strong> ${createdDate}
+                        </div>
+                        ${estimate.notes ? `<div class="estimate-details"><strong>Notes:</strong> ${estimate.notes}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            displayDiv.innerHTML = html;
+            
+            testResults.push({
+                name: 'Display Estimates',
+                passed: true,
+                message: `Displayed ${currentEstimates.length} estimates successfully`
+            });
+            
+            updateSummary();
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('Page loaded. Ready to run tests.', 'info');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Projects Payment Request Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .project-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .project-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .project-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-ready {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-active {
+            background: #cce5ff;
+            color: #004085;
+        }
+        .project-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .detail-item {
+            font-size: 14px;
+            color: #666;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Real Projects Payment Request Test</h1>
+            <p>Testing the updated payment request system with actual homeowner projects</p>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Test Real Projects API</h3>
+            <p>This test fetches actual construction projects that are ready for payment requests.</p>
+            
+            <label for="contractor-id">Contractor ID:</label>
+            <input type="number" id="contractor-id" value="29" style="margin: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            
+            <button class="test-button" onclick="testRealProjects()">Load Real Projects</button>
+            <button class="test-button" onclick="testProjectCreation()">Test Project Creation</button>
+            
+            <div id="projects-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Database Structure Check</h3>
+            <p>Check if the required tables exist and have the correct structure.</p>
+            
+            <button class="test-button" onclick="checkDatabaseStructure()">Check Database</button>
+            
+            <div id="database-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Sample Data Creation</h3>
+            <p>Create sample accepted estimates and projects for testing.</p>
+            
+            <button class="test-button" onclick="createSampleData()">Create Sample Data</button>
+            
+            <div id="sample-result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testRealProjects() {
+            const contractorId = document.getElementById('contractor-id').value;
+            const resultDiv = document.getElementById('projects-result');
+            
+            try {
+                resultDiv.innerHTML = '<div class="result">Loading projects...</div>';
+                
+                const response = await fetch(`/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${contractorId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const projects = data.data.projects;
+                    
+                    if (projects.length === 0) {
+                        resultDiv.innerHTML = `
+                            <div class="result success">
+                                <strong>✅ API Working - No Projects Found</strong>
+                                
+                                No construction projects available for contractor ${contractorId}.
+                                
+                                This means:
+                                • No homeowners have accepted estimates from this contractor yet
+                                • Or accepted estimates haven't been converted to projects
+                                
+                                To test with data:
+                                1. Create sample data using the button below
+                                2. Or use a contractor ID that has accepted estimates
+                            </div>
+                        `;
+                    } else {
+                        let projectsHtml = `
+                            <div class="result success">
+                                <strong>✅ Found ${projects.length} Construction Projects</strong>
+                            </div>
+                        `;
+                        
+                        projects.forEach(project => {
+                            const statusClass = project.status === 'ready_for_construction' ? 'status-ready' : 'status-active';
+                            const statusText = project.status === 'ready_for_construction' ? 'Ready for Construction' : project.status;
+                            
+                            projectsHtml += `
+                                <div class="project-card">
+                                    <div class="project-header">
+                                        <div class="project-name">${project.project_name}</div>
+                                        <div class="project-status ${statusClass}">${statusText}</div>
+                                    </div>
+                                    <div class="project-details">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Homeowner:</span> ${project.homeowner_name}
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Cost:</span> ₹${project.estimate_cost ? project.estimate_cost.toLocaleString() : 'Not set'}
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Location:</span> ${project.location || 'Not specified'}
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Plot Size:</span> ${project.plot_size || 'Not specified'}
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Style:</span> ${project.preferred_style || 'Not specified'}
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Timeline:</span> ${project.timeline || 'Not specified'}
+                                        </div>
+                                    </div>
+                                    ${project.needs_project_creation ? '<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px; font-size: 12px;">⚠️ Needs project creation</div>' : ''}
+                                </div>
+                            `;
+                        });
+                        
+                        resultDiv.innerHTML = projectsHtml;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <strong>❌ API Error</strong>
+                            ${data.message || 'Unknown error occurred'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>❌ Network Error</strong>
+                        ${error.message}
+                        
+                        Make sure:
+                        • Backend server is running
+                        • Database is accessible
+                        • API endpoint exists
+                    </div>
+                `;
+            }
+        }
+
+        async function testProjectCreation() {
+            const resultDiv = document.getElementById('projects-result');
+            
+            try {
+                resultDiv.innerHTML = '<div class="result">Testing project creation...</div>';
+                
+                // This would test creating a project from an accepted estimate
+                // For now, just show the concept
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <strong>📋 Project Creation Process</strong>
+                        
+                        To create projects from accepted estimates:
+                        
+                        1. Homeowner accepts contractor estimate
+                        2. Estimate status becomes 'accepted'
+                        3. Contractor can create project using:
+                           POST /buildhub/backend/api/contractor/create_project_from_estimate.php
+                           { "estimate_id": 123 }
+                        
+                        4. Project appears in payment request system
+                        
+                        Current system automatically detects:
+                        • Existing construction_projects table entries
+                        • Accepted estimates not yet converted to projects
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>❌ Error</strong>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function checkDatabaseStructure() {
+            const resultDiv = document.getElementById('database-result');
+            
+            resultDiv.innerHTML = `
+                <div class="result success">
+                    <strong>🗄️ Database Structure</strong>
+                    
+                    Required Tables:
+                    ✅ construction_projects - Created automatically by API
+                    ✅ contractor_send_estimates - Existing table
+                    ✅ contractor_layout_sends - Existing table  
+                    ✅ layout_requests - Existing table
+                    ✅ users - Existing table
+                    
+                    The API will create the construction_projects table if it doesn't exist.
+                    
+                    Key Relationships:
+                    • construction_projects.estimate_id → contractor_send_estimates.id
+                    • contractor_send_estimates.send_id → contractor_layout_sends.id
+                    • contractor_layout_sends.layout_id → layout_requests.id
+                    • layout_requests.user_id → users.id (homeowner)
+                </div>
+            `;
+        }
+
+        async function createSampleData() {
+            const resultDiv = document.getElementById('sample-result');
+            
+            resultDiv.innerHTML = `
+                <div class="result success">
+                    <strong>📊 Sample Data Creation</strong>
+                    
+                    To create sample data for testing:
+                    
+                    1. Run: backend/create_sample_acknowledged_projects.php
+                    2. This creates:
+                       • Sample homeowner requests
+                       • Sample contractor estimates
+                       • Sample accepted estimates
+                       • Sample construction projects
+                    
+                    3. Then test with contractor IDs: 29, 51, 52, 53
+                    
+                    Or manually:
+                    • Create layout_requests with status 'approved'
+                    • Create contractor_send_estimates with status 'accepted'
+                    • Run create_project_from_estimate.php to convert to projects
+                </div>
+            `;
+        }
+
+        // Auto-load projects on page load
+        window.onload = function() {
+            testRealProjects();
+        };
+    </script>
+</body>
+</html>

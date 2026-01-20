@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed User Journey Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        button { margin: 5px; padding: 8px 15px; cursor: pointer; }
+        .step { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .step-title { font-weight: bold; margin-bottom: 5px; }
+        .step-status { margin-left: 10px; }
+        .request-card { border: 1px solid #ccc; margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .phase-indicator { 
+            display: inline-block; 
+            padding: 3px 8px; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            color: white; 
+        }
+        .phase-pending { background-color: #ffa500; }
+        .phase-approved { background-color: #28a745; }
+        .phase-assigned { background-color: #007bff; }
+        .phase-design { background-color: #6f42c1; }
+        .phase-construction { background-color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>Fixed User Journey Test</h1>
+    <p>This test demonstrates the corrected user journey flow in BuildHub.</p>
+
+    <div class="test-section">
+        <h3>🏠 Step 1: Homeowner Submits Request</h3>
+        <div class="step">
+            <div class="step-title">Submit a new house design request</div>
+            <button onclick="submitHomeownerRequest()">Submit Test Request</button>
+            <div id="step1-result" class="step-status"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>👨‍💼 Step 2: Admin Reviews & Approves</h3>
+        <div class="step">
+            <div class="step-title">Admin sees pending requests and approves them</div>
+            <button onclick="getPendingRequests()">Get Pending Requests</button>
+            <button onclick="approveLatestRequest()">Approve Latest Request</button>
+            <div id="step2-result" class="step-status"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>🏗️ Step 3: Architect Assignment</h3>
+        <div class="step">
+            <div class="step-title">Assign approved request to architects</div>
+            <button onclick="assignArchitects()">Assign to Architects</button>
+            <div id="step3-result" class="step-status"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>👨‍🎨 Step 4: Architect Response</h3>
+        <div class="step">
+            <div class="step-title">Architect sees and responds to assignment</div>
+            <button onclick="getArchitectAssignments()">Get Architect Assignments</button>
+            <button onclick="acceptAssignment()">Accept Assignment</button>
+            <div id="step4-result" class="step-status"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>📋 Step 5: Project State Overview</h3>
+        <div class="step">
+            <div class="step-title">View unified project states for all users</div>
+            <button onclick="getProjectStates()">Get Project States</button>
+            <div id="step5-result" class="step-status"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Journey Summary</h3>
+        <div id="journey-summary">
+            <p>Complete the steps above to see the journey summary.</p>
+        </div>
+    </div>
+
+    <script>
+        let testRequestId = null;
+        let testAssignmentId = null;
+        let journeySteps = {
+            submitted: false,
+            approved: false,
+            assigned: false,
+            accepted: false
+        };
+
+        async function submitHomeownerRequest() {
+            const resultDiv = document.getElementById('step1-result');
+            
+            try {
+                resultDiv.innerHTML = '<span class="info">Submitting request...</span>';
+                
+                // Simulate homeowner session (in real app, user would be logged in)
+                const response = await fetch('/buildhub/backend/api/homeowner/submit_request.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        plot_size: '30x40',
+                        budget_range: '20-30 lakhs',
+                        requirements: 'Test request for fixed user journey',
+                        location: 'Test City',
+                        timeline: '6-12 months',
+                        preferred_style: 'Modern',
+                        num_floors: '2'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    testRequestId = data.request_id;
+                    journeySteps.submitted = true;
+                    resultDiv.innerHTML = `
+                        <span class="success">✓ Request submitted successfully!</span><br>
+                        <strong>Request ID:</strong> ${testRequestId}<br>
+                        <strong>Status:</strong> <span class="phase-indicator phase-pending">PENDING APPROVAL</span><br>
+                        <em>Request is now waiting for admin approval.</em>
+                    `;
+                    updateJourneySummary();
+                } else {
+                    resultDiv.innerHTML = `<span class="error">✗ Failed: ${data.message}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function getPendingRequests() {
+            const resultDiv = document.getElementById('step2-result');
+            
+            try {
+                resultDiv.innerHTML = '<span class="info">Loading pending requests...</span>';
+                
+                const response = await fetch('/buildhub/backend/api/admin/get_pending_requests.php', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const requests = data.requests || [];
+                    const testRequest = requests.find(r => r.id == testRequestId);
+                    
+                    resultDiv.innerHTML = `
+                        <span class="success">✓ Found ${requests.length} pending requests</span><br>
+                        ${testRequest ? `<strong>Our test request (ID: ${testRequestId}) is in the list!</strong><br>` : ''}
+                        ${requests.map(req => `
+                            <div class="request-card">
+                                <strong>ID:</strong> ${req.id} | 
+                                <strong>Homeowner:</strong> ${req.homeowner_name} | 
+                                <strong>Plot:</strong> ${req.plot_size} | 
+                                <strong>Budget:</strong> ${req.budget_range}
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">✗ Failed: ${data.message}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function approveLatestRequest() {
+            const resultDiv = document.getElementById('step2-result');
+            
+            if (!testRequestId) {
+                resultDiv.innerHTML = '<span class="warning">⚠ Please submit a request first</span>';
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<span class="info">Approving request...</span>';
+                
+                const response = await fetch('/buildhub/backend/api/admin/approve_request.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        request_id: testRequestId,
+                        action: 'approve',
+                        admin_notes: 'Approved for testing user journey'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    journeySteps.approved = true;
+                    resultDiv.innerHTML = `
+                        <span class="success">✓ Request approved successfully!</span><br>
+                        <strong>Request ID:</strong> ${testRequestId}<br>
+                        <strong>New Status:</strong> <span class="phase-indicator phase-approved">APPROVED</span><br>
+                        <em>Request is now ready for architect assignment.</em>
+                    `;
+                    updateJourneySummary();
+                } else {
+                    resultDiv.innerHTML = `<span class="error">✗ Failed: ${data.message}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function assignArchitects() {
+            const resultDiv = document.getElementById('step3-result');
+            
+            if (!testRequestId || !journeySteps.approved) {
+                resultDiv.innerHTML = '<span class="warning">⚠ Please approve the request first</span>';
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<span class="info">Assigning architects...</span>';
+                
+                // Get available architects first
+                const archResponse = await fetch('/buildhub/backend/api/architect/get_architects.php');
+                const archData = await archResponse.json();
+                
+                if (!archData.success || !archData.architects || archData.architects.length === 0) {
+                    resultDiv.innerHTML = '<span class="error">✗ No verified architects available</span>';
+                    return;
+                }
+                
+                // Assign to first available architect
+                const architectId = archData.architects[0].id;
+                
+                const response = await fetch('/buildhub/backend/api/unified/assign_architect.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        layout_request_id: testRequestId,
+                        architect_ids: [architectId],
+                        message: 'Test assignment for user journey verification'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    journeySteps.assigned = true;
+                    resultDiv.innerHTML = `
+                        <span class="success">✓ Architects assigned successfully!</span><br>
+                        <strong>Assigned Count:</strong> ${data.assigned_count}<br>
+                        <strong>Status:</strong> <span class="phase-indicator phase-assigned">ASSIGNED</span><br>
+                        <em>Architects have been notified and can now respond.</em>
+                    `;
+                    updateJourneySummary();
+                } else {
+                    resultDiv.innerHTML = `<span class="error">✗ Failed: ${data.message}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function getArchitectAssignments() {
+            const resultDiv = document.getElementById('step4-result');
+            
+            try {
+                resultDiv.innerHTML = '<span class="info">Loading architect assignments...</span>';
+                
+                const response = await fetch('/buildhub/backend/api/architect/get_assigned_requests.php', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const assignments = data.assignments || [];
+                    const testAssignment = assignments.find(a => a.layout_request.id == testRequestId);
+                    
+                    if (testAssignment) {
+                        testAssignmentId = testAssignment.assignment_id;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <span class="success">✓ Found ${assignments.length} assignments</span><br>
+                        ${testAssignment ? `<strong>Our test assignment found!</strong><br>` : ''}
+                        ${assignments.map(assignment => `
+                            <div class="request-card">
+                                <strong>Assignment ID:</strong> ${assignment.assignment_id} | 
+                                <strong>Request ID:</strong> ${assignment.layout_request.id} | 
+                                <strong>Status:</strong> ${assignment.assignment_status} | 
+                                <strong>Homeowner:</strong> ${assignment.homeowner.name}
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">✗ Failed: ${data.message}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function acceptAssignment() {
+            const resultDiv = document.getElementById('step4-result');
+            
+            if (!testAssignmentId) {
+                resultDiv.innerHTML = '<span class="warning">⚠ Please get assignments first</span>';
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<span class="info">Accepting assignment...</span>';
+                
+                const response = await fetch('/buildhub/backend/api/architect/respond_assignment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        assignment_id: testAssignmentId,
+                        action: 'accept'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    journeySteps.accepted = true;
+                    resultDiv.innerHTML = `
+                        <span class="success">✓ Assignment accepted successfully!</span><br>
+                        <strong>Assignment ID:</strong> ${testAssignmentId}<br>
+                        <strong>Status:</strong> <span class="phase-indicator phase-design">DESIGN IN PROGRESS</span><br>
+                        <em>Architect can now start working on the house plan.</em>
+                    `;
+                    updateJourneySummary();
+                } else {
+                    resultDiv.innerHTML = `<span class="error">✗ Failed: ${data.message}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function getProjectStates() {
+            const resultDiv = document.getElementById('step5-result');
+            
+            try {
+                resultDiv.innerHTML = '<span class="info">Loading project states...</span>';
+                
+                const response = await fetch('/buildhub/backend/api/unified/project_state.php', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const projects = data.projects || [];
+                    const testProject = projects.find(p => p.request_id == testRequestId);
+                    
+                    resultDiv.innerHTML = `
+                        <span class="success">✓ Project states loaded</span><br>
+                        <strong>User Role:</strong> ${data.user_role}<br>
+                        <strong>Total Projects:</strong> ${projects.length}<br>
+                        ${testProject ? `
+                            <div class="request-card">
+                                <strong>Test Project Status:</strong><br>
+                                <strong>Request ID:</strong> ${testProject.request_id}<br>
+                                <strong>Phase:</strong> <span class="phase-indicator phase-${testProject.phase}">${testProject.phase.toUpperCase()}</span><br>
+                                <strong>Plot Size:</strong> ${testProject.plot_size}<br>
+                                <strong>Budget:</strong> ${testProject.budget_range}<br>
+                                <strong>Location:</strong> ${testProject.location}
+                            </div>
+                        ` : 'Test project not found in current user\'s projects'}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">✗ Failed: ${data.message}</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">✗ Network error: ${error.message}</span>`;
+            }
+        }
+
+        function updateJourneySummary() {
+            const summaryDiv = document.getElementById('journey-summary');
+            
+            const steps = [
+                { key: 'submitted', label: 'Request Submitted', status: journeySteps.submitted },
+                { key: 'approved', label: 'Admin Approved', status: journeySteps.approved },
+                { key: 'assigned', label: 'Architects Assigned', status: journeySteps.assigned },
+                { key: 'accepted', label: 'Architect Accepted', status: journeySteps.accepted }
+            ];
+            
+            const completedSteps = steps.filter(s => s.status).length;
+            const totalSteps = steps.length;
+            
+            summaryDiv.innerHTML = `
+                <h4>Journey Progress: ${completedSteps}/${totalSteps} steps completed</h4>
+                ${steps.map(step => `
+                    <div style="margin: 5px 0;">
+                        ${step.status ? '✅' : '⏳'} ${step.label}
+                    </div>
+                `).join('')}
+                
+                ${completedSteps === totalSteps ? `
+                    <div style="margin-top: 15px; padding: 10px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px;">
+                        <strong>🎉 User Journey Complete!</strong><br>
+                        The request has successfully moved through all phases:
+                        <ol>
+                            <li>Homeowner submitted request (pending status)</li>
+                            <li>Admin reviewed and approved request</li>
+                            <li>Request assigned to architect(s)</li>
+                            <li>Architect accepted the assignment</li>
+                        </ol>
+                        <em>Next steps would be house plan creation, homeowner review, and construction phase.</em>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Initialize
+        updateJourneySummary();
+    </script>
+</body>
+</html>

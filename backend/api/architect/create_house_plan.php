@@ -51,10 +51,21 @@ try {
     
     $plan_name = trim($input['plan_name'] ?? '');
     $layout_request_id = isset($input['layout_request_id']) ? (int)$input['layout_request_id'] : null;
+    $assignment_id = isset($input['assignment_id']) ? (int)$input['assignment_id'] : null;
     $plot_width = floatval($input['plot_width'] ?? 0);
     $plot_height = floatval($input['plot_height'] ?? 0);
     $plan_data = $input['plan_data'] ?? [];
     $notes = trim($input['notes'] ?? '');
+
+    // Get layout_request_id from assignment if not directly provided
+    if (!$layout_request_id && $assignment_id) {
+        $assignmentStmt = $db->prepare("SELECT layout_request_id FROM layout_request_assignments WHERE id = :id AND architect_id = :architect_id");
+        $assignmentStmt->execute([':id' => $assignment_id, ':architect_id' => $architect_id]);
+        $assignment = $assignmentStmt->fetch(PDO::FETCH_ASSOC);
+        if ($assignment) {
+            $layout_request_id = $assignment['layout_request_id'];
+        }
+    }
 
     if (empty($plan_name) || $plot_width <= 0 || $plot_height <= 0) {
         echo json_encode(['success' => false, 'message' => 'Plan name, plot width and height are required and must be greater than 0']);

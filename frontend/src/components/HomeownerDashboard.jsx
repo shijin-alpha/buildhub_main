@@ -6,7 +6,6 @@ import TourGuide from './TourGuide.jsx';
 import HomeownerDashboardTour from './HomeownerDashboardTour.jsx';
 import ArchitectSelection from './ArchitectSelection.jsx';
 import GeoPhotoViewer from './GeoPhotoViewer.jsx';
-import HousePlanViewer from './HousePlanViewer.jsx';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -20,6 +19,7 @@ import '../styles/ArchitectRecommendation.css';
 import './WidgetColors.css';
 import SearchableDropdown from './SearchableDropdown';
 import { indianCities } from '../data/indianCities';
+import { stateDistricts, keralaPanchayatsMunicipalities } from '../data/locationData';
 import { badgeClass, formatStatus } from '../utils/status';
 import { ProjectProgressChart, ProjectTimeline, BudgetTracker } from './widgets/ProjectTrackingWidgets';
 import NotificationSystem from './widgets/NotificationSystem';
@@ -29,7 +29,12 @@ import TechnicalDetailsDisplay from './TechnicalDetailsDisplay';
 import HomeownerProfileButton from './HomeownerProfileButton';
 import HomeownerProgressReports from './HomeownerProgressReports';
 import ConfirmModal from './ConfirmModal';
+import RoomImprovementAssistant from './RoomImprovementAssistant';
+import InlineRoomImprovement from './InlineRoomImprovement';
+import ConstructionProgressVisualization from './ConstructionProgressVisualization';
 import '../styles/SupportSystem.css';
+import '../styles/RoomImprovementAssistant.css';
+import '../styles/InlineRoomImprovement.css';
 
 const HomeownerDashboard = () => {
   const navigate = useNavigate();
@@ -68,6 +73,8 @@ const HomeownerDashboard = () => {
     aesthetic: '',
     style_preferences: {}, // AI recommendation style preferences
     location: '',
+    district: '',
+    panchayat_municipality: '',
     timeline: '',
     requirements: '',
     selected_layout_id: null,
@@ -94,6 +101,17 @@ const HomeownerDashboard = () => {
   const [messageToContractor, setMessageToContractor] = useState('');
   const [selectedEstimateForMessage, setSelectedEstimateForMessage] = useState(null);
   const [messagesSentToContractors, setMessagesSentToContractors] = useState({}); // Track which estimates have messages sent
+
+  // Room Improvement Assistant state
+  const [showRoomImprovementModal, setShowRoomImprovementModal] = useState(false);
+
+  // Progress visualization state
+  const [selectedProjectForProgress, setSelectedProjectForProgress] = useState(null);
+
+  // Debug logging for Room Improvement Modal state
+  useEffect(() => {
+    console.log('🏠 HomeownerDashboard: showRoomImprovementModal state changed to:', showRoomImprovementModal);
+  }, [showRoomImprovementModal]);
 
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState({
@@ -970,7 +988,14 @@ const HomeownerDashboard = () => {
         const r4 = await fetch('/buildhub/backend/api/homeowner/get_my_projects.php');
         const j4 = await r4.json().catch(() => ({}));
         if (mounted && j4?.success) {
-          setMyProjects(Array.isArray(j4.projects) ? j4.projects : []);
+          const projects = Array.isArray(j4.projects) ? j4.projects : [];
+          setMyProjects(projects);
+          
+          // Auto-select first active project for progress visualization
+          if (projects.length > 0 && !selectedProjectForProgress) {
+            const activeProject = projects.find(p => p.status === 'construction' || p.status === 'in_progress') || projects[0];
+            setSelectedProjectForProgress(activeProject?.id);
+          }
         }
       } catch { }
       try {
@@ -1113,99 +1138,6 @@ const HomeownerDashboard = () => {
     // If we unlocked locally after a successful verification
     if (unlockedDesignIds?.[design?.id]) return true;
     return false;
-  };
-
-  // Handle payment for unlocking technical details of house plans
-  const handlePayToUnlockTechnicalDetails = async (housePlan) => {
-    setPaymentError('');
-    setPaymentLoading(true);
-    setPayingDesignId(housePlan.id);
-    
-    try {
-      // Wait for Razorpay to be available
-      let attempts = 0;
-      while ((!window.Razorpay || window._razorpayLoading) && attempts < 20) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-
-      if (!window.Razorpay) {
-        setPaymentError('Payment system not loaded. Please refresh the page and try again.');
-        return;
-      }
-
-      // Request order from backend
-      const response = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          house_plan_id: housePlan.house_plan_id
-        })
-      });
-      
-      const result = await response.json();
-      if (!result?.success) {
-        setPaymentError(result?.message || 'Failed to initiate payment');
-        return;
-      }
-
-      const options = {
-        key: result.razorpay_key_id,
-        amount: result.amount, // in paise
-        currency: result.currency || 'INR',
-        name: 'BuildHub',
-        description: result.description || `Unlock Technical Details: ${housePlan.design_title}`,
-        order_id: result.razorpay_order_id,
-        handler: async function (rzpRes) {
-          try {
-            const verifyRes = await fetch('/buildhub/backend/api/homeowner/verify_technical_details_payment.php', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                razorpay_payment_id: rzpRes.razorpay_payment_id,
-                razorpay_order_id: rzpRes.razorpay_order_id,
-                razorpay_signature: rzpRes.razorpay_signature,
-                payment_id: result.payment_id
-              })
-            });
-            
-            const verifyJson = await verifyRes.json();
-            if (verifyJson?.success) {
-              // Refresh designs to get updated payment status
-              await fetchReceivedDesigns();
-              setPaymentError('');
-              toast?.success('Technical details unlocked successfully!');
-            } else {
-              setPaymentError(verifyJson?.message || 'Payment verification failed');
-            }
-          } catch (error) {
-            console.error('Payment verification error:', error);
-            setPaymentError('Payment verification failed');
-          }
-        },
-        prefill: {
-          name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || undefined,
-          email: user?.email
-        },
-        theme: { color: '#2563eb' }
-      };
-
-      try {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } catch (error) {
-        console.error('Razorpay error:', error);
-        setPaymentError('Failed to open payment gateway. Please try again.');
-      }
-    } catch (error) {
-      console.error('Payment initiation error:', error);
-      setPaymentError('Network error during payment');
-    } finally {
-      setPaymentLoading(false);
-      setPayingDesignId(null);
-    }
   };
 
   // Architect assignment state
@@ -1403,7 +1335,14 @@ const HomeownerDashboard = () => {
       const response = await fetch('/buildhub/backend/api/homeowner/get_my_projects.php');
       const result = await response.json();
       if (result.success) {
-        setMyProjects(result.projects || []);
+        const projects = result.projects || [];
+        setMyProjects(projects);
+        
+        // Auto-select first active project for progress visualization
+        if (projects.length > 0 && !selectedProjectForProgress) {
+          const activeProject = projects.find(p => p.status === 'construction' || p.status === 'in_progress') || projects[0];
+          setSelectedProjectForProgress(activeProject?.id);
+        }
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -1499,53 +1438,28 @@ const HomeownerDashboard = () => {
   const handleDeleteDesign = async (designId) => {
     if (!designId) return;
     
-    // Check if this is a house plan (ID starts with 'hp_')
-    const isHousePlan = typeof designId === 'string' && designId.startsWith('hp_');
-    
     try {
-      if (isHousePlan) {
-        // Extract the actual house plan ID from the prefixed ID (hp_123 -> 123)
-        const housePlanId = designId.replace('hp_', '');
-        
-        const res = await fetch('/buildhub/backend/api/homeowner/delete_house_plan.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ house_plan_id: parseInt(housePlanId) })
-        });
-        const json = await res.json();
-        
-        if (json.success) {
-          setReceivedDesigns(prev => prev.filter(d => d.id !== designId));
-          setSuccess('House plan deleted successfully');
-        } else {
-          setError(json.message || 'Failed to delete house plan');
-        }
+      // Handle regular design deletion
+      const res = await fetch('/buildhub/backend/api/homeowner/delete_design.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ design_id: designId })
+      });
+      const json = await res.json();
+      
+      if (json.success) {
+        setReceivedDesigns(prev => prev.filter(d => d.id !== designId));
+        setSuccess('Design deleted successfully');
       } else {
-        // Handle regular design deletion
-        const res = await fetch('/buildhub/backend/api/homeowner/delete_design.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ design_id: designId })
-        });
-        const json = await res.json();
-        
-        if (json.success) {
-          setReceivedDesigns(prev => prev.filter(d => d.id !== designId));
-          setSuccess('Design deleted successfully');
-        } else {
-          setError(json.message || 'Failed to delete design');
-        }
+        setError(json.message || 'Failed to delete design');
       }
     } catch (e) {
-      setError('Error deleting ' + (isHousePlan ? 'house plan' : 'design'));
+      setError('Error deleting design');
     }
   };
 
   const confirmDeleteDesign = (designId, designTitle) => {
-    const isHousePlan = typeof designId === 'string' && designId.startsWith('hp_');
-    const itemType = isHousePlan ? 'house plan' : 'design';
-    
-    if (window.confirm(`Are you sure you want to delete this ${itemType}?\n\n"${designTitle}"\n\nThis action cannot be undone.${isHousePlan ? '\n\nNote: This will also delete all associated files and payment records.' : ''}`)) {
+    if (window.confirm(`Are you sure you want to delete this design?\n\n"${designTitle}"\n\nThis action cannot be undone.`)) {
       handleDeleteDesign(designId);
     }
   };
@@ -1750,10 +1664,7 @@ const HomeownerDashboard = () => {
       return;
     }
     
-    // Check if we're sending a house plan
-    const isHousePlan = sourceDesignForContractor?.source_type === 'house_plan';
-    
-    // Allow send without layout if we have a forwarded design bundle or house plan
+    // Allow send without layout if we have a forwarded design bundle
     const canSendWithoutLayout = !!sourceDesignForContractor;
     if (!layoutIdToSend && !canSendWithoutLayout) {
       setError('Please select a layout to send');
@@ -1768,58 +1679,30 @@ const HomeownerDashboard = () => {
       // Send to all selected contractors
       for (const contractor of selectedContractors) {
         try {
-          let response, result;
-          
-          if (isHousePlan) {
-            // Use house plan API
-            const housePlanData = {
-              house_plan_id: sourceDesignForContractor.house_plan_id,
-              plan_name: sourceDesignForContractor.design_title,
-              plot_dimensions: sourceDesignForContractor.plot_dimensions,
-              total_area: sourceDesignForContractor.total_area,
-              technical_details: sourceDesignForContractor.technical_details,
-              plan_data: sourceDesignForContractor.plan_data,
-              architect_info: sourceDesignForContractor.architect,
-              layout_images: sourceDesignForContractor.files?.filter(f => f.type === 'layout_image') || [],
-              notes: sourceDesignForContractor.description
-            };
-            
-            response = await fetch('/buildhub/backend/api/homeowner/send_house_plan_to_contractor.php', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                contractor_id: contractor.id,
-                house_plan_data: housePlanData,
-                message: ''
-              })
-            });
-          } else {
-            // Use regular design API
-            response = await fetch('/buildhub/backend/api/homeowner/send_to_contractor.php', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                layout_id: layoutIdToSend || null,
-                contractor_id: contractor.id,
-                homeowner_id: user?.id,
-                contractor_message: '',
-                forwarded_design: sourceDesignForContractor ? {
-                  id: sourceDesignForContractor.id,
-                  title: sourceDesignForContractor.design_title,
-                  description: sourceDesignForContractor.description,
-                  files: Array.isArray(sourceDesignForContractor.files) ? sourceDesignForContractor.files : [],
-                  technical_details: sourceDesignForContractor.technical_details || null,
-                  created_at: sourceDesignForContractor.created_at
-                } : null,
-                plot_size: selectedLibraryLayout?.plot_size || requestData.plot_size || null,
-                building_size: selectedLibraryLayout?.building_size || requestData.building_size || null
-              })
-            });
-          }
+          // Use regular design API
+          const response = await fetch('/buildhub/backend/api/homeowner/send_to_contractor.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              layout_id: layoutIdToSend || null,
+              contractor_id: contractor.id,
+              homeowner_id: user?.id,
+              contractor_message: '',
+              forwarded_design: sourceDesignForContractor ? {
+                id: sourceDesignForContractor.id,
+                title: sourceDesignForContractor.design_title,
+                description: sourceDesignForContractor.description,
+                files: Array.isArray(sourceDesignForContractor.files) ? sourceDesignForContractor.files : [],
+                technical_details: sourceDesignForContractor.technical_details || null,
+                created_at: sourceDesignForContractor.created_at
+              } : null,
+              plot_size: selectedLibraryLayout?.plot_size || requestData.plot_size || null,
+              building_size: selectedLibraryLayout?.building_size || requestData.building_size || null
+            })
+          });
 
-          result = await response.json();
+          const result = await response.json();
           if (result.success) {
             successMessages.push(result.contractor_name || contractor.first_name);
           } else {
@@ -1832,8 +1715,7 @@ const HomeownerDashboard = () => {
 
       // Show success/error messages
       if (successMessages.length > 0) {
-        const itemType = isHousePlan ? 'House plan' : 'Layout';
-        setSuccess(`${itemType} sent to ${successMessages.length} contractor(s): ${successMessages.join(', ')}`);
+        setSuccess(`Layout sent to ${successMessages.length} contractor(s): ${successMessages.join(', ')}`);
         setShowContractorModal(false);
         setSelectedContractors([]);
         setSelectedLibraryLayout(null);
@@ -2009,6 +1891,7 @@ const HomeownerDashboard = () => {
     }
   };
 
+  // Unified request submission with proper flow
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
     if (!requestData.plot_size || !requestData.budget_range || !requestData.requirements) {
@@ -2031,6 +1914,7 @@ const HomeownerDashboard = () => {
         budget_range: requestData.budget_range === 'Custom' ? requestData.custom_budget : requestData.budget_range
       };
 
+      // Step 1: Submit the request (will be in 'pending' status)
       const response = await fetch('/buildhub/backend/api/homeowner/submit_request.php', {
         method: 'POST',
         headers: {
@@ -2041,23 +1925,20 @@ const HomeownerDashboard = () => {
 
       const result = await response.json();
       if (result.success) {
-        // If architect(s) selected, assign immediately
+        const requestId = result.request_id;
+        
+        // Step 2: If architect(s) selected, prepare for assignment (but don't assign yet - wait for admin approval)
         const selIds = Array.isArray(selectedArchitectId) ? selectedArchitectId : (selectedArchitectId ? [selectedArchitectId] : []);
+        
         if (selIds.length > 0) {
-          try {
-            await fetch('/buildhub/backend/api/homeowner/assign_architect.php', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                layout_request_id: result.request_id,
-                architect_ids: selIds,
-                message: assignMessage || 'Custom design request from dashboard'
-              })
-            });
-          } catch (e) { /* ignore assignment errors here */ }
+          // Store architect selection for after approval
+          localStorage.setItem(`pending_architects_${requestId}`, JSON.stringify({
+            architect_ids: selIds,
+            message: assignMessage || 'Custom design request from dashboard'
+          }));
         }
-        setSuccess(`Your layout request has been submitted successfully! ${selIds.length > 0 ? 'It has been assigned to the selected architect(s).' : 'You can assign it to architects from the Requests tab.'}`);
+
+        setSuccess(`Your layout request has been submitted successfully! It will be reviewed by our admin team and you'll be notified once approved. ${selIds.length > 0 ? 'Your selected architects will be notified once the request is approved.' : ''}`);
         setShowRequestForm(false);
         setSelectedArchitectId(null);
         setAssignMessage('');
@@ -2098,6 +1979,65 @@ const HomeownerDashboard = () => {
     setShowLibraryModal(false);
     navigate(`/homeowner/request?selected_layout_id=${layout.id}&layout_type=library`);
   };
+
+  // Handle architect assignment for approved requests
+  const assignArchitectsToRequest = async (requestId, architectIds, message = '') => {
+    try {
+      const response = await fetch('/buildhub/backend/api/unified/assign_architect.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          layout_request_id: requestId,
+          architect_ids: architectIds,
+          message: message
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setSuccess(`Successfully assigned to ${result.assigned_count} architect(s)`);
+        fetchMyRequests(); // Refresh the requests list
+        return true;
+      } else {
+        setError('Failed to assign architects: ' + result.message);
+        return false;
+      }
+    } catch (error) {
+      setError('Error assigning architects');
+      return false;
+    }
+  };
+
+  // Check for pending architect assignments after approval
+  const checkPendingAssignments = async () => {
+    layoutRequests.forEach(async (request) => {
+      if (request.status === 'approved') {
+        const pendingKey = `pending_architects_${request.id}`;
+        const pendingData = localStorage.getItem(pendingKey);
+        
+        if (pendingData) {
+          try {
+            const { architect_ids, message } = JSON.parse(pendingData);
+            const success = await assignArchitectsToRequest(request.id, architect_ids, message);
+            if (success) {
+              localStorage.removeItem(pendingKey); // Clean up
+            }
+          } catch (e) {
+            console.error('Error processing pending assignment:', e);
+            localStorage.removeItem(pendingKey); // Clean up invalid data
+          }
+        }
+      }
+    });
+  };
+
+  // Run pending assignment check when requests are loaded
+  React.useEffect(() => {
+    if (layoutRequests.length > 0) {
+      checkPendingAssignments();
+    }
+  }, [layoutRequests]);
 
   const renderDashboard = () => (
     <div>
@@ -2419,8 +2359,8 @@ const HomeownerDashboard = () => {
 
       <div className="section-card">
         <div className="section-header">
-          <h2>All Designs & House Plans</h2>
-          <p>Designs sent by architects and house plans with technical specifications</p>
+          <h2>Received Designs</h2>
+          <p>Designs sent by architects with technical specifications</p>
         </div>
         <div className="section-content">
           {receivedDesigns.length === 0 ? (
@@ -3007,14 +2947,6 @@ const HomeownerDashboard = () => {
 
           <a
             href="#"
-            className={`nav-item sb-item ${activeTab === 'house-plans' ? 'active' : ''}`}
-            data-title="House Plans"
-            onClick={(e) => { e.preventDefault(); setActiveTab('house-plans'); }}
-          >
-            <span className="nav-label sb-label">House Plans</span>
-          </a>
-          <a
-            href="#"
             className={`nav-item sb-item ${activeTab === 'estimates' ? 'active' : ''}`}
             data-title="Estimations"
             onClick={(e) => { e.preventDefault(); setActiveTab('estimates'); }}
@@ -3040,8 +2972,26 @@ const HomeownerDashboard = () => {
           >
             <span className="nav-label sb-label">Construction Photos</span>
           </a>
+          <a
+            href="#"
+            className={`nav-item sb-item ${activeTab === 'room-improvement' ? 'active' : ''}`}
+            data-title="Room Improvement Assistant"
+            onClick={(e) => { e.preventDefault(); setActiveTab('room-improvement'); }}
+          >
+            <span className="nav-label sb-label">Room Improvement Assistant</span>
+          </a>
 
         </nav>
+
+        {/* Construction Progress Visualization */}
+        {selectedProjectForProgress && (
+          <div className="sidebar-progress-section">
+            <ConstructionProgressVisualization 
+              projectId={selectedProjectForProgress}
+              className="compact"
+            />
+          </div>
+        )}
 
       </div>
 
@@ -3085,7 +3035,6 @@ const HomeownerDashboard = () => {
         {activeTab === 'library' && renderLibrary()}
         {activeTab === 'requests' && renderRequests()}
         {activeTab === 'designs' && renderReceivedDesigns()}
-        {activeTab === 'house-plans' && <HousePlanViewer />}
         {activeTab === 'estimates' && (
           <div className="section-card" style={{ marginTop: '1rem' }}>
             <div className="section-header">
@@ -3274,6 +3223,22 @@ const HomeownerDashboard = () => {
                 homeownerId={user?.id}
                 projectId={null} // Show all projects by default
               />
+            </div>
+          </div>
+        )}
+        {activeTab === 'room-improvement' && (
+          <div className="section-card" style={{ marginTop: '1rem' }}>
+            <div className="section-header">
+              <div className="section-title">
+                <span className="section-icon">🏠</span>
+                <div>
+                  <h2>Post-Construction Room Improvement Assistant</h2>
+                  <p>Upload photos of your completed rooms to receive AI-assisted improvement and renovation concepts</p>
+                </div>
+              </div>
+            </div>
+            <div className="section-content">
+              <InlineRoomImprovement />
             </div>
           </div>
         )}
@@ -3815,21 +3780,110 @@ const HomeownerDashboard = () => {
                   <h4 className="section-title">Location & Timeline</h4>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Location</label>
-                      <div className="location-input-wrapper">
-                        <SearchableDropdown
-                          options={indianCities}
-                          value={requestData.location}
-                          onChange={(value) => setRequestData({ ...requestData, location: value })}
-                          placeholder="Search for a city..."
-                          detectLocation={true}
-                        />
-                        <div className="location-detect-info">
-                          <i className="fas fa-info-circle"></i>
-                          <span>Click the location icon to detect your current city</span>
-                        </div>
-                      </div>
+                      <label>State *</label>
+                      <select
+                        value={requestData.location}
+                        onChange={(e) => setRequestData({ ...requestData, location: e.target.value, district: '', panchayat_municipality: '' })}
+                        className="form-control"
+                        required
+                      >
+                        <option value="">Select State</option>
+                        <optgroup label="South India">
+                          <option value="Andhra Pradesh">Andhra Pradesh</option>
+                          <option value="Karnataka">Karnataka</option>
+                          <option value="Kerala">Kerala</option>
+                          <option value="Tamil Nadu">Tamil Nadu</option>
+                          <option value="Telangana">Telangana</option>
+                          <option value="Puducherry">Puducherry</option>
+                          <option value="Lakshadweep">Lakshadweep</option>
+                          <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                        </optgroup>
+                        <optgroup label="North India">
+                          <option value="Delhi">Delhi</option>
+                          <option value="Haryana">Haryana</option>
+                          <option value="Himachal Pradesh">Himachal Pradesh</option>
+                          <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                          <option value="Ladakh">Ladakh</option>
+                          <option value="Punjab">Punjab</option>
+                          <option value="Rajasthan">Rajasthan</option>
+                          <option value="Uttar Pradesh">Uttar Pradesh</option>
+                          <option value="Uttarakhand">Uttarakhand</option>
+                          <option value="Chandigarh">Chandigarh</option>
+                        </optgroup>
+                        <optgroup label="East India">
+                          <option value="Bihar">Bihar</option>
+                          <option value="Jharkhand">Jharkhand</option>
+                          <option value="Odisha">Odisha</option>
+                          <option value="West Bengal">West Bengal</option>
+                        </optgroup>
+                        <optgroup label="West India">
+                          <option value="Goa">Goa</option>
+                          <option value="Gujarat">Gujarat</option>
+                          <option value="Maharashtra">Maharashtra</option>
+                          <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                        </optgroup>
+                        <optgroup label="Central India">
+                          <option value="Chhattisgarh">Chhattisgarh</option>
+                          <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        </optgroup>
+                        <optgroup label="Northeast India">
+                          <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                          <option value="Assam">Assam</option>
+                          <option value="Manipur">Manipur</option>
+                          <option value="Meghalaya">Meghalaya</option>
+                          <option value="Mizoram">Mizoram</option>
+                          <option value="Nagaland">Nagaland</option>
+                          <option value="Sikkim">Sikkim</option>
+                          <option value="Tripura">Tripura</option>
+                        </optgroup>
+                      </select>
                     </div>
+                    
+                    {requestData.location && stateDistricts[requestData.location] && (
+                      <div className="form-group">
+                        <label>District *</label>
+                        <select
+                          value={requestData.district}
+                          onChange={(e) => setRequestData({ ...requestData, district: e.target.value, panchayat_municipality: '' })}
+                          className="form-control"
+                          required
+                        >
+                          <option value="">Select District</option>
+                          {stateDistricts[requestData.location].map(district => (
+                            <option key={district} value={district}>{district}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    
+                    {requestData.location === 'Kerala' && requestData.district && keralaPanchayatsMunicipalities[requestData.district] && (
+                      <div className="form-group">
+                        <label>Panchayat / Municipality *</label>
+                        <select
+                          value={requestData.panchayat_municipality}
+                          onChange={(e) => setRequestData({ ...requestData, panchayat_municipality: e.target.value })}
+                          className="form-control"
+                          required
+                        >
+                          <option value="">Select Panchayat / Municipality</option>
+                          {keralaPanchayatsMunicipalities[requestData.district].Municipalities && (
+                            <optgroup label="Municipalities">
+                              {keralaPanchayatsMunicipalities[requestData.district].Municipalities.map(place => (
+                                <option key={place} value={place}>{place}</option>
+                              ))}
+                            </optgroup>
+                          )}
+                          {keralaPanchayatsMunicipalities[requestData.district].Panchayats && (
+                            <optgroup label="Panchayats">
+                              {keralaPanchayatsMunicipalities[requestData.district].Panchayats.map(place => (
+                                <option key={place} value={place}>{place}</option>
+                              ))}
+                            </optgroup>
+                          )}
+                        </select>
+                      </div>
+                    )}
+                    
                     <div className="form-group">
                       <label>Timeline</label>
                       <select
@@ -3982,7 +4036,7 @@ const HomeownerDashboard = () => {
 
 
               {/* Integrated Architect Selection */}
-              <div className="form-card architect-selection-card" style={{ width: '100%', maxWidth: '1000px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb' }}>
+              <div className="form-card architect-selection-card" style={{ width: '100%', maxWidth: '1000px', background: 'transparent', borderRadius: '16px', boxShadow: 'none', border: 'none' }}>
                 <ArchitectSelection
                   selectedArchitectIds={Array.isArray(selectedArchitectId) ? selectedArchitectId : (selectedArchitectId ? [selectedArchitectId] : [])}
                   onSelectionChange={(selectedIds) => {
@@ -3995,23 +4049,12 @@ const HomeownerDashboard = () => {
                 />
               </div>
 
-              {/* Message section for selected architects */}
-              <div className="form-group message-section" style={{ width: '100%', maxWidth: '600px', marginTop: '24px' }}>
-                <label>Message to architect (optional)</label>
-                <textarea
-                  value={assignMessage}
-                  onChange={(e) => setAssignMessage(e.target.value)}
-                  placeholder="Add any specific requirements or notes for the architect..."
-                  rows="3"
-                />
-
-                {/* Action buttons inside the form */}
-                <div className="form-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '20px' }}>
-                  <button className="btn btn-secondary" onClick={() => setShowArchitectModal(false)}>Cancel</button>
-                  <button className="btn btn-primary" disabled={archLoading || !selectedArchitectId} onClick={handleAssignArchitect}>
-                    {archLoading ? 'Sending...' : 'Send Request'}
-                  </button>
-                </div>
+              {/* Action buttons */}
+              <div className="form-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '20px', width: '100%', maxWidth: '600px' }}>
+                <button className="btn btn-secondary" onClick={() => setShowArchitectModal(false)}>Cancel</button>
+                <button className="btn btn-primary" disabled={archLoading || !selectedArchitectId} onClick={handleAssignArchitect}>
+                  {archLoading ? 'Sending...' : 'Send Request'}
+                </button>
               </div>
             </div>
           </div>
@@ -4032,8 +4075,9 @@ const HomeownerDashboard = () => {
             <div className="form-content simple-contractor-modal">
               {/* Simple Header */}
               <div className="simple-modal-header">
-                <h3>Send to Contractors</h3>
-                <p>Select contractors to receive your {sourceDesignForContractor?.source_type === 'house_plan' ? 'house plan' : 'design'}</p>
+                <div className="header-left">
+                  <h3>Send to Contractors</h3>
+                </div>
                 <button className="modal-close" onClick={() => setShowContractorModal(false)}>×</button>
               </div>
 
@@ -4042,47 +4086,36 @@ const HomeownerDashboard = () => {
                 {sourceDesignForContractor?.source_type === 'house_plan' ? (
                   <div className="info-row">
                     <strong>House Plan:</strong> {sourceDesignForContractor.design_title}
-                    <span className="info-details">
-                      Plot: {sourceDesignForContractor.plot_dimensions} • 
-                      Area: {sourceDesignForContractor.total_area} sq ft • 
-                      Files: {sourceDesignForContractor.files?.length || 0}
-                    </span>
                   </div>
                 ) : selectedLibraryLayout ? (
                   <div className="info-row">
                     <strong>Layout:</strong> {selectedLibraryLayout.title}
-                    <span className="info-details">
-                      {selectedLibraryLayout.bedrooms}BR • 
-                      {selectedLibraryLayout.bathrooms}BA • 
-                      {selectedLibraryLayout.area} sq ft
-                    </span>
                   </div>
                 ) : sourceDesignForContractor ? (
                   <div className="info-row">
                     <strong>Design:</strong> {sourceDesignForContractor.design_title}
-                    <span className="info-details">
-                      By {sourceDesignForContractor.architect?.name} • 
-                      Files: {sourceDesignForContractor.files?.length || 0}
-                    </span>
                   </div>
                 ) : null}
               </div>
 
               {/* Search */}
               <div className="search-simple">
-                <input
-                  type="text"
-                  placeholder="Search contractors..."
-                  value={archSearch}
-                  onChange={(e) => setArchSearch(e.target.value)}
-                  className="search-input-simple"
-                />
-                <button 
-                  className="search-btn-simple" 
-                  onClick={() => fetchContractors({ search: archSearch })}
-                >
-                  Search
-                </button>
+                <div className="search-container">
+                  <input
+                    type="text"
+                    placeholder="Search contractors by name, email, or location..."
+                    value={archSearch}
+                    onChange={(e) => setArchSearch(e.target.value)}
+                    className="search-input-simple"
+                  />
+                  <span className="search-icon">🔍</span>
+                  <button 
+                    className="search-btn-simple" 
+                    onClick={() => fetchContractors({ search: archSearch })}
+                  >
+                    🔍 Search
+                  </button>
+                </div>
               </div>
 
               {/* Selection Info */}
@@ -5590,6 +5623,17 @@ const ImageViewer = ({ viewer, setViewer }) => {
           </a>
         </div>
       </div>
+
+      {/* Room Improvement Assistant Modal - Kept for fallback */}
+      {showRoomImprovementModal && (
+        <RoomImprovementAssistant 
+          show={showRoomImprovementModal}
+          onClose={() => {
+            console.log('🏠 Room Improvement modal onClose called');
+            setShowRoomImprovementModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

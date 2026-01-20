@@ -35,34 +35,33 @@ try {
     }
 
     // Build query based on parameters
-    $whereClause = "WHERE cpu.homeowner_id = :homeowner_id";
+    $whereClause = "WHERE dpu.homeowner_id = :homeowner_id";
     $params = [':homeowner_id' => $homeowner_id];
 
     if ($project_id > 0) {
-        $whereClause .= " AND cpu.project_id = :project_id";
+        $whereClause .= " AND dpu.project_id = :project_id";
         $params[':project_id'] = $project_id;
     }
 
-    // Get progress updates with contractor and project details
+    // Get daily progress updates with contractor details and labour tracking
     $stmt = $db->prepare("
         SELECT 
-            cpu.*,
-            cse.total_cost,
-            cse.timeline,
-            cse.materials,
+            dpu.*,
             u_contractor.first_name as contractor_first_name,
             u_contractor.last_name as contractor_last_name,
             u_contractor.email as contractor_email,
             u_contractor.phone as contractor_phone,
-            lr.plot_size,
-            lr.budget_range,
-            lr.requirements as project_requirements
-        FROM construction_progress_updates cpu
-        LEFT JOIN contractor_send_estimates cse ON cpu.project_id = cse.id
-        LEFT JOIN users u_contractor ON cpu.contractor_id = u_contractor.id
-        LEFT JOIN layout_requests lr ON cse.layout_request_id = lr.id
+            u_contractor.company_name as contractor_company,
+            COUNT(dlt.id) as labour_entries_count,
+            GROUP_CONCAT(DISTINCT dlt.worker_type) as worker_types,
+            SUM(dlt.worker_count) as total_workers,
+            AVG(dlt.productivity_rating) as avg_productivity
+        FROM daily_progress_updates dpu
+        LEFT JOIN users u_contractor ON dpu.contractor_id = u_contractor.id
+        LEFT JOIN daily_labour_tracking dlt ON dpu.id = dlt.daily_progress_id
         {$whereClause}
-        ORDER BY cpu.created_at DESC
+        GROUP BY dpu.id
+        ORDER BY dpu.update_date DESC, dpu.created_at DESC
         LIMIT :limit OFFSET :offset
     ");
 
@@ -75,43 +74,44 @@ try {
 
     $progress_updates = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Process photo paths and add additional data
+    // Process progress updates and add additional data
     foreach ($progress_updates as &$update) {
         // Decode photo paths
-        $update['photos'] = json_decode($update['photo_paths'], true) ?: [];
+        $update['photos'] = json_decode($update['progress_photos'], true) ?: [];
         
         // Add full URLs for photos
         $update['photo_urls'] = array_map(function($path) {
-            return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . '/buildhub/backend' . $path;
+            return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . '/buildhub/backend' . $path['path'];
         }, $update['photos']);
 
         // Format dates
+        $update['update_date_formatted'] = date('M j, Y', strtotime($update['update_date']));
         $update['created_at_formatted'] = date('M j, Y g:i A', strtotime($update['created_at']));
         $update['updated_at_formatted'] = date('M j, Y g:i A', strtotime($update['updated_at']));
 
-        // Add progress status badge class
-        switch ($update['stage_status']) {
-            case 'Not Started':
-                $update['status_class'] = 'badge-secondary';
-                break;
-            case 'In Progress':
-                $update['status_class'] = 'badge-warning';
-                break;
-            case 'Completed':
-                $update['status_class'] = 'badge-success';
-                break;
-            default:
-                $update['status_class'] = 'badge-secondary';
+        // Add progress status based on completion percentage
+        if ($update['cumulative_completion_percentage'] >= 100) {
+            $update['status'] = 'Completed';
+            $update['status_class'] = 'badge-success';
+        } elseif ($update['cumulative_completion_percentage'] >= 75) {
+            $update['status'] = 'Near Completion';
+            $update['status_class'] = 'badge-info';
+        } elseif ($update['cumulative_completion_percentage'] >= 25) {
+            $update['status'] = 'In Progress';
+            $update['status_class'] = 'badge-warning';
+        } else {
+            $update['status'] = 'Started';
+            $update['status_class'] = 'badge-secondary';
         }
 
-        // Add completion percentage class
-        if ($update['completion_percentage'] >= 100) {
+        // Add completion percentage class for progress bars
+        if ($update['cumulative_completion_percentage'] >= 100) {
             $update['progress_class'] = 'progress-complete';
-        } elseif ($update['completion_percentage'] >= 75) {
+        } elseif ($update['cumulative_completion_percentage'] >= 75) {
             $update['progress_class'] = 'progress-high';
-        } elseif ($update['completion_percentage'] >= 50) {
+        } elseif ($update['cumulative_completion_percentage'] >= 50) {
             $update['progress_class'] = 'progress-medium';
-        } elseif ($update['completion_percentage'] >= 25) {
+        } elseif ($update['cumulative_completion_percentage'] >= 25) {
             $update['progress_class'] = 'progress-low';
         } else {
             $update['progress_class'] = 'progress-minimal';
@@ -120,14 +120,48 @@ try {
         // Add time ago
         $update['time_ago'] = timeAgo($update['created_at']);
 
+        // Format contractor name
+        $update['contractor_name'] = trim($update['contractor_first_name'] . ' ' . $update['contractor_last_name']);
+
+        // Format worker types
+        $update['worker_types_array'] = $update['worker_types'] ? explode(',', $update['worker_types']) : [];
+        
+        // Add location verification status
+        $update['location_status'] = $update['location_verified'] ? 'Verified' : 'Not Verified';
+        $update['location_class'] = $update['location_verified'] ? 'badge-success' : 'badge-warning';
+
         // Clean up sensitive data
-        unset($update['photo_paths']);
+        unset($update['progress_photos']);
+    }
+
+    // Get geo photos for the homeowner's projects
+    $geoPhotosStmt = $db->prepare("
+        SELECT 
+            gp.*,
+            dpu.update_date,
+            dpu.construction_stage
+        FROM geo_photos gp
+        LEFT JOIN daily_progress_updates dpu ON gp.project_id = dpu.project_id 
+            AND DATE(gp.photo_timestamp) = dpu.update_date
+        WHERE gp.homeowner_id = :homeowner_id
+        ORDER BY gp.photo_timestamp DESC
+        LIMIT 20
+    ");
+    $geoPhotosStmt->bindValue(':homeowner_id', $homeowner_id, PDO::PARAM_INT);
+    $geoPhotosStmt->execute();
+    $geoPhotos = $geoPhotosStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Process geo photos
+    foreach ($geoPhotos as &$photo) {
+        $photo['photo_url'] = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . '/buildhub/backend' . str_replace('../../', '/', $photo['file_path']);
+        $photo['location_data'] = json_decode($photo['location_data'], true) ?: [];
+        $photo['timestamp_formatted'] = date('M j, Y g:i A', strtotime($photo['photo_timestamp']));
     }
 
     // Get total count for pagination
     $countStmt = $db->prepare("
         SELECT COUNT(*) as total 
-        FROM construction_progress_updates cpu 
+        FROM daily_progress_updates dpu 
         {$whereClause}
     ");
     
@@ -140,25 +174,21 @@ try {
     // Get projects summary for homeowner
     $projectsStmt = $db->prepare("
         SELECT 
-            cse.id as project_id,
-            cse.total_cost,
-            cse.timeline,
-            cse.status as project_status,
+            dpu.project_id,
             u_contractor.first_name as contractor_first_name,
             u_contractor.last_name as contractor_last_name,
-            lr.plot_size,
-            lr.budget_range,
-            COUNT(cpu.id) as total_updates,
-            MAX(cpu.completion_percentage) as latest_progress,
-            MAX(cpu.created_at) as last_update,
-            SUM(CASE WHEN cpu.stage_status = 'Completed' THEN 1 ELSE 0 END) as completed_stages
-        FROM contractor_send_estimates cse
-        LEFT JOIN users u_contractor ON cse.contractor_id = u_contractor.id
-        LEFT JOIN layout_requests lr ON cse.layout_request_id = lr.id
-        LEFT JOIN construction_progress_updates cpu ON cse.id = cpu.project_id
-        WHERE cse.homeowner_id = :homeowner_id
-        GROUP BY cse.id
-        ORDER BY cse.created_at DESC
+            u_contractor.company_name,
+            COUNT(dpu.id) as total_updates,
+            MAX(dpu.cumulative_completion_percentage) as latest_progress,
+            MAX(dpu.update_date) as last_update_date,
+            MAX(dpu.created_at) as last_update_time,
+            COUNT(DISTINCT dpu.construction_stage) as stages_worked,
+            AVG(dpu.incremental_completion_percentage) as avg_daily_progress
+        FROM daily_progress_updates dpu
+        LEFT JOIN users u_contractor ON dpu.contractor_id = u_contractor.id
+        WHERE dpu.homeowner_id = :homeowner_id
+        GROUP BY dpu.project_id, dpu.contractor_id
+        ORDER BY last_update_time DESC
     ");
     
     $projectsStmt->bindValue(':homeowner_id', $homeowner_id, PDO::PARAM_INT);
@@ -167,17 +197,22 @@ try {
 
     // Format project data
     foreach ($projects as &$project) {
-        $project['last_update_formatted'] = $project['last_update'] 
-            ? date('M j, Y g:i A', strtotime($project['last_update']))
+        $project['last_update_formatted'] = $project['last_update_date'] 
+            ? date('M j, Y', strtotime($project['last_update_date']))
+            : 'No updates yet';
+        $project['last_update_time_formatted'] = $project['last_update_time'] 
+            ? date('M j, Y g:i A', strtotime($project['last_update_time']))
             : 'No updates yet';
         $project['latest_progress'] = $project['latest_progress'] ?: 0;
-        $project['completed_stages'] = $project['completed_stages'] ?: 0;
+        $project['stages_worked'] = $project['stages_worked'] ?: 0;
+        $project['contractor_name'] = trim($project['contractor_first_name'] . ' ' . $project['contractor_last_name']);
+        $project['avg_daily_progress'] = round($project['avg_daily_progress'] ?: 0, 2);
     }
 
     // Get unread notifications count
     $unreadStmt = $db->prepare("
         SELECT COUNT(*) as unread_count 
-        FROM progress_notifications 
+        FROM enhanced_progress_notifications 
         WHERE homeowner_id = :homeowner_id AND status = 'unread'
     ");
     $unreadStmt->bindValue(':homeowner_id', $homeowner_id, PDO::PARAM_INT);
@@ -188,6 +223,7 @@ try {
         'success' => true,
         'data' => [
             'progress_updates' => $progress_updates,
+            'geo_photos' => $geoPhotos,
             'projects' => $projects,
             'pagination' => [
                 'total' => (int)$totalCount,
@@ -195,13 +231,18 @@ try {
                 'offset' => $offset,
                 'has_more' => ($offset + $limit) < $totalCount
             ],
-            'unread_notifications' => (int)$unreadCount
+            'unread_notifications' => (int)$unreadCount,
+            'summary' => [
+                'total_updates' => (int)$totalCount,
+                'total_projects' => count($projects),
+                'total_geo_photos' => count($geoPhotos)
+            ]
         ]
     ]);
 
 } catch (Exception $e) {
     error_log("Get homeowner progress updates error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Server error occurred']);
+    echo json_encode(['success' => false, 'message' => 'Server error occurred: ' . $e->getMessage()]);
 }
 
 // Helper function for time ago

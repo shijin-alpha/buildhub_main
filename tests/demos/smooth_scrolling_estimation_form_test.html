@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smooth Scrolling Estimation Form - Test</title>
+    <style>
+        /* Enhanced Inbox Estimation Form Styles with Smooth Scrolling */
+
+        /* Smooth scrolling for the entire form */
+        html {
+          scroll-behavior: smooth;
+        }
+
+        /* Form container with smooth scrolling */
+        .estimate-form {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-radius: 0 0 16px 16px;
+          padding: 24px;
+          margin-top: 0;
+          box-shadow: none;
+          border: none;
+          transition: all 0.3s ease;
+          max-height: 80vh;
+          overflow-y: auto;
+          overflow-x: hidden;
+          scroll-behavior: smooth;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        .estimate-form::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .estimate-form::-webkit-scrollbar-track {
+          background: rgba(241, 245, 249, 0.5);
+          border-radius: 10px;
+        }
+
+        .estimate-form::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 10px;
+          transition: all 0.3s ease;
+        }
+
+        .estimate-form::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Smooth transitions for all form elements */
+        .estimate-form * {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Enhanced section transitions */
+        .estimate-form .section-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 24px 0 16px 0;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          position: relative;
+          overflow: hidden;
+          transform: translateY(0);
+          opacity: 1;
+          animation: slideInFromLeft 0.6s ease-out;
+        }
+
+        /* Smooth slide-in animation for sections */
+        @keyframes slideInFromLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        /* Staggered animation for form elements */
+        .estimate-form .grid-2 > *:nth-child(1) { animation-delay: 0.1s; }
+        .estimate-form .grid-2 > *:nth-child(2) { animation-delay: 0.2s; }
+        .estimate-form .grid-2 > *:nth-child(3) { animation-delay: 0.3s; }
+        .estimate-form .grid-2 > *:nth-child(4) { animation-delay: 0.4s; }
+        .estimate-form .grid-2 > *:nth-child(5) { animation-delay: 0.5s; }
+        .estimate-form .grid-2 > *:nth-child(6) { animation-delay: 0.6s; }
+        .estimate-form .grid-2 > *:nth-child(7) { animation-delay: 0.7s; }
+        .estimate-form .grid-2 > *:nth-child(8) { animation-delay: 0.8s; }
+
+        /* Smooth input animations */
+        .estimate-form input,
+        .estimate-form select,
+        .estimate-form textarea {
+          padding: 14px 16px;
+          border: 2px solid #e2e8f0;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 500;
+          background: white;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          transform: translateY(0);
+          opacity: 1;
+          animation: fadeInUp 0.6s ease-out both;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Enhanced focus states with smooth transitions */
+        .estimate-form input:focus,
+        .estimate-form select:focus,
+        .estimate-form textarea:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 
+            0 0 0 4px rgba(102, 126, 234, 0.1), 
+            0 8px 25px rgba(102, 126, 234, 0.15),
+            0 4px 12px rgba(0, 0, 0, 0.1);
+          transform: translateY(-2px) scale(1.02);
+          background: #fefefe;
+          scroll-margin-top: 100px;
+        }
+
+        /* Smooth hover effects */
+        .estimate-form input:hover:not(:focus),
+        .estimate-form select:hover:not(:focus),
+        .estimate-form textarea:hover:not(:focus) {
+          border-color: #cbd5e0;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          transform: translateY(-1px);
+        }
+
+        /* Enhanced estimate line animations */
+        .estimate-form .estimate-line {
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+          margin-bottom: 16px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+          transform: translateY(0);
+          opacity: 1;
+          animation: slideInUp 0.6s ease-out both;
+        }
+
+        @keyframes slideInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .estimate-form .estimate-line::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 4px;
+          height: 100%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          transform: scaleY(0);
+          transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          transform-origin: bottom;
+        }
+
+        .estimate-form .estimate-line:hover {
+          box-shadow: 
+            0 12px 40px rgba(102, 126, 234, 0.15),
+            0 8px 24px rgba(0, 0, 0, 0.1);
+          transform: translateY(-4px) scale(1.01);
+          border-color: #667eea;
+        }
+
+        .estimate-form .estimate-line:hover::before {
+          transform: scaleY(1);
+        }
+
+        /* Grid Layouts */
+        .estimate-form .grid-2 {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+
+        .estimate-form .grid-4 {
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1.5fr;
+          gap: 12px;
+          align-items: center;
+        }
+
+        /* Enhanced button animations */
+        .estimate-form .btn {
+          padding: 14px 28px;
+          border: none;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+          position: relative;
+          overflow: hidden;
+          transform: translateY(0) scale(1);
+        }
+
+        .estimate-form .btn::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .estimate-form .btn:hover::before {
+          width: 300px;
+          height: 300px;
+        }
+
+        .estimate-form .btn:hover {
+          transform: translateY(-3px) scale(1.05);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .estimate-form .btn:active {
+          transform: translateY(-1px) scale(1.02);
+          transition: all 0.1s ease;
+        }
+
+        .estimate-form .btn-secondary {
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+          color: #475569;
+          border: 2px solid #cbd5e0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .estimate-form .btn-primary {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: 2px solid #667eea;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Smooth actions section */
+        .estimate-form .actions {
+          display: flex;
+          justify-content: center;
+          gap: 16px;
+          margin-top: 32px;
+          padding: 24px;
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-radius: 16px;
+          border: 2px solid #e2e8f0;
+          animation: slideInUp 0.8s ease-out;
+        }
+
+        /* Interactive Details/Summary Styling */
+        details {
+          margin-top: 16px !important;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          border: 2px solid #e2e8f0;
+          transition: all 0.3s ease;
+          background: white;
+        }
+
+        details:hover {
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+          transform: translateY(-2px);
+          border-color: #667eea;
+        }
+
+        details[open] {
+          box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+          border-color: #667eea;
+        }
+
+        details summary {
+          cursor: pointer !important;
+          padding: 16px 24px !important;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          border: none !important;
+          border-radius: 0 !important;
+          font-size: 18px !important;
+          font-weight: 700 !important;
+          color: white !important;
+          transition: all 0.3s ease !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          position: relative !important;
+          overflow: hidden !important;
+          user-select: none;
+        }
+
+        details summary:hover {
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Custom arrow for details */
+        details summary::marker,
+        details summary::-webkit-details-marker {
+          display: none;
+        }
+
+        details summary::after {
+          content: '▼';
+          font-size: 14px;
+          transition: transform 0.3s ease;
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        details[open] summary::after {
+          transform: rotate(180deg);
+          color: white;
+        }
+
+        /* Demo page styling */
+        body {
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          margin: 0;
+          padding: 20px;
+          min-height: 100vh;
+        }
+
+        .demo-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 20px;
+          padding: 30px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .demo-header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        .demo-header h1 {
+          color: #1e293b;
+          font-size: 2.5rem;
+          font-weight: 900;
+          margin: 0 0 10px 0;
+        }
+
+        .demo-header p {
+          color: #64748b;
+          font-size: 1.1rem;
+          margin: 0;
+        }
+
+        .inbox-item {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+
+        .inbox-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .inbox-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0;
+        }
+
+        .inbox-meta {
+          color: #64748b;
+          font-size: 14px;
+        }
+
+        .buildhub-seal {
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 900;
+          font-size: 18px;
+        }
+
+        /* Navigation buttons for smooth scrolling demo */
+        .nav-buttons {
+          position: fixed;
+          right: 20px;
+          top: 50%;
+          transform: translateY(-50%);
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          z-index: 1000;
+        }
+
+        .nav-btn {
+          padding: 10px 15px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn:hover {
+          transform: translateX(-5px) scale(1.05);
+          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Momentum scrolling for mobile */
+        .estimate-form {
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* Reduce motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+          .estimate-form,
+          .estimate-form *,
+          .estimate-form::before,
+          .estimate-form::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🌊 Smooth Scrolling Estimation Form</h1>
+            <p>Experience buttery smooth scrolling and fluid animations</p>
+        </div>
+
+        <!-- Navigation buttons for smooth scrolling demo -->
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="scrollToSection('section1')">📋 Basic Info</button>
+            <button class="nav-btn" onclick="scrollToSection('section2')">🧱 Materials</button>
+            <button class="nav-btn" onclick="scrollToSection('section3')">👷 Labor</button>
+            <button class="nav-btn" onclick="scrollToSection('section4')">🔧 Utilities</button>
+            <button class="nav-btn" onclick="scrollToSection('section5')">💰 Totals</button>
+            <button class="nav-btn" onclick="scrollToSection('actions')">⚡ Actions</button>
+        </div>
+
+        <div class="inbox-item">
+            <div class="inbox-header">
+                <div class="buildhub-seal">BH</div>
+                <div>
+                    <h3 class="inbox-title">Construction Project Request</h3>
+                    <div class="inbox-meta">From: John Doe • Project: 2BHK Villa • Location: Bangalore</div>
+                </div>
+            </div>
+
+            <details open>
+                <summary>
+                    <span>📝 Create Estimate</span>
+                </summary>
+                
+                <form class="estimate-form" id="estimateForm">
+                    <!-- 1. Basic Project Information -->
+                    <div class="section-title" id="section1">1. Basic Project Information</div>
+                    <div class="grid-2">
+                        <input name="project_name" placeholder="Project Name" value="2BHK Villa Construction" />
+                        <input name="project_address" placeholder="Project Address / Location" value="Whitefield, Bangalore" />
+                        <input name="plot_size" placeholder="Plot Size (sq.ft / sq.m)" value="1200 sq.ft" />
+                        <input name="built_up_area" placeholder="Built-up Area (sq.ft / sq.m)" value="900 sq.ft" />
+                        <select name="floors">
+                            <option value="" disabled>Number of Floors</option>
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                        <input name="estimation_date" type="date" value="2024-01-15" />
+                        <input name="client_name" placeholder="Client / Homeowner Name" value="John Doe" />
+                        <input name="client_contact" placeholder="Contact Info" value="+91-9876543210" />
+                    </div>
+
+                    <!-- 2. Material Costs -->
+                    <div class="section-title" id="section2">2. Material Costs</div>
+                    <div class="grid-2">
+                        <div class="estimate-line grid-4">
+                            <input name="cement_name" placeholder="Cement grade" value="OPC 43 Grade" />
+                            <input name="cement_qty" placeholder="Qty (bags)" value="50" />
+                            <input name="cement_rate" placeholder="Rate (₹ per bag)" value="400" />
+                            <input name="cement_amount" placeholder="Amount (auto)" value="20000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="sand_name" placeholder="Sand type" value="River Sand" />
+                            <input name="sand_qty" placeholder="Qty (m³)" value="5" />
+                            <input name="sand_rate" placeholder="Rate (₹ per m³)" value="2000" />
+                            <input name="sand_amount" placeholder="Amount (auto)" value="10000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="bricks_name" placeholder="Bricks/Blocks" value="Clay Bricks" />
+                            <input name="bricks_qty" placeholder="Qty (nos)" value="2000" />
+                            <input name="bricks_rate" placeholder="Rate (₹ per 1000)" value="8" />
+                            <input name="bricks_amount" placeholder="Amount (auto)" value="16000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="steel_name" placeholder="Steel/TMT" value="TMT 10mm" />
+                            <input name="steel_qty" placeholder="Qty (kg)" value="800" />
+                            <input name="steel_rate" placeholder="Rate (₹ per kg)" value="68" />
+                            <input name="steel_amount" placeholder="Amount (auto)" value="54400" readonly />
+                        </div>
+                    </div>
+
+                    <!-- 3. Labor Charges -->
+                    <div class="section-title" id="section3">3. Labor Charges</div>
+                    <div class="grid-2">
+                        <div class="estimate-line grid-4">
+                            <input name="masonry_name" placeholder="Masonry work" value="Masonry Work" />
+                            <input name="masonry_qty" placeholder="Qty" value="1" />
+                            <input name="masonry_rate" placeholder="Rate (₹)" value="15000" />
+                            <input name="masonry_amount" placeholder="Amount (auto)" value="15000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="plumber_name" placeholder="Plumbing" value="Plumbing Work" />
+                            <input name="plumber_qty" placeholder="Qty" value="1" />
+                            <input name="plumber_rate" placeholder="Rate (₹)" value="12000" />
+                            <input name="plumber_amount" placeholder="Amount (auto)" value="12000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="electrical_name" placeholder="Electrical" value="Electrical Work" />
+                            <input name="electrical_qty" placeholder="Qty" value="1" />
+                            <input name="electrical_rate" placeholder="Rate (₹)" value="10000" />
+                            <input name="electrical_amount" placeholder="Amount (auto)" value="10000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="painting_name" placeholder="Painting" value="Painting Work" />
+                            <input name="painting_qty" placeholder="Qty" value="1" />
+                            <input name="painting_rate" placeholder="Rate (₹)" value="8000" />
+                            <input name="painting_amount" placeholder="Amount (auto)" value="8000" readonly />
+                        </div>
+                    </div>
+
+                    <!-- 4. Utilities & Fixtures -->
+                    <div class="section-title" id="section4">4. Utilities & Fixtures</div>
+                    <div class="grid-2">
+                        <div class="estimate-line grid-4">
+                            <input name="sanitary_name" placeholder="Sanitary fittings" value="Bathroom Fittings" />
+                            <input name="sanitary_qty" placeholder="Qty" value="2" />
+                            <input name="sanitary_rate" placeholder="Rate (₹)" value="5000" />
+                            <input name="sanitary_amount" placeholder="Amount (auto)" value="10000" readonly />
+                        </div>
+                        <div class="estimate-line grid-4">
+                            <input name="kitchen_name" placeholder="Kitchen cabinets" value="Modular Kitchen" />
+                            <input name="kitchen_qty" placeholder="Qty" value="1" />
+                            <input name="kitchen_rate" placeholder="Rate (₹)" value="25000" />
+                            <input name="kitchen_amount" placeholder="Amount (auto)" value="25000" readonly />
+                        </div>
+                    </div>
+
+                    <!-- 5. Total Estimation -->
+                    <div class="section-title" id="section5">5. Total Estimation</div>
+                    <div class="actions" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 2px solid #3b82f6;">
+                        <input name="materials_total" placeholder="Material Costs Total" value="100400" readonly style="font-size: 16px; font-weight: 700; text-align: center; background: white; border-color: #3b82f6; color: #1e40af;" />
+                        <input name="labor_total" placeholder="Labor Charges Total" value="45000" readonly style="font-size: 16px; font-weight: 700; text-align: center; background: white; border-color: #3b82f6; color: #1e40af;" />
+                        <input name="utilities_total" placeholder="Utilities Total" value="35000" readonly style="font-size: 16px; font-weight: 700; text-align: center; background: white; border-color: #3b82f6; color: #1e40af;" />
+                        <input name="grand_total" placeholder="Grand Total" value="180400" readonly style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important; color: white !important; border-color: #1e293b !important; font-size: 18px !important; font-weight: 800 !important; text-align: center;" />
+                    </div>
+
+                    <!-- 6. Notes -->
+                    <div class="section-title">6. Notes for Homeowner</div>
+                    <textarea name="notes" placeholder="Additional notes and specifications" rows="4">Prices are approximate and may vary based on market conditions. Payment schedule: 30% advance, 40% on foundation completion, 30% on project completion. All materials will be of standard quality. Project timeline: 8-10 weeks.</textarea>
+
+                    <!-- Actions -->
+                    <div class="actions" id="actions">
+                        <button class="btn btn-secondary" type="button" onclick="resetForm()">🔄 Reset</button>
+                        <button class="btn btn-primary" type="button" onclick="downloadPDF()">📄 Download PDF</button>
+                        <button class="btn btn-primary" type="submit">✅ Submit Estimate</button>
+                    </div>
+                </form>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling to sections
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                });
+                
+                // Add a subtle highlight effect
+                element.style.boxShadow = '0 0 20px rgba(102, 126, 234, 0.5)';
+                setTimeout(() => {
+                    element.style.boxShadow = '';
+                }, 2000);
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form?')) {
+                document.getElementById('estimateForm').reset();
+            }
+        }
+
+        // Download PDF (demo)
+        function downloadPDF() {
+            alert('PDF download functionality would be implemented here.');
+        }
+
+        // Initialize smooth interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('estimateForm');
+            
+            // Add smooth focus transitions
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.transform = 'translateY(-2px) scale(1.02)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Smooth scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Show success message with animation
+                setTimeout(() => {
+                    alert('Estimate submitted successfully with smooth animations!');
+                }, 500);
+            });
+
+            // Add smooth hover effects to estimate lines
+            const estimateLines = document.querySelectorAll('.estimate-line');
+            estimateLines.forEach(line => {
+                line.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px) scale(1.01)';
+                });
+                
+                line.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            console.log('Smooth scrolling estimation form initialized');
+        });
+
+        // Add smooth keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                // Ensure focused elements are smoothly scrolled into view
+                setTimeout(() => {
+                    const focused = document.activeElement;
+                    if (focused && focused.tagName !== 'BODY') {
+                        focused.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>

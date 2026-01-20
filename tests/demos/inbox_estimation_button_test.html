@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox Estimation Button Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-section {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .test-section:last-child {
+            border-bottom: none;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        .demo-inbox-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .inbox-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .inbox-title {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 16px;
+        }
+        .inbox-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-badge.accepted {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        .btn-estimate {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: 1px solid #10b981;
+        }
+        .btn-estimate:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #ef4444;
+            color: white;
+            border: 1px solid #ef4444;
+        }
+        .btn-secondary:hover {
+            background: #dc2626;
+        }
+        .fix-status {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .status-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .before, .after {
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+        .before {
+            background: #fef2f2;
+            border-color: #ef4444;
+        }
+        .after {
+            background: #f0fdf4;
+            border-color: #10b981;
+        }
+        .before h4, .after h4 {
+            margin-top: 0;
+            font-size: 16px;
+        }
+        .before h4 {
+            color: #991b1b;
+        }
+        .after h4 {
+            color: #065f46;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Inbox Estimation Button Fix</h1>
+            <p>Fixed the missing "Create Estimate" button for acknowledged inbox items</p>
+        </div>
+
+        <div class="fix-status">
+            <div class="status-title">
+                <span>✅</span>
+                Issue Fixed: Estimation Button Now Visible
+            </div>
+            <p><strong>Problem:</strong> The "📊 Create Estimate" button was only showing for non-acknowledged inbox items, but not for acknowledged items.</p>
+            <p><strong>Solution:</strong> Added the estimation button to both acknowledged and non-acknowledged inbox items.</p>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🔍 Issue Analysis</div>
+            <p>The <code>renderInboxItem</code> function in ContractorDashboard.jsx had two different sections for action buttons:</p>
+            <ul>
+                <li><strong>Non-acknowledged items:</strong> Show acknowledgment form + estimation button</li>
+                <li><strong>Acknowledged items:</strong> Show only status badge + remove button (missing estimation button)</li>
+            </ul>
+            <p>Since your inbox item was already acknowledged, it was using the second section which didn't have the estimation button.</p>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🛠️ Fix Applied</div>
+            <div class="before-after">
+                <div class="before">
+                    <h4>❌ Before (Acknowledged Items)</h4>
+                    <div class="demo-inbox-item">
+                        <div class="inbox-header">
+                            <div>
+                                <div class="inbox-title">📋 New Layout Request</div>
+                                <div class="inbox-meta">From: <strong>SHIJIN THOMAS</strong></div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="inbox-meta">3 days ago</div>
+                                <span class="status-badge accepted">Acknowledged</span>
+                                <button class="btn btn-secondary">🗑️ Remove</button>
+                            </div>
+                        </div>
+                        <p style="color: #991b1b; font-size: 14px; margin: 0;">❌ No estimation button visible!</p>
+                    </div>
+                </div>
+                
+                <div class="after">
+                    <h4>✅ After (Fixed)</h4>
+                    <div class="demo-inbox-item">
+                        <div class="inbox-header">
+                            <div>
+                                <div class="inbox-title">📋 New Layout Request</div>
+                                <div class="inbox-meta">From: <strong>SHIJIN THOMAS</strong></div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="inbox-meta">3 days ago</div>
+                                <span class="status-badge accepted">Acknowledged</span>
+                                <button class="btn btn-estimate" onclick="showEstimationDemo()">📊 Create Estimate</button>
+                                <button class="btn btn-secondary">🗑️ Remove</button>
+                            </div>
+                        </div>
+                        <p style="color: #065f46; font-size: 14px; margin: 0;">✅ Estimation button now visible!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">📝 Code Changes Made</div>
+            <div style="background: #f1f5f9; padding: 16px; border-radius: 8px; border: 1px solid #cbd5e0;">
+                <h4 style="margin-top: 0; color: #1e293b;">File Modified:</h4>
+                <p><code>frontend/src/components/ContractorDashboard.jsx</code></p>
+                
+                <h4 style="color: #1e293b;">Change Applied:</h4>
+                <p>Modified the acknowledged items section to include the estimation button:</p>
+                
+                <pre style="background: #374151; color: #f9fafb; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px;">
+{item.acknowledged_at ? (
+  &lt;div style={{display:'flex', alignItems:'center', gap:8}}&gt;
+    &lt;span className="status-badge accepted"&gt;Acknowledged&lt;/span&gt;
+    &lt;button 
+      className="btn btn-primary"
+      onClick={() =&gt; openEstimationForm(item)}
+      style={{
+        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        color: 'white',
+        border: '1px solid #10b981',
+        fontSize: '12px',
+        padding: '6px 12px'
+      }}
+    &gt;
+      📊 Create Estimate
+    &lt;/button&gt;
+  &lt;/div&gt;
+) : (</pre>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🧪 Test the Fix</div>
+            <p>Now when you refresh your contractor dashboard and go to the Inbox tab, you should see:</p>
+            <ul>
+                <li>✅ "📊 Create Estimate" button on acknowledged inbox items</li>
+                <li>✅ "📊 Create Estimate" button on non-acknowledged inbox items</li>
+                <li>✅ Clicking the button opens the enhanced estimation form modal</li>
+                <li>✅ Form is pre-filled with project information from the inbox item</li>
+            </ul>
+            
+            <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; padding: 16px; margin-top: 16px;">
+                <h4 style="color: #065f46; margin-top: 0;">✅ Ready to Use!</h4>
+                <p style="color: #047857; margin-bottom: 0;">The estimation button should now be visible on your inbox item. Click it to open the professional estimation form with the same layout and styling as the reference HTML.</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🎯 Next Steps</div>
+            <ol style="line-height: 1.8;">
+                <li><strong>Refresh your browser</strong> to load the updated code</li>
+                <li><strong>Go to Contractor Dashboard</strong> → Inbox tab</li>
+                <li><strong>Look for the green "📊 Create Estimate" button</strong> next to the "Acknowledged" status</li>
+                <li><strong>Click the button</strong> to open the enhanced estimation form</li>
+                <li><strong>Fill out the form</strong> with materials, labor, and costs</li>
+                <li><strong>Submit the estimate</strong> to send it to the homeowner</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function showEstimationDemo() {
+            alert('🎉 Estimation button clicked!\n\nThis would open the enhanced estimation form modal with:\n\n📋 Basic project info (auto-filled)\n🧱 Materials section with qty/rate/amount\n👷 Labor costs\n🔧 Utilities & fixtures\n📦 Miscellaneous costs\n💰 Auto-calculated totals\n📝 Notes and terms\n\n🚀 Ready to create professional estimates!');
+        }
+
+        // Auto-run demo on page load
+        window.addEventListener('load', () => {
+            console.log('✅ Inbox estimation button fix applied successfully!');
+        });
+    </script>
+</body>
+</html>

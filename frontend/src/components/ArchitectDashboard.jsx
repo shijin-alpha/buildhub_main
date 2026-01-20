@@ -73,6 +73,16 @@ const ArchitectDashboard = () => {
   const [showHousePlanManager, setShowHousePlanManager] = useState(false);
   const [selectedRequestForPlan, setSelectedRequestForPlan] = useState(null);
 
+  // Contractor house plans state
+  const [contractorHousePlans, setContractorHousePlans] = useState([]);
+  const [contractorPlansLoading, setContractorPlansLoading] = useState(false);
+  const [contractorPlansSummary, setContractorPlansSummary] = useState({
+    total_plans: 0,
+    total_contractors: 0,
+    active_estimates: 0,
+    completed_estimates: 0
+  });
+
   // Technical Details Modal state
   const [showTechnicalModal, setShowTechnicalModal] = useState(false);
   const [selectedRequestForUpload, setSelectedRequestForUpload] = useState(null);
@@ -99,6 +109,7 @@ const ArchitectDashboard = () => {
         fetchMyDesigns();
         fetchMyLibrary();
         fetchMyProfile();
+        fetchContractorHousePlans();
       })();
     });
   }, []);
@@ -143,7 +154,8 @@ const ArchitectDashboard = () => {
         fetchLayoutRequests(),
         fetchMyDesigns(),
         fetchMyLibrary(),
-        fetchMyProfile()
+        fetchMyProfile(),
+        fetchContractorHousePlans()
       ]);
       toast.success('Dashboard refreshed successfully');
     } catch (error) {
@@ -153,6 +165,36 @@ const ArchitectDashboard = () => {
       setLoading(false);
     }
   };
+
+  // Set up global refresh functions for real-time updates
+  useEffect(() => {
+    // Make refresh functions globally available for real-time updates
+    window.refreshDashboard = refreshDashboard;
+    window.refreshHousePlans = () => {
+      // Refresh house plans specifically
+      fetchMyDesigns();
+    };
+    
+    // Cleanup on unmount
+    return () => {
+      delete window.refreshDashboard;
+      delete window.refreshHousePlans;
+    };
+  }, []);
+
+  // Auto-refresh dashboard data every 2 minutes for real-time updates
+  useEffect(() => {
+    const autoRefreshInterval = setInterval(() => {
+      // Only auto-refresh if user is on dashboard tab and not actively working
+      if (activeTab === 'dashboard' && !loading) {
+        fetchLayoutRequests();
+        fetchMyDesigns();
+        fetchContractorHousePlans();
+      }
+    }, 120000); // 2 minutes
+
+    return () => clearInterval(autoRefreshInterval);
+  }, [activeTab, loading]);
 
   // Download project details as PDF
   const downloadProjectPDF = (request) => {
@@ -471,6 +513,68 @@ const ArchitectDashboard = () => {
       const json = await res.json();
       if (json.success) setLibraryLayouts(json.layouts || []);
     } catch (e) { console.error('Error fetching my layouts', e); }
+  };
+
+  const fetchContractorHousePlans = async () => {
+    setContractorPlansLoading(true);
+    try {
+      const response = await fetch('/buildhub/backend/api/architect/get_contractor_house_plans.php');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setContractorHousePlans(result.house_plans || []);
+        setContractorPlansSummary(result.summary || {
+          total_plans: 0,
+          total_contractors: 0,
+          active_estimates: 0,
+          completed_estimates: 0
+        });
+        
+        if (result.message) {
+          console.log('Contractor house plans info:', result.message);
+        }
+      } else {
+        console.error('Failed to fetch contractor house plans:', result.message);
+        if (result.debug) {
+          console.error('Debug info:', result.debug);
+        }
+        
+        // Set empty state but don't show error to user unless it's critical
+        setContractorHousePlans([]);
+        setContractorPlansSummary({
+          total_plans: 0,
+          total_contractors: 0,
+          active_estimates: 0,
+          completed_estimates: 0
+        });
+        
+        // Only show error toast for critical errors
+        if (result.message && !result.message.includes('No house plans found')) {
+          toast.error('Failed to load contractor house plans: ' + result.message);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching contractor house plans:', error);
+      
+      // Set empty state
+      setContractorHousePlans([]);
+      setContractorPlansSummary({
+        total_plans: 0,
+        total_contractors: 0,
+        active_estimates: 0,
+        completed_estimates: 0
+      });
+      
+      // Show user-friendly error message
+      toast.error('Unable to load contractor work data. Please try refreshing.');
+    } finally {
+      setContractorPlansLoading(false);
+    }
   };
 
   const submitNewLibraryItem = async (e) => {
@@ -3134,22 +3238,258 @@ const ArchitectDashboard = () => {
 
         <div className="section-card">
           <div className="section-header">
-            <h2>General House Plans</h2>
-            <p>Create house plans not tied to specific client requests</p>
+            <h2>House Plans in Construction</h2>
+            <p>Your house plans being worked on by contractors</p>
           </div>
           <div className="section-content">
-            <div className="general-plans-info">
-              <p>Create general house plans that can be used as templates or showcased in your portfolio.</p>
-              <button 
-                className="btn btn-outline"
-                onClick={() => {
-                  setSelectedRequestForPlan(null);
-                  setShowHousePlanManager(true);
-                }}
-              >
-                Create General Plan
-              </button>
-            </div>
+            {contractorPlansLoading ? (
+              <div className="loading-state">
+                <div className="loading-spinner"></div>
+                <p>Loading contractor work...</p>
+              </div>
+            ) : contractorHousePlans.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">🏗️</div>
+                <h3>No Active Construction</h3>
+                <p>None of your house plans are currently being worked on by contractors.</p>
+                <div className="empty-actions">
+                  <button 
+                    className="btn btn-outline"
+                    onClick={() => {
+                      setSelectedRequestForPlan(null);
+                      setShowHousePlanManager(true);
+                    }}
+                  >
+                    Create General Plan
+                  </button>
+                  <button 
+                    className="btn btn-outline"
+                    onClick={fetchContractorHousePlans}
+                    disabled={contractorPlansLoading}
+                  >
+                    🔄 Refresh Data
+                  </button>
+                </div>
+                <div className="debug-info">
+                  <details>
+                    <summary>Debug Information</summary>
+                    <p>If you expect to see contractor work here, check:</p>
+                    <ul>
+                      <li>House plans have been sent to contractors</li>
+                      <li>Contractor engagements exist in the system</li>
+                      <li>Database tables are properly configured</li>
+                    </ul>
+                    <p>You can run the debug script at: <code>/buildhub/backend/debug_contractor_house_plans.php</code></p>
+                  </details>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Summary Stats */}
+                <div className="contractor-plans-summary">
+                  <div className="summary-stats">
+                    <div className="stat-item">
+                      <span className="stat-number">{contractorPlansSummary.total_plans}</span>
+                      <span className="stat-label">Plans in Work</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-number">{contractorPlansSummary.total_contractors}</span>
+                      <span className="stat-label">Active Contractors</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-number">{contractorPlansSummary.active_estimates}</span>
+                      <span className="stat-label">Pending Estimates</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-number">{contractorPlansSummary.completed_estimates}</span>
+                      <span className="stat-label">Completed Estimates</span>
+                    </div>
+                  </div>
+                  <button 
+                    className="btn btn-outline refresh-contractor-plans"
+                    onClick={fetchContractorHousePlans}
+                    disabled={contractorPlansLoading}
+                  >
+                    🔄 Refresh
+                  </button>
+                </div>
+
+                {/* House Plans List */}
+                <div className="contractor-house-plans-list">
+                  {contractorHousePlans.map(plan => (
+                    <div key={plan.house_plan_id} className="contractor-plan-card">
+                      <div className="plan-header">
+                        <div className="plan-info">
+                          <h4>{plan.plan_name}</h4>
+                          <div className="plan-details">
+                            <span className="plan-size">{plan.plot_width}' × {plan.plot_height}'</span>
+                            <span className="plan-area">{plan.total_area} sq ft</span>
+                            <span className={`plan-status status-${plan.plan_status}`}>
+                              {plan.plan_status.charAt(0).toUpperCase() + plan.plan_status.slice(1)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="plan-actions">
+                          <button 
+                            className="btn btn-sm btn-outline"
+                            onClick={() => {
+                              // Open plan for editing
+                              setSelectedRequestForPlan({ id: plan.layout_request?.id });
+                              setShowHousePlanManager(true);
+                            }}
+                            title="View/Edit Plan"
+                          >
+                            📐 View Plan
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Homeowner Information */}
+                      {plan.homeowner && (
+                        <div className="homeowner-info">
+                          <div className="info-section">
+                            <h5>👤 Client Information</h5>
+                            <div className="client-details">
+                              <div className="client-item">
+                                <span className="label">Name:</span>
+                                <span className="value">{plan.homeowner.name || 'N/A'}</span>
+                              </div>
+                              <div className="client-item">
+                                <span className="label">Email:</span>
+                                <span className="value">{plan.homeowner.email || 'N/A'}</span>
+                              </div>
+                              {plan.homeowner.phone && (
+                                <div className="client-item">
+                                  <span className="label">Phone:</span>
+                                  <span className="value">{plan.homeowner.phone}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Project Details */}
+                          {plan.layout_request && (
+                            <div className="project-details">
+                              <h5>📋 Project Details</h5>
+                              <div className="project-info">
+                                {plan.layout_request.budget_range && (
+                                  <div className="project-item">
+                                    <span className="label">Budget:</span>
+                                    <span className="value">{plan.layout_request.budget_range}</span>
+                                  </div>
+                                )}
+                                {plan.layout_request.location && (
+                                  <div className="project-item">
+                                    <span className="label">Location:</span>
+                                    <span className="value">{plan.layout_request.location}</span>
+                                  </div>
+                                )}
+                                {plan.layout_request.timeline && (
+                                  <div className="project-item">
+                                    <span className="label">Timeline:</span>
+                                    <span className="value">{plan.layout_request.timeline}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Contractor Work Information */}
+                      <div className="contractor-work-section">
+                        <h5>🏗️ Contractor Activity ({plan.contractor_work.length})</h5>
+                        {plan.contractor_work.length === 0 ? (
+                          <p className="no-contractors">No contractors currently working on this plan.</p>
+                        ) : (
+                          <div className="contractors-list">
+                            {plan.contractor_work.map((work, index) => (
+                              <div key={index} className="contractor-work-item">
+                                <div className="contractor-header">
+                                  <div className="contractor-info">
+                                    <strong>{work.contractor.name}</strong>
+                                    <span className="contractor-contact">{work.contractor.email}</span>
+                                  </div>
+                                  <div className="work-status">
+                                    {work.estimate ? (
+                                      <span className={`estimate-status status-${work.estimate.status}`}>
+                                        {work.estimate.status === 'accepted' ? '✅ Estimate Accepted' : 
+                                         work.estimate.status === 'pending' ? '⏳ Estimate Pending' :
+                                         work.estimate.status === 'rejected' ? '❌ Estimate Rejected' :
+                                         '📋 Estimate Submitted'}
+                                      </span>
+                                    ) : work.send_details?.acknowledged_at ? (
+                                      <span className="work-status acknowledged">✅ Acknowledged</span>
+                                    ) : (
+                                      <span className="work-status pending">⏳ Sent to Contractor</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="work-details">
+                                  {work.send_details && (
+                                    <div className="send-info">
+                                      <small>
+                                        Sent: {new Date(work.send_details.sent_at).toLocaleDateString()}
+                                        {work.send_details.acknowledged_at && (
+                                          <> • Acknowledged: {new Date(work.send_details.acknowledged_at).toLocaleDateString()}</>
+                                        )}
+                                        {work.send_details.due_date && (
+                                          <> • Due: {new Date(work.send_details.due_date).toLocaleDateString()}</>
+                                        )}
+                                      </small>
+                                    </div>
+                                  )}
+
+                                  {work.estimate && (
+                                    <div className="estimate-info">
+                                      <div className="estimate-details">
+                                        {work.estimate.amount && (
+                                          <span className="estimate-amount">
+                                            Amount: ₹{parseFloat(work.estimate.amount).toLocaleString()}
+                                          </span>
+                                        )}
+                                        <span className="estimate-date">
+                                          Submitted: {new Date(work.estimate.created_at).toLocaleDateString()}
+                                        </span>
+                                        {work.estimate.accepted_at && (
+                                          <span className="accepted-date">
+                                            Accepted: {new Date(work.estimate.accepted_at).toLocaleDateString()}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {(work.engagement?.message || work.send_details?.message) && (
+                                    <div className="work-message">
+                                      <small>"{work.engagement?.message || work.send_details?.message}"</small>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Create New Plan Button */}
+                <div className="create-plan-section">
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setSelectedRequestForPlan(null);
+                      setShowHousePlanManager(true);
+                    }}
+                  >
+                    ➕ Create New General Plan
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

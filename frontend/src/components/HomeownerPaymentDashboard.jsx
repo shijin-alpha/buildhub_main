@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from './ToastProvider.jsx';
+import PaymentMethodSelector from './PaymentMethodSelector.jsx';
 import '../styles/HomeownerPaymentDashboard.css';
 
 const HomeownerPaymentDashboard = ({ homeownerId }) => {
@@ -10,6 +11,8 @@ const HomeownerPaymentDashboard = ({ homeownerId }) => {
   const [processingPayment, setProcessingPayment] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showResponseModal, setShowResponseModal] = useState(false);
+  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
+  const [paymentRequest, setPaymentRequest] = useState(null);
   const [responseForm, setResponseForm] = useState({
     response: '',
     homeowner_notes: '',
@@ -40,6 +43,22 @@ const HomeownerPaymentDashboard = ({ homeownerId }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePayNow = (request) => {
+    setPaymentRequest(request);
+    setShowPaymentSelector(true);
+  };
+
+  const handlePaymentInitiated = (paymentData) => {
+    setShowPaymentSelector(false);
+    setPaymentRequest(null);
+    loadPaymentRequests(); // Reload to get updated status
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPaymentSelector(false);
+    setPaymentRequest(null);
   };
 
   const handlePaymentResponse = async (requestId, response, approvedAmount = null, notes = '') => {
@@ -269,6 +288,18 @@ const HomeownerPaymentDashboard = ({ homeownerId }) => {
                 </div>
               )}
 
+              {request.status === 'approved' && (
+                <div className="action-buttons">
+                  <button
+                    className="pay-now-btn"
+                    onClick={() => handlePayNow(request)}
+                    disabled={processingPayment === request.id}
+                  >
+                    💳 Pay Now
+                  </button>
+                </div>
+              )}
+
               {processingPayment === request.id && (
                 <div className="processing-overlay">
                   <div className="spinner"></div>
@@ -370,6 +401,15 @@ const HomeownerPaymentDashboard = ({ homeownerId }) => {
           </div>
         </div>
       )}
+
+      {/* Payment Method Selector */}
+      <PaymentMethodSelector
+        show={showPaymentSelector}
+        amount={paymentRequest?.approved_amount || paymentRequest?.requested_amount || 0}
+        paymentRequest={paymentRequest}
+        onPaymentInitiated={handlePaymentInitiated}
+        onCancel={handlePaymentCancel}
+      />
     </div>
   );
 };

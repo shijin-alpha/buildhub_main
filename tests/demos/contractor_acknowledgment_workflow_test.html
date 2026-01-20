@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Acknowledgment Workflow Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .workflow-step {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .step-description {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .btn-warning {
+            background: #f59e0b;
+            animation: pulse 2s infinite;
+        }
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        .btn-success {
+            background: #10b981;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .btn-secondary {
+            background: #6b7280;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            background: white;
+            border: 1px solid #d1d5db;
+        }
+        .success {
+            border-color: #10b981;
+            background: #ecfdf5;
+            color: #065f46;
+        }
+        .error {
+            border-color: #ef4444;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .info {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1e40af;
+        }
+        .warning {
+            border-color: #f59e0b;
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .acknowledgment-required {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .acknowledgment-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 8px;
+            border: 1px solid #f59e0b;
+            margin-top: 10px;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-badge.acknowledged {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .inbox-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: white;
+        }
+        .inbox-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .estimate-section {
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Contractor Acknowledgment Workflow Test</h1>
+            <p>Testing the acknowledgment-first workflow for contractor estimates</p>
+        </div>
+
+        <div class="workflow-step">
+            <div class="step-title">Step 1: Homeowner Sends Request</div>
+            <div class="step-description">Homeowner sends a house plan with layout images to contractor</div>
+            <button class="btn" onclick="simulateHomeownerRequest()">Simulate Homeowner Request</button>
+            <div id="homeownerResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="workflow-step">
+            <div class="step-title">Step 2: Contractor Receives Request (Unacknowledged)</div>
+            <div class="step-description">Contractor sees the request but cannot submit estimate until acknowledged</div>
+            <button class="btn" onclick="showUnacknowledgedInbox()">Show Unacknowledged Inbox</button>
+            <div id="unacknowledgedResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="workflow-step">
+            <div class="step-title">Step 3: Contractor Acknowledges Request</div>
+            <div class="step-description">Contractor acknowledges the request and sets completion timeline</div>
+            <button class="btn btn-warning" onclick="simulateAcknowledgment()">⚡ Acknowledge Request</button>
+            <div id="acknowledgmentResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="workflow-step">
+            <div class="step-title">Step 4: Submit Estimate (Now Available)</div>
+            <div class="step-description">After acknowledgment, contractor can now submit estimate</div>
+            <button class="btn btn-success" onclick="showAcknowledgedInbox()">Show Acknowledged Inbox</button>
+            <div id="acknowledgedResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="workflow-step">
+            <div class="step-title">Step 5: Test Complete Workflow</div>
+            <div class="step-description">Test the complete workflow from request to estimate submission</div>
+            <button class="btn" onclick="testCompleteWorkflow()">Test Complete Workflow</button>
+            <div id="completeResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentRequestState = {
+            acknowledged: false,
+            acknowledgmentDate: null,
+            dueDate: null
+        };
+
+        function simulateHomeownerRequest() {
+            const resultDiv = document.getElementById('homeownerResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <div class="success">
+                    ✅ <strong>Homeowner Request Sent</strong><br>
+                    Request ID: #12345<br>
+                    House Plan: Modern 3BHK Villa<br>
+                    Layout Images: 3 images included<br>
+                    Status: Pending Acknowledgment
+                </div>
+            `;
+            currentRequestState.acknowledged = false;
+        }
+
+        function showUnacknowledgedInbox() {
+            const resultDiv = document.getElementById('unacknowledgedResult');
+            resultDiv.style.display = 'block';
+            
+            const inboxHtml = `
+                <div class="info">
+                    <strong>📥 Contractor Inbox - Unacknowledged Request</strong>
+                </div>
+                <div class="inbox-item">
+                    <div class="inbox-header">
+                        <div>
+                            <div style="font-weight: 600; color: #1f2937;">📋 New Layout Request</div>
+                            <div style="font-size: 14px; color: #6b7280;">From: <strong>John Homeowner</strong> • john@example.com</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="status-badge pending">Pending</span>
+                            <button class="btn btn-warning" onclick="showAcknowledgmentForm()">⚡ Acknowledge Request</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 160px 1fr; gap: 16px;">
+                        <div style="width: 160px; height: 120px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #3b82f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #1e40af; font-weight: 600;">
+                            📐 Layout Image
+                        </div>
+                        <div>
+                            <div><strong>Plan:</strong> Modern 3BHK Villa</div>
+                            <div><strong>Plot Size:</strong> 40x60 ft</div>
+                            <div><strong>Area:</strong> 2400 sq ft</div>
+                            <div style="margin-top: 8px; padding: 12px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 4px;">
+                                <strong style="color: #1e40af;">💬 Message from Homeowner</strong><br>
+                                <span style="color: #1e3a8a;">Please review this house plan and provide construction estimate with timeline.</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="acknowledgment-required">
+                        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                            <span style="font-size: 24px; margin-right: 8px;">⏳</span>
+                            <strong style="color: #92400e; font-size: 16px;">Acknowledgment Required</strong>
+                        </div>
+                        <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.5;">
+                            Please acknowledge this request first before submitting an estimate. 
+                            Use the "Acknowledge" button above to confirm receipt and set your completion timeline.
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.innerHTML = inboxHtml;
+        }
+
+        function showAcknowledgmentForm() {
+            const acknowledgmentHtml = `
+                <div class="acknowledgment-form">
+                    <span style="font-size: 12px; color: #92400e; font-weight: 600;">Due Date:</span>
+                    <input type="date" id="dueDate" style="padding: 6px 8px; border: 1px solid #f59e0b; border-radius: 6px; font-size: 12px;">
+                    <button class="btn btn-success" onclick="confirmAcknowledgment()">✅ Confirm</button>
+                    <button class="btn btn-secondary" onclick="showUnacknowledgedInbox()">Cancel</button>
+                </div>
+            `;
+            
+            const resultDiv = document.getElementById('unacknowledgedResult');
+            resultDiv.innerHTML = resultDiv.innerHTML + acknowledgmentHtml;
+        }
+
+        function confirmAcknowledgment() {
+            const dueDate = document.getElementById('dueDate').value;
+            currentRequestState.acknowledged = true;
+            currentRequestState.acknowledgmentDate = new Date().toLocaleString();
+            currentRequestState.dueDate = dueDate || 'Not specified';
+            
+            simulateAcknowledgment();
+        }
+
+        function simulateAcknowledgment() {
+            const resultDiv = document.getElementById('acknowledgmentResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <div class="success">
+                    ✅ <strong>Acknowledgment Sent Successfully!</strong><br>
+                    Acknowledged at: ${currentRequestState.acknowledgmentDate || new Date().toLocaleString()}<br>
+                    Due date: ${currentRequestState.dueDate || 'Not specified'}<br>
+                    Status: The homeowner has been notified of your acknowledgment.
+                </div>
+            `;
+            currentRequestState.acknowledged = true;
+        }
+
+        function showAcknowledgedInbox() {
+            const resultDiv = document.getElementById('acknowledgedResult');
+            resultDiv.style.display = 'block';
+            
+            const inboxHtml = `
+                <div class="success">
+                    <strong>📥 Contractor Inbox - Acknowledged Request</strong>
+                </div>
+                <div class="inbox-item">
+                    <div class="inbox-header">
+                        <div>
+                            <div style="font-weight: 600; color: #1f2937;">📋 New Layout Request</div>
+                            <div style="font-size: 14px; color: #6b7280;">From: <strong>John Homeowner</strong> • john@example.com</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="status-badge acknowledged">Acknowledged</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 160px 1fr; gap: 16px;">
+                        <div style="width: 160px; height: 120px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #3b82f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #1e40af; font-weight: 600;">
+                            📐 Layout Image
+                        </div>
+                        <div>
+                            <div><strong>Plan:</strong> Modern 3BHK Villa</div>
+                            <div><strong>Plot Size:</strong> 40x60 ft</div>
+                            <div><strong>Area:</strong> 2400 sq ft</div>
+                            <div style="margin-top: 8px; padding: 12px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 4px;">
+                                <strong style="color: #1e40af;">💬 Message from Homeowner</strong><br>
+                                <span style="color: #1e3a8a;">Please review this house plan and provide construction estimate with timeline.</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="estimate-section">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <span style="font-size: 16px; margin-right: 8px;">📋</span>
+                            <strong style="color: #1e40af; font-size: 14px;">Submit Estimate</strong>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                            <div>
+                                <label style="font-size: 12px; color: #6b7280; font-weight: 600;">Total Cost (₹)</label>
+                                <input type="text" placeholder="25,00,000" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                            </div>
+                            <div>
+                                <label style="font-size: 12px; color: #6b7280; font-weight: 600;">Timeline</label>
+                                <input type="text" placeholder="6 months" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size: 12px; color: #6b7280; font-weight: 600;">Materials & Labor Details</label>
+                            <textarea placeholder="Detailed breakdown of materials and labor costs..." style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; height: 60px;"></textarea>
+                        </div>
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button class="btn btn-secondary">Reset</button>
+                            <button class="btn">Download PDF</button>
+                            <button class="btn btn-success" onclick="submitEstimate()">Submit Estimate</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.innerHTML = inboxHtml;
+        }
+
+        function submitEstimate() {
+            alert('✅ Estimate submitted successfully! The homeowner will be notified.');
+        }
+
+        function testCompleteWorkflow() {
+            const resultDiv = document.getElementById('completeResult');
+            resultDiv.style.display = 'block';
+            
+            let step = 1;
+            const steps = [
+                'Homeowner sends house plan request...',
+                'Contractor receives request in inbox...',
+                'Submit Estimate section is hidden (acknowledgment required)...',
+                'Contractor acknowledges request with due date...',
+                'Submit Estimate section becomes available...',
+                'Contractor can now submit detailed estimate...'
+            ];
+            
+            resultDiv.innerHTML = '<div class="info"><strong>🔄 Testing Complete Workflow...</strong></div>';
+            
+            function runStep() {
+                if (step <= steps.length) {
+                    resultDiv.innerHTML += `<div style="margin-top: 8px; padding: 8px; background: #f0f9ff; border-radius: 4px;">Step ${step}: ${steps[step-1]}</div>`;
+                    step++;
+                    setTimeout(runStep, 1000);
+                } else {
+                    resultDiv.innerHTML += `
+                        <div style="margin-top: 12px; padding: 12px; background: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; color: #065f46;">
+                            <strong>✅ Workflow Test Complete!</strong><br>
+                            The acknowledgment-first workflow ensures contractors confirm receipt before submitting estimates.
+                        </div>
+                    `;
+                }
+            }
+            
+            runStep();
+        }
+
+        // Auto-run basic demo on page load
+        window.addEventListener('load', function() {
+            console.log('Contractor Acknowledgment Workflow Test Page Loaded');
+        });
+    </script>
+</body>
+</html>

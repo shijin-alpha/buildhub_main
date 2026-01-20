@@ -51,7 +51,7 @@ function createRazorpayOrder($amount, $currency = 'INR', $receipt = null) {
     $url = 'https://api.razorpay.com/v1/orders';
     
     $data = [
-        'amount' => $amount, // Amount in paise
+        'amount' => (int)$amount, // Ensure integer, amount in paise
         'currency' => $currency,
         'receipt' => $receipt ?: 'receipt_' . time(),
         'payment_capture' => 1 // Auto capture payment
@@ -81,7 +81,7 @@ function createRazorpayOrder($amount, $currency = 'INR', $receipt = null) {
         $errorData = json_decode($response, true);
         $errorMessage = isset($errorData['error']['description']) ? 
             $errorData['error']['description'] : 
-            'HTTP Error: ' . $httpCode;
+            'HTTP Error: ' . $httpCode . ' - ' . $response;
         throw new Exception('Razorpay API Error: ' . $errorMessage);
     }
     

@@ -27,7 +27,7 @@ try {
               JOIN users u ON lr.user_id = u.id 
               LEFT JOIN designs d ON lr.id = d.layout_request_id
               LEFT JOIN layout_request_assignments a ON a.layout_request_id = lr.id
-              WHERE lr.status = 'approved'
+              WHERE lr.status IN ('pending', 'approved')
               GROUP BY lr.id
               ORDER BY lr.created_at DESC";
     

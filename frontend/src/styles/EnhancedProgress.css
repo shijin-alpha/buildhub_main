@@ -571,6 +571,41 @@
   box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
 }
 
+/* Inline Add Worker Button (after each entry) */
+.add-worker-after-entry {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #dee2e6;
+  text-align: center;
+}
+
+.add-labour-btn-inline {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(23, 162, 184, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add-labour-btn-inline:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(23, 162, 184, 0.3);
+}
+
+.add-labour-btn-inline:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(23, 162, 184, 0.2);
+}
+
 .no-labour-message {
   text-align: center;
   padding: 30px;
@@ -1125,6 +1160,14 @@
     width: 100%;
   }
 
+  /* Inline Add Worker Button Responsive */
+  .add-labour-btn-inline {
+    width: 100%;
+    max-width: 250px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
   .checkbox-grid {
     grid-template-columns: 1fr;
   }
@@ -1204,6 +1247,18 @@
 
   .labour-total-summary {
     padding: 15px;
+  }
+
+  /* Inline Add Worker Button - Small Mobile */
+  .add-labour-btn-inline {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .add-worker-after-entry {
+    margin-top: 12px;
+    padding-top: 12px;
   }
 
   .section-header h5 {

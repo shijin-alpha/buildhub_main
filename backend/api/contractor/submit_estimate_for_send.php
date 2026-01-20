@@ -107,7 +107,41 @@ try {
     $ins->bindValue(':cid', $contractor_id, PDO::PARAM_INT);
     $ins->bindValue(':materials', $materials ?: null, $materials !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
     $ins->bindValue(':cb', $cost_breakdown ?: null, $cost_breakdown !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
-    $ins->bindValue(':total', $total_cost !== '' ? (float)$total_cost : null, $total_cost !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
+    
+    // Extract total_cost from structured JSON if not provided
+    $final_total_cost = $total_cost !== '' ? (float)$total_cost : null;
+    
+    if (($final_total_cost === null || $final_total_cost == 0) && isset($_POST['structured']) && $_POST['structured']) {
+        $structured_data = json_decode($_POST['structured'], true);
+        if ($structured_data && json_last_error() === JSON_ERROR_NONE) {
+            // Try to find grand total in various locations
+            if (isset($structured_data['totals']['grand'])) {
+                $final_total_cost = floatval($structured_data['totals']['grand']);
+            } elseif (isset($structured_data['totals']['grandTotal'])) {
+                $final_total_cost = floatval($structured_data['totals']['grandTotal']);
+            } elseif (isset($structured_data['totals']['total'])) {
+                $final_total_cost = floatval($structured_data['totals']['total']);
+            } elseif (isset($structured_data['grand'])) {
+                $final_total_cost = floatval($structured_data['grand']);
+            } elseif (isset($structured_data['grandTotal'])) {
+                $final_total_cost = floatval($structured_data['grandTotal']);
+            } elseif (isset($structured_data['totals'])) {
+                // Calculate from category totals
+                $totals = $structured_data['totals'];
+                $calculated_total = 0;
+                if (isset($totals['materials'])) $calculated_total += floatval($totals['materials']);
+                if (isset($totals['labor'])) $calculated_total += floatval($totals['labor']);
+                if (isset($totals['utilities'])) $calculated_total += floatval($totals['utilities']);
+                if (isset($totals['misc'])) $calculated_total += floatval($totals['misc']);
+                if (isset($totals['miscellaneous'])) $calculated_total += floatval($totals['miscellaneous']);
+                if ($calculated_total > 0) {
+                    $final_total_cost = $calculated_total;
+                }
+            }
+        }
+    }
+    
+    $ins->bindValue(':total', $final_total_cost, $final_total_cost !== null ? PDO::PARAM_STR : PDO::PARAM_NULL);
     $ins->bindValue(':timeline', $timeline ?: null, $timeline !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
     $ins->bindValue(':notes', $notes ?: null, $notes !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
     $ins->bindValue(':structured', isset($_POST['structured']) && $_POST['structured'] ? $_POST['structured'] : null, (isset($_POST['structured']) && $_POST['structured']) ? PDO::PARAM_STR : PDO::PARAM_NULL);

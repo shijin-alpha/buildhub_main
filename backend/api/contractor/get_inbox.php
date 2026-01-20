@@ -1,4 +1,9 @@
 <?php
+// Suppress warnings to prevent JSON corruption
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', 0);
+
+
 header('Content-Type: application/json');
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 if ($origin) { header('Access-Control-Allow-Origin: ' . $origin); header('Vary: Origin'); } else { header('Access-Control-Allow-Origin: http://localhost'); }
@@ -104,6 +109,18 @@ try {
             $technical_details = $payload['forwarded_design']['technical_details'];
         }
         
+        // Extract layout image URL for display
+        $layout_image_url = null;
+        if (isset($payload['layout_image_url'])) {
+            $layout_image_url = $payload['layout_image_url'];
+        } else if (isset($payload['technical_details']['layout_image']) && is_array($payload['technical_details']['layout_image'])) {
+            $layoutImage = $payload['technical_details']['layout_image'];
+            if (!empty($layoutImage['name']) && (!isset($layoutImage['uploaded']) || $layoutImage['uploaded'] === true)) {
+                $storedName = $layoutImage['stored'] ?? $layoutImage['name'];
+                $layout_image_url = '/buildhub/backend/uploads/house_plans/' . $storedName;
+            }
+        }
+        
         // Extract plot size and building size
         $plot_size = $payload['plot_size'] ?? null;
         $building_size = $payload['building_size'] ?? null;
@@ -124,6 +141,7 @@ try {
             'technical_details' => $technical_details,
             'plot_size' => $plot_size,
             'building_size' => $building_size,
+            'layout_image_url' => $layout_image_url, // Add layout image URL for easy access
             'created_at' => $row['created_at'],
             'acknowledged_at' => $row['acknowledged_at'] ?? null,
             'due_date' => $row['due_date'] ?? null,

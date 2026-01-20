@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor House Plans - Professional Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .summary-card .number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .summary-card .label {
+            font-size: 1rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .plan-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .plan-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px 30px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .plan-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plan-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .plan-detail {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #495057;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .status-badge-small {
+            background: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .plan-content {
+            padding: 30px;
+        }
+
+        .info-section {
+            margin-bottom: 30px;
+        }
+
+        .info-section h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .client-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .client-item .label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .client-item .value {
+            font-size: 1rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .contractor-section {
+            background: linear-gradient(135deg, #f1f3f4 0%, #e8eaf6 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .contractor-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .contractor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .contractor-info h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .contractor-info .email {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .work-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-accepted {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .work-details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .work-details .timeline {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .work-message {
+            font-style: italic;
+            color: #495057;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-top: 10px;
+        }
+
+        .actions-bar {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 25px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .refresh-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .footer-info {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .footer-info h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .footer-info p {
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-item i {
+            color: #27ae60;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .contractor-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .actions-bar {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="status-badge">
+                <i class="fas fa-check-circle"></i> ACTIVE
+            </div>
+            <h1><i class="fas fa-building"></i> House Plans in Construction</h1>
+            <p>Professional contractor management and homeowner collaboration dashboard</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Summary Statistics -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="icon"><i class="fas fa-home"></i></div>
+                    <div class="number">1</div>
+                    <div class="label">Plans in Work</div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon"><i class="fas fa-hard-hat"></i></div>
+                    <div class="number">1</div>
+                    <div class="label">Active Contractors</div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon"><i class="fas fa-clock"></i></div>
+                    <div class="number">1</div>
+                    <div class="label">Pending Estimates</div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon"><i class="fas fa-check-double"></i></div>
+                    <div class="number">0</div>
+                    <div class="label">Completed Estimates</div>
+                </div>
+            </div>
+
+            <!-- House Plans Section -->
+            <div class="section-title">
+                <i class="fas fa-drafting-compass"></i>
+                Active House Plans
+            </div>
+
+            <!-- Plan Card -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-title">
+                        <i class="fas fa-home"></i>
+                        SHIJIN THOMAS MCA2024-2026 House Plan
+                    </div>
+                    <div class="plan-details">
+                        <div class="plan-detail">
+                            <i class="fas fa-ruler-combined"></i> 51' × 54'
+                        </div>
+                        <div class="plan-detail">
+                            <i class="fas fa-expand-arrows-alt"></i> 2,448 sq ft
+                        </div>
+                        <div class="status-badge-small">
+                            <i class="fas fa-edit"></i> Draft
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plan-content">
+                    <!-- Client Information -->
+                    <div class="info-section">
+                        <h3><i class="fas fa-user"></i> Client Information</h3>
+                        <div class="client-grid">
+                            <div class="client-item">
+                                <div class="label">Full Name</div>
+                                <div class="value">SHIJIN THOMAS MCA2024-2026</div>
+                            </div>
+                            <div class="client-item">
+                                <div class="label">Email Address</div>
+                                <div class="value">shijinthomas2026@mca.ajce.in</div>
+                            </div>
+                            <div class="client-item">
+                                <div class="label">Project Type</div>
+                                <div class="value">Residential House Plan</div>
+                            </div>
+                            <div class="client-item">
+                                <div class="label">Status</div>
+                                <div class="value">Active Development</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contractor Activity -->
+                    <div class="info-section">
+                        <h3><i class="fas fa-hard-hat"></i> Contractor Activity (1)</h3>
+                        <div class="contractor-section">
+                            <div class="contractor-item">
+                                <div class="contractor-header">
+                                    <div class="contractor-info">
+                                        <h4><i class="fas fa-user-tie"></i> Shijin Thomas</h4>
+                                        <div class="email">
+                                            <i class="fas fa-envelope"></i> shijinthomas248@gmail.com
+                                        </div>
+                                    </div>
+                                    <div class="work-status status-pending">
+                                        <i class="fas fa-clock"></i> Estimate Pending
+                                    </div>
+                                </div>
+
+                                <div class="work-details">
+                                    <div class="timeline">
+                                        <i class="fas fa-calendar-alt"></i> 
+                                        <strong>Sent:</strong> January 18, 2026 &nbsp;•&nbsp;
+                                        <i class="fas fa-hourglass-half"></i> 
+                                        <strong>Status:</strong> Awaiting Response
+                                    </div>
+                                    
+                                    <div class="work-message">
+                                        <i class="fas fa-quote-left"></i>
+                                        "Please provide construction estimate for this house plan"
+                                        <i class="fas fa-quote-right"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-bar">
+                    <div class="refresh-indicator">
+                        <div class="pulse"></div>
+                        <span>Last updated: Just now</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline">
+                            <i class="fas fa-eye"></i> View Plan Details
+                        </button>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit House Plan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create New Plan Section -->
+            <div style="text-align: center; margin-top: 40px;">
+                <button class="btn btn-primary" style="font-size: 1.1rem; padding: 15px 30px;">
+                    <i class="fas fa-plus-circle"></i> Create New General Plan
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer Information -->
+        <div class="footer-info">
+            <h3><i class="fas fa-info-circle"></i> System Features</h3>
+            <p>Professional contractor house plans management system with real-time updates and comprehensive project tracking.</p>
+            
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Real-time Updates</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secure Data Management</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile Responsive</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Progress Tracking</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-users"></i>
+                    <span>Multi-user Collaboration</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bell"></i>
+                    <span>Smart Notifications</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate summary cards on load
+            const summaryCards = document.querySelectorAll('.summary-card');
+            summaryCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.6s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 150);
+            });
+
+            // Add hover effects to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Simulate real-time updates
+            setInterval(() => {
+                const pulse = document.querySelector('.pulse');
+                if (pulse) {
+                    pulse.style.animation = 'none';
+                    setTimeout(() => {
+                        pulse.style.animation = 'pulse 2s infinite';
+                    }, 10);
+                }
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

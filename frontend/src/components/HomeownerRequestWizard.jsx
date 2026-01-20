@@ -7,6 +7,7 @@ import SearchableDropdown from './SearchableDropdown';
 import TourGuide from './TourGuide';
 import ArchitectSelection from './ArchitectSelection';
 import HouseStyleSuggestions from './HouseStyleSuggestions';
+import { stateDistricts, keralaPanchayatsMunicipalities } from '../data/locationData';
 // Import removed: TimelinePrediction
 // Import removed: designRulesEngine
 
@@ -27,9 +28,34 @@ const convertBudgetRangeToNumeric = (budgetRange) => {
   return ranges[budgetRange] || 0;
 };
 
-const indianCities = [
-  "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad", "Chennai", "Kolkata", "Surat", "Pune", "Jaipur", "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane", "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna", "Vadodara", "Ghaziabad", "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Kalyan-Dombivli", "Vasai-Virar", "Varanasi", "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", "Navi Mumbai", "Allahabad", "Howrah", "Ranchi", "Gwalior", "Jabalpur", "Coimbatore", "Vijayawada", "Jodhpur", "Madurai", "Raipur", "Kota", "Guwahati", "Chandigarh", "Solapur", "Hubballi-Dharwad", "Mysore", "Tiruchirappalli", "Bareilly", "Aligarh", "Tiruppur", "Gurgaon", "Moradabad", "Jalandhar", "Bhubaneswar", "Salem", "Warangal", "Mira-Bhayandar", "Jalgaon", "Guntur", "Thiruvananthapuram", "Bhiwandi", "Saharanpur", "Gorakhpur", "Bikaner", "Amravati", "Noida", "Jamshedpur", "Bhilai", "Cuttack", "Firozabad", "Kochi", "Nellore", "Bhavnagar", "Dehradun", "Durgapur", "Asansol", "Rourkela", "Nanded", "Kolhapur", "Ajmer", "Akola", "Gulbarga", "Jamnagar", "Ujjain", "Loni", "Siliguri", "Jhansi", "Ulhasnagar", "Jammu", "Sangli-Miraj & Kupwad", "Mangalore", "Erode", "Belgaum", "Ambattur", "Tirunelveli", "Malegaon", "Gaya", "Jalna", "Udaipur", "Maheshtala", "Davanagere", "Kozhikode", "Kurnool", "Rajpur Sonarpur", "Rajahmundry", "Bokaro", "South Dumdum", "Bellary", "Patiala", "Gopalpur", "Agartala", "Bhagalpur", "Muzaffarnagar", "Bhatpara", "Panihati", "Latur", "Dhule", "Tirupati", "Rohtak", "Korba", "Bhilwara", "Berhampur", "Muzaffarpur", "Ahmednagar", "Mathura", "Kollam", "Avadi", "Kadapa", "Kamarhati", "Sambalpur", "Bilaspur", "Shahjahanpur", "Satara", "Bijapur", "Rampur", "Shivamogga", "Chandrapur", "Junagadh", "Thrissur", "Alwar", "Bardhaman", "Kulti", "Kakinada", "Nizamabad", "Parbhani", "Tumkur", "Khammam", "Ozhukarai", "Bihar Sharif", "Panipat", "Darbhanga", "Bally", "Aizawl", "Dewas", "Ichalkaranji", "Karnal", "Bathinda", "Jalna", "Eluru", "Kirari Suleman Nagar", "Barasat", "Purnia", "Satna", "Mau", "Sonipat", "Farrukhabad", "Sagar", "Rourkela", "Durg", "Imphal", "Ratlam", "Hapur", "Arrah", "Karimnagar", "Anantapur", "Etawah", "Ambernath", "North Dumdum", "Bharatpur", "Begusarai", "New Delhi", "Gandhidham", "Baranagar", "Tiruvottiyur", "Pondicherry", "Sikar", "Thoothukudi", "Rewa", "Mirzapur", "Raichur", "Pali", "Ramagundam", "Haridwar", "Vijayanagaram", "Katihar", "Nagarcoil", "Sri Ganganagar", "Karawal Nagar", "Mango", "Thanjavur", "Bulandshahr", "Uluberia", "Murwara", "Sambhal", "Singrauli", "Nadiad", "Secunderabad", "Naihati", "Yamunanagar", "Bidhan Nagar", "Pallavaram", "Bidar", "Munger", "Panchkula", "Burhanpur", "Raurkela Industrial Township", "Kharagpur", "Dindigul", "Gandhinagar", "Hospet", "Nangloi Jat", "English Bazar", "Ongole", "Deoghar", "Chapra", "Haldia", "Khandwa", "Nandyal", "Chittoor", "Morena", "Amroha", "Anand", "Bhind", "Bhalswa Jahangir Pur", "Madhyamgram", "Bhiwani", "Navi Mumbai Panvel Raigad", "Bahraich", "Sultan Pur Majra", "Sirsa", "Dinapur Nizamat", "Raebareli"
-];
+// Helper function to get all locations (districts, panchayats, municipalities) from all states
+const getAllLocations = () => {
+  const allPlaces = [];
+  
+  // Add all districts from all states
+  Object.values(stateDistricts).forEach(districts => {
+    if (Array.isArray(districts)) {
+      allPlaces.push(...districts);
+    }
+  });
+  
+  // Add all Kerala panchayats and municipalities
+  if (keralaPanchayatsMunicipalities) {
+    Object.values(keralaPanchayatsMunicipalities).forEach(districtData => {
+      if (districtData.Municipalities && Array.isArray(districtData.Municipalities)) {
+        allPlaces.push(...districtData.Municipalities);
+      }
+      if (districtData.Panchayats && Array.isArray(districtData.Panchayats)) {
+        allPlaces.push(...districtData.Panchayats);
+      }
+    });
+  }
+  
+  // Remove duplicates and sort
+  return [...new Set(allPlaces)].sort();
+};
+
+const allLocationOptions = getAllLocations();
 
 export default function HomeownerRequestWizard() {
   const navigate = useNavigate();
@@ -906,13 +932,18 @@ export default function HomeownerRequestWizard() {
               )}
             </div>
             <div className="field">
-              <label>Location</label>
+              <label style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '8px', display: 'block' }}>
+                📍 Location
+              </label>
+              <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '12px' }}>
+                Select your district/location
+              </div>
               <SearchableDropdown
-                options={indianCities}
+                options={allLocationOptions}
                 value={data.location}
                 onChange={(value) => setData({ ...data, location: value })}
-                placeholder="Select or type your city"
-                style={{ width: '100%', padding: '12px 16px', fontSize: '16px', border: '2px solid #e5e7eb', borderRadius: '8px' }}
+                placeholder="Select or type your district"
+                style={{ width: '100%', padding: '16px 20px', fontSize: '16px', border: '2px solid #e5e7eb', borderRadius: '8px', backgroundColor: 'white', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)' }}
               />
             </div>
             <div className="field">
