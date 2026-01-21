@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report History Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 24px;
+            background: white;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .tab-btn:hover {
+            color: #374151;
+            background: #f9fafb;
+        }
+        
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        /* Statistics Overview */
+        .stats-overview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        /* Report Sections */
+        .report-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        
+        .report-section-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .section-header h3 {
+            margin: 0 0 8px 0;
+            color: #1f2937;
+            font-size: 20px;
+        }
+        
+        .section-header p {
+            margin: 0 0 20px 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        /* Reports Grid */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        /* Report Cards */
+        .report-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .report-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .report-card-header {
+            padding: 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .report-title h4 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+        
+        .report-type-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-badge.acknowledged {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-badge.viewed {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .status-badge.sent {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .report-card-body {
+            padding: 16px;
+        }
+        
+        .report-meta {
+            margin-bottom: 16px;
+        }
+        
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .meta-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .report-summary {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-value {
+            display: block;
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+        
+        .summary-label {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .report-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .report-actions button {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .no-reports {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+            grid-column: 1 / -1;
+        }
+        
+        .no-reports-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Progress Report Generator</h1>
+        
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn" onclick="showTab('generate')">📊 Generate New Report</button>
+            <button class="tab-btn active" onclick="showTab('history')">📋 Sent Reports History</button>
+        </div>
+        
+        <!-- Statistics Overview -->
+        <div class="stats-overview">
+            <h3>📊 Reports Overview</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Total Reports</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">22</div>
+                    <div class="stat-label">Sent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">18</div>
+                    <div class="stat-label">Viewed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Acknowledged</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Report Sections -->
+        <div class="report-sections">
+            <!-- Daily Reports Section -->
+            <div class="report-section-container">
+                <div class="section-header">
+                    <h3>📅 Daily Reports (12)</h3>
+                    <p>Detailed daily progress updates with work done, labour tracking, and photos</p>
+                </div>
+                <div class="reports-grid">
+                    <!-- Sample Daily Report Card -->
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <div class="report-title">
+                                <h4>Modern Villa Construction - Phase 2</h4>
+                                <span class="report-type-badge">daily</span>
+                            </div>
+                            <span class="status-badge acknowledged">✅ Acknowledged</span>
+                        </div>
+                        <div class="report-card-body">
+                            <div class="report-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Period:</span>
+                                    <span>January 18, 2026</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Homeowner:</span>
+                                    <span>John Smith</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Sent:</span>
+                                    <span>January 18, 2026</span>
+                                </div>
+                            </div>
+                            <div class="report-summary">
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span class="summary-value">1</span>
+                                        <span class="summary-label">Days</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">8%</span>
+                                        <span class="summary-label">Progress</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">15</span>
+                                        <span class="summary-label">Photos</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">₹25,000</span>
+                                        <span class="summary-label">Cost</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="report-actions">
+                                <button class="btn-secondary">👁️ View Details</button>
+                                <button class="btn-primary">💾 Download PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Another Daily Report -->
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <div class="report-title">
+                                <h4>Modern Villa Construction - Phase 2</h4>
+                                <span class="report-type-badge">daily</span>
+                            </div>
+                            <span class="status-badge viewed">👁️ Viewed</span>
+                        </div>
+                        <div class="report-card-body">
+                            <div class="report-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Period:</span>
+                                    <span>January 17, 2026</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Homeowner:</span>
+                                    <span>John Smith</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Sent:</span>
+                                    <span>January 17, 2026</span>
+                                </div>
+                            </div>
+                            <div class="report-summary">
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span class="summary-value">1</span>
+                                        <span class="summary-label">Days</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">6%</span>
+                                        <span class="summary-label">Progress</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">12</span>
+                                        <span class="summary-label">Photos</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">₹22,500</span>
+                                        <span class="summary-label">Cost</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="report-actions">
+                                <button class="btn-secondary">👁️ View Details</button>
+                                <button class="btn-primary">💾 Download PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weekly Reports Section -->
+            <div class="report-section-container">
+                <div class="section-header">
+                    <h3>📈 Weekly Reports (8)</h3>
+                    <p>Weekly summaries with progress analysis and milestone tracking</p>
+                </div>
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <div class="report-title">
+                                <h4>Modern Villa Construction - Week 3</h4>
+                                <span class="report-type-badge">weekly</span>
+                            </div>
+                            <span class="status-badge sent">📤 Sent</span>
+                        </div>
+                        <div class="report-card-body">
+                            <div class="report-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Period:</span>
+                                    <span>Jan 13 - Jan 19, 2026</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Homeowner:</span>
+                                    <span>John Smith</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Sent:</span>
+                                    <span>January 19, 2026</span>
+                                </div>
+                            </div>
+                            <div class="report-summary">
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span class="summary-value">7</span>
+                                        <span class="summary-label">Days</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">35%</span>
+                                        <span class="summary-label">Progress</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">89</span>
+                                        <span class="summary-label">Photos</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">₹1,75,000</span>
+                                        <span class="summary-label">Cost</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="report-actions">
+                                <button class="btn-secondary">👁️ View Details</button>
+                                <button class="btn-primary">💾 Download PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Monthly Reports Section -->
+            <div class="report-section-container">
+                <div class="section-header">
+                    <h3>📋 Monthly Reports (4)</h3>
+                    <p>Comprehensive monthly reports with cost analysis and forecasting</p>
+                </div>
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <div class="report-title">
+                                <h4>Modern Villa Construction - January 2026</h4>
+                                <span class="report-type-badge">monthly</span>
+                            </div>
+                            <span class="status-badge acknowledged">✅ Acknowledged</span>
+                        </div>
+                        <div class="report-card-body">
+                            <div class="report-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Period:</span>
+                                    <span>January 1 - 31, 2026</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Homeowner:</span>
+                                    <span>John Smith</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Sent:</span>
+                                    <span>February 1, 2026</span>
+                                </div>
+                            </div>
+                            <div class="report-summary">
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span class="summary-value">26</span>
+                                        <span class="summary-label">Days</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">85%</span>
+                                        <span class="summary-label">Progress</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">324</span>
+                                        <span class="summary-label">Photos</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-value">₹6,50,000</span>
+                                        <span class="summary-label">Cost</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="report-actions">
+                                <button class="btn-secondary">👁️ View Details</button>
+                                <button class="btn-primary">💾 Download PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Empty state example -->
+                    <div class="no-reports" style="display: none;">
+                        <div class="no-reports-icon">📈</div>
+                        <p>No monthly reports found</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // In a real app, this would switch between generate and history views
+            console.log('Switched to tab:', tabName);
+        }
+    </script>
+</body>
+</html>

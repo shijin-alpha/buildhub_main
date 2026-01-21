@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Estimation Form Site Details Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0369a1;
+            background: #f0f9ff;
+            border: 1px solid #7dd3fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .data-display {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .data-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .data-card h4 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+            font-size: 16px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .field-row:last-child {
+            border-bottom: none;
+        }
+        .field-label {
+            font-weight: 500;
+            color: #475569;
+        }
+        .field-value {
+            color: #1e293b;
+            text-align: right;
+        }
+        .field-value.empty {
+            color: #dc2626;
+            font-style: italic;
+        }
+        .field-value.has-data {
+            color: #059669;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Final Estimation Form Site Details Test</h1>
+    
+    <div class="info">
+        <h3>Test Overview</h3>
+        <p>This test verifies that the contractor estimation form will receive and display site details correctly from the enhanced API payload.</p>
+        <ul>
+            <li>✅ Test contractor inbox API with site details</li>
+            <li>✅ Simulate EstimationForm data mapping logic</li>
+            <li>✅ Verify all site details are properly extracted and displayed</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>1. Test Contractor Inbox API</h2>
+        <p>Get the latest inbox item with site details for contractor 37:</p>
+        
+        <button class="btn" onclick="testContractorInboxAPI()">Test Contractor Inbox API</button>
+        
+        <div id="inbox-api-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Simulate EstimationForm Data Mapping</h2>
+        <p>Test how the EstimationForm component would map the inbox data:</p>
+        
+        <button class="btn" onclick="simulateEstimationFormMapping()">Simulate Form Data Mapping</button>
+        
+        <div id="form-mapping-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Verify Site Details Display</h2>
+        <p>Check that all expected site details would be displayed in the form:</p>
+        
+        <button class="btn" onclick="verifySiteDetailsDisplay()">Verify Site Details Display</button>
+        
+        <div id="site-details-result"></div>
+    </div>
+
+    <script>
+        let latestInboxItem = null;
+
+        async function testContractorInboxAPI() {
+            const resultsDiv = document.getElementById('inbox-api-result');
+            resultsDiv.innerHTML = '<p>Testing contractor inbox API...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.items && result.items.length > 0) {
+                    // Find the latest item with layout_request_details
+                    const itemWithSiteDetails = result.items.find(item => 
+                        item.layout_request_details && 
+                        (item.plot_size || item.layout_request_details.plot_size)
+                    );
+                    
+                    if (itemWithSiteDetails) {
+                        latestInboxItem = itemWithSiteDetails;
+                        
+                        let resultsHTML = `
+                            <div class="success">
+                                <h3>✅ Found Inbox Item with Site Details</h3>
+                                <p><strong>Item ID:</strong> ${itemWithSiteDetails.id}</p>
+                                <p><strong>Homeowner:</strong> ${itemWithSiteDetails.homeowner_name}</p>
+                                <p><strong>Created:</strong> ${itemWithSiteDetails.created_at}</p>
+                            </div>
+                            
+                            <div class="data-grid">
+                                <div class="data-card">
+                                    <h4>📊 Direct Site Fields</h4>
+                        `;
+                        
+                        const directFields = ['plot_size', 'building_size', 'budget_range', 'timeline'];
+                        directFields.forEach(field => {
+                            const value = itemWithSiteDetails[field];
+                            const hasValue = value && value !== '';
+                            resultsHTML += `
+                                <div class="field-row">
+                                    <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                    <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                                </div>
+                            `;
+                        });
+                        
+                        resultsHTML += `
+                                </div>
+                                <div class="data-card">
+                                    <h4>🏗️ Layout Request Details</h4>
+                        `;
+                        
+                        if (itemWithSiteDetails.layout_request_details) {
+                            const layoutDetails = itemWithSiteDetails.layout_request_details;
+                            const layoutFields = ['plot_size', 'building_size', 'budget_range', 'location', 'timeline', 'num_floors', 'orientation'];
+                            
+                            layoutFields.forEach(field => {
+                                const value = layoutDetails[field];
+                                const hasValue = value && value !== '';
+                                resultsHTML += `
+                                    <div class="field-row">
+                                        <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                        <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            resultsHTML += '<p class="field-value empty">No layout request details found</p>';
+                        }
+                        
+                        resultsHTML += `
+                                </div>
+                            </div>
+                            
+                            <div class="data-display">
+Raw API Response (First Item):
+${JSON.stringify(itemWithSiteDetails, null, 2)}
+                            </div>
+                        `;
+                        
+                        resultsDiv.innerHTML = resultsHTML;
+                    } else {
+                        resultsDiv.innerHTML = `
+                            <div class="error">
+                                <h3>❌ No Items with Site Details Found</h3>
+                                <p>Found ${result.items.length} inbox items, but none have layout_request_details or site data.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ API Error</h3>
+                            <p>Failed to get inbox items: ${result.message || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Inbox API test error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Request Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function simulateEstimationFormMapping() {
+            const resultsDiv = document.getElementById('form-mapping-result');
+            
+            if (!latestInboxItem) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ No Inbox Item</h3>
+                        <p>Please run "Test Contractor Inbox API" first to get inbox data.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<p>Simulating EstimationForm data mapping...</p>';
+            
+            try {
+                // Simulate the exact logic from EstimationForm.jsx
+                const inboxItem = latestInboxItem;
+                const payload = inboxItem.payload || {};
+                const layoutRequestDetails = inboxItem.layout_request_details || {};
+                const parsedRequirements = inboxItem.parsed_requirements || {};
+                
+                // Map data as EstimationForm would
+                const formData = {
+                    // Basic Information
+                    project_name: payload.plan_name || `Project for ${inboxItem.homeowner_name}`,
+                    client_name: inboxItem.homeowner_name || '',
+                    location: layoutRequestDetails.location || payload.location || '',
+                    timeline: layoutRequestDetails.timeline || inboxItem.timeline || '90 days',
+                    
+                    // Site Details from multiple sources (priority: direct > layout_request_details > payload)
+                    plot_size: inboxItem.plot_size || layoutRequestDetails.plot_size || '',
+                    building_size: inboxItem.building_size || layoutRequestDetails.building_size || '',
+                    budget_range: inboxItem.budget_range || layoutRequestDetails.budget_range || '',
+                    num_floors: inboxItem.num_floors || layoutRequestDetails.num_floors || '',
+                    orientation: inboxItem.orientation || layoutRequestDetails.orientation || '',
+                    site_considerations: inboxItem.site_considerations || layoutRequestDetails.site_considerations || '',
+                    material_preferences: inboxItem.material_preferences || layoutRequestDetails.material_preferences || '',
+                    budget_allocation: inboxItem.budget_allocation || layoutRequestDetails.budget_allocation || '',
+                    preferred_style: inboxItem.preferred_style || layoutRequestDetails.preferred_style || '',
+                    plot_shape: parsedRequirements.plot_shape || '',
+                    topography: parsedRequirements.topography || '',
+                    development_laws: parsedRequirements.development_laws || '',
+                    family_needs: parsedRequirements.family_needs || '',
+                    rooms: parsedRequirements.rooms || '',
+                    aesthetic: parsedRequirements.aesthetic || ''
+                };
+                
+                let resultsHTML = `
+                    <div class="success">
+                        <h3>✅ EstimationForm Data Mapping Simulation</h3>
+                        <p>This shows exactly how data would be mapped in the EstimationForm component:</p>
+                    </div>
+                    
+                    <div class="data-grid">
+                        <div class="data-card">
+                            <h4>📋 Basic Information Section</h4>
+                `;
+                
+                const basicFields = ['project_name', 'client_name', 'location', 'timeline', 'plot_size', 'building_size'];
+                basicFields.forEach(field => {
+                    const value = formData[field];
+                    const hasValue = value && value !== '';
+                    resultsHTML += `
+                        <div class="field-row">
+                            <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                            <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                        </div>
+                    `;
+                });
+                
+                resultsHTML += `
+                        </div>
+                        <div class="data-card">
+                            <h4>🏗️ Site Details Section</h4>
+                `;
+                
+                const siteFields = ['budget_range', 'num_floors', 'orientation', 'site_considerations', 'material_preferences', 'budget_allocation', 'preferred_style'];
+                siteFields.forEach(field => {
+                    const value = formData[field];
+                    const hasValue = value && value !== '';
+                    resultsHTML += `
+                        <div class="field-row">
+                            <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                            <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                        </div>
+                    `;
+                });
+                
+                resultsHTML += `
+                        </div>
+                        <div class="data-card">
+                            <h4>🎨 Requirements Section</h4>
+                `;
+                
+                const requirementFields = ['plot_shape', 'topography', 'development_laws', 'family_needs', 'rooms', 'aesthetic'];
+                requirementFields.forEach(field => {
+                    const value = formData[field];
+                    const hasValue = value && value !== '';
+                    resultsHTML += `
+                        <div class="field-row">
+                            <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                            <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                        </div>
+                    `;
+                });
+                
+                resultsHTML += `
+                        </div>
+                    </div>
+                    
+                    <div class="data-display">
+Data Sources Used:
+- Direct inbox fields: ${JSON.stringify({
+    plot_size: inboxItem.plot_size,
+    building_size: inboxItem.building_size,
+    budget_range: inboxItem.budget_range
+}, null, 2)}
+
+- Layout request details: ${JSON.stringify(layoutRequestDetails, null, 2)}
+
+- Parsed requirements: ${JSON.stringify(parsedRequirements, null, 2)}
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = resultsHTML;
+                
+            } catch (error) {
+                console.error('Form mapping simulation error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Simulation Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function verifySiteDetailsDisplay() {
+            const resultsDiv = document.getElementById('site-details-result');
+            
+            if (!latestInboxItem) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ No Data Available</h3>
+                        <p>Please run the previous tests first to get data.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<p>Verifying site details display...</p>';
+            
+            try {
+                const inboxItem = latestInboxItem;
+                const layoutRequestDetails = inboxItem.layout_request_details || {};
+                
+                // Check what would be displayed in each section
+                const basicInfoData = {
+                    'Plot Size': inboxItem.plot_size || layoutRequestDetails.plot_size || 'MISSING',
+                    'Building Size': inboxItem.building_size || layoutRequestDetails.building_size || 'MISSING',
+                    'Project Name': `Project for ${inboxItem.homeowner_name}`,
+                    'Client Name': inboxItem.homeowner_name || 'MISSING',
+                    'Location': layoutRequestDetails.location || 'MISSING',
+                    'Timeline': layoutRequestDetails.timeline || 'MISSING'
+                };
+                
+                const siteDetailsData = {
+                    'Budget Range': layoutRequestDetails.budget_range || 'MISSING',
+                    'Number of Floors': layoutRequestDetails.num_floors || 'MISSING',
+                    'Orientation': layoutRequestDetails.orientation || 'MISSING',
+                    'Site Considerations': layoutRequestDetails.site_considerations || 'MISSING',
+                    'Material Preferences': layoutRequestDetails.material_preferences || 'MISSING',
+                    'Budget Allocation': layoutRequestDetails.budget_allocation || 'MISSING',
+                    'Preferred Style': layoutRequestDetails.preferred_style || 'MISSING'
+                };
+                
+                // Count how many fields have data
+                const basicInfoWithData = Object.values(basicInfoData).filter(v => v !== 'MISSING').length;
+                const siteDetailsWithData = Object.values(siteDetailsData).filter(v => v !== 'MISSING').length;
+                
+                const totalBasicFields = Object.keys(basicInfoData).length;
+                const totalSiteFields = Object.keys(siteDetailsData).length;
+                
+                let resultsHTML = `
+                    <div class="success">
+                        <h3>✅ Site Details Display Verification</h3>
+                        <p><strong>Basic Information:</strong> ${basicInfoWithData}/${totalBasicFields} fields have data (${Math.round(basicInfoWithData/totalBasicFields*100)}%)</p>
+                        <p><strong>Site Details:</strong> ${siteDetailsWithData}/${totalSiteFields} fields have data (${Math.round(siteDetailsWithData/totalSiteFields*100)}%)</p>
+                    </div>
+                    
+                    <div class="data-grid">
+                        <div class="data-card">
+                            <h4>📋 Basic Information Section Display</h4>
+                `;
+                
+                Object.entries(basicInfoData).forEach(([label, value]) => {
+                    const hasValue = value !== 'MISSING';
+                    resultsHTML += `
+                        <div class="field-row">
+                            <span class="field-label">${label}:</span>
+                            <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${value}</span>
+                        </div>
+                    `;
+                });
+                
+                resultsHTML += `
+                        </div>
+                        <div class="data-card">
+                            <h4>🏗️ Site Details Section Display</h4>
+                `;
+                
+                Object.entries(siteDetailsData).forEach(([label, value]) => {
+                    const hasValue = value !== 'MISSING';
+                    resultsHTML += `
+                        <div class="field-row">
+                            <span class="field-label">${label}:</span>
+                            <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${value}</span>
+                        </div>
+                    `;
+                });
+                
+                resultsHTML += `
+                        </div>
+                    </div>
+                    
+                    <div class="info">
+                        <h4>🎯 Expected Result in Contractor Dashboard:</h4>
+                        <ul>
+                            <li><strong>Basic Information section:</strong> Plot Size and Building Size should appear as input fields with values</li>
+                            <li><strong>Site Details section:</strong> All site specifications should be displayed in organized groups</li>
+                            <li><strong>Form initialization:</strong> Data should auto-populate when contractor opens estimation form</li>
+                            <li><strong>User experience:</strong> Contractor can see all homeowner requirements without manual entry</li>
+                        </ul>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = resultsHTML;
+                
+            } catch (error) {
+                console.error('Site details verification error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Verification Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run the first test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Final estimation form site details test loaded');
+            setTimeout(() => {
+                testContractorInboxAPI();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

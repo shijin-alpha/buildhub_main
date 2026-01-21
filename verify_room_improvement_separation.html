@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Improvement Separation Verification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .image-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .image-info {
+            padding: 1rem;
+        }
+        
+        .image-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+        
+        .image-info p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+        
+        .room-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        
+        .exterior-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Room Improvement Separation Verification</h1>
+        <p>Verify that room improvement images are properly separated from exterior/architectural images.</p>
+        
+        <div class="section">
+            <h3>🔧 Step 1: Run Separation Script</h3>
+            <p>Separate room improvement images from exterior images and clean up test data.</p>
+            <button class="btn btn-success" onclick="runSeparation()">Run Image Separation</button>
+            <div id="separation-result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>🏠 Step 2: Verify Room Improvement Images</h3>
+            <p>Check that only actual room improvement images are in the room improvements directory.</p>
+            <button class="btn" onclick="verifyRoomImages()">Verify Room Images</button>
+            <div id="room-result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>🏢 Step 3: Verify Exterior Images</h3>
+            <p>Check that exterior/architectural images remain in the conceptual images directory.</p>
+            <button class="btn" onclick="verifyExteriorImages()">Verify Exterior Images</button>
+            <div id="exterior-result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>📋 Step 4: Test Room Improvement API</h3>
+            <p>Verify that the room improvement API only returns room-specific analyses.</p>
+            <button class="btn" onclick="testRoomAPI()">Test Room API</button>
+            <div id="api-result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>🖼️ Step 5: Visual Verification</h3>
+            <p>Display images to visually confirm proper separation.</p>
+            <button class="btn" onclick="showVisualVerification()">Show Visual Verification</button>
+            <div id="visual-result"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function runSeparation() {
+            try {
+                showResult('separation-result', 'Running image separation script...', 'info');
+                
+                const response = await fetch('/buildhub/separate_room_improvement_images.php', {
+                    method: 'GET'
+                });
+                
+                const text = await response.text();
+                
+                if (response.ok) {
+                    showResult('separation-result', `✅ Separation completed!\n\n${text}`, 'success');
+                } else {
+                    showResult('separation-result', `❌ Separation failed: ${text}`, 'error');
+                }
+            } catch (error) {
+                showResult('separation-result', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function verifyRoomImages() {
+            try {
+                showResult('room-result', 'Verifying room improvement images...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=20', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let message = `✅ Found ${data.data.analyses.length} room improvement analyses:\n\n`;
+                    
+                    for (const analysis of data.data.analyses) {
+                        const imageUrl = analysis.analysis_result?.ai_enhancements?.conceptual_visualization?.image_url;
+                        const roomType = analysis.room_type;
+                        
+                        message += `ID: ${analysis.id} | Room: ${roomType}\n`;
+                        
+                        if (imageUrl) {
+                            const isRoomImage = imageUrl.includes('/room_improvements/');
+                            const hasRoomType = imageUrl.includes(roomType) || 
+                                              ['bedroom', 'living_room', 'kitchen', 'dining_room', 'bathroom', 'office', 'other'].some(rt => imageUrl.includes(rt));
+                            
+                            if (isRoomImage && hasRoomType) {
+                                message += `   ✅ Correct: ${imageUrl}\n`;
+                            } else {
+                                message += `   ❌ Wrong location: ${imageUrl}\n`;
+                            }
+                        } else {
+                            message += `   ⚠️ No image URL\n`;
+                        }
+                        message += '\n';
+                    }
+                    
+                    showResult('room-result', message, 'success');
+                } else {
+                    showResult('room-result', `❌ API Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('room-result', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function verifyExteriorImages() {
+            try {
+                showResult('exterior-result', 'Checking exterior/architectural images...', 'info');
+                
+                // This is a simple check - in a real implementation, you'd have an API for this
+                let message = 'Exterior images should remain in /uploads/conceptual_images/\n\n';
+                message += 'Expected patterns:\n';
+                message += '✅ real_ai_exterior_concept_*.png\n';
+                message += '✅ real_ai_architectural_exterior_*.png\n';
+                message += '✅ enhanced_placeholder_architectural_*.png\n\n';
+                message += 'These should NOT be in /uploads/room_improvements/\n';
+                
+                showResult('exterior-result', message, 'info');
+            } catch (error) {
+                showResult('exterior-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRoomAPI() {
+            try {
+                showResult('api-result', 'Testing room improvement API filtering...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=10', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let message = `✅ API returned ${data.data.analyses.length} analyses\n\n`;
+                    message += 'Filtering verification:\n';
+                    
+                    let allValid = true;
+                    for (const analysis of data.data.analyses) {
+                        const roomType = analysis.room_type;
+                        const notes = analysis.improvement_notes || '';
+                        
+                        // Check if room type is valid
+                        const validRoomTypes = ['bedroom', 'living_room', 'kitchen', 'dining_room', 'bathroom', 'office', 'other'];
+                        const isValidRoom = validRoomTypes.includes(roomType);
+                        
+                        // Check if it's not test data
+                        const isNotTest = !notes.toLowerCase().includes('test') && 
+                                         !notes.toLowerCase().includes('sample') && 
+                                         !notes.toLowerCase().includes('demo');
+                        
+                        if (isValidRoom && isNotTest) {
+                            message += `✅ ID ${analysis.id}: ${roomType} - Valid\n`;
+                        } else {
+                            message += `❌ ID ${analysis.id}: ${roomType} - Invalid (${!isValidRoom ? 'bad room type' : 'test data'})\n`;
+                            allValid = false;
+                        }
+                    }
+                    
+                    message += `\n${allValid ? '✅ All analyses are valid room improvements' : '❌ Some invalid analyses found'}`;
+                    
+                    showResult('api-result', message, allValid ? 'success' : 'error');
+                } else {
+                    showResult('api-result', `❌ API Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('api-result', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function showVisualVerification() {
+            try {
+                showResult('visual-result', 'Loading visual verification...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=15', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = '<h4>Room Improvement Images Only</h4>';
+                    html += '<div class="image-grid">';
+                    
+                    for (const analysis of data.data.analyses) {
+                        const imageUrl = analysis.analysis_result?.ai_enhancements?.conceptual_visualization?.image_url;
+                        
+                        if (imageUrl) {
+                            html += `
+                                <div class="image-card">
+                                    <img src="${imageUrl}" alt="Room Analysis ${analysis.id}" 
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div style="display:none; padding: 2rem; text-align: center; color: #6b7280;">
+                                        Image not accessible
+                                    </div>
+                                    <div class="image-info">
+                                        <h4>
+                                            <span class="room-badge">${analysis.room_type}</span>
+                                            ${analysis.analysis_result?.concept_name || 'Room Analysis'}
+                                        </h4>
+                                        <p><strong>ID:</strong> ${analysis.id}</p>
+                                        <p><strong>Created:</strong> ${new Date(analysis.created_at).toLocaleDateString()}</p>
+                                        <p><strong>URL:</strong> ${imageUrl.includes('/room_improvements/') ? '✅ Correct' : '❌ Wrong'}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    html += '</div>';
+                    
+                    if (html === '<h4>Room Improvement Images Only</h4><div class="image-grid"></div>') {
+                        html = '<p>No room improvement images found.</p>';
+                    }
+                    
+                    document.getElementById('visual-result').innerHTML = html;
+                } else {
+                    showResult('visual-result', `❌ Failed to load images: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('visual-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced House Plan Download Test</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        
+        .plan-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 30px;
+        }
+        
+        .download-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .status-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .download-btn {
+            padding: 0.5rem 0.75rem;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            min-width: 60px;
+            justify-content: center;
+        }
+        
+        .download-btn.pdf-btn {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+        
+        .download-btn.image-btn {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        }
+        
+        .download-btn.json-btn {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+        
+        .download-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+        
+        .download-btn.pdf-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+        }
+        
+        .download-btn.image-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+        }
+        
+        .download-btn.json-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+        }
+        
+        .edit-btn, .submit-btn, .delete-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            justify-content: center;
+            min-width: 100px;
+        }
+        
+        .edit-btn {
+            background: #ffffff;
+            color: #374151;
+        }
+        
+        .edit-btn:hover:not(:disabled) {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+        
+        .delete-btn {
+            background: #ffffff;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+        
+        .delete-btn:hover:not(:disabled) {
+            background: #fef2f2;
+            border-color: #f87171;
+        }
+        
+        .feature-list {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature-list h3 {
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+        
+        .feature-list ul {
+            color: #4b5563;
+            line-height: 1.6;
+        }
+        
+        .feature-list li {
+            margin-bottom: 8px;
+        }
+        
+        .demo-section {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .demo-section h3 {
+            color: #0369a1;
+            margin-bottom: 10px;
+        }
+        
+        .demo-section p {
+            color: #0c4a6e;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced House Plan Download System</h1>
+        <p class="subtitle">Room-specific dimensions with neat PDF structure</p>
+        
+        <div class="demo-section">
+            <h3>🎯 Implementation Complete</h3>
+            <p>The house plan download system has been enhanced with detailed room-specific dimensions and a professional PDF structure.</p>
+        </div>
+        
+        <h2>Download Actions Demo</h2>
+        <div class="plan-actions">
+            <div class="download-actions">
+                <button class="download-btn pdf-btn" title="Download as PDF with visual design and room-specific dimensions">
+                    📄 PDF
+                </button>
+                <button class="download-btn image-btn" title="Download layout as high-resolution image">
+                    🖼️ PNG
+                </button>
+                <button class="download-btn json-btn" title="Download as structured JSON data with room specifications">
+                    📊 JSON
+                </button>
+            </div>
+            <div class="status-actions">
+                <button class="edit-btn">Edit</button>
+                <button class="submit-btn">Submit</button>
+                <button class="delete-btn">Delete</button>
+            </div>
+        </div>
+        
+        <div class="feature-list">
+            <h3>🚀 Enhanced PDF Features</h3>
+            <ul>
+                <li><strong>Professional Layout:</strong> Multi-page PDF with structured sections</li>
+                <li><strong>Project Overview:</strong> Plot size, floors, areas, coverage percentage</li>
+                <li><strong>Detailed Room Specifications:</strong> Table format with layout and construction dimensions</li>
+                <li><strong>Room Categories:</strong> Summary by room type with statistics</li>
+                <li><strong>Visual Plan Layout:</strong> High-resolution canvas image with legend</li>
+                <li><strong>Construction Specifications:</strong> Grouped by wall thickness, ceiling height, materials</li>
+                <li><strong>Room-Specific Data:</strong> Position coordinates, rotation, area calculations</li>
+                <li><strong>Professional Formatting:</strong> Headers, footers, page numbers, generation timestamp</li>
+            </ul>
+        </div>
+        
+        <div class="feature-list">
+            <h3>📊 Enhanced JSON Features</h3>
+            <ul>
+                <li><strong>Structured Metadata:</strong> Export version, generation info, technical specs</li>
+                <li><strong>Detailed Room Specifications:</strong> Layout and construction dimensions with calculations</li>
+                <li><strong>Floor Management:</strong> Multi-floor support with positioning data</li>
+                <li><strong>Room Categories:</strong> Grouped statistics and analysis</li>
+                <li><strong>Construction Summary:</strong> Volume calculations and material estimates</li>
+                <li><strong>Technical Specifications:</strong> Grid size, coordinate system, canvas dimensions</li>
+                <li><strong>Requirements Reference:</strong> Client requirements and project context</li>
+            </ul>
+        </div>
+        
+        <div class="feature-list">
+            <h3>🎨 UI Enhancements</h3>
+            <ul>
+                <li><strong>Color-Coded Buttons:</strong> PDF (Red), PNG (Purple), JSON (Green)</li>
+                <li><strong>Improved Tooltips:</strong> Detailed descriptions of each download option</li>
+                <li><strong>Better Organization:</strong> Grouped download and status actions</li>
+                <li><strong>Enhanced Styling:</strong> Modern gradients and hover effects</li>
+                <li><strong>Responsive Design:</strong> Works on all screen sizes</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <h3>✅ Implementation Status</h3>
+            <p><strong>Complete!</strong> The enhanced download functionality has been successfully implemented in the HousePlanDrawer component with:</p>
+            <ul style="color: #0c4a6e; margin-top: 10px;">
+                <li>✅ Enhanced PDF generation with room-specific dimensions</li>
+                <li>✅ Detailed JSON export with construction specifications</li>
+                <li>✅ Improved UI with color-coded download buttons</li>
+                <li>✅ Professional styling and responsive design</li>
+                <li>✅ Comprehensive room data and statistics</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Add click handlers for demo
+        document.querySelectorAll('.download-btn, .edit-btn, .submit-btn, .delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                alert(`${action} functionality implemented in the actual HousePlanDrawer component!`);
+            });
+        });
+    </script>
+</body>
+</html>

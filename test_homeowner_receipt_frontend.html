@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeowner Receipt Upload Frontend Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Homeowner Receipt Upload Test</h1>
+        <p>This test simulates homeowner receipt upload for bank transfer payments.</p>
+        
+        <div id="status" class="info">Initializing test...</div>
+        
+        <div class="form-group">
+            <label for="payment-select">Select Payment Request:</label>
+            <select id="payment-select">
+                <option value="">Loading payments...</option>
+            </select>
+        </div>
+        
+        <form id="receipt-form">
+            <div class="form-group">
+                <label for="transaction_reference">Transaction Reference *</label>
+                <input type="text" id="transaction_reference" name="transaction_reference" 
+                       placeholder="Enter bank transfer reference number" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="payment_date">Payment Date *</label>
+                <input type="date" id="payment_date" name="payment_date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="payment_method">Payment Method</label>
+                <select id="payment_method" name="payment_method">
+                    <option value="bank_transfer">🏦 Bank Transfer</option>
+                    <option value="upi">📱 UPI Payment</option>
+                    <option value="cash">💵 Cash Payment</option>
+                    <option value="cheque">📝 Cheque</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" rows="3" 
+                          placeholder="Any additional notes about the payment..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="receipt_files">Receipt Files *</label>
+                <input type="file" id="receipt_files" name="receipt_files" 
+                       multiple accept="image/*,.pdf" required>
+                <small>Select images or PDF files (max 10MB each)</small>
+            </div>
+            
+            <button type="submit" id="upload-btn" class="btn">📤 Upload Receipt</button>
+        </form>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let payments = [];
+        let selectedPayment = null;
+
+        // Load payments on page load
+        window.addEventListener('load', loadPayments);
+
+        async function loadPayments() {
+            try {
+                updateStatus('Loading payment requests...', 'info');
+                
+                // For testing, we'll use the known payment data
+                // In real app, this would come from an API
+                payments = [
+                    { id: 15, stage_name: 'Foundation', requested_amount: 213949, status: 'approved' },
+                    { id: 16, stage_name: 'Structure', requested_amount: 250000, status: 'approved' },
+                    { id: 17, stage_name: 'Brickwork', requested_amount: 180000, status: 'paid' },
+                    { id: 18, stage_name: 'Roofing', requested_amount: 150000, status: 'paid' }
+                ];
+                
+                const paymentSelect = document.getElementById('payment-select');
+                paymentSelect.innerHTML = '<option value="">Select a payment request...</option>';
+                
+                payments.forEach(payment => {
+                    const option = document.createElement('option');
+                    option.value = payment.id;
+                    option.textContent = `${payment.stage_name} - ₹${payment.requested_amount.toLocaleString('en-IN')} (${payment.status})`;
+                    paymentSelect.appendChild(option);
+                });
+                
+                updateStatus(`Loaded ${payments.length} payment requests`, 'success');
+                
+                // Set default values
+                document.getElementById('payment_date').value = new Date().toISOString().split('T')[0];
+                
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                updateStatus('Failed to load payments: ' + error.message, 'error');
+            }
+        }
+
+        // Handle payment selection
+        document.getElementById('payment-select').addEventListener('change', function(e) {
+            const paymentId = e.target.value;
+            selectedPayment = payments.find(p => p.id == paymentId);
+            
+            if (selectedPayment) {
+                console.log('Selected payment:', selectedPayment);
+                updateStatus(`Selected: ${selectedPayment.stage_name} - ₹${selectedPayment.requested_amount.toLocaleString('en-IN')}`, 'info');
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('receipt-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!selectedPayment) {
+                updateStatus('Please select a payment request first', 'error');
+                return;
+            }
+            
+            const uploadBtn = document.getElementById('upload-btn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            
+            try {
+                updateStatus('Uploading receipt...', 'info');
+                
+                const formData = new FormData();
+                formData.append('payment_id', selectedPayment.id);
+                formData.append('transaction_reference', document.getElementById('transaction_reference').value);
+                formData.append('payment_date', document.getElementById('payment_date').value);
+                formData.append('payment_method', document.getElementById('payment_method').value);
+                formData.append('notes', document.getElementById('notes').value);
+                
+                // Add files
+                const files = document.getElementById('receipt_files').files;
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('receipt_files[]', files[i]);
+                }
+                
+                // Debug: Log what we're sending
+                console.log('Sending FormData:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, value);
+                }
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/upload_payment_receipt.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    const textResponse = await response.text();
+                    console.error('Non-JSON response:', textResponse);
+                    throw new Error('Server returned invalid response. Check if you are logged in as a homeowner.');
+                }
+                
+                console.log('API response:', data);
+                
+                if (data.success) {
+                    updateStatus('✅ Receipt uploaded successfully!', 'success');
+                    document.getElementById('result').innerHTML = `
+                        <div class="success">
+                            <h3>Upload Successful!</h3>
+                            <p><strong>Payment ID:</strong> ${data.data.payment_id}</p>
+                            <p><strong>Transaction Reference:</strong> ${data.data.transaction_reference}</p>
+                            <p><strong>Files Uploaded:</strong> ${data.data.uploaded_files.length}</p>
+                            <p><strong>Status:</strong> ${data.data.verification_status}</p>
+                        </div>
+                    `;
+                    
+                    // Reset form
+                    document.getElementById('receipt-form').reset();
+                    document.getElementById('payment-select').value = '';
+                    selectedPayment = null;
+                } else {
+                    updateStatus('❌ Failed to upload receipt: ' + data.message, 'error');
+                    document.getElementById('result').innerHTML = `
+                        <div class="error">
+                            <h3>Upload Failed</h3>
+                            <p><strong>Error:</strong> ${data.message}</p>
+                            ${data.errors ? `<p><strong>Details:</strong> ${data.errors.join(', ')}</p>` : ''}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                updateStatus('❌ Upload error: ' + error.message, 'error');
+                document.getElementById('result').innerHTML = `
+                    <div class="error">
+                        <h3>Upload Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '📤 Upload Receipt';
+            }
+        });
+
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+    </script>
+</body>
+</html>

@@ -81,14 +81,14 @@ try {
             END as project_source,
             COALESCE(cp.id, lr.id) as project_id,
             COALESCE(cp.homeowner_id, lr.user_id) as homeowner_id
-        FROM (SELECT :project_id as search_id) s
-        LEFT JOIN construction_projects cp ON cp.id = s.search_id
+        FROM (SELECT ? as search_id) s
+        LEFT JOIN construction_projects cp ON (cp.id = s.search_id OR cp.estimate_id = s.search_id)
         LEFT JOIN layout_requests lr ON lr.id = s.search_id
         WHERE cp.id IS NOT NULL OR lr.id IS NOT NULL
     ";
     
     $project_stmt = $db->prepare($project_exists_query);
-    $project_stmt->execute([':project_id' => $project_id]);
+    $project_stmt->execute([$project_id]);
     $project_result = $project_stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$project_result) {
@@ -106,17 +106,13 @@ try {
             u.first_name, u.last_name
         FROM stage_payment_requests spr
         LEFT JOIN users u ON spr.homeowner_id = u.id
-        WHERE spr.project_id = :project_id 
-        AND spr.contractor_id = :contractor_id
+        WHERE spr.project_id = ? 
+        AND spr.contractor_id = ?
         ORDER BY spr.request_date DESC
     ";
     
     $payment_stmt = $db->prepare($payment_query);
-    $payment_stmt->execute([
-        ':project_id' => $project_id,
-        ':contractor_id' => $contractor_id
-    ]);
-    
+    $payment_stmt->execute([$project_id, $contractor_id]);
     $payment_requests = $payment_stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Format the payment requests

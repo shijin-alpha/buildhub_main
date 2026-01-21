@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechnicalDetailsModal Auto-Population Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .data-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .field-test {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .field-name {
+            font-weight: bold;
+            color: #495057;
+        }
+        .field-value {
+            color: #007bff;
+            font-family: monospace;
+        }
+        .field-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-empty {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .data-structure {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 TechnicalDetailsModal Auto-Population Test</h1>
+        <p>This test simulates the exact data flow from HousePlanDrawer to TechnicalDetailsModal to verify auto-population is working correctly.</p>
+        
+        <div class="test-section">
+            <h3>📊 Step 1: Fetch Layout Request Data</h3>
+            <button class="btn" onclick="fetchLayoutRequestData()">🔄 Fetch Layout Request Data</button>
+            <div id="layout-request-data"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🏠 Step 2: Simulate HousePlanDrawer Data Processing</h3>
+            <button class="btn" onclick="simulateHousePlanDrawerProcessing()">🏗️ Process Data (HousePlanDrawer)</button>
+            <div id="houseplan-drawer-processing"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 Step 3: Simulate TechnicalDetailsModal Auto-Population</h3>
+            <button class="btn btn-success" onclick="simulateTechnicalDetailsModal()">⚙️ Test Auto-Population (TechnicalDetailsModal)</button>
+            <div id="technical-details-modal"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ Step 4: Verification Results</h3>
+            <div id="verification-results"></div>
+        </div>
+    </div>
+
+    <script>
+        let layoutRequestData = null;
+        let housePlanDrawerData = null;
+        let technicalDetailsResults = null;
+
+        async function fetchLayoutRequestData() {
+            const container = document.getElementById('layout-request-data');
+            container.innerHTML = '<div class="warning">⏳ Fetching layout request data...</div>';
+            
+            try {
+                const response = await fetch('/buildhub/debug_layout_request_data.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    layoutRequestData = result;
+                    
+                    container.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Layout Request Data Fetched Successfully</h4>
+                            <p><strong>Layout Request ID:</strong> ${result.layout_request_id}</p>
+                        </div>
+                        <div class="data-display">
+                            <h4>📋 Key Database Fields:</h4>
+                            <div class="field-test">
+                                <span class="field-name">Plot Size:</span>
+                                <span class="field-value">${result.request_data.plot_size || 'N/A'}</span>
+                                <span class="field-status ${result.request_data.plot_size ? 'status-success' : 'status-empty'}">
+                                    ${result.request_data.plot_size ? '✓ Available' : '⚠ Missing'}
+                                </span>
+                            </div>
+                            <div class="field-test">
+                                <span class="field-name">Building Size:</span>
+                                <span class="field-value">${result.request_data.building_size || 'N/A'}</span>
+                                <span class="field-status ${result.request_data.building_size ? 'status-success' : 'status-empty'}">
+                                    ${result.request_data.building_size ? '✓ Available' : '⚠ Missing'}
+                                </span>
+                            </div>
+                            <div class="field-test">
+                                <span class="field-name">Budget Range:</span>
+                                <span class="field-value">${result.request_data.budget_range || 'N/A'}</span>
+                                <span class="field-status ${result.request_data.budget_range ? 'status-success' : 'status-empty'}">
+                                    ${result.request_data.budget_range ? '✓ Available' : '⚠ Missing'}
+                                </span>
+                            </div>
+                        </div>
+                        <details>
+                            <summary>🔍 View Full Database Response</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    container.innerHTML = `<div class="error">❌ Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        function simulateHousePlanDrawerProcessing() {
+            const container = document.getElementById('houseplan-drawer-processing');
+            
+            if (!layoutRequestData) {
+                container.innerHTML = '<div class="error">❌ Please fetch layout request data first</div>';
+                return;
+            }
+            
+            container.innerHTML = '<div class="warning">⏳ Simulating HousePlanDrawer data processing...</div>';
+            
+            // Simulate the HousePlanDrawer loadRequestInfo function
+            const request = layoutRequestData.request_data;
+            
+            // Parse requirements (as done in HousePlanDrawer)
+            let requirements = null;
+            if (request.requirements) {
+                try {
+                    requirements = typeof request.requirements === 'string' 
+                        ? JSON.parse(request.requirements) 
+                        : request.requirements;
+                } catch (e) {
+                    console.error('Error parsing requirements:', e);
+                }
+            }
+            
+            // Create the requirementsData structure (as set in HousePlanDrawer)
+            housePlanDrawerData = {
+                ...request,
+                homeowner_name: 'Test Client', // Simulated homeowner name
+                parsed_requirements: requirements
+            };
+            
+            console.log('HousePlanDrawer - Simulated requirementsData:', housePlanDrawerData);
+            
+            container.innerHTML = `
+                <div class="success">
+                    <h4>✅ HousePlanDrawer Processing Complete</h4>
+                    <p>Data structure prepared for TechnicalDetailsModal</p>
+                </div>
+                <div class="data-structure">
+                    <h4>🏗️ requirementsData Structure (passed to TechnicalDetailsModal):</h4>
+                    <div class="field-test">
+                        <span class="field-name">ID:</span>
+                        <span class="field-value">${housePlanDrawerData.id}</span>
+                        <span class="field-status status-success">✓ Set</span>
+                    </div>
+                    <div class="field-test">
+                        <span class="field-name">plot_size:</span>
+                        <span class="field-value">${housePlanDrawerData.plot_size || 'N/A'}</span>
+                        <span class="field-status ${housePlanDrawerData.plot_size ? 'status-success' : 'status-empty'}">
+                            ${housePlanDrawerData.plot_size ? '✓ Available' : '⚠ Missing'}
+                        </span>
+                    </div>
+                    <div class="field-test">
+                        <span class="field-name">building_size:</span>
+                        <span class="field-value">${housePlanDrawerData.building_size || 'N/A'}</span>
+                        <span class="field-status ${housePlanDrawerData.building_size ? 'status-success' : 'status-empty'}">
+                            ${housePlanDrawerData.building_size ? '✓ Available' : '⚠ Missing'}
+                        </span>
+                    </div>
+                    <div class="field-test">
+                        <span class="field-name">homeowner_name:</span>
+                        <span class="field-value">${housePlanDrawerData.homeowner_name}</span>
+                        <span class="field-status status-success">✓ Set</span>
+                    </div>
+                    <div class="field-test">
+                        <span class="field-name">parsed_requirements:</span>
+                        <span class="field-value">${housePlanDrawerData.parsed_requirements ? 'Object with ' + Object.keys(housePlanDrawerData.parsed_requirements).length + ' keys' : 'N/A'}</span>
+                        <span class="field-status ${housePlanDrawerData.parsed_requirements ? 'status-success' : 'status-empty'}">
+                            ${housePlanDrawerData.parsed_requirements ? '✓ Parsed' : '⚠ Missing'}
+                        </span>
+                    </div>
+                </div>
+                <details>
+                    <summary>🔍 View Full requirementsData Structure</summary>
+                    <pre>${JSON.stringify(housePlanDrawerData, null, 2)}</pre>
+                </details>
+            `;
+        }
+
+        function simulateTechnicalDetailsModal() {
+            const container = document.getElementById('technical-details-modal');
+            
+            if (!housePlanDrawerData) {
+                container.innerHTML = '<div class="error">❌ Please complete HousePlanDrawer processing first</div>';
+                return;
+            }
+            
+            container.innerHTML = '<div class="warning">⏳ Simulating TechnicalDetailsModal auto-population...</div>';
+            
+            // Simulate the TechnicalDetailsModal auto-population logic
+            const requestInfo = housePlanDrawerData; // This is what gets passed as requestInfo prop
+            const dataSource = requestInfo;
+            const updates = {};
+            
+            console.log('TechnicalDetailsModal - requestInfo received:', requestInfo);
+            
+            // Check multiple possible data sources for plot_size and building_size
+            let plotSizeValue = null;
+            let buildingSizeValue = null;
+            
+            // Try different paths where plot_size might be stored
+            if (dataSource.plot_size) {
+                plotSizeValue = dataSource.plot_size;
+                console.log('Found plot_size directly:', plotSizeValue);
+            } else if (dataSource.layout_request && dataSource.layout_request.plot_size) {
+                plotSizeValue = dataSource.layout_request.plot_size;
+                console.log('Found plot_size in layout_request:', plotSizeValue);
+            }
+            
+            // Try different paths where building_size might be stored
+            if (dataSource.building_size) {
+                buildingSizeValue = dataSource.building_size;
+                console.log('Found building_size directly:', buildingSizeValue);
+            } else if (dataSource.layout_request && dataSource.layout_request.building_size) {
+                buildingSizeValue = dataSource.layout_request.building_size;
+                console.log('Found building_size in layout_request:', buildingSizeValue);
+            }
+            
+            // Parse plot_size
+            if (plotSizeValue) {
+                const plotSize = plotSizeValue.toString().toLowerCase();
+                console.log('Parsing plot_size:', plotSize);
+                
+                if (plotSize.includes('x')) {
+                    // Format like "30x40"
+                    const dimensions = plotSize.split('x');
+                    if (dimensions.length === 2) {
+                        const width = parseFloat(dimensions[0].trim());
+                        const height = parseFloat(dimensions[1].replace(/[^0-9.]/g, ''));
+                        if (!isNaN(width) && !isNaN(height)) {
+                            const area = width * height;
+                            updates.site_area = area.toString();
+                            updates.land_area = area.toString();
+                            console.log('Parsed dimensions:', width, 'x', height, '=', area);
+                        }
+                    }
+                } else {
+                    // Format like "2000 sq ft"
+                    const area = parseFloat(plotSize.replace(/[^0-9.]/g, ''));
+                    if (!isNaN(area) && area > 0) {
+                        updates.site_area = area.toString();
+                        updates.land_area = area.toString();
+                        console.log('Parsed area:', area);
+                    }
+                }
+            }
+            
+            // Parse building_size
+            if (buildingSizeValue) {
+                const buildingSize = parseFloat(buildingSizeValue.toString().replace(/[^0-9.]/g, ''));
+                if (!isNaN(buildingSize) && buildingSize > 0) {
+                    updates.built_up_area = buildingSize.toString();
+                    updates.carpet_area = Math.round(buildingSize * 0.7).toString();
+                    console.log('Setting built_up_area to:', buildingSize);
+                }
+            }
+            
+            // Set default setbacks based on plot size
+            const plotSizeNum = parseFloat(updates.site_area || plotSizeValue || 0);
+            if (plotSizeNum > 0) {
+                if (plotSizeNum < 1000) {
+                    updates.setback_front = '3';
+                    updates.setback_rear = '3';
+                    updates.setback_left = '3';
+                    updates.setback_right = '3';
+                } else if (plotSizeNum < 2000) {
+                    updates.setback_front = '5';
+                    updates.setback_rear = '3';
+                    updates.setback_left = '3';
+                    updates.setback_right = '3';
+                } else if (plotSizeNum < 5000) {
+                    updates.setback_front = '10';
+                    updates.setback_rear = '5';
+                    updates.setback_left = '5';
+                    updates.setback_right = '5';
+                } else {
+                    updates.setback_front = '15';
+                    updates.setback_rear = '10';
+                    updates.setback_left = '10';
+                    updates.setback_right = '10';
+                }
+            }
+            
+            technicalDetailsResults = {
+                updates: updates,
+                plotSizeValue: plotSizeValue,
+                buildingSizeValue: buildingSizeValue,
+                dataSource: dataSource
+            };
+            
+            console.log('Auto-populated technical details:', updates);
+            
+            const hasUpdates = Object.keys(updates).length > 0;
+            
+            container.innerHTML = `
+                <div class="${hasUpdates ? 'success' : 'error'}">
+                    <h4>${hasUpdates ? '✅ Auto-Population Successful' : '❌ Auto-Population Failed'}</h4>
+                    <p>${hasUpdates ? `Successfully auto-populated ${Object.keys(updates).length} fields` : 'No fields were auto-populated'}</p>
+                </div>
+                <div class="data-display">
+                    <h4>🔧 Auto-Population Results:</h4>
+                    <div class="field-test">
+                        <span class="field-name">Data Source Found:</span>
+                        <span class="field-value">${dataSource ? 'Yes' : 'No'}</span>
+                        <span class="field-status ${dataSource ? 'status-success' : 'status-error'}">
+                            ${dataSource ? '✓ Available' : '✗ Missing'}
+                        </span>
+                    </div>
+                    <div class="field-test">
+                        <span class="field-name">Plot Size Value:</span>
+                        <span class="field-value">${plotSizeValue || 'N/A'}</span>
+                        <span class="field-status ${plotSizeValue ? 'status-success' : 'status-empty'}">
+                            ${plotSizeValue ? '✓ Found' : '⚠ Missing'}
+                        </span>
+                    </div>
+                    <div class="field-test">
+                        <span class="field-name">Building Size Value:</span>
+                        <span class="field-value">${buildingSizeValue || 'N/A'}</span>
+                        <span class="field-status ${buildingSizeValue ? 'status-success' : 'status-empty'}">
+                            ${buildingSizeValue ? '✓ Found' : '⚠ Missing'}
+                        </span>
+                    </div>
+                </div>
+                ${hasUpdates ? `
+                    <div class="data-display">
+                        <h4>📋 Auto-Populated Fields:</h4>
+                        ${Object.entries(updates).map(([key, value]) => `
+                            <div class="field-test">
+                                <span class="field-name">${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
+                                <span class="field-value">${value}</span>
+                                <span class="field-status status-success">✓ Set</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `
+                    <div class="error">
+                        <h4>❌ No Fields Auto-Populated</h4>
+                        <p>Available data source keys: ${dataSource ? Object.keys(dataSource).join(', ') : 'None'}</p>
+                    </div>
+                `}
+                <details>
+                    <summary>🔍 View Processing Details</summary>
+                    <pre>Input Data:
+requestInfo: ${JSON.stringify(requestInfo, null, 2)}
+
+Processing Results:
+plotSizeValue: ${plotSizeValue}
+buildingSizeValue: ${buildingSizeValue}
+updates: ${JSON.stringify(updates, null, 2)}</pre>
+                </details>
+            `;
+            
+            // Update verification results
+            updateVerificationResults();
+        }
+
+        function updateVerificationResults() {
+            const container = document.getElementById('verification-results');
+            
+            if (!layoutRequestData || !housePlanDrawerData || !technicalDetailsResults) {
+                container.innerHTML = '<div class="warning">⏳ Complete all steps above to see verification results</div>';
+                return;
+            }
+            
+            const expected = layoutRequestData.expected_auto_population;
+            const actual = technicalDetailsResults.updates;
+            
+            const fields = ['site_area', 'land_area', 'built_up_area', 'carpet_area'];
+            let allMatch = true;
+            let matchCount = 0;
+            
+            const comparisons = fields.map(field => {
+                const expectedValue = expected[field];
+                const actualValue = actual[field];
+                const match = expectedValue == actualValue; // Use loose equality for number/string comparison
+                
+                if (match) matchCount++;
+                if (!match) allMatch = false;
+                
+                return `
+                    <div class="field-test">
+                        <span class="field-name">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
+                        <span class="field-value">Expected: ${expectedValue || 'N/A'} | Actual: ${actualValue || 'N/A'}</span>
+                        <span class="field-status ${match ? 'status-success' : 'status-error'}">
+                            ${match ? '✓ Match' : '✗ Mismatch'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = `
+                <div class="${allMatch ? 'success' : (matchCount > 0 ? 'warning' : 'error')}">
+                    <h4>${allMatch ? '✅ All Tests Passed!' : (matchCount > 0 ? `⚠️ Partial Success (${matchCount}/${fields.length})` : '❌ All Tests Failed')}</h4>
+                    <p>${allMatch ? 'Auto-population is working correctly for all fields' : 
+                         matchCount > 0 ? `${matchCount} out of ${fields.length} fields are working correctly` : 
+                         'Auto-population is not working - check the data flow'}</p>
+                </div>
+                <div class="data-display">
+                    <h4>📊 Field-by-Field Comparison:</h4>
+                    ${comparisons}
+                </div>
+                <div class="data-display">
+                    <h4>🔍 Summary:</h4>
+                    <div class="field-test">
+                        <span class="field-name">Total Fields Tested:</span>
+                        <span class="field-value">${fields.length}</span>
+                        <span class="field-status status-success">✓</span>
+                    </div>
+                    <div class="field-test">
+                        <span class="field-name">Fields Matching:</span>
+                        <span class="field-value">${matchCount}</span>
+                        <span class="field-status ${matchCount === fields.length ? 'status-success' : matchCount > 0 ? 'status-empty' : 'status-error'}">
+                            ${matchCount === fields.length ? '✓ All' : matchCount > 0 ? '⚠ Partial' : '✗ None'}
+                        </span>
+                    </div>
+                    <div class="field-test">
+                        <span class="field-name">Success Rate:</span>
+                        <span class="field-value">${Math.round((matchCount / fields.length) * 100)}%</span>
+                        <span class="field-status ${matchCount === fields.length ? 'status-success' : matchCount > 0 ? 'status-empty' : 'status-error'}">
+                            ${matchCount === fields.length ? '✓ Perfect' : matchCount > 0 ? '⚠ Needs Work' : '✗ Failed'}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Auto-start the test sequence
+        setTimeout(() => {
+            fetchLayoutRequestData();
+        }, 1000);
+    </script>
+</body>
+</html>

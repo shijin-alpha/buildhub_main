@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Progress Display Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .progress-bar-large {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill-large {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .progress-percentage {
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .test-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-btn:hover {
+            background: #45a049;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .api-response {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 Frontend Progress Display Test</h1>
+        <p>Testing if the frontend correctly displays the 2% progress from the API.</p>
+        
+        <div class="controls">
+            <button class="test-btn" onclick="testAPI()">🔍 Test API Response</button>
+            <button class="test-btn" onclick="simulateFrontendCall()">⚛️ Simulate Frontend Call</button>
+            <button class="test-btn" onclick="testProgressBar()">📊 Test Progress Bar</button>
+        </div>
+        
+        <div id="status" class="status info">Ready to test...</div>
+        
+        <div class="test-container">
+            <h3>📊 Simulated Progress Bar (Should show 2%)</h3>
+            <div id="progress-display">
+                <div class="progress-header">
+                    <strong id="project-title">Overall Progress</strong>
+                    <span class="progress-percentage" id="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar-large">
+                    <div class="progress-fill-large" id="progress-fill" style="width: 0%; background-color: #f59e0b;"></div>
+                </div>
+                <div id="progress-details">No data loaded...</div>
+            </div>
+        </div>
+        
+        <div class="test-container">
+            <h3>🔍 API Response</h3>
+            <div id="api-response" class="api-response">No API call made yet...</div>
+        </div>
+        
+        <div class="test-container">
+            <h3>🧪 Frontend Logic Test</h3>
+            <div id="frontend-test" class="api-response">No frontend test run yet...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentProjectProgress = null;
+
+        async function testAPI() {
+            updateStatus('Testing API response...', 'info');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_project_current_progress.php?project_id=37', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('api-response').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success && data.data.current_progress > 0) {
+                    updateStatus(`✅ API working: Returns ${data.data.current_progress}% progress`, 'success');
+                    currentProjectProgress = data.data;
+                } else if (data.success && data.data.current_progress === 0) {
+                    updateStatus('⚠️ API returns 0% - still an issue', 'error');
+                } else {
+                    updateStatus(`❌ API failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ API error: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateFrontendCall() {
+            updateStatus('Simulating frontend loadCurrentProjectProgress call...', 'info');
+            
+            // This simulates the exact logic from EnhancedProgressUpdate.jsx
+            const loadCurrentProjectProgress = async (projectId) => {
+                try {
+                    const response = await fetch(`/buildhub/backend/api/contractor/get_project_current_progress.php?project_id=${projectId}`, {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            return data.data;
+                        } else {
+                            console.error('Failed to load current project progress:', data.message);
+                            return null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading current project progress:', error);
+                    return null;
+                }
+            };
+            
+            loadCurrentProjectProgress(37).then(data => {
+                if (data) {
+                    currentProjectProgress = data;
+                    
+                    const testResult = `
+Frontend Call Result:
+- Project ID: ${data.project_id}
+- Project Name: ${data.project_name}
+- Current Progress: ${data.current_progress}%
+- Latest Stage: ${data.latest_stage}
+- Has Updates: ${data.has_updates}
+- Total Updates: ${data.total_updates}
+
+This data should be used to update the progress bar.
+                    `;
+                    
+                    document.getElementById('frontend-test').textContent = testResult;
+                    updateStatus(`✅ Frontend call successful: ${data.current_progress}% progress`, 'success');
+                    
+                    // Update the progress bar
+                    updateProgressBar(data.current_progress, data.project_name);
+                } else {
+                    updateStatus('❌ Frontend call failed', 'error');
+                }
+            });
+        }
+
+        function testProgressBar() {
+            if (!currentProjectProgress) {
+                updateStatus('⚠️ No progress data - run API test first', 'error');
+                return;
+            }
+            
+            updateStatus('Testing progress bar display logic...', 'info');
+            
+            // This simulates the exact logic from the React component
+            const progress = currentProjectProgress.current_progress;
+            const projectName = currentProjectProgress.project_name;
+            
+            // Test the conditional logic from the component
+            const progressValue = currentProjectProgress ? 
+                currentProjectProgress.current_progress : 0;
+            
+            const progressColor = (() => {
+                if (progress >= 90) return '#10b981';
+                if (progress >= 50) return '#3b82f6';
+                return '#f59e0b';
+            })();
+            
+            updateProgressBar(progressValue, projectName, progressColor);
+            
+            const testLog = `
+Progress Bar Logic Test:
+- currentProjectProgress exists: ${!!currentProjectProgress}
+- progress value: ${progress}%
+- calculated progressValue: ${progressValue}%
+- color: ${progressColor}
+- project name: ${projectName}
+
+The progress bar should now show ${progressValue}% with color ${progressColor}
+            `;
+            
+            document.getElementById('frontend-test').textContent = testLog;
+            updateStatus(`✅ Progress bar updated to ${progressValue}%`, 'success');
+        }
+
+        function updateProgressBar(percentage, projectName, color = null) {
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercent = document.getElementById('progress-percent');
+            const progressDetails = document.getElementById('progress-details');
+            const projectTitle = document.getElementById('project-title');
+            
+            progressFill.style.width = `${percentage}%`;
+            progressPercent.textContent = `${percentage}%`;
+            
+            if (color) {
+                progressFill.style.backgroundColor = color;
+            } else {
+                // Default color logic
+                if (percentage >= 90) {
+                    progressFill.style.backgroundColor = '#10b981';
+                } else if (percentage >= 50) {
+                    progressFill.style.backgroundColor = '#3b82f6';
+                } else {
+                    progressFill.style.backgroundColor = '#f59e0b';
+                }
+            }
+            
+            if (projectName) {
+                projectTitle.textContent = projectName;
+            }
+            
+            progressDetails.innerHTML = `
+                <strong>Progress:</strong> ${percentage}% complete<br>
+                <strong>Status:</strong> ${percentage > 0 ? 'In Progress' : 'Not Started'}<br>
+                <strong>Last Updated:</strong> ${currentProjectProgress?.latest_update_date || 'N/A'}
+            `;
+        }
+
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testAPI();
+                setTimeout(() => {
+                    simulateFrontendCall();
+                    setTimeout(() => {
+                        testProgressBar();
+                    }, 1000);
+                }, 1000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

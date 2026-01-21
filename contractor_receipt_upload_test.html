@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Receipt Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .payment-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .upload-form {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .file-list {
+            margin: 10px 0;
+        }
+        .file-item {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 Contractor Receipt Upload Test</h1>
+        <p>This page allows contractors to test receipt upload functionality directly.</p>
+        
+        <div id="status" class="info">Loading contractor payments...</div>
+        
+        <div id="payments-list"></div>
+        
+        <div id="upload-form" class="upload-form" style="display: none;">
+            <h3>📤 Upload Receipt</h3>
+            <div id="selected-payment-info"></div>
+            
+            <form id="receiptForm">
+                <div class="form-group">
+                    <label for="transaction_reference">Transaction Reference *</label>
+                    <input type="text" id="transaction_reference" name="transaction_reference" 
+                           placeholder="Enter bank transfer reference number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment_date">Payment Date *</label>
+                    <input type="date" id="payment_date" name="payment_date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment_method">Payment Method</label>
+                    <select id="payment_method" name="payment_method">
+                        <option value="bank_transfer">🏦 Bank Transfer</option>
+                        <option value="upi">📱 UPI Payment</option>
+                        <option value="cash">💵 Cash Payment</option>
+                        <option value="cheque">📝 Cheque</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3" 
+                              placeholder="Any additional notes about the payment..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="receipt_files">Receipt Files *</label>
+                    <input type="file" id="receipt_files" name="receipt_files" 
+                           multiple accept="image/*,.pdf" required>
+                    <small>Select images or PDF files (max 10MB each)</small>
+                </div>
+                
+                <div id="file-list" class="file-list"></div>
+                
+                <div id="upload-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <p id="progress-text">Uploading...</p>
+                </div>
+                
+                <button type="submit" id="upload-btn" class="btn">📤 Upload Receipt</button>
+                <button type="button" id="cancel-btn" class="btn" onclick="cancelUpload()">❌ Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let selectedPayment = null;
+        let uploading = false;
+
+        // Load contractor payments on page load
+        window.addEventListener('load', async function() {
+            await checkSession();
+            await loadPayments();
+        });
+
+        async function checkSession() {
+            try {
+                updateStatus('Checking contractor session...', 'info');
+                
+                // Create a simple session check endpoint test
+                const response = await fetch('/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=29', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus('✅ Session is valid - contractor authenticated', 'success');
+                } else {
+                    updateStatus('❌ Session issue: ' + data.message, 'error');
+                    
+                    // Try to establish session by visiting a login-like endpoint
+                    updateStatus('Attempting to establish contractor session...', 'info');
+                    
+                    // This is a workaround - in real app, user would need to login
+                    const sessionResponse = await fetch('/buildhub/backend/api/contractor/get_payment_history.php?project_id=37', {
+                        credentials: 'include'
+                    });
+                    
+                    const sessionData = await sessionResponse.json();
+                    if (sessionData.success) {
+                        updateStatus('✅ Session established successfully', 'success');
+                    } else {
+                        updateStatus('❌ Could not establish session: ' + sessionData.message, 'error');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Session check error:', error);
+                updateStatus('Session check failed: ' + error.message, 'error');
+            }
+        }
+
+        async function loadPayments() {
+            try {
+                updateStatus('Loading contractor payments...', 'info');
+                
+                // First get contractor projects
+                const projectsResponse = await fetch('/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=29', {
+                    credentials: 'include'
+                });
+                
+                if (!projectsResponse.ok) {
+                    throw new Error('Failed to load projects');
+                }
+                
+                const projectsData = await projectsResponse.json();
+                
+                if (!projectsData.success || !projectsData.data.projects.length) {
+                    updateStatus('No projects found for contractor', 'error');
+                    return;
+                }
+                
+                // Get payment history for the first project
+                const project = projectsData.data.projects[0];
+                const paymentsResponse = await fetch(`/buildhub/backend/api/contractor/get_payment_history.php?project_id=${project.id}`, {
+                    credentials: 'include'
+                });
+                
+                if (!paymentsResponse.ok) {
+                    throw new Error('Failed to load payment history');
+                }
+                
+                const paymentsData = await paymentsResponse.json();
+                
+                if (paymentsData.success) {
+                    displayPayments(paymentsData.data.payment_requests);
+                    updateStatus(`Found ${paymentsData.data.payment_requests.length} payment requests`, 'success');
+                } else {
+                    updateStatus('Failed to load payments: ' + paymentsData.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                updateStatus('Error loading payments: ' + error.message, 'error');
+            }
+        }
+
+        function displayPayments(payments) {
+            const container = document.getElementById('payments-list');
+            
+            if (!payments || payments.length === 0) {
+                container.innerHTML = '<div class="info">No payment requests found</div>';
+                return;
+            }
+            
+            let html = '<h3>💰 Available Payment Requests</h3>';
+            
+            payments.forEach(payment => {
+                const canUpload = ['approved', 'paid'].includes(payment.status) && !payment.receipt_file_path;
+                const statusColor = payment.status === 'paid' ? '#28a745' : 
+                                   payment.status === 'approved' ? '#007bff' : 
+                                   payment.status === 'pending' ? '#ffc107' : '#dc3545';
+                
+                html += `
+                    <div class="payment-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4>${payment.stage_name} Stage</h4>
+                                <p><strong>Amount:</strong> ₹${payment.requested_amount.toLocaleString('en-IN')}</p>
+                                <p><strong>Status:</strong> <span style="color: ${statusColor};">${payment.status}</span></p>
+                                <p><strong>Homeowner:</strong> ${payment.homeowner_name || 'N/A'}</p>
+                                ${payment.receipt_file_path ? '<p><strong>Receipt:</strong> ✅ Uploaded</p>' : ''}
+                            </div>
+                            <div>
+                                ${canUpload ? 
+                                    `<button class="btn" onclick="selectPayment(${JSON.stringify(payment).replace(/"/g, '&quot;')})">📤 Upload Receipt</button>` :
+                                    `<button class="btn" disabled>${payment.receipt_file_path ? '✅ Receipt Uploaded' : '❌ Cannot Upload'}</button>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function selectPayment(payment) {
+            selectedPayment = payment;
+            
+            console.log('Selected payment:', payment);
+            console.log('Payment ID:', payment.id);
+            
+            // Show upload form
+            document.getElementById('upload-form').style.display = 'block';
+            
+            // Set default values
+            document.getElementById('payment_date').value = new Date().toISOString().split('T')[0];
+            
+            // Show payment info
+            document.getElementById('selected-payment-info').innerHTML = `
+                <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                    <h4>Selected Payment:</h4>
+                    <p><strong>Payment ID:</strong> ${payment.id}</p>
+                    <p><strong>Stage:</strong> ${payment.stage_name}</p>
+                    <p><strong>Amount:</strong> ₹${payment.requested_amount.toLocaleString('en-IN')}</p>
+                    <p><strong>Status:</strong> ${payment.status}</p>
+                </div>
+            `;
+            
+            // Scroll to form
+            document.getElementById('upload-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelUpload() {
+            selectedPayment = null;
+            document.getElementById('upload-form').style.display = 'none';
+            document.getElementById('receiptForm').reset();
+            document.getElementById('file-list').innerHTML = '';
+        }
+
+        // Handle file selection
+        document.getElementById('receipt_files').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            const fileList = document.getElementById('file-list');
+            
+            let html = '<h4>Selected Files:</h4>';
+            files.forEach((file, index) => {
+                html += `
+                    <div class="file-item">
+                        <span>${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                        <button type="button" onclick="removeFile(${index})" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px;">Remove</button>
+                    </div>
+                `;
+            });
+            
+            fileList.innerHTML = html;
+        });
+
+        // Handle form submission
+        document.getElementById('receiptForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!selectedPayment) {
+                updateStatus('No payment selected', 'error');
+                return;
+            }
+            
+            if (uploading) return;
+            
+            uploading = true;
+            document.getElementById('upload-btn').disabled = true;
+            document.getElementById('upload-progress').style.display = 'block';
+            
+            try {
+                const formData = new FormData();
+                formData.append('payment_id', selectedPayment.id);
+                formData.append('transaction_reference', document.getElementById('transaction_reference').value);
+                formData.append('payment_date', document.getElementById('payment_date').value);
+                formData.append('payment_method', document.getElementById('payment_method').value);
+                formData.append('notes', document.getElementById('notes').value);
+                
+                // Add files
+                const files = document.getElementById('receipt_files').files;
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('receipt_files[]', files[i]);
+                }
+                
+                // Debug: Log what we're sending
+                console.log('Sending FormData:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, value);
+                }
+                
+                // Try contractor API first
+                let response = await fetch('/buildhub/backend/api/contractor/upload_payment_receipt.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    const textResponse = await response.text();
+                    console.error('Non-JSON response:', textResponse);
+                    throw new Error('Server returned invalid response. Check if you are logged in as a contractor.');
+                }
+                
+                console.log('Contractor API response:', data);
+                
+                // If contractor API fails, try homeowner API
+                if (!data.success && (data.message.includes('not authenticated') || data.message.includes('access denied'))) {
+                    updateStatus('Contractor API failed, trying homeowner API...', 'info');
+                    
+                    response = await fetch('/buildhub/backend/api/homeowner/upload_payment_receipt.php', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+                    
+                    try {
+                        data = await response.json();
+                    } catch (jsonError) {
+                        const textResponse = await response.text();
+                        console.error('Non-JSON response from homeowner API:', textResponse);
+                        throw new Error('Both APIs returned invalid responses. Please check your login status.');
+                    }
+                    
+                    console.log('Homeowner API response:', data);
+                }
+                
+                if (data.success) {
+                    updateStatus('✅ Receipt uploaded successfully!', 'success');
+                    cancelUpload();
+                    loadPayments(); // Reload to show updated status
+                } else {
+                    updateStatus('❌ Failed to upload receipt: ' + data.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                updateStatus('❌ Upload error: ' + error.message, 'error');
+            } finally {
+                uploading = false;
+                document.getElementById('upload-btn').disabled = false;
+                document.getElementById('upload-progress').style.display = 'none';
+            }
+        });
+
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+
+        function removeFile(index) {
+            const fileInput = document.getElementById('receipt_files');
+            const dt = new DataTransfer();
+            
+            for (let i = 0; i < fileInput.files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(fileInput.files[i]);
+                }
+            }
+            
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+        }
+    </script>
+</body>
+</html>

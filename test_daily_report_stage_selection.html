@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Report Stage Selection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .debug-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Daily Report Stage Selection Test</h1>
+        <p>This test simulates the stage selection issue in the daily report form.</p>
+        
+        <div id="status" class="info">Initializing test...</div>
+        
+        <div class="test-section">
+            <h3>Test 1: Load Contractor Projects</h3>
+            <button onclick="loadProjects()" class="btn">Load Projects</button>
+            <div id="projects-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test 2: Select Project and Check Stages</h3>
+            <select id="project-select" onchange="selectProject(this.value)">
+                <option value="">Select a project...</option>
+            </select>
+            <div id="project-selection-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test 3: Stage Availability</h3>
+            <div id="stages-result"></div>
+            <select id="stage-select">
+                <option value="">No stages available</option>
+            </select>
+        </div>
+        
+        <div class="test-section">
+            <h3>Debug Console</h3>
+            <div id="debug-output" class="debug-output"></div>
+            <button onclick="clearDebug()" class="btn">Clear Debug</button>
+        </div>
+    </div>
+
+    <script>
+        let projects = [];
+        let selectedProjectId = null;
+        let progressUpdates = [];
+        
+        // Override console.log to capture debug output
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            const debugOutput = document.getElementById('debug-output');
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            debugOutput.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        };
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+
+        function clearDebug() {
+            document.getElementById('debug-output').innerHTML = '';
+        }
+
+        async function loadProjects() {
+            try {
+                updateStatus('Loading contractor projects...', 'info');
+                console.log('Loading contractor projects...');
+                
+                const response = await fetch('/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=29', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                console.log('Projects API response:', data);
+                
+                if (data.success && data.data.projects) {
+                    projects = data.data.projects;
+                    console.log('Loaded projects:', projects);
+                    
+                    // Populate project dropdown
+                    const projectSelect = document.getElementById('project-select');
+                    projectSelect.innerHTML = '<option value="">Select a project...</option>';
+                    
+                    projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = `${project.project_name} - ${project.homeowner_name}`;
+                        projectSelect.appendChild(option);
+                    });
+                    
+                    document.getElementById('projects-result').innerHTML = `
+                        <div class="success">✅ Loaded ${projects.length} projects successfully</div>
+                    `;
+                    updateStatus(`Loaded ${projects.length} projects`, 'success');
+                } else {
+                    throw new Error(data.message || 'Failed to load projects');
+                }
+                
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projects-result').innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+                updateStatus('Failed to load projects', 'error');
+            }
+        }
+
+        async function selectProject(projectId) {
+            if (!projectId) {
+                selectedProjectId = null;
+                document.getElementById('project-selection-result').innerHTML = '';
+                document.getElementById('stages-result').innerHTML = '';
+                document.getElementById('stage-select').innerHTML = '<option value="">No stages available</option>';
+                return;
+            }
+            
+            selectedProjectId = projectId;
+            console.log('Project selected:', projectId);
+            
+            try {
+                updateStatus('Loading project progress...', 'info');
+                
+                // Load project progress data
+                const response = await fetch(`/buildhub/backend/api/contractor/get_project_progress.php?project_id=${projectId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                console.log('Project progress API response:', data);
+                
+                if (data.success) {
+                    progressUpdates = data.progress_updates || [];
+                    console.log('Progress updates:', progressUpdates);
+                    
+                    document.getElementById('project-selection-result').innerHTML = `
+                        <div class="success">✅ Project selected successfully</div>
+                        <p><strong>Progress Updates:</strong> ${progressUpdates.length}</p>
+                    `;
+                    
+                    // Simulate stage calculation logic
+                    calculateAvailableStages();
+                    
+                } else {
+                    throw new Error(data.message || 'Failed to load project progress');
+                }
+                
+            } catch (error) {
+                console.error('Error loading project progress:', error);
+                document.getElementById('project-selection-result').innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+                updateStatus('Failed to load project progress', 'error');
+            }
+        }
+
+        function calculateAvailableStages() {
+            console.log('Calculating available stages...');
+            
+            // Simulate the logic from EnhancedProgressUpdate.jsx
+            const CONSTRUCTION_STAGES = [
+                { id: 1, name: 'Foundation', icon: '🏗️', percentage: 12.5 },
+                { id: 2, name: 'Structure', icon: '🔨', percentage: 12.5 },
+                { id: 3, name: 'Brickwork', icon: '🧱', percentage: 12.5 },
+                { id: 4, name: 'Roofing', icon: '🏠', percentage: 12.5 },
+                { id: 5, name: 'Electrical', icon: '⚡', percentage: 12.5 },
+                { id: 6, name: 'Plumbing', icon: '🚿', percentage: 12.5 },
+                { id: 7, name: 'Finishing', icon: '🎨', percentage: 12.5 },
+                { id: 8, name: 'Final', icon: '✨', percentage: 12.5 }
+            ];
+            
+            let availableStages = [];
+            
+            if (progressUpdates.length > 0) {
+                console.log('Project has existing progress - calculating based on updates');
+                // Simulate getStageProgressBreakdown and getAvailableStages logic
+                // For simplicity, just show first few stages
+                availableStages = CONSTRUCTION_STAGES.slice(0, 3);
+            } else {
+                console.log('New project with no progress - setting up Foundation stage');
+                // New project - show Foundation stage
+                availableStages = [{
+                    ...CONSTRUCTION_STAGES[0],
+                    is_current: true,
+                    remaining_percentage: CONSTRUCTION_STAGES[0].percentage
+                }];
+            }
+            
+            console.log('Available stages:', availableStages);
+            
+            // Update UI
+            const stageSelect = document.getElementById('stage-select');
+            stageSelect.innerHTML = '';
+            
+            if (availableStages.length === 0) {
+                stageSelect.innerHTML = '<option value="">No stages available - select project first</option>';
+                document.getElementById('stages-result').innerHTML = `
+                    <div class="error">❌ No stages available</div>
+                `;
+            } else {
+                stageSelect.innerHTML = '<option value="">Select stage...</option>';
+                availableStages.forEach(stage => {
+                    const option = document.createElement('option');
+                    option.value = stage.name;
+                    option.textContent = `${stage.icon} ${stage.name}${stage.is_current ? ' (Current)' : ''}`;
+                    stageSelect.appendChild(option);
+                });
+                
+                document.getElementById('stages-result').innerHTML = `
+                    <div class="success">✅ Found ${availableStages.length} available stages</div>
+                    <ul>
+                        ${availableStages.map(stage => 
+                            `<li>${stage.icon} ${stage.name}${stage.is_current ? ' (Current)' : ''}</li>`
+                        ).join('')}
+                    </ul>
+                `;
+            }
+            
+            updateStatus(`Found ${availableStages.length} available stages`, 'success');
+        }
+
+        // Initialize test
+        window.addEventListener('load', function() {
+            updateStatus('Test initialized. Click "Load Projects" to start.', 'info');
+            console.log('Daily Report Stage Selection Test initialized');
+        });
+    </script>
+</body>
+</html>

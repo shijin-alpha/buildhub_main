@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once '../../config/database.php';
+require_once __DIR__ . '/../../config/database.php';
 
 try {
     $database = new Database();
@@ -26,6 +26,15 @@ try {
         exit;
     }
     
+    // Debug: Log raw input and FILES
+    error_log("=== HOMEOWNER RECEIPT UPLOAD DEBUG ===");
+    error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+    error_log("CONTENT_TYPE: " . ($_SERVER['CONTENT_TYPE'] ?? 'NOT SET'));
+    error_log("POST data: " . json_encode($_POST));
+    error_log("FILES data: " . json_encode($_FILES));
+    error_log("Raw POST count: " . count($_POST));
+    error_log("Raw FILES count: " . count($_FILES));
+    
     // Get form data
     $payment_id = $_POST['payment_id'] ?? null;
     $transaction_reference = $_POST['transaction_reference'] ?? '';
@@ -33,8 +42,15 @@ try {
     $payment_method = $_POST['payment_method'] ?? 'bank_transfer';
     $notes = $_POST['notes'] ?? '';
     
+    // Debug: Log received data
+    error_log("Homeowner receipt upload - Received POST data: " . json_encode($_POST));
+    error_log("Homeowner receipt upload - Payment ID: " . ($payment_id ?? 'NULL'));
+    error_log("Homeowner receipt upload - Session user_id: " . ($homeowner_id ?? 'NULL'));
+    
     // Validation
     if (!$payment_id) {
+        error_log("Homeowner receipt upload - Payment ID validation failed - POST: " . json_encode($_POST));
+        error_log("Homeowner receipt upload - FILES: " . json_encode($_FILES));
         echo json_encode(['success' => false, 'message' => 'Payment ID is required']);
         exit;
     }
@@ -60,13 +76,38 @@ try {
     ]);
     $payment = $paymentStmt->fetch(PDO::FETCH_ASSOC);
     
+    error_log("Payment lookup - ID: $payment_id, Homeowner: $homeowner_id, Found: " . ($payment ? 'YES' : 'NO'));
+    
     if (!$payment) {
+        // Debug: Check if payment exists at all
+        $debugStmt = $db->prepare("
+            SELECT id, homeowner_id, contractor_id, requested_amount, status 
+            FROM stage_payment_requests 
+            WHERE id = :payment_id
+        ");
+        $debugStmt->execute([':payment_id' => $payment_id]);
+        $debugPayment = $debugStmt->fetch(PDO::FETCH_ASSOC);
+        
+        error_log("Debug - Payment exists: " . ($debugPayment ? 'YES' : 'NO'));
+        if ($debugPayment) {
+            error_log("Debug - Payment details: " . json_encode($debugPayment));
+        }
+        
+        // List all payments for this homeowner
+        $debugStmt2 = $db->prepare("
+            SELECT id, homeowner_id, status FROM stage_payment_requests 
+            WHERE homeowner_id = :homeowner_id LIMIT 5
+        ");
+        $debugStmt2->execute([':homeowner_id' => $homeowner_id]);
+        $userPayments = $debugStmt2->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Debug - Homeowner $homeowner_id payments: " . json_encode($userPayments));
+        
         echo json_encode(['success' => false, 'message' => 'Payment not found or access denied']);
         exit;
     }
     
     // Create uploads directory if it doesn't exist
-    $uploadDir = '../../uploads/payment_receipts/' . $payment_id . '/';
+    $uploadDir = __DIR__ . '/../../uploads/payment_receipts/' . $payment_id . '/';
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
@@ -122,9 +163,11 @@ try {
     }
     
     if (empty($uploadedFiles)) {
+        error_log("Homeowner receipt upload - No files uploaded. FILES count: " . count($_FILES));
+        error_log("Homeowner receipt upload - Upload errors: " . json_encode($uploadErrors));
         echo json_encode([
             'success' => false,
-            'message' => 'No files were uploaded successfully',
+            'message' => 'No files were uploaded successfully. Please check file types and size limits.',
             'errors' => $uploadErrors
         ]);
         exit;

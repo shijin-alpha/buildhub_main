@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Report Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        .form-input,
+        .form-select {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .date-range-info {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .date-range-info .info-header {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .date-range-info .info-text {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .options-section {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 16px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+
+        .option-item:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+        }
+
+        .option-content {
+            flex: 1;
+        }
+
+        .option-title {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-description {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            margin-left: 16px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e7eb;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #4f46e5;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .action-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 32px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            background: white;
+            color: #4f46e5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab:not(.active) {
+            color: #6b7280;
+        }
+
+        .tab:not(.active):hover {
+            color: #374151;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid,
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-container {
+                padding: 24px;
+            }
+
+            .header {
+                padding: 24px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+
+            .action-info {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>
+                    <span>📊</span>
+                    Progress Report Generator
+                </h1>
+                <p>Create comprehensive construction progress reports with detailed analytics and documentation</p>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="tabs">
+                <div class="tab active">📊 Generate New Report</div>
+                <div class="tab">📋 Sent Reports History</div>
+            </div>
+
+            <form id="reportForm">
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span>📋</span>
+                        Report Configuration
+                    </h2>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Report Type <span class="required">*</span>
+                            </label>
+                            <select class="form-select" id="reportType" required>
+                                <option value="daily">📅 Daily Report</option>
+                                <option value="weekly">📈 Weekly Summary</option>
+                                <option value="monthly">📋 Monthly Report</option>
+                            </select>
+                            <div class="help-text">Detailed daily progress with work tracking and photos</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Project <span class="required">*</span>
+                            </label>
+                            <select class="form-select" id="project" required>
+                                <option value="">Choose a project...</option>
+                                <option value="37">SHIJIN THOMAS MCA2024-2026 Construction</option>
+                                <option value="36">SHIJIN THOMAS MCA2024-2026 Construction</option>
+                            </select>
+                            <div class="help-text">Select the construction project for this report</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span>📅</span>
+                        Report Period
+                    </h2>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Start Date <span class="required">*</span>
+                            </label>
+                            <input type="date" class="form-input" id="startDate" value="2026-01-19" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                End Date <span class="required">*</span>
+                            </label>
+                            <input type="date" class="form-input" id="endDate" value="2026-01-19" required>
+                        </div>
+                    </div>
+
+                    <div class="date-range-info">
+                        <div class="info-header">Report Period: 19 January 2026 to 19 January 2026</div>
+                        <div class="info-text">Daily reports cover a single day of construction activity</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <span>⚙️</span>
+                        Report Options
+                    </h2>
+                    
+                    <div class="options-section">
+                        <div class="options-grid">
+                            <div class="option-item">
+                                <div class="option-content">
+                                    <div class="option-title">
+                                        <span>📸</span>
+                                        Include Photos
+                                    </div>
+                                    <div class="option-description">Automatically include geo-tagged construction photos</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="includePhotos" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="option-item">
+                                <div class="option-content">
+                                    <div class="option-title">
+                                        <span>👷</span>
+                                        Labour Analysis
+                                    </div>
+                                    <div class="option-description">Include detailed worker productivity and wage analysis</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="includeLabour" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="option-item">
+                                <div class="option-content">
+                                    <div class="option-title">
+                                        <span>💰</span>
+                                        Cost Breakdown
+                                    </div>
+                                    <div class="option-description">Include material costs and budget analysis</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="includeCosts" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="option-item">
+                                <div class="option-content">
+                                    <div class="option-title">
+                                        <span>🛡️</span>
+                                        Quality Metrics
+                                    </div>
+                                    <div class="option-description">Include safety compliance and quality scores</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="includeQuality" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="button" class="btn btn-secondary">
+                            <span>📋</span>
+                            View History
+                        </button>
+                    </div>
+                    
+                    <div class="action-info">
+                        <div>Estimated time: 30-60 seconds</div>
+                        <div>Report format: PDF & Web View</div>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="btn btn-primary" id="generateBtn">
+                            <span>📊</span>
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and interaction
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const project = document.getElementById('project').value;
+            if (!project) {
+                alert('Please select a project');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span>⏳</span> Generating...';
+            
+            // Simulate report generation
+            setTimeout(() => {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<span>📊</span> Generate Report';
+                alert('Report generated successfully!');
+            }, 2000);
+        });
+
+        // Update date range info when dates change
+        function updateDateRangeInfo() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reportType = document.getElementById('reportType').value;
+            
+            if (startDate && endDate) {
+                const start = new Date(startDate).toLocaleDateString('en-US', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+                const end = new Date(endDate).toLocaleDateString('en-US', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+                
+                const infoHeader = document.querySelector('.info-header');
+                const infoText = document.querySelector('.info-text');
+                
+                infoHeader.textContent = `Report Period: ${start} to ${end}`;
+                
+                let description = '';
+                switch(reportType) {
+                    case 'daily':
+                        description = 'Daily reports cover a single day of construction activity';
+                        break;
+                    case 'weekly':
+                        description = 'Weekly summaries provide comprehensive progress overview';
+                        break;
+                    case 'monthly':
+                        description = 'Monthly reports include detailed analytics and trends';
+                        break;
+                }
+                infoText.textContent = description;
+            }
+        }
+
+        document.getElementById('startDate').addEventListener('change', updateDateRangeInfo);
+        document.getElementById('endDate').addEventListener('change', updateDateRangeInfo);
+        document.getElementById('reportType').addEventListener('change', updateDateRangeInfo);
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

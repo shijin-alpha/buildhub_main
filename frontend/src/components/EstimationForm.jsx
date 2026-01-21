@@ -61,13 +61,42 @@ const EstimationForm = ({ isOpen, onClose, inboxItem, onSubmit }) => {
   // Initialize form data from inbox item
   useEffect(() => {
     if (inboxItem && isOpen) {
+      console.log('🔍 EstimationForm: Initializing with inbox item:', inboxItem);
+      
       const payload = inboxItem.payload || {};
-      setFormData(prev => ({
-        ...prev,
+      const layoutRequestDetails = inboxItem.layout_request_details || {};
+      const parsedRequirements = inboxItem.parsed_requirements || {};
+      
+      console.log('🔍 EstimationForm: Payload:', payload);
+      console.log('🔍 EstimationForm: Layout request details:', layoutRequestDetails);
+      console.log('🔍 EstimationForm: Parsed requirements:', parsedRequirements);
+      
+      const newFormData = {
+        ...formData,
         project_name: payload.plan_name || `Project for ${inboxItem.homeowner_name}`,
         client_name: inboxItem.homeowner_name || '',
-        location: payload.location || ''
-      }));
+        location: layoutRequestDetails.location || payload.location || '',
+        timeline: layoutRequestDetails.timeline || inboxItem.timeline || '90 days',
+        // Add site details
+        plot_size: inboxItem.plot_size || layoutRequestDetails.plot_size || '',
+        building_size: inboxItem.building_size || layoutRequestDetails.building_size || '',
+        budget_range: inboxItem.budget_range || layoutRequestDetails.budget_range || '',
+        num_floors: inboxItem.num_floors || layoutRequestDetails.num_floors || '',
+        orientation: inboxItem.orientation || layoutRequestDetails.orientation || '',
+        site_considerations: inboxItem.site_considerations || layoutRequestDetails.site_considerations || '',
+        material_preferences: inboxItem.material_preferences || layoutRequestDetails.material_preferences || '',
+        budget_allocation: inboxItem.budget_allocation || layoutRequestDetails.budget_allocation || '',
+        preferred_style: inboxItem.preferred_style || layoutRequestDetails.preferred_style || '',
+        plot_shape: parsedRequirements.plot_shape || '',
+        topography: parsedRequirements.topography || '',
+        development_laws: parsedRequirements.development_laws || '',
+        family_needs: parsedRequirements.family_needs || '',
+        rooms: parsedRequirements.rooms || '',
+        aesthetic: parsedRequirements.aesthetic || ''
+      };
+      
+      console.log('🔍 EstimationForm: Setting form data:', newFormData);
+      setFormData(newFormData);
     }
   }, [inboxItem, isOpen]);
 
@@ -242,6 +271,13 @@ const EstimationForm = ({ isOpen, onClose, inboxItem, onSubmit }) => {
                 <span className="nav-title">Basic Info</span>
               </button>
               <button 
+                className={`nav-item ${activeSection === 'site' ? 'active' : ''}`} 
+                onClick={() => scrollToSection('site')}
+              >
+                <span className="nav-icon">🏗️</span>
+                <span className="nav-title">Site Details</span>
+              </button>
+              <button 
                 className={`nav-item ${activeSection === 'materials' ? 'active' : ''}`} 
                 onClick={() => scrollToSection('materials')}
               >
@@ -339,6 +375,117 @@ const EstimationForm = ({ isOpen, onClose, inboxItem, onSubmit }) => {
                         onChange={(e) => handleInputChange(null, null, 'timeline', e.target.value)}
                         placeholder="e.g., 90 days"
                       />
+                    </div>
+                    <div className="input-group">
+                      <label>Plot Size</label>
+                      <input
+                        type="text"
+                        value={formData.plot_size}
+                        onChange={(e) => handleInputChange(null, null, 'plot_size', e.target.value)}
+                        placeholder="e.g., 2500 sq ft"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Building Size</label>
+                      <input
+                        type="text"
+                        value={formData.building_size}
+                        onChange={(e) => handleInputChange(null, null, 'building_size', e.target.value)}
+                        placeholder="e.g., 1800 sq ft"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Site Details Section */}
+              <div className="form-section" id="section-site">
+                <h3 className="section-title">
+                  <span className="section-icon">🏗️</span>
+                  Site & Project Details
+                </h3>
+                <div className="section-content">
+                  <div className="site-details-grid">
+                    <div className="detail-group">
+                      <h4>📐 Site Specifications</h4>
+                      <div className="detail-row">
+                        <label>Plot Size:</label>
+                        <span>{formData.plot_size || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Building Size:</label>
+                        <span>{formData.building_size || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Number of Floors:</label>
+                        <span>{formData.num_floors || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Plot Shape:</label>
+                        <span>{formData.plot_shape || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Topography:</label>
+                        <span>{formData.topography || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Orientation:</label>
+                        <span>{formData.orientation || 'Not specified'}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="detail-group">
+                      <h4>💰 Budget & Timeline</h4>
+                      <div className="detail-row">
+                        <label>Budget Range:</label>
+                        <span>{formData.budget_range || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Budget Allocation:</label>
+                        <span>{formData.budget_allocation || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Timeline:</label>
+                        <span>{formData.timeline || 'Not specified'}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="detail-group">
+                      <h4>🎨 Design Preferences</h4>
+                      <div className="detail-row">
+                        <label>Preferred Style:</label>
+                        <span>{formData.preferred_style || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Aesthetic:</label>
+                        <span>{formData.aesthetic || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Material Preferences:</label>
+                        <span>{formData.material_preferences || 'Not specified'}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="detail-group">
+                      <h4>🏠 Requirements</h4>
+                      <div className="detail-row">
+                        <label>Family Needs:</label>
+                        <span>{formData.family_needs || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Rooms:</label>
+                        <span>{formData.rooms || 'Not specified'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <label>Development Laws:</label>
+                        <span>{formData.development_laws || 'Not specified'}</span>
+                      </div>
+                      {formData.site_considerations && (
+                        <div className="detail-row">
+                          <label>Site Considerations:</label>
+                          <span>{formData.site_considerations}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Payment History UI Overflow Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .mock-history-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        .mock-stage-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            min-width: 0;
+        }
+        .mock-stage-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            flex: 1;
+            min-width: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .mock-completion {
+            font-size: 12px;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .mock-receipt-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+            background: white;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #bbdefb;
+            margin-bottom: 8px;
+            min-width: 0;
+        }
+        .mock-receipt-label {
+            font-size: 11px;
+            color: #1565c0;
+            text-transform: uppercase;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .mock-receipt-value {
+            font-size: 12px;
+            color: #1976d2;
+            font-weight: 500;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 200px;
+            flex: 1;
+            min-width: 0;
+            text-align: right;
+        }
+        .mock-transaction-ref {
+            font-family: monospace;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+        .mock-file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        .mock-file-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .mock-file-details {
+            flex: 1;
+            min-width: 0;
+        }
+        .mock-file-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.3;
+            max-width: 100%;
+        }
+        .mock-file-size {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .mock-view-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .mock-notes {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            margin-top: 10px;
+        }
+        .mock-notes-text {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        .responsive-test {
+            resize: horizontal;
+            overflow: auto;
+            border: 2px dashed #007bff;
+            padding: 10px;
+            min-width: 300px;
+            max-width: 100%;
+        }
+        .width-indicator {
+            background: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .mock-receipt-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+            .mock-receipt-value {
+                text-align: left;
+                max-width: 100%;
+            }
+            .mock-file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .mock-view-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Payment History UI Overflow Fix Test</h1>
+        <p>This test demonstrates the fixes for UI overflow issues in the payment history component.</p>
+
+        <div class="test-section">
+            <h3>✅ Test 1: Long Transaction Reference Numbers</h3>
+            <div class="mock-history-item">
+                <div class="mock-stage-info">
+                    <div class="mock-stage-name">🏗️ Foundation Stage</div>
+                    <div class="mock-completion">20% Complete</div>
+                </div>
+                
+                <div class="mock-receipt-item">
+                    <div class="mock-receipt-label">Transaction Reference:</div>
+                    <div class="mock-receipt-value mock-transaction-ref">1222222222222222222222222222222222</div>
+                </div>
+                
+                <div class="mock-receipt-item">
+                    <div class="mock-receipt-label">Payment Method:</div>
+                    <div class="mock-receipt-value">🏦 Bank Transfer</div>
+                </div>
+                
+                <div class="mock-receipt-item">
+                    <div class="mock-receipt-label">Payment Date:</div>
+                    <div class="mock-receipt-value">20/1/2026</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Test 2: Long File Names</h3>
+            <div class="mock-history-item">
+                <div class="mock-file-item">
+                    <div class="mock-file-icon">🖼️</div>
+                    <div class="mock-file-details">
+                        <div class="mock-file-name">682b722c0cd605f66e0aa48b85a4a7a0_very_long_filename_that_should_wrap_properly.jpg</div>
+                        <div class="mock-file-size">0.06 MB</div>
+                    </div>
+                    <button class="mock-view-btn">👁️ View</button>
+                </div>
+                
+                <div class="mock-file-item">
+                    <div class="mock-file-icon">📄</div>
+                    <div class="mock-file-details">
+                        <div class="mock-file-name">payment_receipt_foundation_stage_extremely_long_filename_with_many_details_2026_01_20.pdf</div>
+                        <div class="mock-file-size">1.2 MB</div>
+                    </div>
+                    <button class="mock-view-btn">👁️ View</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Test 3: Long Homeowner Notes</h3>
+            <div class="mock-history-item">
+                <div class="mock-notes">
+                    <strong>Homeowner Notes:</strong>
+                    <p class="mock-notes-text">Receipt Upload Notes: Receipt Upload Notes: This is a very long note that contains repetitive text and should wrap properly without overflowing the container boundaries. The text should break at appropriate points and maintain readability across different screen sizes.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Test 4: Responsive Behavior</h3>
+            <p>Drag the right edge of the container below to test responsive behavior:</p>
+            <div class="responsive-test">
+                <div class="width-indicator">Resize me horizontally →</div>
+                <div class="mock-history-item">
+                    <div class="mock-stage-info">
+                        <div class="mock-stage-name">🏗️ Foundation Stage with Long Name</div>
+                        <div class="mock-completion">20% Complete</div>
+                    </div>
+                    
+                    <div class="mock-receipt-item">
+                        <div class="mock-receipt-label">Transaction Reference:</div>
+                        <div class="mock-receipt-value mock-transaction-ref">NEFT123456789012345678901234567890</div>
+                    </div>
+                    
+                    <div class="mock-file-item">
+                        <div class="mock-file-icon">🖼️</div>
+                        <div class="mock-file-details">
+                            <div class="mock-file-name">very_long_receipt_filename_that_should_wrap.jpg</div>
+                            <div class="mock-file-size">0.06 MB</div>
+                        </div>
+                        <button class="mock-view-btn">👁️ View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 Mobile View Simulation</h3>
+            <p>The layout below simulates mobile view (max-width: 480px):</p>
+            <div style="max-width: 480px; border: 2px solid #007bff; padding: 10px;">
+                <div class="mock-history-item">
+                    <div class="mock-stage-info">
+                        <div class="mock-stage-name">🏗️ Foundation Stage</div>
+                        <div class="mock-completion">20% Complete</div>
+                    </div>
+                    
+                    <div class="mock-receipt-item">
+                        <div class="mock-receipt-label">Transaction Reference:</div>
+                        <div class="mock-receipt-value mock-transaction-ref">1222222222222222222222222222222222</div>
+                    </div>
+                    
+                    <div class="mock-file-item">
+                        <div class="mock-file-icon">🖼️</div>
+                        <div class="mock-file-details">
+                            <div class="mock-file-name">682b722c0cd605f66e0aa48b85a4a7a0.jpg</div>
+                            <div class="mock-file-size">0.06 MB</div>
+                        </div>
+                        <button class="mock-view-btn">👁️ View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Summary of Fixes Applied</h3>
+            <ul>
+                <li><strong>Word Wrapping:</strong> Added <code>word-wrap: break-word</code> and <code>overflow-wrap: break-word</code> to all text containers</li>
+                <li><strong>Flex Layout:</strong> Added <code>min-width: 0</code> to flex items to allow proper shrinking</li>
+                <li><strong>Transaction References:</strong> Used monospace font and smaller size for better display</li>
+                <li><strong>File Names:</strong> Proper wrapping with line-height adjustment</li>
+                <li><strong>Responsive Design:</strong> Stack elements vertically on mobile devices</li>
+                <li><strong>Container Constraints:</strong> Added max-width constraints to prevent overflow</li>
+                <li><strong>Button Layout:</strong> Full-width buttons on mobile for better usability</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Add dynamic width indicator
+        function updateWidthIndicator() {
+            const container = document.querySelector('.responsive-test');
+            const indicator = container.querySelector('.width-indicator');
+            const width = container.offsetWidth;
+            indicator.textContent = `Container Width: ${width}px - Resize me horizontally →`;
+        }
+
+        // Update on resize
+        window.addEventListener('resize', updateWidthIndicator);
+        updateWidthIndicator();
+
+        // Add resize observer for the container
+        if (window.ResizeObserver) {
+            const resizeObserver = new ResizeObserver(updateWidthIndicator);
+            resizeObserver.observe(document.querySelector('.responsive-test'));
+        }
+    </script>
+</body>
+</html>

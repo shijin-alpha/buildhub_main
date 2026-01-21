@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Site Details in Estimation Form Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0369a1;
+            background: #f0f9ff;
+            border: 1px solid #7dd3fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .data-display {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .detail-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .detail-card h4 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+            font-size: 16px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 500;
+            color: #475569;
+        }
+        .detail-value {
+            color: #1e293b;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏗️ Enhanced Site Details in Estimation Form Test</h1>
+    
+    <div class="info">
+        <h3>Enhancement Overview</h3>
+        <p><strong>Issue Fixed:</strong> Contractors were not receiving complete site details when creating estimates</p>
+        <p><strong>Solution:</strong> Enhanced the data flow from layout_requests → contractor inbox → estimation form</p>
+        <ul>
+            <li>✅ Enhanced send_to_contractor.php to include layout_request_details</li>
+            <li>✅ Enhanced get_inbox.php to extract all site details</li>
+            <li>✅ Enhanced EstimationForm to display comprehensive site information</li>
+            <li>✅ Added new "Site Details" section with organized information display</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>1. Test Layout Request Data Retrieval</h2>
+        <p>Test fetching layout request details for a homeowner to see what site information is available:</p>
+        
+        <button class="btn" onclick="testLayoutRequestData()">Fetch Layout Request Data</button>
+        
+        <div id="layout-request-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Enhanced Contractor Inbox</h2>
+        <p>Test the enhanced contractor inbox API to see if site details are properly included:</p>
+        
+        <button class="btn" onclick="testContractorInbox()">Test Contractor Inbox API</button>
+        
+        <div id="contractor-inbox-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Site Details Data Flow</h2>
+        <p>Simulate the complete data flow from homeowner request to contractor estimation form:</p>
+        
+        <button class="btn" onclick="testCompleteDataFlow()">Test Complete Data Flow</button>
+        
+        <div id="data-flow-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Site Details Display Preview</h2>
+        <p>Preview how the site details will appear in the estimation form:</p>
+        
+        <button class="btn" onclick="showSiteDetailsPreview()">Show Site Details Preview</button>
+        
+        <div id="site-details-preview"></div>
+    </div>
+
+    <script>
+        // Mock session data
+        const mockUser = {
+            id: 28, // SHIJIN THOMAS
+            first_name: 'Shijin',
+            last_name: 'Thomas',
+            email: 'shijin@example.com'
+        };
+        
+        sessionStorage.setItem('user', JSON.stringify(mockUser));
+
+        async function testLayoutRequestData() {
+            const resultsDiv = document.getElementById('layout-request-result');
+            resultsDiv.innerHTML = '<p>Fetching layout request data...</p>';
+            
+            try {
+                // Simulate fetching layout request data
+                const response = await fetch('/buildhub/backend/api/homeowner/get_layout_requests.php', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                console.log('Layout requests result:', result);
+                
+                if (result.success && result.requests && result.requests.length > 0) {
+                    const latestRequest = result.requests[0];
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Layout Request Data Retrieved Successfully!</h3>
+                            <p><strong>Latest Request ID:</strong> ${latestRequest.id}</p>
+                            <p><strong>Homeowner:</strong> ${latestRequest.homeowner_name || 'N/A'}</p>
+                        </div>
+                        
+                        <div class="detail-grid">
+                            <div class="detail-card">
+                                <h4>📐 Site Specifications</h4>
+                                <div class="detail-row">
+                                    <span class="detail-label">Plot Size:</span>
+                                    <span class="detail-value">${latestRequest.plot_size || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Building Size:</span>
+                                    <span class="detail-value">${latestRequest.building_size || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Number of Floors:</span>
+                                    <span class="detail-value">${latestRequest.num_floors || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Orientation:</span>
+                                    <span class="detail-value">${latestRequest.orientation || 'Not specified'}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-card">
+                                <h4>💰 Budget & Timeline</h4>
+                                <div class="detail-row">
+                                    <span class="detail-label">Budget Range:</span>
+                                    <span class="detail-value">${latestRequest.budget_range || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Timeline:</span>
+                                    <span class="detail-value">${latestRequest.timeline || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Location:</span>
+                                    <span class="detail-value">${latestRequest.location || 'Not specified'}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-card">
+                                <h4>🎨 Design Preferences</h4>
+                                <div class="detail-row">
+                                    <span class="detail-label">Preferred Style:</span>
+                                    <span class="detail-value">${latestRequest.preferred_style || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Material Preferences:</span>
+                                    <span class="detail-value">${latestRequest.material_preferences || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Budget Allocation:</span>
+                                    <span class="detail-value">${latestRequest.budget_allocation || 'Not specified'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4>Raw Data:</h4>
+                        <div class="data-display">${JSON.stringify(latestRequest, null, 2)}</div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>No Layout Requests Found</h3>
+                            <p>No layout requests available for testing. Please create a layout request first.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Layout request test error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Test Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testContractorInbox() {
+            const resultsDiv = document.getElementById('contractor-inbox-result');
+            resultsDiv.innerHTML = '<p>Testing contractor inbox API...</p>';
+            
+            try {
+                // Test with contractor ID 37 (Shijin Thomas as contractor)
+                const response = await fetch('/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                console.log('Contractor inbox result:', result);
+                
+                if (result.success && result.items && result.items.length > 0) {
+                    const latestItem = result.items[0];
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Enhanced Contractor Inbox Working! ✅</h3>
+                            <p><strong>Items Found:</strong> ${result.items.length}</p>
+                            <p><strong>Latest Item ID:</strong> ${latestItem.id}</p>
+                            <p><strong>Homeowner:</strong> ${latestItem.homeowner_name || 'N/A'}</p>
+                        </div>
+                        
+                        <h4>Enhanced Site Details Available:</h4>
+                        <div class="detail-grid">
+                            <div class="detail-card">
+                                <h4>📐 Site Specifications</h4>
+                                <div class="detail-row">
+                                    <span class="detail-label">Plot Size:</span>
+                                    <span class="detail-value">${latestItem.plot_size || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Building Size:</span>
+                                    <span class="detail-value">${latestItem.building_size || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Number of Floors:</span>
+                                    <span class="detail-value">${latestItem.num_floors || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Orientation:</span>
+                                    <span class="detail-value">${latestItem.orientation || 'Not specified'}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-card">
+                                <h4>💰 Budget & Timeline</h4>
+                                <div class="detail-row">
+                                    <span class="detail-label">Budget Range:</span>
+                                    <span class="detail-value">${latestItem.budget_range || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Timeline:</span>
+                                    <span class="detail-value">${latestItem.timeline || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Budget Allocation:</span>
+                                    <span class="detail-value">${latestItem.budget_allocation || 'Not specified'}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-card">
+                                <h4>🎨 Design Preferences</h4>
+                                <div class="detail-row">
+                                    <span class="detail-label">Preferred Style:</span>
+                                    <span class="detail-value">${latestItem.preferred_style || 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Material Preferences:</span>
+                                    <span class="detail-value">${latestItem.material_preferences || 'Not specified'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4>Raw Inbox Item Data:</h4>
+                        <div class="data-display">${JSON.stringify(latestItem, null, 2)}</div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>No Contractor Inbox Items Found</h3>
+                            <p>No inbox items available for testing. Please send a layout to a contractor first.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Contractor inbox test error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Test Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testCompleteDataFlow() {
+            const resultsDiv = document.getElementById('data-flow-result');
+            resultsDiv.innerHTML = '<p>Testing complete data flow...</p>';
+            
+            try {
+                // Step 1: Get layout requests
+                const layoutResponse = await fetch('/buildhub/backend/api/homeowner/get_layout_requests.php', {
+                    credentials: 'include'
+                });
+                const layoutResult = await layoutResponse.json();
+                
+                // Step 2: Get contractor inbox
+                const inboxResponse = await fetch('/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37', {
+                    credentials: 'include'
+                });
+                const inboxResult = await inboxResponse.json();
+                
+                let dataFlowStatus = [];
+                
+                // Check layout requests
+                if (layoutResult.success && layoutResult.requests && layoutResult.requests.length > 0) {
+                    const request = layoutResult.requests[0];
+                    dataFlowStatus.push({
+                        step: 'Layout Request Data',
+                        status: 'success',
+                        details: `Found ${layoutResult.requests.length} requests with site details`,
+                        data: {
+                            plot_size: request.plot_size,
+                            building_size: request.building_size,
+                            budget_range: request.budget_range,
+                            timeline: request.timeline,
+                            num_floors: request.num_floors,
+                            orientation: request.orientation,
+                            material_preferences: request.material_preferences,
+                            preferred_style: request.preferred_style
+                        }
+                    });
+                } else {
+                    dataFlowStatus.push({
+                        step: 'Layout Request Data',
+                        status: 'error',
+                        details: 'No layout requests found'
+                    });
+                }
+                
+                // Check contractor inbox
+                if (inboxResult.success && inboxResult.items && inboxResult.items.length > 0) {
+                    const item = inboxResult.items[0];
+                    dataFlowStatus.push({
+                        step: 'Contractor Inbox Data',
+                        status: 'success',
+                        details: `Found ${inboxResult.items.length} inbox items with enhanced site details`,
+                        data: {
+                            plot_size: item.plot_size,
+                            building_size: item.building_size,
+                            budget_range: item.budget_range,
+                            timeline: item.timeline,
+                            num_floors: item.num_floors,
+                            orientation: item.orientation,
+                            material_preferences: item.material_preferences,
+                            preferred_style: item.preferred_style,
+                            layout_request_details: item.layout_request_details ? 'Available' : 'Not available'
+                        }
+                    });
+                } else {
+                    dataFlowStatus.push({
+                        step: 'Contractor Inbox Data',
+                        status: 'error',
+                        details: 'No contractor inbox items found'
+                    });
+                }
+                
+                // Generate results
+                let resultsHTML = '<div class="success"><h3>Data Flow Test Results</h3></div>';
+                
+                dataFlowStatus.forEach((step, index) => {
+                    const statusClass = step.status === 'success' ? 'success' : 'error';
+                    resultsHTML += `
+                        <div class="${statusClass}">
+                            <h4>Step ${index + 1}: ${step.step}</h4>
+                            <p><strong>Status:</strong> ${step.status.toUpperCase()}</p>
+                            <p><strong>Details:</strong> ${step.details}</p>
+                            ${step.data ? `
+                                <h5>Available Data:</h5>
+                                <div class="data-display">${JSON.stringify(step.data, null, 2)}</div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                resultsDiv.innerHTML = resultsHTML;
+                
+            } catch (error) {
+                console.error('Complete data flow test error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Data Flow Test Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showSiteDetailsPreview() {
+            const resultsDiv = document.getElementById('site-details-preview');
+            
+            // Mock data for preview
+            const mockSiteDetails = {
+                plot_size: '2500 sq ft',
+                building_size: '1800 sq ft',
+                num_floors: '2',
+                plot_shape: 'Rectangular',
+                topography: 'Flat',
+                orientation: 'North-facing',
+                budget_range: '30-50 Lakhs',
+                budget_allocation: 'Eco-friendly focus',
+                timeline: '12-18 months',
+                preferred_style: 'Contemporary',
+                aesthetic: 'Modern',
+                material_preferences: 'Granite, Wood, Natural Stone, Glass',
+                family_needs: 'Garden/Outdoor space, Kids play area, Security features',
+                rooms: 'Master bedroom, 2 bedrooms, 2 bathrooms, Kitchen, Living room',
+                development_laws: 'Standard municipal regulations',
+                site_considerations: 'Good ventilation, natural lighting'
+            };
+            
+            resultsDiv.innerHTML = `
+                <div class="success">
+                    <h3>Site Details Preview - As Shown in Estimation Form</h3>
+                    <p>This is how the enhanced site details will appear in the contractor's estimation form:</p>
+                </div>
+                
+                <div class="detail-grid">
+                    <div class="detail-card">
+                        <h4>📐 Site Specifications</h4>
+                        <div class="detail-row">
+                            <span class="detail-label">Plot Size:</span>
+                            <span class="detail-value">${mockSiteDetails.plot_size}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Building Size:</span>
+                            <span class="detail-value">${mockSiteDetails.building_size}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Number of Floors:</span>
+                            <span class="detail-value">${mockSiteDetails.num_floors}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Plot Shape:</span>
+                            <span class="detail-value">${mockSiteDetails.plot_shape}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Topography:</span>
+                            <span class="detail-value">${mockSiteDetails.topography}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Orientation:</span>
+                            <span class="detail-value">${mockSiteDetails.orientation}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h4>💰 Budget & Timeline</h4>
+                        <div class="detail-row">
+                            <span class="detail-label">Budget Range:</span>
+                            <span class="detail-value">${mockSiteDetails.budget_range}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Budget Allocation:</span>
+                            <span class="detail-value">${mockSiteDetails.budget_allocation}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Timeline:</span>
+                            <span class="detail-value">${mockSiteDetails.timeline}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h4>🎨 Design Preferences</h4>
+                        <div class="detail-row">
+                            <span class="detail-label">Preferred Style:</span>
+                            <span class="detail-value">${mockSiteDetails.preferred_style}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Aesthetic:</span>
+                            <span class="detail-value">${mockSiteDetails.aesthetic}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Material Preferences:</span>
+                            <span class="detail-value">${mockSiteDetails.material_preferences}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h4>🏠 Requirements</h4>
+                        <div class="detail-row">
+                            <span class="detail-label">Family Needs:</span>
+                            <span class="detail-value">${mockSiteDetails.family_needs}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Rooms:</span>
+                            <span class="detail-value">${mockSiteDetails.rooms}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Development Laws:</span>
+                            <span class="detail-value">${mockSiteDetails.development_laws}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Site Considerations:</span>
+                            <span class="detail-value">${mockSiteDetails.site_considerations}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info">
+                    <h4>Benefits of Enhanced Site Details:</h4>
+                    <ul>
+                        <li>✅ Contractors get complete project information upfront</li>
+                        <li>✅ More accurate cost estimates based on actual requirements</li>
+                        <li>✅ Better understanding of homeowner preferences and constraints</li>
+                        <li>✅ Reduced back-and-forth communication for clarifications</li>
+                        <li>✅ Professional presentation of project details</li>
+                        <li>✅ Organized display makes it easy to reference during estimation</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Auto-run preview on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, showing site details preview...');
+            showSiteDetailsPreview();
+        });
+    </script>
+</body>
+</html>

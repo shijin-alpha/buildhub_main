@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Payment Requests Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .header p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #007bff;
+            font-size: 18px;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        
+        .success h3 {
+            color: #28a745;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        
+        .info h3 {
+            color: #17a2b8;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        
+        .warning h3 {
+            color: #ffc107;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .feature-list li:before {
+            content: "✅ ";
+            margin-right: 8px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .api-test {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        .api-result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+        
+        .budget-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .budget-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+        }
+        
+        .budget-card.original {
+            border-color: #28a745;
+        }
+        
+        .budget-card.current {
+            border-color: #007bff;
+        }
+        
+        .budget-card.overrun {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .budget-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .budget-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💳 Custom Payment Requests System</h1>
+            <p>Testing the new custom payment request feature for additional work and budget overruns</p>
+        </div>
+
+        <div class="test-section success">
+            <h3>✅ Implementation Complete</h3>
+            <p>The custom payment request system has been successfully implemented, allowing contractors to request additional payments beyond the original estimate for extra work, material cost increases, and unforeseen expenses.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 New Features Added</h3>
+            
+            <h4>1. Database Structure:</h4>
+            <ul class="feature-list">
+                <li>Created <code>custom_payment_requests</code> table</li>
+                <li>Added fields for title, reason, amount, urgency, category</li>
+                <li>Includes verification and payment tracking</li>
+                <li>Proper indexing for performance</li>
+            </ul>
+            
+            <h4>2. Backend APIs:</h4>
+            <ul class="feature-list">
+                <li><code>submit_custom_payment_request.php</code> - Submit custom payment requests</li>
+                <li><code>get_project_budget_summary.php</code> - Get budget analysis and overrun tracking</li>
+                <li>Validation and security checks</li>
+                <li>Budget calculation logic</li>
+            </ul>
+            
+            <h4>3. Frontend Components:</h4>
+            <ul class="feature-list">
+                <li><code>CustomPaymentRequestForm.jsx</code> - Complete form for custom requests</li>
+                <li>Budget summary display with overrun tracking</li>
+                <li>Urgency levels and categorization</li>
+                <li>Real-time budget calculations</li>
+            </ul>
+        </div>
+
+        <div class="test-section info">
+            <h3>💰 Budget Tracking Logic</h3>
+            
+            <h4>Budget Calculation Formula:</h4>
+            <div class="code-block">Original Estimate: ₹10,69,745 (from accepted estimate)
+Stage Payments: ₹2,13,949 (Foundation payment)
+Custom Payments: ₹50,000 (Additional electrical work)
+
+Total Project Cost = Stage Payments + Custom Payments
+                  = ₹2,13,949 + ₹50,000 = ₹2,63,949
+
+Budget Difference = Total Project Cost - Original Estimate
+                  = ₹2,63,949 - ₹10,69,745 = -₹8,05,796 (Under budget)
+
+If Total > Original: Budget Overrun
+If Total < Original: Budget Underrun</div>
+
+            <h4>Budget Display Example:</h4>
+            <div class="budget-demo">
+                <div class="budget-card original">
+                    <div class="budget-label">Original Estimate</div>
+                    <div class="budget-amount">₹10,69,745</div>
+                </div>
+                <div class="budget-card current">
+                    <div class="budget-label">Current Total Cost</div>
+                    <div class="budget-amount">₹2,63,949</div>
+                </div>
+                <div class="budget-card overrun">
+                    <div class="budget-label">Budget Status</div>
+                    <div class="budget-amount">Under Budget<br>₹8,05,796</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Custom Payment Request Features</h3>
+            
+            <h4>Request Categories:</h4>
+            <ul>
+                <li><strong>Material Cost Increase</strong> - Price changes in materials</li>
+                <li><strong>Additional Work Required</strong> - Extra work beyond original scope</li>
+                <li><strong>Site Conditions</strong> - Unexpected site issues</li>
+                <li><strong>Design Changes</strong> - Client-requested modifications</li>
+                <li><strong>Unforeseen Issues</strong> - Problems discovered during construction</li>
+                <li><strong>Equipment Rental</strong> - Additional equipment needs</li>
+                <li><strong>Labor Overtime</strong> - Extra labor costs</li>
+                <li><strong>Permit & Fees</strong> - Additional regulatory costs</li>
+                <li><strong>Quality Upgrades</strong> - Better materials/finishes</li>
+                <li><strong>Other</strong> - Miscellaneous expenses</li>
+            </ul>
+            
+            <h4>Urgency Levels:</h4>
+            <ul>
+                <li>🟢 <strong>Low Priority</strong> - Can wait for next payment cycle</li>
+                <li>🟡 <strong>Medium Priority</strong> - Standard processing time</li>
+                <li>🟠 <strong>High Priority</strong> - Needs quick approval</li>
+                <li>🔴 <strong>Urgent</strong> - Critical for project continuation</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 How It Works</h3>
+            
+            <h4>Contractor Workflow:</h4>
+            <ol>
+                <li><strong>Navigate to Custom Payment:</strong> Go to Progress Updates → Custom Payment</li>
+                <li><strong>Select Project:</strong> Choose the project needing additional payment</li>
+                <li><strong>View Budget Summary:</strong> See current budget status and overrun</li>
+                <li><strong>Fill Request Details:</strong> Title, reason, amount, description</li>
+                <li><strong>Set Priority:</strong> Choose urgency level and category</li>
+                <li><strong>Submit Request:</strong> Send to homeowner for approval</li>
+            </ol>
+            
+            <h4>Budget Tracking:</h4>
+            <ol>
+                <li><strong>Original Estimate:</strong> Base cost from accepted estimate</li>
+                <li><strong>Stage Payments:</strong> Regular construction stage payments</li>
+                <li><strong>Custom Payments:</strong> Additional payments for extra work</li>
+                <li><strong>Total Cost:</strong> Sum of all payments requested/paid</li>
+                <li><strong>Budget Analysis:</strong> Overrun/underrun calculation and percentage</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 API Endpoints</h3>
+            
+            <h4>1. Submit Custom Payment Request:</h4>
+            <div class="code-block">POST /buildhub/backend/api/contractor/submit_custom_payment_request.php
+
+Body:
+{
+  "project_id": "37",
+  "homeowner_id": "28",
+  "request_title": "Additional Electrical Work",
+  "request_reason": "Need to install additional power outlets...",
+  "requested_amount": 25000,
+  "work_description": "Installation of 6 additional power outlets...",
+  "urgency_level": "medium",
+  "category": "Additional Work Required"
+}</div>
+
+            <h4>2. Get Project Budget Summary:</h4>
+            <div class="code-block">GET /buildhub/backend/api/contractor/get_project_budget_summary.php?contractor_id=29&project_id=37
+
+Response:
+{
+  "success": true,
+  "data": {
+    "budget_summary": {
+      "original_estimate": 1069745,
+      "total_project_cost": 263949,
+      "budget_difference": -805796,
+      "budget_overrun": 0,
+      "budget_underrun": 805796,
+      "overrun_percentage": 0
+    },
+    "payment_breakdown": {
+      "stage_payments": {...},
+      "custom_payments": {...}
+    }
+  }
+}</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Testing Instructions</h3>
+            
+            <h4>To Test Custom Payment Requests:</h4>
+            <ol>
+                <li><strong>Login as Contractor:</strong> Use contractor ID 29</li>
+                <li><strong>Navigate to Custom Payment:</strong> Progress Updates → Custom Payment</li>
+                <li><strong>Select Project 37:</strong> Choose the project with Foundation payment</li>
+                <li><strong>View Budget Summary:</strong> See original estimate vs current cost</li>
+                <li><strong>Fill Custom Request:</strong> Add title, reason, amount, description</li>
+                <li><strong>Set Category & Priority:</strong> Choose appropriate options</li>
+                <li><strong>Submit Request:</strong> Send to homeowner</li>
+                <li><strong>Check Budget Update:</strong> See how total cost changes</li>
+            </ol>
+        </div>
+
+        <div class="test-section warning">
+            <h3>⚠️ Important Notes</h3>
+            <ul>
+                <li><strong>Budget Tracking:</strong> System tracks original estimate vs total project cost</li>
+                <li><strong>Overrun Calculation:</strong> Shows percentage over/under original budget</li>
+                <li><strong>Separate from Stage Payments:</strong> Custom payments are additional to regular stage payments</li>
+                <li><strong>Homeowner Approval:</strong> All custom requests require homeowner approval</li>
+                <li><strong>Real-time Updates:</strong> Budget summary updates after each request</li>
+            </ul>
+        </div>
+
+        <div class="test-section success">
+            <h3>🎉 Benefits</h3>
+            <ul class="feature-list">
+                <li>Transparent budget tracking with overrun visibility</li>
+                <li>Separate handling of regular vs custom payments</li>
+                <li>Detailed categorization and priority system</li>
+                <li>Real-time budget analysis and reporting</li>
+                <li>Professional request management workflow</li>
+                <li>Clear communication between contractor and homeowner</li>
+            </ul>
+        </div>
+
+        <div class="api-test">
+            <h3>🔧 Quick API Test</h3>
+            <p>Test the budget summary API:</p>
+            <button class="btn btn-success" onclick="testBudgetSummary()">Test Budget Summary API</button>
+            <div id="apiResult" class="api-result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testBudgetSummary() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Testing budget summary API...';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_project_budget_summary.php?contractor_id=29&project_id=37');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const budget = data.data.budget_summary;
+                    const payments = data.data.payment_breakdown;
+                    
+                    resultDiv.textContent = `✅ Budget Summary API Test Successful!
+
+Project: ${data.data.project_info.project_name}
+Homeowner: ${data.data.project_info.homeowner_name}
+
+💰 Budget Analysis:
+Original Estimate: ₹${budget.original_estimate.toLocaleString()}
+Current Total Cost: ₹${budget.total_project_cost.toLocaleString()}
+Budget Difference: ₹${budget.budget_difference.toLocaleString()}
+Status: ${budget.budget_difference >= 0 ? 'Over Budget' : 'Under Budget'}
+${budget.overrun_percentage > 0 ? `Overrun: ${budget.overrun_percentage.toFixed(1)}%` : ''}
+
+📊 Payment Breakdown:
+Stage Payments: ₹${payments.stage_payments.total_amount.toLocaleString()} (${payments.stage_payments.total_requests} requests)
+Custom Payments: ₹${payments.custom_payments.total_amount.toLocaleString()} (${payments.custom_payments.total_requests} requests)
+Total Paid: ₹${payments.totals.total_paid.toLocaleString()}
+Total Pending: ₹${payments.totals.total_pending.toLocaleString()}
+
+The custom payment system is working correctly!`;
+                } else {
+                    resultDiv.textContent = `❌ API Error: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ Network Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

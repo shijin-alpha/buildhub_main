@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concept Preview Display Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .concept-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .concept-image {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .status-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            fontSize: 0.75rem;
+            font-weight: bold;
+            color: white;
+        }
+        .status-completed { background: #10b981; }
+        .status-processing { background: #f59e0b; }
+        .status-generating { background: #f59e0b; }
+        .status-failed { background: #dc2626; }
+        .concept-details {
+            padding: 16px;
+        }
+        .concept-title {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        .concept-description {
+            margin: 0 0 12px 0;
+            font-size: 0.85rem;
+            color: #666;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .loading-placeholder {
+            text-align: center;
+            color: #666;
+        }
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Concept Preview Display Test</h1>
+        <p>Testing how concept previews will appear in the dashboard</p>
+        
+        <div id="conceptGrid" class="concept-grid">
+            <div style="text-align: center; padding: 40px;">
+                <div class="loading-spinner"></div>
+                <p>Loading concept previews...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the API call and display logic
+        async function loadConceptPreviews() {
+            try {
+                // Simulate API response with our test data
+                const mockResponse = {
+                    success: true,
+                    previews: [
+                        {
+                            id: 1,
+                            status: 'completed',
+                            image_url: '/buildhub/uploads/conceptual_images/real_ai_exterior_concept_20260118_184541.png',
+                            homeowner_name: 'Test Homeowner',
+                            original_description: 'A modern two-story house with clean lines, large windows, and white exterior walls'
+                        },
+                        {
+                            id: 2,
+                            status: 'completed',
+                            image_url: '/buildhub/uploads/conceptual_images/real_ai_exterior_concept_20260118_182931.png',
+                            homeowner_name: 'Test Homeowner',
+                            original_description: 'A traditional Kerala-style house with sloped roof, wooden elements, and natural materials'
+                        },
+                        {
+                            id: 3,
+                            status: 'completed',
+                            image_url: '/buildhub/uploads/conceptual_images/real_ai_exterior_concept_20260118_180828.png',
+                            homeowner_name: 'Test Homeowner',
+                            original_description: 'A contemporary villa with glass facades, minimalist design, and open spaces'
+                        },
+                        {
+                            id: 4,
+                            status: 'processing',
+                            image_url: null,
+                            homeowner_name: 'Test Homeowner',
+                            original_description: 'A colonial-style bungalow with pillars, verandas, and classic architectural elements'
+                        },
+                        {
+                            id: 5,
+                            status: 'generating',
+                            image_url: null,
+                            homeowner_name: 'Test Homeowner',
+                            original_description: 'An eco-friendly house with solar panels, green walls, and sustainable materials'
+                        }
+                    ]
+                };
+
+                displayConceptPreviews(mockResponse.previews);
+            } catch (error) {
+                console.error('Error loading concept previews:', error);
+                document.getElementById('conceptGrid').innerHTML = '<p>Error loading concept previews</p>';
+            }
+        }
+
+        function displayConceptPreviews(previews) {
+            const grid = document.getElementById('conceptGrid');
+            
+            if (previews.length === 0) {
+                grid.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666; grid-column: 1 / -1;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🏗️</div>
+                        <p>No concept previews generated yet.</p>
+                        <p>Create your first concept preview using the form above.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = previews.map(preview => `
+                <div class="concept-card">
+                    <div class="concept-image" style="${preview.status === 'completed' && preview.image_url ? `background-image: url(${preview.image_url})` : 'background: #f3f4f6'}">
+                        ${preview.status === 'processing' || preview.status === 'generating' ? `
+                            <div class="loading-placeholder">
+                                <div class="loading-spinner"></div>
+                                <p>Generating...</p>
+                            </div>
+                        ` : preview.status === 'failed' ? `
+                            <div class="loading-placeholder" style="color: #dc2626;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+                                <p>Generation Failed</p>
+                            </div>
+                        ` : !preview.image_url ? `
+                            <div class="loading-placeholder">
+                                <div style="font-size: 24px; margin-bottom: 8px;">🖼️</div>
+                                <p>No Image</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="status-badge status-${preview.status}">
+                            ${preview.status === 'completed' ? 'Ready' : 
+                              preview.status === 'failed' ? 'Failed' : 'Processing'}
+                        </div>
+                    </div>
+                    
+                    <div class="concept-details">
+                        <h4 class="concept-title">
+                            ${preview.homeowner_name || 'Client'} - Concept Preview
+                        </h4>
+                        <p class="concept-description">
+                            ${preview.original_description}
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load previews when page loads
+        loadConceptPreviews();
+
+        // Simulate polling for updates (like the React component will do)
+        setInterval(() => {
+            console.log('Polling for concept preview updates...');
+            // In real app, this would call the API again
+        }, 5000);
+    </script>
+</body>
+</html>

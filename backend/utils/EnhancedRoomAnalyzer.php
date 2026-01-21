@@ -4,6 +4,7 @@ require_once __DIR__ . '/ImageFeatureExtractor.php';
 require_once __DIR__ . '/VisualAttributeMapper.php';
 require_once __DIR__ . '/BasicImageAnalyzer.php';
 require_once __DIR__ . '/AIServiceConnector.php';
+require_once __DIR__ . '/RoomImageRelevanceValidator.php';
 
 /**
  * Enhanced Room Analyzer
@@ -118,6 +119,34 @@ class EnhancedRoomAnalyzer {
                     'async_image_generation' => $async_image_job // Job ID for polling
                 ]
             ];
+            
+            // Stage 7: NEW - Validate image relevance to room type and options
+            if ($ai_enhancement['ai_enhancement_available'] && 
+                isset($ai_enhancement['conceptual_visualization']['success']) && 
+                $ai_enhancement['conceptual_visualization']['success']) {
+                
+                $relevance_validation = RoomImageRelevanceValidator::validateImageRelevance(
+                    $room_type,
+                    $ai_enhancement['detected_objects'],
+                    $ai_enhancement,
+                    $improvement_notes
+                );
+                
+                $analysis['image_relevance_validation'] = $relevance_validation;
+                
+                // Add validation warnings if image is not relevant
+                if (!$relevance_validation['is_relevant']) {
+                    $analysis['validation_warnings'] = [
+                        'image_relevance_issue' => true,
+                        'confidence_score' => $relevance_validation['confidence_score'],
+                        'issues' => $relevance_validation['issues_found'],
+                        'recommendations' => $relevance_validation['recommendations']
+                    ];
+                    
+                    // Log validation failure for monitoring
+                    error_log("Room image relevance validation failed for room_type: $room_type, score: {$relevance_validation['confidence_score']}");
+                }
+            }
             
             return $analysis;
             

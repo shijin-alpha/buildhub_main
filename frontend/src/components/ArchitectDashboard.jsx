@@ -88,6 +88,12 @@ const ArchitectDashboard = () => {
   const [selectedRequestForUpload, setSelectedRequestForUpload] = useState(null);
   const [technicalSubmissionLoading, setTechnicalSubmissionLoading] = useState(false);
 
+  // Concept Preview Generation state
+  const [conceptPreviewText, setConceptPreviewText] = useState('');
+  const [conceptGenerationLoading, setConceptGenerationLoading] = useState(false);
+  const [conceptPreviews, setConceptPreviews] = useState([]);
+  const [selectedProjectForConcept, setSelectedProjectForConcept] = useState('');
+
   useEffect(() => {
     // Get user data from session
     const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -110,9 +116,33 @@ const ArchitectDashboard = () => {
         fetchMyLibrary();
         fetchMyProfile();
         fetchContractorHousePlans();
+        fetchConceptPreviews();
       })();
     });
   }, []);
+
+  // Poll for concept preview updates
+  useEffect(() => {
+    let pollInterval;
+    
+    // Check if there are any processing/generating concepts
+    const hasProcessingConcepts = conceptPreviews.some(
+      preview => preview.status === 'processing' || preview.status === 'generating'
+    );
+    
+    if (hasProcessingConcepts) {
+      // Poll every 5 seconds for updates
+      pollInterval = setInterval(() => {
+        fetchConceptPreviews();
+      }, 5000);
+    }
+    
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [conceptPreviews]);
 
   const fetchLayoutRequests = async () => {
     setLoading(true);
@@ -155,7 +185,8 @@ const ArchitectDashboard = () => {
         fetchMyDesigns(),
         fetchMyLibrary(),
         fetchMyProfile(),
-        fetchContractorHousePlans()
+        fetchContractorHousePlans(),
+        fetchConceptPreviews()
       ]);
       toast.success('Dashboard refreshed successfully');
     } catch (error) {
@@ -339,6 +370,18 @@ const ArchitectDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching designs:', error);
+    }
+  };
+
+  const fetchConceptPreviews = async () => {
+    try {
+      const response = await fetch('/buildhub/backend/api/architect/get_concept_previews.php');
+      const result = await response.json();
+      if (result.success) {
+        setConceptPreviews(result.previews || []);
+      }
+    } catch (error) {
+      console.error('Error fetching concept previews:', error);
     }
   };
 
@@ -927,6 +970,158 @@ const ArchitectDashboard = () => {
         </div>
       </div>
     );
+  };
+
+  // Handle concept preview generation
+  const handleConceptPreviewGeneration = async () => {
+    if (!conceptPreviewText.trim()) {
+      toast.error('Please enter a concept description');
+      return;
+    }
+
+    if (!selectedProjectForConcept) {
+      toast.error('Please select a project');
+      return;
+    }
+
+    setConceptGenerationLoading(true);
+
+    try {
+      const payload = {
+        layout_request_id: selectedProjectForConcept,
+        concept_description: conceptPreviewText.trim()
+      };
+
+      const response = await fetch('/buildhub/backend/api/architect/generate_concept_preview.php', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      // Debug: Check what we're actually getting back
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      console.log('Response length:', responseText.length);
+      console.log('Response at position 78:', responseText.charAt(78));
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        console.error('Response text:', responseText);
+        throw new Error(`Invalid JSON response: ${responseText.substring(0, 200)}...`);
+      }
+      
+      if (result.success) {
+        toast.success('Concept Preview Generation Started', 'Your concept preview is being generated. You can monitor progress below.');
+        setConceptPreviewText('');
+        setSelectedProjectForConcept('');
+        fetchConceptPreviews(); // Refresh the list
+      } else {
+        throw new Error(result.message || 'Failed to start concept generation');
+      }
+    } catch (error) {
+      console.error('Error generating concept preview:', error);
+      toast.error('Generation Failed', error.message);
+    } finally {
+      setConceptGenerationLoading(false);
+    }
+  };
+
+  // Handle concept preview regeneration
+  const handleConceptRegeneration = async (previewId) => {
+    try {
+      const response = await fetch('/buildhub/backend/api/architect/regenerate_concept_preview.php', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ preview_id: previewId })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success('Concept Preview Regeneration Started', 'Your concept preview is being regenerated.');
+        fetchConceptPreviews(); // Refresh the list
+      } else {
+        throw new Error(result.message || 'Failed to regenerate concept');
+      }
+    } catch (error) {
+      console.error('Error regenerating concept preview:', error);
+      toast.error('Regeneration Failed', error.message);
+    }
+  };
+
+  // Handle concept preview download
+  const handleDownloadConcept = async (preview) => {
+    try {
+      if (!preview.image_url) {
+        toast.error('Download Failed', 'No image available for download');
+        return;
+      }
+
+      // Use the download API endpoint for better filename and security
+      const downloadUrl = `/buildhub/backend/api/architect/download_concept_preview.php?preview_id=${preview.id}`;
+      
+      // Create a temporary link to trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.target = '_blank';
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Download Started', 'Concept preview image is being downloaded.');
+    } catch (error) {
+      console.error('Error downloading concept preview:', error);
+      toast.error('Download Failed', 'Failed to download the concept preview image.');
+    }
+  };
+
+  // Handle concept preview deletion
+  const handleDeleteConcept = async (previewId) => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this concept preview? This action cannot be undone.'
+    );
+    
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/buildhub/backend/api/architect/delete_concept_preview.php', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ preview_id: previewId })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success('Concept Deleted', 'The concept preview has been deleted successfully.');
+        fetchConceptPreviews(); // Refresh the list
+      } else {
+        throw new Error(result.message || 'Failed to delete concept');
+      }
+    } catch (error) {
+      console.error('Error deleting concept preview:', error);
+      toast.error('Deletion Failed', error.message);
+    }
   };
 
   // Render the preview modal at the root of component output
@@ -3496,6 +3691,250 @@ const ArchitectDashboard = () => {
     );
   };
 
+  const renderConceptPreview = () => (
+    <div>
+      <div className="main-header">
+        <h2>Concept Preview Generation</h2>
+        <p>Generate exterior architectural concept previews for early-stage client discussions</p>
+      </div>
+
+      <div className="dashboard-content">
+        {/* Generation Form */}
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <div className="card-header">
+            <h3>Generate New Concept Preview</h3>
+            <p>Describe your architectural concept in natural language. The system will create a refined prompt and generate a photorealistic exterior preview image.</p>
+          </div>
+          <div className="card-body">
+            <div className="form-group">
+              <label>Select Project</label>
+              <select
+                value={selectedProjectForConcept}
+                onChange={(e) => setSelectedProjectForConcept(e.target.value)}
+                disabled={conceptGenerationLoading}
+              >
+                <option value="">Choose a project...</option>
+                {layoutRequests.map(request => (
+                  <option key={request.id} value={request.id}>
+                    {request.homeowner_name} - {request.plot_size} sq ft ({request.budget_range})
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label>Architectural Concept Description</label>
+              <textarea
+                value={conceptPreviewText}
+                onChange={(e) => setConceptPreviewText(e.target.value)}
+                placeholder="Describe your architectural concept in natural language. For example: 'A modern two-story villa with clean lines, large windows, flat roof, white exterior walls, and a contemporary entrance with glass doors. The design should emphasize minimalism and natural light.'"
+                rows="4"
+                disabled={conceptGenerationLoading}
+                style={{ resize: 'vertical' }}
+              />
+              <small style={{ color: '#666', fontSize: '0.85rem' }}>
+                Focus on exterior elements only. Avoid interior details, room layouts, or construction specifications.
+              </small>
+            </div>
+            
+            <button
+              onClick={handleConceptPreviewGeneration}
+              disabled={conceptGenerationLoading || !conceptPreviewText.trim() || !selectedProjectForConcept}
+              className="btn btn-primary"
+            >
+              {conceptGenerationLoading ? 'Generating Preview...' : 'Generate Preview Image'}
+            </button>
+          </div>
+        </div>
+
+        {/* Generated Previews */}
+        <div className="card">
+          <div className="card-header">
+            <h3>Generated Concept Previews</h3>
+            <p>Your generated concept previews will appear here. These are for discussion purposes only and not final plans.</p>
+          </div>
+          <div className="card-body">
+            {conceptPreviews.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏗️</div>
+                <p>No concept previews generated yet.</p>
+                <p>Create your first concept preview using the form above.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+                {conceptPreviews.map(preview => (
+                  <div key={preview.id} className="concept-preview-card" style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    background: '#fff',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}>
+                    {/* Preview Image */}
+                    <div style={{ 
+                      height: '200px', 
+                      background: preview.status === 'completed' && preview.image_url ? `url(${preview.image_url})` : '#f3f4f6',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative'
+                    }}>
+                      {preview.status === 'processing' || preview.status === 'generating' ? (
+                        <div style={{ textAlign: 'center', color: '#666' }}>
+                          <div className="loading-spinner" style={{ margin: '0 auto 8px' }}></div>
+                          <p>Generating...</p>
+                        </div>
+                      ) : preview.status === 'failed' ? (
+                        <div style={{ textAlign: 'center', color: '#dc2626' }}>
+                          <div style={{ fontSize: '24px', marginBottom: '8px' }}>⚠️</div>
+                          <p>Generation Failed</p>
+                        </div>
+                      ) : !preview.image_url ? (
+                        <div style={{ textAlign: 'center', color: '#666' }}>
+                          <div style={{ fontSize: '24px', marginBottom: '8px' }}>🖼️</div>
+                          <p>No Image</p>
+                        </div>
+                      ) : null}
+                      
+                      {/* Status Badge */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        padding: '4px 8px',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        background: preview.status === 'completed' ? '#10b981' : 
+                                   preview.status === 'failed' ? '#dc2626' : '#f59e0b',
+                        color: 'white'
+                      }}>
+                        {preview.status === 'completed' ? 'Ready' : 
+                         preview.status === 'failed' ? 'Failed' : 'Processing'}
+                      </div>
+                    </div>
+                    
+                    {/* Preview Details */}
+                    <div style={{ padding: '16px' }}>
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem' }}>
+                        {preview.homeowner_name || 'Client'} - Concept Preview
+                      </h4>
+                      <p style={{ 
+                        margin: '0 0 12px 0', 
+                        fontSize: '0.85rem', 
+                        color: '#666',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
+                        {preview.original_description}
+                      </p>
+                      
+                      {preview.refined_prompt && (
+                        <details style={{ marginBottom: '12px' }}>
+                          <summary style={{ fontSize: '0.8rem', color: '#666', cursor: 'pointer' }}>
+                            View Refined Prompt
+                          </summary>
+                          <p style={{ 
+                            fontSize: '0.75rem', 
+                            color: '#555', 
+                            marginTop: '8px',
+                            padding: '8px',
+                            background: '#f9fafb',
+                            borderRadius: '4px'
+                          }}>
+                            {preview.refined_prompt}
+                          </p>
+                        </details>
+                      )}
+                      
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        fontSize: '0.75rem',
+                        color: '#666',
+                        marginBottom: '12px'
+                      }}>
+                        <span>Created: {new Date(preview.created_at).toLocaleDateString()}</span>
+                        {preview.updated_at !== preview.created_at && (
+                          <span>Updated: {new Date(preview.updated_at).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {preview.status === 'completed' && preview.image_url && (
+                          <>
+                            <button
+                              onClick={() => handleDownloadConcept(preview)}
+                              className="btn btn-sm btn-success"
+                              style={{ flex: '1 1 auto', minWidth: '80px' }}
+                              title="Download image"
+                            >
+                              📥 Download
+                            </button>
+                            <a
+                              href={preview.image_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-sm btn-primary"
+                              style={{ flex: '1 1 auto', minWidth: '80px', textAlign: 'center', textDecoration: 'none' }}
+                              title="View full size"
+                            >
+                              🔍 View
+                            </a>
+                          </>
+                        )}
+                        
+                        {(preview.status === 'completed' || preview.status === 'failed') && (
+                          <button
+                            onClick={() => handleConceptRegeneration(preview.id)}
+                            className="btn btn-sm btn-secondary"
+                            style={{ flex: '1 1 auto', minWidth: '80px' }}
+                            title="Regenerate concept"
+                          >
+                            🔄 Regenerate
+                          </button>
+                        )}
+                        
+                        <button
+                          onClick={() => handleDeleteConcept(preview.id)}
+                          className="btn btn-sm btn-danger"
+                          style={{ flex: '1 1 auto', minWidth: '80px' }}
+                          title="Delete concept"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                      
+                      {preview.error_message && (
+                        <div style={{
+                          marginTop: '12px',
+                          padding: '8px',
+                          background: '#fef2f2',
+                          border: '1px solid #fecaca',
+                          borderRadius: '4px',
+                          fontSize: '0.8rem',
+                          color: '#dc2626'
+                        }}>
+                          Error: {preview.error_message}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // Render functions for different tabs
 
 
@@ -3668,6 +4107,13 @@ const ArchitectDashboard = () => {
           >
             <span className="sb-label">House Plans</span>
           </a>
+          <a 
+            href="#" 
+            className={`nav-item sb-item ${activeTab === 'concept-preview' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setActiveTab('concept-preview'); }}
+          >
+            <span className="sb-label">Concept Preview Generation</span>
+          </a>
 
         </nav>
 
@@ -3707,6 +4153,7 @@ const ArchitectDashboard = () => {
         {activeTab === 'designs' && renderDesigns()}
         {activeTab === 'library' && renderLibrary()}
         {activeTab === 'house-plans' && renderHousePlans()}
+        {activeTab === 'concept-preview' && renderConceptPreview()}
         {activeTab === 'profile' && renderProfile()}
 
         {/* Upload Form Modal */}

@@ -1,58 +1,57 @@
 <?php
-$url = "http://localhost/buildhub/backend/api/homeowner/get_progress_updates.php?homeowner_id=28&limit=5";
+session_start();
 
-$context = stream_context_create([
-    'http' => [
-        'method' => 'GET',
-        'header' => 'Content-Type: application/json'
-    ]
-]);
+// Simulate architect session
+$_SESSION['user_id'] = 1;
+$_SESSION['role'] = 'architect';
 
-$response = file_get_contents($url, false, $context);
+echo "=== Testing API Response ===\n\n";
 
-if ($response) {
-    echo "API Response:\n";
-    echo "=============\n";
-    
+// Test the get_concept_previews.php endpoint
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'http://localhost/buildhub/backend/api/architect/get_concept_previews.php');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+curl_setopt($ch, CURLOPT_COOKIE, session_name() . '=' . session_id());
+
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+echo "HTTP Code: $httpCode\n";
+echo "Response: $response\n\n";
+
+if ($httpCode === 200) {
     $data = json_decode($response, true);
-    
-    if ($data && $data['success']) {
-        echo "✅ Success: " . ($data['success'] ? 'true' : 'false') . "\n";
-        echo "📊 Progress Updates: " . count($data['data']['progress_updates']) . "\n";
-        echo "🏗️ Projects: " . count($data['data']['projects']) . "\n";
-        echo "📸 Geo Photos: " . count($data['data']['geo_photos']) . "\n";
+    if ($data && isset($data['success']) && $data['success']) {
+        echo "✓ API call successful\n";
+        echo "Number of previews: " . count($data['previews']) . "\n";
         
-        if (count($data['data']['progress_updates']) > 0) {
-            $update = $data['data']['progress_updates'][0];
-            echo "\n📋 First Update Details:\n";
-            echo "- ID: " . $update['id'] . "\n";
-            echo "- Project ID: " . $update['project_id'] . "\n";
-            echo "- Contractor: " . $update['contractor_name'] . "\n";
-            echo "- Stage: " . $update['construction_stage'] . "\n";
-            echo "- Date: " . $update['update_date'] . "\n";
-            echo "- Progress: " . $update['cumulative_completion_percentage'] . "%\n";
-            echo "- Working Hours: " . $update['working_hours'] . "\n";
-            echo "- Weather: " . $update['weather_condition'] . "\n";
-            echo "- Photos: " . count($update['photos']) . "\n";
-            echo "- Worker Types: " . ($update['worker_types'] ?: 'None') . "\n";
-            echo "- Total Workers: " . ($update['total_workers'] ?: 0) . "\n";
+        foreach ($data['previews'] as $preview) {
+            echo "\nPreview ID: " . $preview['id'] . "\n";
+            echo "Status: " . $preview['status'] . "\n";
+            echo "Image URL: " . ($preview['image_url'] ?? 'NULL') . "\n";
+            echo "Homeowner: " . ($preview['homeowner_name'] ?? 'Unknown') . "\n";
+            echo "Description: " . substr($preview['original_description'], 0, 50) . "...\n";
             
-            echo "\n🔍 Full Update Data Structure:\n";
-            foreach ($update as $key => $value) {
-                if (is_array($value)) {
-                    echo "- $key: [array with " . count($value) . " items]\n";
-                } else {
-                    $displayValue = is_string($value) && strlen($value) > 50 ? substr($value, 0, 50) . '...' : $value;
-                    echo "- $key: " . ($displayValue ?: 'null') . "\n";
+            if ($preview['image_url']) {
+                $imagePath = str_replace('/buildhub/', '', $preview['image_url']);
+                $fullPath = __DIR__ . '/' . $imagePath;
+                echo "File exists: " . (file_exists($fullPath) ? 'YES' : 'NO') . "\n";
+                if (file_exists($fullPath)) {
+                    echo "File size: " . filesize($fullPath) . " bytes\n";
                 }
             }
         }
     } else {
-        echo "❌ API Error: " . ($data['message'] ?? 'Unknown error') . "\n";
-        echo "Raw response: " . $response . "\n";
+        echo "✗ API call failed\n";
+        if (isset($data['message'])) {
+            echo "Message: " . $data['message'] . "\n";
+        }
     }
 } else {
-    echo "❌ Failed to get response from API\n";
+    echo "✗ HTTP error: $httpCode\n";
 }
+
+echo "\n=== Test Complete ===\n";
 ?>
-</content>

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useToast } from './ToastProvider.jsx';
 import '../styles/InlineRoomImprovement.css';
 
@@ -14,11 +14,151 @@ const InlineRoomImprovement = () => {
   
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [currentAnalysisId, setCurrentAnalysisId] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [imageJobId, setImageJobId] = useState(null);
   const [imageGenerationStatus, setImageGenerationStatus] = useState(null);
+  
+  // New state for history management
+  const [showHistory, setShowHistory] = useState(false);
+  const [analysisHistory, setAnalysisHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Load persisted analysis on component mount
+  useEffect(() => {
+    loadPersistedAnalysis();
+    loadAnalysisHistory();
+  }, []);
+
+  // Save analysis to localStorage whenever it changes
+  useEffect(() => {
+    if (analysisResult && currentAnalysisId) {
+      const persistData = {
+        analysisResult,
+        currentAnalysisId,
+        formData: {
+          room_type: formData.room_type,
+          improvement_notes: formData.improvement_notes
+        },
+        timestamp: Date.now()
+      };
+      localStorage.setItem('bh_room_improvement_current', JSON.stringify(persistData));
+    }
+  }, [analysisResult, currentAnalysisId, formData.room_type, formData.improvement_notes]);
+
+  const loadPersistedAnalysis = () => {
+    try {
+      const saved = localStorage.getItem('bh_room_improvement_current');
+      if (saved) {
+        const data = JSON.parse(saved);
+        // Only load if it's less than 24 hours old
+        if (Date.now() - data.timestamp < 24 * 60 * 60 * 1000) {
+          setAnalysisResult(data.analysisResult);
+          setCurrentAnalysisId(data.currentAnalysisId);
+          setFormData(prev => ({
+            ...prev,
+            room_type: data.formData.room_type,
+            improvement_notes: data.formData.improvement_notes
+          }));
+        } else {
+          // Remove expired data
+          localStorage.removeItem('bh_room_improvement_current');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading persisted analysis:', error);
+      localStorage.removeItem('bh_room_improvement_current');
+    }
+  };
+
+  const loadAnalysisHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      const response = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=10', {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setAnalysisHistory(data.data.analyses);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading analysis history:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const loadPreviousAnalysis = async (analysisId) => {
+    try {
+      toast.info('Loading previous analysis...');
+      const response = await fetch(`/buildhub/backend/api/homeowner/get_room_improvement_analysis.php?id=${analysisId}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setAnalysisResult(data.data.analysis_result);
+          setCurrentAnalysisId(data.data.id);
+          setFormData(prev => ({
+            ...prev,
+            room_type: data.data.room_type,
+            improvement_notes: data.data.improvement_notes || ''
+          }));
+          setShowForm(false);
+          setShowHistory(false);
+          toast.success('Previous analysis loaded successfully!');
+        } else {
+          toast.error('Failed to load analysis: ' + data.message);
+        }
+      } else {
+        toast.error('Failed to load analysis');
+      }
+    } catch (error) {
+      console.error('Error loading previous analysis:', error);
+      toast.error('Error loading previous analysis');
+    }
+  };
+
+  const getRoomTypeIcon = (roomType) => {
+    const icons = {
+      'bedroom': '🛏️',
+      'living_room': '🛋️',
+      'kitchen': '🍳',
+      'dining_room': '🍽️',
+      'other': '🏠'
+    };
+    return icons[roomType] || '🏠';
+  };
+
+  const formatRoomType = (roomType) => {
+    const labels = {
+      'bedroom': 'Bedroom',
+      'living_room': 'Living Room',
+      'kitchen': 'Kitchen',
+      'dining_room': 'Dining Room',
+      'other': 'Other'
+    };
+    return labels[roomType] || 'Room';
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const roomTypes = [
     { value: 'bedroom', label: 'Bedroom', icon: '🛏️' },
@@ -135,7 +275,11 @@ const InlineRoomImprovement = () => {
 
       if (data.success) {
         setAnalysisResult(data.analysis);
+        setCurrentAnalysisId(data.analysis_id);
         toast.success('✨ Room improvement concept generated successfully!');
+        
+        // Refresh history to include the new analysis
+        loadAnalysisHistory();
         
         // Check if async image generation was started
         if (data.analysis.ai_enhancements?.async_image_generation?.job_id) {
@@ -350,19 +494,23 @@ const InlineRoomImprovement = () => {
       selected_file: null
     });
     setAnalysisResult(null);
+    setCurrentAnalysisId(null);
     setPreviewImage(null);
     setShowForm(false);
+    setShowHistory(false);
     setGeneratingImage(false);
     setImageJobId(null);
     setImageGenerationStatus(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    // Clear persisted data
+    localStorage.removeItem('bh_room_improvement_current');
   };
 
   return (
     <div className="inline-room-improvement">
-      {!showForm && !analysisResult ? (
+      {!showForm && !analysisResult && !showHistory ? (
         // Initial intro section
         <div className="room-improvement-intro">
           <div className="intro-card">
@@ -402,6 +550,16 @@ const InlineRoomImprovement = () => {
                   <span className="btn-icon">🚀</span>
                   Start Room Analysis
                 </button>
+                
+                {analysisHistory.length > 0 && (
+                  <button 
+                    className="btn btn-secondary btn-large"
+                    onClick={() => setShowHistory(true)}
+                  >
+                    <span className="btn-icon">📋</span>
+                    View Previous Analyses ({analysisHistory.length})
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -420,6 +578,105 @@ const InlineRoomImprovement = () => {
               </ul>
             </div>
           </div>
+        </div>
+      ) : showHistory ? (
+        // History view
+        <div className="analysis-history-section">
+          <div className="history-header">
+            <h3>📋 Previous Room Analyses</h3>
+            <p>View and reload your previous room improvement analyses</p>
+          </div>
+          
+          <div className="history-actions">
+            <button 
+              className="btn btn-secondary"
+              onClick={() => setShowHistory(false)}
+            >
+              ← Back to Home
+            </button>
+            <button 
+              className="btn btn-primary"
+              onClick={() => {
+                setShowHistory(false);
+                setShowForm(true);
+              }}
+            >
+              + New Analysis
+            </button>
+          </div>
+          
+          {loadingHistory ? (
+            <div className="loading-history">
+              <div className="spinner"></div>
+              <p>Loading your analysis history...</p>
+            </div>
+          ) : analysisHistory.length === 0 ? (
+            <div className="no-history">
+              <div className="no-history-icon">📝</div>
+              <h4>No Previous Analyses</h4>
+              <p>You haven't created any room improvement analyses yet.</p>
+              <button 
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowHistory(false);
+                  setShowForm(true);
+                }}
+              >
+                Create Your First Analysis
+              </button>
+            </div>
+          ) : (
+            <div className="history-grid">
+              {analysisHistory.map((analysis) => (
+                <div key={analysis.id} className="history-card">
+                  <div className="history-card-header">
+                    <div className="room-type-badge">
+                      {getRoomTypeIcon(analysis.room_type)} {formatRoomType(analysis.room_type)}
+                    </div>
+                    <div className="analysis-date">
+                      {formatDate(analysis.created_at)}
+                    </div>
+                  </div>
+                  
+                  {analysis.image_url && (
+                    <div className="history-image">
+                      <img 
+                        src={analysis.image_url} 
+                        alt="Room analysis" 
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="history-content">
+                    <h5>{analysis.analysis_result?.concept_name || 'Room Analysis'}</h5>
+                    {analysis.improvement_notes && (
+                      <p className="improvement-notes">"{analysis.improvement_notes}"</p>
+                    )}
+                    
+                    <div className="analysis-preview">
+                      {analysis.analysis_result?.style_recommendation?.style && (
+                        <div className="style-preview">
+                          <strong>Style:</strong> {analysis.analysis_result.style_recommendation.style}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="history-actions">
+                    <button 
+                      className="btn btn-primary btn-small"
+                      onClick={() => loadPreviousAnalysis(analysis.id)}
+                    >
+                      View Analysis
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : showForm && !analysisResult ? (
         // Upload Form
@@ -539,8 +796,35 @@ const InlineRoomImprovement = () => {
         // Analysis Results
         <div className="analysis-results-section">
           <div className="results-header">
-            <h3>✨ Room Improvement Analysis Complete</h3>
+            <h3>✨ Room Improvement Analysis {currentAnalysisId ? '(Saved)' : 'Complete'}</h3>
             <p>Here are your personalized improvement suggestions</p>
+            {currentAnalysisId && (
+              <div className="saved-analysis-info">
+                <span className="saved-badge">💾 Saved Analysis</span>
+                <span className="analysis-id">ID: {currentAnalysisId}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="results-actions">
+            <button 
+              className="btn btn-secondary"
+              onClick={() => {
+                setAnalysisResult(null);
+                setCurrentAnalysisId(null);
+                setShowForm(false);
+                setShowHistory(false);
+                localStorage.removeItem('bh_room_improvement_current');
+              }}
+            >
+              ← Back to Home
+            </button>
+            <button 
+              className="btn btn-outline"
+              onClick={() => setShowHistory(true)}
+            >
+              📋 View All Analyses
+            </button>
           </div>
           
           <div className="concept-card">

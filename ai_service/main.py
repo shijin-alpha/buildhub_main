@@ -259,13 +259,21 @@ async def analyze_room(
             if generate_concept:
                 logger.info("Stage 3 & 4: Collaborative AI Pipeline - Gemini + Diffusion")
                 
+                # Determine output directory based on analysis type
+                # Room improvement analyses go to room_improvements
+                # Exterior/architectural analyses go to conceptual_images
+                if room_type in ['bedroom', 'living_room', 'kitchen', 'dining_room', 'bathroom', 'office', 'other']:
+                    output_dir = "uploads/room_improvements"
+                else:
+                    output_dir = "uploads/conceptual_images"
+                
                 conceptual_result = conceptual_generator.generate_collaborative_concept(
                     improvement_suggestions,
                     object_detection_result,
                     enhanced_visual_features,
                     spatial_guidance_result,
                     room_type,
-                    output_dir="uploads/conceptual_images"
+                    output_dir=output_dir
                 )
             
             # Combine all results
@@ -316,7 +324,7 @@ async def generate_collaborative_concept(
     visual_features: dict,
     spatial_guidance: dict,
     room_type: str,
-    output_dir: str = "uploads/conceptual_images"
+    output_dir: str = None  # Will be determined based on room_type
 ):
     """
     Generate conceptual visualization using collaborative AI pipeline
@@ -324,6 +332,13 @@ async def generate_collaborative_concept(
     This endpoint specifically handles the Gemini + Diffusion stages of the pipeline
     """
     try:
+        # Determine output directory based on analysis type
+        if output_dir is None:
+            if room_type in ['bedroom', 'living_room', 'kitchen', 'dining_room', 'bathroom', 'office', 'other']:
+                output_dir = "uploads/room_improvements"
+            else:
+                output_dir = "uploads/conceptual_images"
+        
         result = conceptual_generator.generate_collaborative_concept(
             improvement_suggestions,
             detected_objects,
@@ -643,8 +658,13 @@ async def generate_image_background(
         job.status = "processing"
         logger.info(f"Starting background image generation for job {job_id}")
         
-        # Set output directory to Apache document root
-        output_dir = "C:/xampp/htdocs/buildhub/uploads/conceptual_images"
+        # Determine output directory based on analysis type
+        # Room improvement analyses go to room_improvements
+        # Exterior/architectural analyses go to conceptual_images
+        if room_type in ['bedroom', 'living_room', 'kitchen', 'dining_room', 'bathroom', 'office', 'other']:
+            output_dir = "C:/xampp/htdocs/buildhub/uploads/room_improvements"
+        else:
+            output_dir = "C:/xampp/htdocs/buildhub/uploads/conceptual_images"
         
         # Run the collaborative conceptual generation in thread pool
         loop = asyncio.get_event_loop()

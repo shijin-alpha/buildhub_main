@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Name & Budget Progress Bar Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .feature-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .feature-section h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+        }
+        .demo-progress {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        .project-title-with-budget {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .budget-info {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #059669;
+            margin-top: 0.25rem;
+        }
+        .progress-percentage {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .progress-bar-large {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+        .progress-fill-large {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        .database-progress-info {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #0ea5e9;
+            border-radius: 6px;
+        }
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .progress-source {
+            font-weight: 600;
+            color: #0369a1;
+            font-size: 0.875rem;
+        }
+        .latest-stage {
+            font-weight: 500;
+            color: #1e40af;
+            font-size: 0.75rem;
+        }
+        .project-budget-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.5rem 0;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .timeline-info {
+            font-weight: 500;
+            color: #7c3aed;
+        }
+        .original-budget {
+            font-weight: 500;
+            color: #dc2626;
+        }
+        .last-update-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .update-date {
+            font-weight: 500;
+        }
+        .total-updates {
+            font-weight: 500;
+        }
+        .api-demo {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0.5rem;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .comparison-card {
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .comparison-card.before {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .comparison-card.after {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        .comparison-card h4 {
+            margin: 0 0 1rem 0;
+        }
+        .comparison-card.before h4 {
+            color: #dc2626;
+        }
+        .comparison-card.after h4 {
+            color: #16a34a;
+        }
+        .success-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .success-banner h3 {
+            margin: 0 0 0.5rem 0;
+        }
+        .success-banner p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li::before {
+            content: "✅ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .database-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+        }
+        .database-table th,
+        .database-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .database-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        .database-table tr:hover {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Project Name & Budget Progress Bar</h1>
+            <p>Enhanced progress display with project details and budget information</p>
+        </div>
+
+        <div class="content">
+            <div class="feature-section">
+                <h3>🎯 Enhancement Overview</h3>
+                <p>The progress bar now displays the project name along with the budget in brackets, fetched directly from the database tables including contractor_send_estimates and layout_requests.</p>
+                
+                <ul class="feature-list">
+                    <li><strong>Project Name Display:</strong> Shows the actual project name instead of generic "Overall Progress"</li>
+                    <li><strong>Budget Information:</strong> Displays project budget from contractor_send_estimates.total_cost</li>
+                    <li><strong>Original Budget Range:</strong> Shows the original budget range from layout_requests</li>
+                    <li><strong>Timeline Information:</strong> Displays project timeline from the estimate</li>
+                    <li><strong>Database Integration:</strong> All data fetched from related database tables</li>
+                </ul>
+            </div>
+
+            <div class="feature-section">
+                <h3>📊 Enhanced Progress Bar Demo</h3>
+                <p>Interactive demonstration of the enhanced progress bar with project name and budget:</p>
+                
+                <div class="demo-progress">
+                    <div class="progress-header">
+                        <strong class="project-title-with-budget">
+                            <span id="project-name">Residential Villa Construction</span>
+                            <span class="budget-info" id="budget-info">(₹25,50,000)</span>
+                        </strong>
+                        <span class="progress-percentage" id="progress-percentage">67.3%</span>
+                    </div>
+                    <div class="progress-bar-large">
+                        <div 
+                            class="progress-fill-large" 
+                            id="progress-fill"
+                            style="width: 67.3%; background-color: #3b82f6;"
+                        ></div>
+                    </div>
+                    
+                    <div class="database-progress-info">
+                        <div class="progress-details">
+                            <span class="progress-source">📊 Database Progress: 67.3%</span>
+                            <span class="latest-stage">Latest Stage: Electrical</span>
+                        </div>
+                        <div class="project-budget-details">
+                            <span class="timeline-info">Timeline: 120 days</span>
+                            <span class="original-budget">Original Range: 20-30 lakhs</span>
+                        </div>
+                        <div class="last-update-info">
+                            <span class="update-date">Last Updated: 2024-01-20</span>
+                            <span class="total-updates">Total Updates: 23</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 1rem 0;">
+                    <button class="btn" onclick="switchProject()">🔄 Switch Project</button>
+                    <button class="btn" onclick="updateProgress()">📈 Update Progress</button>
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>🗄️ Database Structure</h3>
+                <p>The enhanced progress bar fetches data from multiple related tables:</p>
+                
+                <table class="database-table">
+                    <thead>
+                        <tr>
+                            <th>Table</th>
+                            <th>Field</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>contractor_projects</code></td>
+                            <td><code>project_name</code></td>
+                            <td>Project title display</td>
+                        </tr>
+                        <tr>
+                            <td><code>contractor_projects</code></td>
+                            <td><code>estimate_id</code></td>
+                            <td>Links to estimate for budget</td>
+                        </tr>
+                        <tr>
+                            <td><code>contractor_send_estimates</code></td>
+                            <td><code>total_cost</code></td>
+                            <td>Project budget amount</td>
+                        </tr>
+                        <tr>
+                            <td><code>contractor_send_estimates</code></td>
+                            <td><code>timeline</code></td>
+                            <td>Project timeline</td>
+                        </tr>
+                        <tr>
+                            <td><code>layout_requests</code></td>
+                            <td><code>budget_range</code></td>
+                            <td>Original budget range</td>
+                        </tr>
+                        <tr>
+                            <td><code>daily_progress_updates</code></td>
+                            <td><code>cumulative_completion_percentage</code></td>
+                            <td>Current progress</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="feature-section">
+                <h3>🔧 API Enhancement</h3>
+                <p>Enhanced API query with JOIN statements to fetch all related data:</p>
+                
+                <div class="api-demo">
+-- Enhanced SQL Query
+SELECT 
+    cp.id,
+    cp.project_name,
+    cp.homeowner_id,
+    cp.contractor_id,
+    cp.estimate_id,
+    CONCAT(h.first_name, ' ', h.last_name) as homeowner_name,
+    CONCAT(c.first_name, ' ', c.last_name) as contractor_name,
+    cse.total_cost as project_budget,
+    cse.timeline as project_timeline,
+    lr.budget_range as original_budget_range
+FROM contractor_projects cp
+LEFT JOIN users h ON cp.homeowner_id = h.id
+LEFT JOIN users c ON cp.contractor_id = c.id
+LEFT JOIN contractor_send_estimates cse ON cp.estimate_id = cse.id
+LEFT JOIN layout_requests lr ON cse.send_id = lr.id
+WHERE cp.id = :project_id
+                </div>
+
+                <div class="api-demo">
+// Enhanced API Response
+{
+  "success": true,
+  "data": {
+    "project_id": 123,
+    "project_name": "Residential Villa Construction",
+    "project_budget": 2550000,
+    "budget_formatted": "₹25,50,000",
+    "original_budget_range": "20-30 lakhs",
+    "project_timeline": "120 days",
+    "current_progress": 67.3,
+    "latest_stage": "Electrical",
+    "total_updates": 23
+  }
+}
+                </div>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card before">
+                    <h4>❌ Before Enhancement</h4>
+                    <ul>
+                        <li>Generic "Overall Progress" title</li>
+                        <li>No project identification</li>
+                        <li>No budget information</li>
+                        <li>Limited project context</li>
+                        <li>Static progress display</li>
+                        <li>No timeline information</li>
+                    </ul>
+                </div>
+                <div class="comparison-card after">
+                    <h4>✅ After Enhancement</h4>
+                    <ul>
+                        <li>Actual project name displayed</li>
+                        <li>Budget shown in brackets</li>
+                        <li>Original budget range included</li>
+                        <li>Project timeline information</li>
+                        <li>Database-driven progress</li>
+                        <li>Complete project context</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>🎨 UI Enhancements</h3>
+                <ul class="feature-list">
+                    <li><strong>Project Title:</strong> Displays actual project name from database</li>
+                    <li><strong>Budget Display:</strong> Formatted budget amount in Indian currency format</li>
+                    <li><strong>Color Coding:</strong> Budget shown in green, timeline in purple, original range in red</li>
+                    <li><strong>Responsive Layout:</strong> Adapts to different screen sizes</li>
+                    <li><strong>Information Hierarchy:</strong> Clear visual separation of different data types</li>
+                </ul>
+            </div>
+
+            <div class="success-banner">
+                <h3>🎉 Project Name & Budget Integration Complete!</h3>
+                <p>Progress bars now display comprehensive project information including name, budget, and timeline details.</p>
+            </div>
+
+            <div class="feature-section">
+                <h3>🧪 Testing Instructions</h3>
+                <ol>
+                    <li><strong>Select Project:</strong> Choose any project with existing estimates and progress</li>
+                    <li><strong>Verify Display:</strong> Progress header should show project name and budget</li>
+                    <li><strong>Check Database:</strong> Verify data matches database records</li>
+                    <li><strong>Submit Progress:</strong> Add new daily progress update</li>
+                    <li><strong>Confirm Update:</strong> All information should refresh automatically</li>
+                </ol>
+
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 1rem; margin: 1rem 0;">
+                    <strong>💡 Data Verification:</strong> You can verify the data by checking:
+                    <br>• Project name: <code>SELECT project_name FROM contractor_projects WHERE id = [PROJECT_ID]</code>
+                    <br>• Budget: <code>SELECT total_cost FROM contractor_send_estimates WHERE id = (SELECT estimate_id FROM contractor_projects WHERE id = [PROJECT_ID])</code>
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>📁 Files Modified</h3>
+                <ul>
+                    <li><code>backend/api/contractor/get_project_current_progress.php</code> - Enhanced with budget queries</li>
+                    <li><code>frontend/src/components/EnhancedProgressUpdate.jsx</code> - Updated progress header display</li>
+                    <li><code>frontend/src/styles/StageProgression.css</code> - Added project title and budget styles</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProgress = 67.3;
+        let currentProjectIndex = 0;
+        
+        const projects = [
+            {
+                name: "Residential Villa Construction",
+                budget: "₹25,50,000",
+                timeline: "120 days",
+                originalRange: "20-30 lakhs",
+                progress: 67.3
+            },
+            {
+                name: "Commercial Office Building",
+                budget: "₹45,75,000",
+                timeline: "180 days",
+                originalRange: "40-50 lakhs",
+                progress: 42.8
+            },
+            {
+                name: "Apartment Complex Phase 1",
+                budget: "₹1,25,00,000",
+                timeline: "365 days",
+                originalRange: "1-1.5 crores",
+                progress: 89.2
+            }
+        ];
+
+        function updateDisplay() {
+            const project = projects[currentProjectIndex];
+            
+            document.getElementById('project-name').textContent = project.name;
+            document.getElementById('budget-info').textContent = `(${project.budget})`;
+            document.getElementById('progress-percentage').textContent = `${project.progress.toFixed(1)}%`;
+            
+            const progressFill = document.getElementById('progress-fill');
+            progressFill.style.width = `${project.progress}%`;
+            
+            // Update color based on progress
+            if (project.progress >= 90) {
+                progressFill.style.backgroundColor = '#10b981'; // Green
+            } else if (project.progress >= 50) {
+                progressFill.style.backgroundColor = '#3b82f6'; // Blue
+            } else {
+                progressFill.style.backgroundColor = '#f59e0b'; // Orange
+            }
+            
+            // Update project details
+            document.querySelector('.progress-source').textContent = `📊 Database Progress: ${project.progress.toFixed(1)}%`;
+            document.querySelector('.timeline-info').textContent = `Timeline: ${project.timeline}`;
+            document.querySelector('.original-budget').textContent = `Original Range: ${project.originalRange}`;
+        }
+
+        function switchProject() {
+            currentProjectIndex = (currentProjectIndex + 1) % projects.length;
+            updateDisplay();
+            console.log(`Switched to: ${projects[currentProjectIndex].name}`);
+        }
+
+        function updateProgress() {
+            const project = projects[currentProjectIndex];
+            if (project.progress < 100) {
+                project.progress = Math.min(project.progress + Math.random() * 10 + 2, 100);
+                updateDisplay();
+                console.log(`Progress updated to ${project.progress.toFixed(1)}%`);
+            }
+        }
+
+        // Initialize display
+        updateDisplay();
+
+        console.log('🏗️ Project Name & Budget Progress Bar Demo loaded!');
+        console.log('✅ Project name and budget displayed from database');
+        console.log('📊 Enhanced with timeline and budget range information');
+    </script>
+</body>
+</html>

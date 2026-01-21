@@ -1635,3 +1635,68 @@
     text-align: left;
   }
 }
+
+/* Concept Preview Generation Styles */
+.concept-preview-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.concept-preview-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.concept-preview-card .btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.concept-preview-card .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.concept-preview-card .btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.concept-preview-card .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.concept-preview-card .btn-secondary:hover {
+  background-color: #545b62;
+}
+
+/* Form styling for concept generation */
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 4px;
+}

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Async Concept Generation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .progress {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎨 Async Concept Generation Test</h1>
+        <p>This page tests the new fully asynchronous concept preview generation system.</p>
+
+        <div class="test-section">
+            <h3>1. Test Concept Generation (Non-blocking)</h3>
+            <p>This test simulates generating a concept preview without blocking the UI.</p>
+            
+            <button class="btn" onclick="testConceptGeneration()" id="generateBtn">
+                Generate Test Concept
+            </button>
+            <button class="btn" onclick="checkActiveGenerations()">
+                Check Active Generations
+            </button>
+            <button class="btn" onclick="clearLog()">Clear Log</button>
+            
+            <div id="generationStatus"></div>
+            <div id="progressDisplay"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Background Processing Test</h3>
+            <p>Test the background processing endpoint directly.</p>
+            
+            <button class="btn" onclick="testBackgroundProcessing()" id="backgroundBtn">
+                Test Background Processing
+            </button>
+            
+            <div id="backgroundStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Status Polling Test</h3>
+            <p>Test the status polling mechanism with different job IDs.</p>
+            
+            <input type="text" id="jobIdInput" placeholder="Enter job ID to check" style="padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            <button class="btn" onclick="testStatusCheck()">Check Status</button>
+            
+            <div id="statusResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Cancel Generation Test</h3>
+            <p>Test the cancellation functionality for concept generations.</p>
+            
+            <button class="btn" onclick="testCancelGeneration()" id="cancelBtn">
+                Cancel Current Generation
+            </button>
+            <button class="btn" onclick="testCancelAll()">
+                Cancel All Generations
+            </button>
+            
+            <div id="cancelStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Test Log</h3>
+            <div id="testLog" class="log">Test log will appear here...\n</div>
+        </div>
+    </div>
+
+    <script>
+        let currentJobId = null;
+        let currentConceptId = null;
+        let pollingInterval = null;
+
+        function log(message) {
+            const logElement = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('testLog').textContent = 'Test log cleared...\n';
+        }
+
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showProgress(stage, message, details = '') {
+            const progressElement = document.getElementById('progressDisplay');
+            const stageIcons = {
+                'processing': '⚙️',
+                'generating': '🎨',
+                'completed': '✅',
+                'failed': '❌'
+            };
+            
+            progressElement.innerHTML = `
+                <div class="progress">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <span class="spinner"></span>
+                        <span style="font-weight: 600;">${stageIcons[stage] || '🔄'} ${stage.toUpperCase()}</span>
+                    </div>
+                    <div style="color: #666; font-size: 14px;">${message}</div>
+                    ${details ? `<div style="color: #888; font-size: 12px; margin-top: 4px;">${details}</div>` : ''}
+                </div>
+            `;
+        }
+
+        async function testConceptGeneration() {
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            
+            log('Starting async concept generation test...');
+            
+            try {
+                // Step 1: Initiate generation (should return immediately)
+                log('Step 1: Initiating concept generation...');
+                showProgress('processing', 'Initiating concept generation...', 'This should return immediately');
+                
+                const response = await fetch('/buildhub/backend/api/architect/generate_concept_preview.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        layout_request_id: 1, // Test with a sample ID
+                        house_plan_id: null
+                    })
+                });
+
+                const result = await response.json();
+                log(`Generation initiation response: ${JSON.stringify(result)}`);
+                
+                if (result.success) {
+                    currentJobId = result.job_id;
+                    currentConceptId = result.concept_id;
+                    
+                    showStatus('generationStatus', 
+                        `✅ Generation started successfully! Job ID: ${currentJobId}`, 'success');
+                    
+                    log(`✅ Generation initiated successfully`);
+                    log(`Job ID: ${currentJobId}`);
+                    log(`Concept ID: ${currentConceptId}`);
+                    
+                    // Step 2: Start polling for status
+                    startStatusPolling();
+                    
+                } else {
+                    showStatus('generationStatus', `❌ Failed to start generation: ${result.message}`, 'error');
+                    log(`❌ Generation failed: ${result.message}`);
+                }
+                
+            } catch (error) {
+                showStatus('generationStatus', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error during generation: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Test Concept';
+            }
+        }
+
+        function startStatusPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+            
+            log('Starting status polling (every 2 seconds)...');
+            
+            pollingInterval = setInterval(async () => {
+                if (!currentJobId) {
+                    clearInterval(pollingInterval);
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/buildhub/backend/api/architect/check_concept_status.php?job_id=${currentJobId}`);
+                    const result = await response.json();
+                    
+                    log(`Status check: ${result.status || 'unknown'}`);
+                    
+                    if (result.success) {
+                        const status = result.status;
+                        
+                        if (status === 'processing') {
+                            showProgress('processing', 'Initializing AI generation pipeline...', 
+                                result.progress_message || 'Setting up generation');
+                        } else if (status === 'generating') {
+                            showProgress('generating', 'AI is creating your concept image...', 
+                                result.estimated_remaining_seconds ? 
+                                `~${result.estimated_remaining_seconds} seconds remaining` : '');
+                        } else if (status === 'completed') {
+                            showProgress('completed', 'Concept generation completed!', 
+                                `Image URL: ${result.image_url || 'Not available'}`);
+                            log(`✅ Generation completed! Image: ${result.image_url || 'Not available'}`);
+                            clearInterval(pollingInterval);
+                            currentJobId = null;
+                            currentConceptId = null;
+                        } else if (status === 'failed') {
+                            showProgress('failed', 'Generation failed', 
+                                result.error_message || 'Unknown error');
+                            log(`❌ Generation failed: ${result.error_message || 'Unknown error'}`);
+                            clearInterval(pollingInterval);
+                            currentJobId = null;
+                            currentConceptId = null;
+                        }
+                    } else {
+                        log(`Status check failed: ${result.message || 'Unknown error'}`);
+                    }
+                    
+                } catch (error) {
+                    log(`Status check error: ${error.message}`);
+                }
+            }, 2000);
+        }
+
+        async function testBackgroundProcessing() {
+            const btn = document.getElementById('backgroundBtn');
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+            
+            log('Testing background processing endpoint...');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/architect/process_concept_background.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        concept_id: currentConceptId || 1,
+                        job_id: currentJobId || 'test_job_123'
+                    })
+                });
+
+                const result = await response.json();
+                log(`Background processing response: ${JSON.stringify(result)}`);
+                
+                if (result.success) {
+                    showStatus('backgroundStatus', 
+                        `✅ Background processing successful: ${result.message}`, 'success');
+                } else {
+                    showStatus('backgroundStatus', 
+                        `❌ Background processing failed: ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus('backgroundStatus', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Background processing error: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Test Background Processing';
+            }
+        }
+
+        async function testStatusCheck() {
+            const jobId = document.getElementById('jobIdInput').value || currentJobId || 'test_job_123';
+            
+            log(`Checking status for job ID: ${jobId}`);
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/architect/check_concept_status.php?job_id=${jobId}`);
+                const result = await response.json();
+                
+                log(`Status response: ${JSON.stringify(result)}`);
+                
+                showStatus('statusResult', 
+                    `Status: ${result.status || 'unknown'} - ${result.message || 'No message'}`, 
+                    result.success ? 'success' : 'error');
+                
+            } catch (error) {
+                showStatus('statusResult', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Status check error: ${error.message}`);
+            }
+        }
+
+        async function checkActiveGenerations() {
+            log('Checking active concept generations...');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/architect/get_active_concept_generations.php');
+                const result = await response.json();
+                
+                log(`Active generations response: ${JSON.stringify(result)}`);
+                
+                if (result.success) {
+                    const count = result.count || 0;
+                    showStatus('generationStatus', 
+                        `Found ${count} active generation${count !== 1 ? 's' : ''}`, 'info');
+                    
+                    if (result.active_generations && result.active_generations.length > 0) {
+                        result.active_generations.forEach(gen => {
+                            log(`Active: ${gen.homeowner_name} - ${gen.status} (${gen.elapsed_display})`);
+                        });
+                    }
+                } else {
+                    showStatus('generationStatus', `❌ Failed to check: ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus('generationStatus', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Active generations check error: ${error.message}`);
+            }
+        }
+
+        async function testCancelGeneration() {
+            const btn = document.getElementById('cancelBtn');
+            btn.disabled = true;
+            btn.textContent = 'Cancelling...';
+            
+            log('Testing cancel generation...');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/architect/cancel_concept_generation.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'cancel_single',
+                        concept_id: currentConceptId || 1,
+                        job_id: currentJobId || 'test_job_123'
+                    })
+                });
+
+                const result = await response.json();
+                log(`Cancel response: ${JSON.stringify(result)}`);
+                
+                if (result.success) {
+                    showStatus('cancelStatus', 
+                        `✅ Generation cancelled: ${result.message}`, 'success');
+                    
+                    // Stop polling if we were polling
+                    if (pollingInterval) {
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+                    }
+                    
+                    currentJobId = null;
+                    currentConceptId = null;
+                } else {
+                    showStatus('cancelStatus', 
+                        `❌ Cancel failed: ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus('cancelStatus', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Cancel error: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Cancel Current Generation';
+            }
+        }
+
+        async function testCancelAll() {
+            log('Testing cancel all generations...');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/architect/cancel_concept_generation.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'cancel_all'
+                    })
+                });
+
+                const result = await response.json();
+                log(`Cancel all response: ${JSON.stringify(result)}`);
+                
+                if (result.success) {
+                    showStatus('cancelStatus', 
+                        `✅ Cancelled ${result.cancelled_count} generation(s)`, 'success');
+                } else {
+                    showStatus('cancelStatus', 
+                        `❌ Cancel all failed: ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus('cancelStatus', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Cancel all error: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        log('Async Concept Generation Test initialized');
+        log('Click "Generate Test Concept" to start testing');
+    </script>
+</body>
+</html>

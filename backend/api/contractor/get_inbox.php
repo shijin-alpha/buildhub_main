@@ -125,6 +125,34 @@ try {
         $plot_size = $payload['plot_size'] ?? null;
         $building_size = $payload['building_size'] ?? null;
         
+        // Extract layout request details
+        $layout_request_details = $payload['layout_request_details'] ?? null;
+        
+        // Extract additional site details from layout request
+        $budget_range = null;
+        $timeline = null;
+        $num_floors = null;
+        $orientation = null;
+        $site_considerations = null;
+        $material_preferences = null;
+        $budget_allocation = null;
+        $preferred_style = null;
+        $requirements = null;
+        $parsed_requirements = null;
+        
+        if ($layout_request_details && is_array($layout_request_details)) {
+            $budget_range = $layout_request_details['budget_range'] ?? null;
+            $timeline = $layout_request_details['timeline'] ?? null;
+            $num_floors = $layout_request_details['num_floors'] ?? null;
+            $orientation = $layout_request_details['orientation'] ?? null;
+            $site_considerations = $layout_request_details['site_considerations'] ?? null;
+            $material_preferences = $layout_request_details['material_preferences'] ?? null;
+            $budget_allocation = $layout_request_details['budget_allocation'] ?? null;
+            $preferred_style = $layout_request_details['preferred_style'] ?? null;
+            $requirements = $layout_request_details['requirements'] ?? null;
+            $parsed_requirements = $layout_request_details['parsed_requirements'] ?? null;
+        }
+        
         $items[] = [
             'id' => (int)$row['id'],
             'contractor_id' => (int)$row['contractor_id'],
@@ -141,6 +169,17 @@ try {
             'technical_details' => $technical_details,
             'plot_size' => $plot_size,
             'building_size' => $building_size,
+            'budget_range' => $budget_range,
+            'timeline' => $timeline,
+            'num_floors' => $num_floors,
+            'orientation' => $orientation,
+            'site_considerations' => $site_considerations,
+            'material_preferences' => $material_preferences,
+            'budget_allocation' => $budget_allocation,
+            'preferred_style' => $preferred_style,
+            'requirements' => $requirements,
+            'parsed_requirements' => $parsed_requirements,
+            'layout_request_details' => $layout_request_details,
             'layout_image_url' => $layout_image_url, // Add layout image URL for easy access
             'created_at' => $row['created_at'],
             'acknowledged_at' => $row['acknowledged_at'] ?? null,

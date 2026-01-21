@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Project Selection Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .test-header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .test-header p {
+            color: #6c757d;
+            margin: 0;
+        }
+        .project-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fff;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .project-select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+        .data-explanation {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .data-explanation h3 {
+            color: #1565c0;
+            margin-top: 0;
+        }
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .score-table th,
+        .score-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .score-table th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        .score-high { background-color: #d4edda; }
+        .score-medium { background-color: #fff3cd; }
+        .score-low { background-color: #f8d7da; }
+        .fix-summary {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-header">
+            <h1>Enhanced Project Selection & Data Prioritization</h1>
+            <p>Testing the improved project selection logic that prioritizes complete data</p>
+        </div>
+
+        <div class="data-explanation">
+            <h3>Data Quality Scoring System</h3>
+            <p>Projects are now sorted by data completeness score and display quality indicators:</p>
+            
+            <table class="score-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Score</th>
+                        <th>Project 37</th>
+                        <th>Project 1</th>
+                        <th>Project 2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Estimate Cost (>0)</td>
+                        <td>+10</td>
+                        <td class="score-high">✅ ₹10,69,745</td>
+                        <td class="score-low">❌ NULL</td>
+                        <td class="score-low">❌ NULL</td>
+                    </tr>
+                    <tr>
+                        <td>Plot Size</td>
+                        <td>+5</td>
+                        <td class="score-high">✅ 2800</td>
+                        <td class="score-medium">⚠️ 2000 sq ft</td>
+                        <td class="score-medium">⚠️ 2000 sq ft</td>
+                    </tr>
+                    <tr>
+                        <td>Built-up Area</td>
+                        <td>+5</td>
+                        <td class="score-high">✅ 20</td>
+                        <td class="score-low">❌ NULL</td>
+                        <td class="score-low">❌ NULL</td>
+                    </tr>
+                    <tr>
+                        <td>Floors</td>
+                        <td>+3</td>
+                        <td class="score-high">✅ 2</td>
+                        <td class="score-low">❌ NULL</td>
+                        <td class="score-low">❌ NULL</td>
+                    </tr>
+                    <tr>
+                        <td>Location</td>
+                        <td>+3</td>
+                        <td class="score-high">✅ jnbn</td>
+                        <td class="score-medium">⚠️ Mumbai, Maharashtra</td>
+                        <td class="score-medium">⚠️ Mumbai, Maharashtra</td>
+                    </tr>
+                    <tr>
+                        <td>Timeline</td>
+                        <td>+2</td>
+                        <td class="score-high">✅ 6 months</td>
+                        <td class="score-high">✅ 6 months</td>
+                        <td class="score-high">✅ 6 months</td>
+                    </tr>
+                    <tr>
+                        <td>Structured Data</td>
+                        <td>+15</td>
+                        <td class="score-high">✅ Complete JSON</td>
+                        <td class="score-low">❌ None</td>
+                        <td class="score-low">❌ None</td>
+                    </tr>
+                    <tr>
+                        <td>Source Type</td>
+                        <td>+5</td>
+                        <td class="score-high">✅ contractor_send_estimate</td>
+                        <td class="score-medium">⚠️ construction_project</td>
+                        <td class="score-medium">⚠️ construction_project</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Score</strong></td>
+                        <td><strong>Max 50+</strong></td>
+                        <td class="score-high"><strong>48+ points</strong></td>
+                        <td class="score-medium"><strong>13 points</strong></td>
+                        <td class="score-medium"><strong>13 points</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <label for="project-select" style="font-weight: 600; color: #2c3e50; margin-bottom: 8px; display: block;">
+            Select Project (Sorted by Data Quality)
+        </label>
+        <select id="project-select" class="project-select">
+            <option value="">Choose a project...</option>
+            <!-- Project 37 should appear first with ✅ indicator -->
+            <option value="37">SHIJIN THOMAS MCA2024-2026 Construction (₹10,69,745) ✅</option>
+            <!-- Projects 1 and 2 should appear after with ⚠️ indicator -->
+            <option value="1">SHIJIN THOMAS MCA2024-2026 Construction ⚠️</option>
+            <option value="2">SHIJIN THOMAS MCA2024-2026 Construction ⚠️</option>
+        </select>
+
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #856404;">
+            <strong>Quality Indicators:</strong>
+            <ul style="margin: 10px 0 0 0;">
+                <li><strong>✅ Complete Data</strong> - Score ≥30 (All essential fields populated)</li>
+                <li><strong>⚠️ Partial Data</strong> - Score 15-29 (Some fields missing)</li>
+                <li><strong>❌ Incomplete Data</strong> - Score <15 (Many fields missing)</li>
+            </ul>
+        </div>
+
+        <div class="fix-summary">
+            <strong>✅ Enhanced Project Selection Implementation:</strong>
+            <ul style="margin: 10px 0 0 0;">
+                <li><strong>Smart Data Prioritization:</strong> getSelectedProjectInfo() now finds the most complete version of project data</li>
+                <li><strong>Quality Scoring:</strong> calculateProjectDataScore() rates projects based on data completeness</li>
+                <li><strong>Sorted Dropdown:</strong> Projects appear in order of data quality (best first)</li>
+                <li><strong>Visual Indicators:</strong> Quality icons help users identify complete projects</li>
+                <li><strong>Source Preference:</strong> contractor_send_estimate data prioritized over construction_projects</li>
+                <li><strong>Structured Data Bonus:</strong> Projects with detailed JSON data get higher scores</li>
+            </ul>
+        </div>
+
+        <div style="background: #e2e3e5; border: 1px solid #d6d8db; border-radius: 8px; padding: 15px; margin-top: 20px; color: #383d41;">
+            <strong>Expected Behavior:</strong>
+            <p style="margin: 10px 0 0 0;">
+                When Project 37 is selected, the project info grid should now display the complete data:
+                Plot Size: 2800, Built-up Area: 20, Floors: 2, Location: jnbn, Estimate: ₹10,69,745
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('project-select').addEventListener('change', function(e) {
+            const selectedValue = e.target.value;
+            if (selectedValue) {
+                alert(`Selected Project ${selectedValue}\n\nThis would now trigger the enhanced getSelectedProjectInfo() function to return the most complete project data available.`);
+            }
+        });
+    </script>
+</body>
+</html>

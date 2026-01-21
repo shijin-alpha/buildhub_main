@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Stage Progression System Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2.5rem;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.125rem;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .feature-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .feature-section h3 {
+            margin: 0 0 1.5rem 0;
+            color: #1f2937;
+            font-size: 1.5rem;
+        }
+        .stages-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stage-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .stage-card.completed {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        .stage-card.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .stage-card.pending {
+            border-color: #d1d5db;
+            background: #f9fafb;
+            opacity: 0.7;
+        }
+        .stage-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .stage-name {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .stage-percentage {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        .stage-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        .stage-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .stage-status {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .stage-status.completed {
+            color: #10b981;
+        }
+        .stage-status.active {
+            color: #3b82f6;
+        }
+        .stage-status.pending {
+            color: #6b7280;
+        }
+        .demo-controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin: 1.5rem 0;
+        }
+        .demo-controls h4 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+        }
+        .control-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .control-group label {
+            font-weight: 500;
+            color: #374151;
+            min-width: 120px;
+        }
+        .control-group select,
+        .control-group input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .validation-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        .validation-result.success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+        .validation-result.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+        .validation-result.warning {
+            background: #fefbf2;
+            border: 1px solid #fed7aa;
+            color: #ea580c;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: flex-start;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li::before {
+            content: "✅ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .comparison-card {
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .comparison-card.before {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .comparison-card.after {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        .comparison-card h4 {
+            margin: 0 0 1rem 0;
+        }
+        .comparison-card.before h4 {
+            color: #dc2626;
+        }
+        .comparison-card.after h4 {
+            color: #16a34a;
+        }
+        .overall-progress {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .overall-progress h4 {
+            margin: 0 0 1rem 0;
+        }
+        .overall-progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        .overall-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+        }
+        .implementation-steps {
+            counter-reset: step-counter;
+            padding-left: 0;
+        }
+        .implementation-steps li {
+            counter-increment: step-counter;
+            margin: 1.5rem 0;
+            padding-left: 3rem;
+            position: relative;
+        }
+        .implementation-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #667eea;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+        .code-example {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .success-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .success-banner h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+        }
+        .success-banner p {
+            margin: 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Construction Stage Progression System</h1>
+            <p>Logical stage-based progress tracking with 8 stages × 12.5% each</p>
+        </div>
+
+        <div class="content">
+            <div class="feature-section">
+                <h3>🎯 System Overview</h3>
+                <p>The new stage progression system implements logical construction workflow with predefined stages, each allocated exactly 12.5% of total project progress (8 stages × 12.5% = 100%).</p>
+                
+                <ul class="feature-list">
+                    <li><strong>8 Predefined Stages:</strong> Foundation → Structure → Brickwork → Roofing → Electrical → Plumbing → Finishing → Final</li>
+                    <li><strong>Fixed Allocation:</strong> Each stage has exactly 12.5% of total project progress</li>
+                    <li><strong>Sequential Progression:</strong> Stages must be completed in order before next becomes available</li>
+                    <li><strong>Automatic Completion:</strong> Stages are marked complete when reaching ~12.5% progress</li>
+                    <li><strong>Smart Validation:</strong> Daily progress input is limited by remaining stage percentage</li>
+                    <li><strong>Visual Progress Tracking:</strong> Real-time stage completion visualization</li>
+                </ul>
+            </div>
+
+            <div class="feature-section">
+                <h3>🏗️ Construction Stages Demo</h3>
+                <p>Interactive demonstration of the 8-stage progression system:</p>
+                
+                <div class="overall-progress">
+                    <h4>Overall Project Progress</h4>
+                    <div class="overall-progress-bar">
+                        <div class="overall-progress-fill" id="overall-progress-fill" style="width: 37.5%"></div>
+                    </div>
+                    <div class="progress-text" id="overall-progress-text">37.5% Complete (3 of 8 stages)</div>
+                </div>
+
+                <div class="stages-demo" id="stages-demo">
+                    <!-- Stages will be populated by JavaScript -->
+                </div>
+
+                <div class="demo-controls">
+                    <h4>🎮 Interactive Demo Controls</h4>
+                    <div class="control-group">
+                        <label for="stage-select">Select Stage:</label>
+                        <select id="stage-select">
+                            <option value="">Choose a stage...</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="progress-input">Daily Progress %:</label>
+                        <input type="number" id="progress-input" min="0" max="12.5" step="0.1" placeholder="0.0">
+                        <button class="btn" onclick="addProgress()">Add Progress</button>
+                    </div>
+                    <div class="control-group">
+                        <button class="btn" onclick="resetDemo()" style="background: #dc2626;">Reset Demo</button>
+                        <button class="btn" onclick="simulateProject()" style="background: #059669;">Simulate Full Project</button>
+                    </div>
+                    <div id="validation-result" class="validation-result" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>📊 Before vs After Comparison</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-card before">
+                        <h4>❌ Old System Problems</h4>
+                        <ul>
+                            <li>No stage completion logic</li>
+                            <li>Unlimited progress per stage</li>
+                            <li>Stages could be repeated indefinitely</li>
+                            <li>No validation of stage progression</li>
+                            <li>Manual percentage tracking</li>
+                            <li>Inconsistent progress allocation</li>
+                            <li>No visual stage completion feedback</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card after">
+                        <h4>✅ New System Benefits</h4>
+                        <ul>
+                            <li>Logical stage completion at 12.5%</li>
+                            <li>Automatic stage progression</li>
+                            <li>Completed stages hidden from selection</li>
+                            <li>Smart validation prevents overages</li>
+                            <li>Real-time progress visualization</li>
+                            <li>Consistent 8-stage allocation</li>
+                            <li>Clear visual completion indicators</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>🔧 Implementation Details</h3>
+                <p>The system is implemented with the following key components:</p>
+                
+                <ol class="implementation-steps">
+                    <li><strong>Stage Definition System:</strong> 8 predefined stages with icons, descriptions, and 12.5% allocation each</li>
+                    <li><strong>Progress Calculation Logic:</strong> Tracks cumulative progress per stage and determines completion status</li>
+                    <li><strong>Available Stages Filter:</strong> Only shows incomplete stages + next available stage in dropdown</li>
+                    <li><strong>Validation Engine:</strong> Prevents progress input that exceeds stage limits</li>
+                    <li><strong>Visual Progress Components:</strong> Real-time stage cards and progress bars</li>
+                    <li><strong>Backend API Integration:</strong> Fetches project progress data for stage calculations</li>
+                </ol>
+
+                <div class="code-example">
+// Example: Stage progression validation
+const validateDailyProgress = (selectedStage, incrementalPercentage, stageBreakdown) => {
+  const stage = CONSTRUCTION_STAGES.find(s => s.name === selectedStage);
+  const stageData = stageBreakdown.stages[selectedStage];
+  const newTotal = stageData.current_progress + incrementalPercentage;
+  
+  // Check if exceeds stage limit (12.5%)
+  if (newTotal > stage.percentage) {
+    const remaining = stage.percentage - stageData.current_progress;
+    return {
+      isValid: false,
+      errors: [`This stage can only accept ${remaining.toFixed(1)}% more progress`]
+    };
+  }
+  
+  return { isValid: true, errors: [], warnings: [] };
+};
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>🧪 Testing Instructions</h3>
+                <p>To test the new stage progression system:</p>
+                
+                <ol>
+                    <li><strong>Navigate to Contractor Dashboard:</strong> Log in as a contractor</li>
+                    <li><strong>Go to Progress Updates:</strong> Click "Progress Updates" tab</li>
+                    <li><strong>Select a Project:</strong> Choose a project from the dropdown</li>
+                    <li><strong>Observe Stage Selection:</strong> Only available stages appear in dropdown</li>
+                    <li><strong>Test Progress Limits:</strong> Try entering progress that exceeds stage limit</li>
+                    <li><strong>Complete a Stage:</strong> Add progress until stage reaches 12.5%</li>
+                    <li><strong>Verify Stage Completion:</strong> Completed stage should disappear from dropdown</li>
+                    <li><strong>Check Visual Progress:</strong> Stage cards should update with completion status</li>
+                </ol>
+
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 1rem; margin: 1rem 0;">
+                    <strong>💡 Key Testing Points:</strong>
+                    <ul style="margin: 0.5rem 0;">
+                        <li>Foundation stage should be available first</li>
+                        <li>Progress input is limited to remaining stage percentage</li>
+                        <li>Completed stages (≥12.5%) are hidden from selection</li>
+                        <li>Visual progress bars update in real-time</li>
+                        <li>Overall project progress = sum of completed stages</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="success-banner">
+                <h3>🎉 Stage Progression System Implemented!</h3>
+                <p>Logical construction workflow with 8 stages × 12.5% allocation ensures consistent and realistic project tracking.</p>
+            </div>
+
+            <div class="feature-section">
+                <h3>📁 Files Modified/Created</h3>
+                <ul>
+                    <li><code>frontend/src/utils/stageProgressionLogic.js</code> - Core stage progression logic and validation</li>
+                    <li><code>frontend/src/components/EnhancedProgressUpdate.jsx</code> - Enhanced with stage progression UI</li>
+                    <li><code>frontend/src/styles/StageProgression.css</code> - Styling for stage progression components</li>
+                    <li><code>backend/api/contractor/get_project_progress.php</code> - API to fetch project progress data</li>
+                </ul>
+                
+                <p style="margin-top: 1rem; color: #6b7280; font-size: 0.875rem;">
+                    The implementation maintains full backward compatibility while adding the new logical stage progression system.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Construction stages data
+        const CONSTRUCTION_STAGES = [
+            { id: 1, name: 'Foundation', icon: '🏗️', percentage: 12.5 },
+            { id: 2, name: 'Structure', icon: '🔨', percentage: 12.5 },
+            { id: 3, name: 'Brickwork', icon: '🧱', percentage: 12.5 },
+            { id: 4, name: 'Roofing', icon: '🏠', percentage: 12.5 },
+            { id: 5, name: 'Electrical', icon: '⚡', percentage: 12.5 },
+            { id: 6, name: 'Plumbing', icon: '🚿', percentage: 12.5 },
+            { id: 7, name: 'Finishing', icon: '🎨', percentage: 12.5 },
+            { id: 8, name: 'Final', icon: '✨', percentage: 12.5 }
+        ];
+
+        // Demo state
+        let stageProgress = {};
+        let totalProgress = 0;
+
+        // Initialize demo
+        function initializeDemo() {
+            // Initialize stage progress
+            CONSTRUCTION_STAGES.forEach(stage => {
+                stageProgress[stage.name] = {
+                    current_progress: 0,
+                    is_completed: false,
+                    is_active: false
+                };
+            });
+
+            // Set initial demo state (3 stages completed)
+            stageProgress['Foundation'] = { current_progress: 12.5, is_completed: true, is_active: false };
+            stageProgress['Structure'] = { current_progress: 12.5, is_completed: true, is_active: false };
+            stageProgress['Brickwork'] = { current_progress: 12.5, is_completed: true, is_active: false };
+            stageProgress['Roofing'] = { current_progress: 8.2, is_completed: false, is_active: true };
+
+            updateDisplay();
+        }
+
+        // Update the visual display
+        function updateDisplay() {
+            const stagesContainer = document.getElementById('stages-demo');
+            const stageSelect = document.getElementById('stage-select');
+            
+            // Clear existing content
+            stagesContainer.innerHTML = '';
+            stageSelect.innerHTML = '<option value="">Choose a stage...</option>';
+
+            // Calculate total progress
+            totalProgress = 0;
+            let completedStages = 0;
+
+            CONSTRUCTION_STAGES.forEach(stage => {
+                const progress = stageProgress[stage.name];
+                
+                if (progress.is_completed) {
+                    totalProgress += stage.percentage;
+                    completedStages++;
+                } else {
+                    totalProgress += progress.current_progress;
+                }
+
+                // Create stage card
+                const stageCard = document.createElement('div');
+                stageCard.className = `stage-card ${progress.is_completed ? 'completed' : progress.is_active ? 'active' : 'pending'}`;
+                
+                const progressPercent = (progress.current_progress / stage.percentage) * 100;
+                
+                stageCard.innerHTML = `
+                    <div class="stage-icon">${stage.icon}</div>
+                    <div class="stage-name">${stage.name}</div>
+                    <div class="stage-percentage">${progress.current_progress.toFixed(1)}/12.5%</div>
+                    <div class="stage-progress-bar">
+                        <div class="stage-progress-fill" style="width: ${Math.min(progressPercent, 100)}%; background-color: ${progress.is_completed ? '#10b981' : progress.is_active ? '#3b82f6' : '#e5e7eb'}"></div>
+                    </div>
+                    <div class="stage-status ${progress.is_completed ? 'completed' : progress.is_active ? 'active' : 'pending'}">
+                        ${progress.is_completed ? '✅ Completed' : progress.is_active ? '🔄 In Progress' : '⏳ Pending'}
+                    </div>
+                `;
+                
+                stagesContainer.appendChild(stageCard);
+
+                // Add to select if available
+                if (!progress.is_completed) {
+                    const option = document.createElement('option');
+                    option.value = stage.name;
+                    option.textContent = `${stage.icon} ${stage.name} (${(stage.percentage - progress.current_progress).toFixed(1)}% remaining)`;
+                    stageSelect.appendChild(option);
+                }
+            });
+
+            // Update overall progress
+            document.getElementById('overall-progress-fill').style.width = `${totalProgress}%`;
+            document.getElementById('overall-progress-text').textContent = 
+                `${totalProgress.toFixed(1)}% Complete (${completedStages} of 8 stages)`;
+
+            // Update progress input max value
+            const selectedStage = document.getElementById('stage-select').value;
+            const progressInput = document.getElementById('progress-input');
+            
+            if (selectedStage && stageProgress[selectedStage]) {
+                const remaining = 12.5 - stageProgress[selectedStage].current_progress;
+                progressInput.max = remaining.toFixed(1);
+                progressInput.placeholder = `Max: ${remaining.toFixed(1)}%`;
+            } else {
+                progressInput.max = 12.5;
+                progressInput.placeholder = '0.0';
+            }
+        }
+
+        // Add progress to selected stage
+        function addProgress() {
+            const selectedStage = document.getElementById('stage-select').value;
+            const progressValue = parseFloat(document.getElementById('progress-input').value);
+            const resultDiv = document.getElementById('validation-result');
+
+            if (!selectedStage) {
+                showValidationResult('Please select a stage first.', 'error');
+                return;
+            }
+
+            if (!progressValue || progressValue <= 0) {
+                showValidationResult('Please enter a valid progress percentage.', 'error');
+                return;
+            }
+
+            const currentProgress = stageProgress[selectedStage].current_progress;
+            const newTotal = currentProgress + progressValue;
+
+            if (newTotal > 12.5) {
+                const remaining = 12.5 - currentProgress;
+                showValidationResult(`Cannot add ${progressValue}%. Only ${remaining.toFixed(1)}% remaining in this stage.`, 'error');
+                return;
+            }
+
+            // Add progress
+            stageProgress[selectedStage].current_progress = newTotal;
+            stageProgress[selectedStage].is_active = true;
+
+            // Check if stage is completed
+            if (newTotal >= 12.5 * 0.95) { // 95% threshold
+                stageProgress[selectedStage].is_completed = true;
+                stageProgress[selectedStage].is_active = false;
+                stageProgress[selectedStage].current_progress = 12.5; // Set to exact 12.5%
+                
+                // Activate next stage
+                const currentIndex = CONSTRUCTION_STAGES.findIndex(s => s.name === selectedStage);
+                if (currentIndex < CONSTRUCTION_STAGES.length - 1) {
+                    const nextStage = CONSTRUCTION_STAGES[currentIndex + 1];
+                    stageProgress[nextStage.name].is_active = true;
+                }
+
+                showValidationResult(`🎉 ${selectedStage} stage completed! Moving to next stage.`, 'success');
+            } else {
+                showValidationResult(`✅ Added ${progressValue}% to ${selectedStage}. ${(12.5 - newTotal).toFixed(1)}% remaining.`, 'success');
+            }
+
+            // Clear input and update display
+            document.getElementById('progress-input').value = '';
+            document.getElementById('stage-select').value = '';
+            updateDisplay();
+        }
+
+        // Show validation result
+        function showValidationResult(message, type) {
+            const resultDiv = document.getElementById('validation-result');
+            resultDiv.textContent = message;
+            resultDiv.className = `validation-result ${type}`;
+            resultDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Reset demo to initial state
+        function resetDemo() {
+            CONSTRUCTION_STAGES.forEach(stage => {
+                stageProgress[stage.name] = {
+                    current_progress: 0,
+                    is_completed: false,
+                    is_active: false
+                };
+            });
+            
+            // Set Foundation as active
+            stageProgress['Foundation'].is_active = true;
+            
+            document.getElementById('progress-input').value = '';
+            document.getElementById('stage-select').value = '';
+            updateDisplay();
+            showValidationResult('Demo reset! Foundation stage is now active.', 'success');
+        }
+
+        // Simulate a full project completion
+        function simulateProject() {
+            CONSTRUCTION_STAGES.forEach((stage, index) => {
+                if (index < 6) { // Complete first 6 stages
+                    stageProgress[stage.name] = {
+                        current_progress: 12.5,
+                        is_completed: true,
+                        is_active: false
+                    };
+                } else if (index === 6) { // Finishing stage in progress
+                    stageProgress[stage.name] = {
+                        current_progress: 8.7,
+                        is_completed: false,
+                        is_active: true
+                    };
+                } else { // Final stage pending
+                    stageProgress[stage.name] = {
+                        current_progress: 0,
+                        is_completed: false,
+                        is_active: false
+                    };
+                }
+            });
+            
+            updateDisplay();
+            showValidationResult('Simulated project at 83.7% completion (6.5 stages done).', 'success');
+        }
+
+        // Update progress input limits when stage selection changes
+        document.getElementById('stage-select').addEventListener('change', updateDisplay);
+
+        // Initialize the demo
+        initializeDemo();
+
+        console.log('🏗️ Construction Stage Progression System Demo loaded!');
+        console.log('✅ 8 stages × 12.5% = 100% total allocation');
+        console.log('🔄 Sequential progression with automatic completion');
+        console.log('🎯 Smart validation prevents stage overages');
+    </script>
+</body>
+</html>

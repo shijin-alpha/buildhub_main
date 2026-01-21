@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Technical Details Payment Function</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+        }
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Technical Details Payment Function Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Payment Initiation</h2>
+        <p>This test will verify that the technical details payment APIs are working correctly.</p>
+        
+        <button class="btn" onclick="testPaymentInitiation()">Test Payment Initiation</button>
+        <button class="btn" onclick="testPaymentVerification()">Test Payment Verification</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Mock session data
+        const mockUser = {
+            id: 1,
+            first_name: 'Test',
+            last_name: 'User',
+            email: 'test@example.com'
+        };
+        
+        // Store mock user in session storage
+        sessionStorage.setItem('user', JSON.stringify(mockUser));
+
+        async function testPaymentInitiation() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing payment initiation...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        house_plan_id: 1, // Test with house plan ID 1
+                        amount: 8000
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Payment initiation result:', result);
+                
+                if (result.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Payment Initiation Successful!</h3>
+                            <p><strong>Payment ID:</strong> ${result.payment_id}</p>
+                            <p><strong>Razorpay Order ID:</strong> ${result.razorpay_order_id}</p>
+                            <p><strong>Amount:</strong> ₹${result.amount / 100}</p>
+                            <p><strong>Description:</strong> ${result.description}</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>Payment Initiation Failed</h3>
+                            <p><strong>Error:</strong> ${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Payment initiation error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testPaymentVerification() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing payment verification with mock data...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/verify_technical_details_payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        razorpay_payment_id: 'pay_test123',
+                        razorpay_order_id: 'order_test123',
+                        razorpay_signature: 'signature_test123',
+                        payment_id: 1
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Payment verification result:', result);
+                
+                if (result.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Payment Verification API Response</h3>
+                            <p><strong>Success:</strong> ${result.success}</p>
+                            <p><strong>Message:</strong> ${result.message}</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>Payment Verification Response</h3>
+                            <p><strong>Success:</strong> ${result.success}</p>
+                            <p><strong>Error:</strong> ${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Payment verification error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test function definition (similar to the one in HomeownerDashboard)
+        const handlePayToUnlockTechnicalDetails = async (design) => {
+            console.log('Function called with design:', design);
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        house_plan_id: design.id,
+                        amount: design.unlock_price || 8000
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Payment initiation result:', result);
+                
+                if (!result?.success) {
+                    alert('Failed to initiate payment: ' + (result?.message || 'Unknown error'));
+                    return;
+                }
+
+                // Mock Razorpay options (in real app, this would open Razorpay)
+                console.log('Would open Razorpay with options:', {
+                    key: result.razorpay_key_id,
+                    amount: result.amount,
+                    currency: result.currency || 'INR',
+                    name: 'BuildHub',
+                    description: result.description,
+                    order_id: result.razorpay_order_id
+                });
+                
+                alert('Payment initiation successful! Check console for details.');
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Network error during payment: ' + error.message);
+            }
+        };
+
+        // Test the function
+        function testFunctionCall() {
+            const mockDesign = {
+                id: 1,
+                plan_name: 'Test House Plan',
+                unlock_price: 8000
+            };
+            
+            handlePayToUnlockTechnicalDetails(mockDesign);
+        }
+
+        // Add test button
+        document.addEventListener('DOMContentLoaded', function() {
+            const testSection = document.querySelector('.test-section');
+            const testButton = document.createElement('button');
+            testButton.className = 'btn';
+            testButton.textContent = 'Test Function Call';
+            testButton.onclick = testFunctionCall;
+            testSection.appendChild(testButton);
+        });
+    </script>
+</body>
+</html>

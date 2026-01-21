@@ -41,7 +41,7 @@ try {
                 a.message,
                 lr.id as layout_request_id,
                 lr.user_id as homeowner_id,
-                lr.plot_size, lr.budget_range, lr.requirements, lr.location, lr.timeline,
+                lr.plot_size, lr.building_size, lr.budget_range, lr.requirements, lr.location, lr.timeline,
                 lr.preferred_style, lr.layout_type, lr.selected_layout_id, lr.layout_file,
                 lr.site_images, lr.reference_images, lr.room_images,
                 lr.orientation, lr.site_considerations, lr.material_preferences,
@@ -88,6 +88,7 @@ try {
             'layout_request' => [
                 'id' => (int)$row['layout_request_id'],
                 'plot_size' => $row['plot_size'],
+                'building_size' => $row['building_size'],
                 'budget_range' => $row['budget_range'],
                 'requirements' => $row['requirements'],
                 'requirements_parsed' => $requirements_parsed,

@@ -31,10 +31,12 @@ import HomeownerProgressReports from './HomeownerProgressReports';
 import ConfirmModal from './ConfirmModal';
 import RoomImprovementAssistant from './RoomImprovementAssistant';
 import InlineRoomImprovement from './InlineRoomImprovement';
+import ConstructionTimeline from './ConstructionTimeline';
 import ConstructionProgressVisualization from './ConstructionProgressVisualization';
 import '../styles/SupportSystem.css';
 import '../styles/RoomImprovementAssistant.css';
 import '../styles/InlineRoomImprovement.css';
+import '../styles/ConstructionTimeline.css';
 
 const HomeownerDashboard = () => {
   const navigate = useNavigate();
@@ -42,6 +44,7 @@ const HomeownerDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [requestsTab, setRequestsTab] = useState('all'); // 'all' or 'contractors'
   const [receivedDesigns, setReceivedDesigns] = useState([]);
+  const [conceptPreviews, setConceptPreviews] = useState([]);
   const [comments, setComments] = useState({}); // designId -> list
   const [commentDrafts, setCommentDrafts] = useState({}); // designId -> text
   const [commentRatings, setCommentRatings] = useState({}); // designId -> 1..5
@@ -1129,6 +1132,147 @@ const HomeownerDashboard = () => {
     }
   };
 
+  // Initiate payment to unlock technical details for house plans
+  const handlePayToUnlockTechnicalDetails = async (design) => {
+    console.log('handlePayToUnlockTechnicalDetails called with design:', design);
+    
+    if (!design) {
+      console.error('No design object passed to handlePayToUnlockTechnicalDetails');
+      toast.error('Invalid design data');
+      return;
+    }
+
+    // For house plans, use house_plan_id; for regular designs, use id
+    const planId = design.house_plan_id || (typeof design.id === 'string' && design.id.startsWith('hp_') ? 
+      parseInt(design.id.replace('hp_', '')) : design.id);
+    
+    if (!planId || planId <= 0) {
+      console.error('Invalid house plan ID:', { design, planId });
+      toast.error('Invalid house plan ID');
+      return;
+    }
+
+    console.log('Using house plan ID:', planId);
+
+    setPaymentError('');
+    setPaymentLoading(true);
+    setPayingDesignId(design.id);
+    
+    try {
+      // Wait for Razorpay to be available
+      let attempts = 0;
+      while ((!window.Razorpay || window._razorpayLoading) && attempts < 20) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+
+      if (!window.Razorpay) {
+        setPaymentError('Payment system not loaded. Please refresh the page and try again.');
+        toast.error('Payment system not loaded. Please refresh the page and try again.');
+        setPaymentLoading(false);
+        setPayingDesignId(null);
+        return;
+      }
+
+      // Request order from backend for technical details payment
+      const requestBody = {
+        house_plan_id: planId,
+        amount: design.unlock_price || 8000 // Default unlock price
+      };
+      
+      console.log('Sending payment request:', requestBody);
+      
+      const response = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(requestBody)
+      });
+      
+      const result = await response.json();
+      console.log('Payment initiation result:', result);
+      
+      if (!result?.success) {
+        setPaymentError(result?.message || 'Failed to initiate technical details payment');
+        toast.error(result?.message || 'Failed to initiate technical details payment');
+        setPaymentLoading(false);
+        setPayingDesignId(null);
+        return;
+      }
+
+      const options = {
+        key: result.razorpay_key_id,
+        amount: result.amount, // in paise
+        currency: result.currency || 'INR',
+        name: 'BuildHub',
+        description: result.description || `Unlock Technical Details for ${design.design_title || design.plan_name || 'House Plan'}`,
+        order_id: result.razorpay_order_id,
+        handler: async function (rzpRes) {
+          try {
+            console.log('Payment successful, verifying...', rzpRes);
+            const verifyRes = await fetch('/buildhub/backend/api/homeowner/verify_technical_details_payment.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                razorpay_payment_id: rzpRes.razorpay_payment_id,
+                razorpay_order_id: rzpRes.razorpay_order_id,
+                razorpay_signature: rzpRes.razorpay_signature,
+                payment_id: result.payment_id
+              })
+            });
+            const verifyJson = await verifyRes.json();
+            console.log('Payment verification result:', verifyJson);
+            
+            if (verifyJson?.success) {
+              // Refresh designs so technical details unlock status is updated
+              const r3 = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', { credentials: 'include' });
+              const j3 = await r3.json().catch(() => ({}));
+              if (j3?.success) setReceivedDesigns(Array.isArray(j3.designs) ? j3.designs : []);
+              
+              // Show success message
+              toast.success('Payment successful! Technical details unlocked.');
+              setPaymentError('');
+            } else {
+              setPaymentError(verifyJson?.message || 'Payment verification failed');
+              toast.error(verifyJson?.message || 'Payment verification failed');
+            }
+          } catch (error) {
+            console.error('Technical details payment verification error:', error);
+            setPaymentError('Payment verification failed');
+            toast.error('Payment verification failed');
+          } finally {
+            setPaymentLoading(false);
+            setPayingDesignId(null);
+          }
+        },
+        prefill: {
+          name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || undefined,
+          email: user?.email
+        },
+        theme: { color: '#2563eb' },
+        modal: {
+          ondismiss: function() {
+            console.log('Payment modal dismissed');
+            setPaymentLoading(false);
+            setPayingDesignId(null);
+          }
+        }
+      };
+
+      console.log('Opening Razorpay with options:', options);
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      
+    } catch (error) {
+      console.error('Technical details payment error:', error);
+      setPaymentError('Network error during payment');
+      toast.error('Network error during payment');
+      setPaymentLoading(false);
+      setPayingDesignId(null);
+    }
+  };
+
   // Helper: has paid access
   const hasPaidAccess = (design) => {
     // Treat any explicit completed status as paid
@@ -1428,6 +1572,20 @@ const HomeownerDashboard = () => {
       }
     } catch (e) {
       console.error('Error fetching designs:', e);
+    }
+  };
+
+  const fetchConceptPreviews = async () => {
+    try {
+      const response = await fetch('/buildhub/backend/api/homeowner/get_concept_previews.php', {
+        credentials: 'include'
+      });
+      const result = await response.json();
+      if (result.success) {
+        setConceptPreviews(result.previews || []);
+      }
+    } catch (e) {
+      console.error('Error fetching concept previews:', e);
     }
   };
 
@@ -2190,6 +2348,146 @@ const HomeownerDashboard = () => {
         </div>
       </div>
 
+      {/* Concept Previews */}
+      {conceptPreviews.length > 0 && (
+        <div className="section-card">
+          <div className="section-header">
+            <h2>Conceptual Design Previews</h2>
+            <p>Early-stage architectural concept visualizations from your architect – for discussion only, not final plans</p>
+          </div>
+          <div className="section-content">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {conceptPreviews.map(preview => (
+                <div key={preview.id} className="concept-preview-card" style={{
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  background: '#fff',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                  {/* Preview Image */}
+                  <div style={{ 
+                    height: '180px', 
+                    background: preview.status === 'completed' && preview.image_url ? `url(${preview.image_url})` : '#f3f4f6',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative'
+                  }}>
+                    {preview.status === 'processing' || preview.status === 'generating' ? (
+                      <div style={{ textAlign: 'center', color: '#666' }}>
+                        <div className="loading-spinner" style={{ margin: '0 auto 8px' }}></div>
+                        <p>Generating...</p>
+                      </div>
+                    ) : preview.status === 'failed' ? (
+                      <div style={{ textAlign: 'center', color: '#dc2626' }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>⚠️</div>
+                        <p>Generation Failed</p>
+                      </div>
+                    ) : !preview.image_url ? (
+                      <div style={{ textAlign: 'center', color: '#666' }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>🖼️</div>
+                        <p>No Image</p>
+                      </div>
+                    ) : null}
+                    
+                    {/* Status Badge */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                      background: preview.status === 'completed' ? '#10b981' : 
+                                 preview.status === 'failed' ? '#dc2626' : '#f59e0b',
+                      color: 'white'
+                    }}>
+                      {preview.status === 'completed' ? 'Ready' : 
+                       preview.status === 'failed' ? 'Failed' : 'Processing'}
+                    </div>
+
+                    {/* Disclaimer Badge */}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      left: '8px',
+                      padding: '4px 8px',
+                      borderRadius: '8px',
+                      fontSize: '0.7rem',
+                      background: 'rgba(0,0,0,0.7)',
+                      color: 'white'
+                    }}>
+                      Conceptual Preview Only
+                    </div>
+                  </div>
+                  
+                  {/* Preview Details */}
+                  <div style={{ padding: '16px' }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem' }}>
+                      Concept by {preview.architect_name || 'Architect'}
+                    </h4>
+                    <p style={{ 
+                      margin: '0 0 12px 0', 
+                      fontSize: '0.85rem', 
+                      color: '#666',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {preview.original_description}
+                    </p>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      fontSize: '0.75rem',
+                      color: '#666',
+                      marginBottom: '12px'
+                    }}>
+                      <span>Created: {new Date(preview.created_at).toLocaleDateString()}</span>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {preview.status === 'completed' && preview.image_url && (
+                        <a
+                          href={preview.image_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-sm btn-primary"
+                          style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}
+                        >
+                          View Full Size
+                        </a>
+                      )}
+                    </div>
+                    
+                    {/* Important Notice */}
+                    <div style={{
+                      marginTop: '12px',
+                      padding: '8px',
+                      background: '#fef3c7',
+                      border: '1px solid #fbbf24',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      color: '#92400e'
+                    }}>
+                      <strong>Important:</strong> This is a conceptual design preview for discussion only, not a final architectural plan.
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Recent Activity */}
       <div className="section-header">
         <h2>Recent Activity</h2>
@@ -2485,7 +2783,15 @@ const HomeownerDashboard = () => {
                                     </div>
                                     <button 
                                       className="btn btn-primary"
-                                      onClick={() => handlePayToUnlockTechnicalDetails(d)}
+                                      onClick={() => {
+                                        console.log('Technical details unlock button clicked');
+                                        if (typeof handlePayToUnlockTechnicalDetails === 'function') {
+                                          handlePayToUnlockTechnicalDetails(d);
+                                        } else {
+                                          console.error('handlePayToUnlockTechnicalDetails is not defined');
+                                          toast.error('Payment function not available. Please refresh the page.');
+                                        }
+                                      }}
                                       disabled={paymentLoading && payingDesignId === d.id}
                                       style={{ fontSize: '14px', padding: '8px 16px' }}
                                     >
@@ -2542,7 +2848,24 @@ const HomeownerDashboard = () => {
                           </div>
                           <button
                             className="btn btn-primary"
-                            onClick={() => d.source_type === 'house_plan' ? handlePayToUnlockTechnicalDetails(d) : handlePayToView(d)}
+                            onClick={() => {
+                              console.log('Pay to view/unlock button clicked, design:', d);
+                              if (d.source_type === 'house_plan') {
+                                if (typeof handlePayToUnlockTechnicalDetails === 'function') {
+                                  handlePayToUnlockTechnicalDetails(d);
+                                } else {
+                                  console.error('handlePayToUnlockTechnicalDetails is not defined');
+                                  toast.error('Payment function not available. Please refresh the page.');
+                                }
+                              } else {
+                                if (typeof handlePayToView === 'function') {
+                                  handlePayToView(d);
+                                } else {
+                                  console.error('handlePayToView is not defined');
+                                  toast.error('Payment function not available. Please refresh the page.');
+                                }
+                              }
+                            }}
                             disabled={paymentLoading && payingDesignId === d.id}
                           >
                             {paymentLoading && payingDesignId === d.id ? 'Processing…' : 
@@ -2907,7 +3230,7 @@ const HomeownerDashboard = () => {
             href="#"
             className={`nav-item sb-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             data-title="Dashboard"
-            onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); fetchMyProjects(); fetchReceivedDesigns(); }}
+            onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); fetchMyProjects(); fetchReceivedDesigns(); fetchConceptPreviews(); }}
           >
             <span className="nav-label sb-label">Dashboard</span>
           </a>
@@ -2979,6 +3302,15 @@ const HomeownerDashboard = () => {
             onClick={(e) => { e.preventDefault(); setActiveTab('room-improvement'); }}
           >
             <span className="nav-label sb-label">Room Improvement Assistant</span>
+          </a>
+          
+          <a
+            href="#"
+            className={`nav-item sb-item ${activeTab === 'construction-timeline' ? 'active' : ''}`}
+            data-title="Construction Timeline"
+            onClick={(e) => { e.preventDefault(); setActiveTab('construction-timeline'); }}
+          >
+            <span className="nav-label sb-label">Construction Timeline</span>
           </a>
 
         </nav>
@@ -3239,6 +3571,23 @@ const HomeownerDashboard = () => {
             </div>
             <div className="section-content">
               <InlineRoomImprovement />
+            </div>
+          </div>
+        )}
+        
+        {activeTab === 'construction-timeline' && (
+          <div className="section-card" style={{ marginTop: '1rem' }}>
+            <div className="section-header">
+              <div className="section-title">
+                <span className="section-icon">🏗️</span>
+                <div>
+                  <h2>Construction Timeline</h2>
+                  <p>Track your construction progress with detailed timeline visualization and milestones</p>
+                </div>
+              </div>
+            </div>
+            <div className="section-content">
+              <ConstructionTimeline />
             </div>
           </div>
         )}
@@ -5623,17 +5972,6 @@ const ImageViewer = ({ viewer, setViewer }) => {
           </a>
         </div>
       </div>
-
-      {/* Room Improvement Assistant Modal - Kept for fallback */}
-      {showRoomImprovementModal && (
-        <RoomImprovementAssistant 
-          show={showRoomImprovementModal}
-          onClose={() => {
-            console.log('🏠 Room Improvement modal onClose called');
-            setShowRoomImprovementModal(false);
-          }}
-        />
-      )}
     </div>
   );
 };

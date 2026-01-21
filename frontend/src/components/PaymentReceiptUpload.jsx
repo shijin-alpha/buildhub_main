@@ -2,6 +2,12 @@ import React, { useState, useRef } from 'react';
 import { useToast } from './ToastProvider.jsx';
 import '../styles/PaymentReceiptUpload.css';
 
+/**
+ * PaymentReceiptUpload Component
+ * 
+ * This component is used by HOMEOWNERS ONLY to upload payment receipts.
+ * Contractors should use PaymentReceiptViewer to view and verify receipts.
+ */
 const PaymentReceiptUpload = ({ 
   paymentId, 
   paymentMethod, 
@@ -125,39 +131,69 @@ const PaymentReceiptUpload = ({
       return;
     }
 
+    if (!paymentId) {
+      toast.error('Payment ID is missing. Please try again.');
+      console.error('Missing paymentId:', { paymentId, amount, paymentMethod });
+      return;
+    }
+
     try {
       setUploading(true);
       setUploadProgress(0);
 
       const formData = new FormData();
-      formData.append('payment_id', paymentId);
-      formData.append('transaction_reference', transactionDetails.transaction_reference);
+      formData.append('payment_id', String(paymentId));
+      formData.append('transaction_reference', transactionDetails.transaction_reference.trim());
       formData.append('payment_date', transactionDetails.payment_date);
       formData.append('payment_method', transactionDetails.payment_method);
       formData.append('notes', transactionDetails.notes);
 
       // Add all selected files
-      selectedFiles.forEach((file, index) => {
-        formData.append(`receipt_files[]`, file);
-      });
+      if (selectedFiles && selectedFiles.length > 0) {
+        selectedFiles.forEach((file, index) => {
+          formData.append('receipt_files[]', file);
+        });
+      } else {
+        toast.error('No valid files to upload');
+        setUploading(false);
+        return;
+      }
 
-      const response = await fetch('/buildhub/backend/api/homeowner/upload_payment_receipt.php', {
+      // Log FormData contents for debugging
+      console.log('FormData contents:', {
+        payment_id: paymentId,
+        transaction_reference: transactionDetails.transaction_reference,
+        payment_date: transactionDetails.payment_date,
+        payment_method: transactionDetails.payment_method,
+        file_count: selectedFiles.length,
+        files: selectedFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))
+      });
+      console.log('Component props:', { paymentId, paymentMethod, amount });
+
+      // Use homeowner API for receipt upload (only homeowners should upload receipts)
+      const apiEndpoint = '/buildhub/backend/api/homeowner/upload_payment_receipt.php';
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         credentials: 'include',
         body: formData
+        // NOTE: Don't set Content-Type header - browser will set it automatically with boundary
       });
 
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Receipt uploaded successfully! Contractor will verify the payment.');
+        toast.success('Receipt uploaded successfully! Payment verification is in progress.');
         setUploadProgress(100);
         
         if (onUploadComplete) {
           onUploadComplete(data.data);
         }
       } else {
-        toast.error('Failed to upload receipt: ' + data.message);
+        console.error('Upload failed:', data);
+        toast.error('Failed to upload receipt: ' + (data.message || 'Unknown error'));
+        if (data.debug) {
+          console.error('Debug info:', data.debug);
+        }
       }
     } catch (error) {
       console.error('Receipt upload error:', error);

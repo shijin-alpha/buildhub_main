@@ -12,12 +12,13 @@ import ContractorProfileButton from './ContractorProfileButton';
 import BuildHubSeal from './BuildHubSeal';
 import TechnicalDetailsDisplay from './TechnicalDetailsDisplay';
 import ConstructionProgressUpdate from './ConstructionProgressUpdate';
-import ProgressTimeline from './ProgressTimeline';
+import ContractorConstructionTimeline from './ContractorConstructionTimeline';
 import EnhancedProgressUpdate from './EnhancedProgressUpdate';
 import ProgressReportGenerator from './ProgressReportGenerator';
 import ContractorPaymentManager from './ContractorPaymentManager';
 import StagePaymentWithdrawals from './StagePaymentWithdrawals';
 import SimplePaymentRequestForm from './SimplePaymentRequestForm.jsx';
+import CustomPaymentRequestForm from './CustomPaymentRequestForm.jsx';
 import PaymentHistory from './PaymentHistory.jsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -2663,6 +2664,96 @@ const ContractorDashboard = () => {
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', padding: '20px 0' }}>
                   <BuildHubSeal size="medium" />
                 </div>
+
+                {/* Site Details Preview */}
+                {(item?.plot_size || item?.building_size || item?.layout_request_details) && (
+                  <div style={{
+                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                    border: '2px solid #22c55e',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    marginBottom: '20px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginBottom: '12px',
+                      paddingBottom: '8px',
+                      borderBottom: '2px solid #22c55e'
+                    }}>
+                      <span style={{ fontSize: '20px', marginRight: '8px' }}>🏗️</span>
+                      <h4 style={{ margin: 0, color: '#15803d', fontSize: '16px', fontWeight: '600' }}>
+                        Site Details Available
+                      </h4>
+                      <span style={{
+                        marginLeft: 'auto',
+                        fontSize: '12px',
+                        background: '#22c55e',
+                        color: 'white',
+                        padding: '4px 8px',
+                        borderRadius: '12px',
+                        fontWeight: '600'
+                      }}>
+                        ✅ Auto-populated
+                      </span>
+                    </div>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: '12px'
+                    }}>
+                      {(item?.plot_size || item?.layout_request_details?.plot_size) && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <strong style={{ color: '#15803d' }}>📐 Plot Size:</strong>
+                          <span style={{ marginLeft: '8px', color: '#166534', fontWeight: '600' }}>
+                            {item?.plot_size || item?.layout_request_details?.plot_size}
+                          </span>
+                        </div>
+                      )}
+                      {(item?.building_size || item?.layout_request_details?.building_size) && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <strong style={{ color: '#15803d' }}>🏠 Building Size:</strong>
+                          <span style={{ marginLeft: '8px', color: '#166534', fontWeight: '600' }}>
+                            {item?.building_size || item?.layout_request_details?.building_size}
+                          </span>
+                        </div>
+                      )}
+                      {(item?.budget_range || item?.layout_request_details?.budget_range) && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <strong style={{ color: '#15803d' }}>💰 Budget Range:</strong>
+                          <span style={{ marginLeft: '8px', color: '#166534', fontWeight: '600' }}>
+                            {item?.budget_range || item?.layout_request_details?.budget_range}
+                          </span>
+                        </div>
+                      )}
+                      {(item?.timeline || item?.layout_request_details?.timeline) && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <strong style={{ color: '#15803d' }}>⏱️ Timeline:</strong>
+                          <span style={{ marginLeft: '8px', color: '#166534', fontWeight: '600' }}>
+                            {item?.timeline || item?.layout_request_details?.timeline}
+                          </span>
+                        </div>
+                      )}
+                      {(item?.num_floors || item?.layout_request_details?.num_floors) && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <strong style={{ color: '#15803d' }}>🏢 Floors:</strong>
+                          <span style={{ marginLeft: '8px', color: '#166534', fontWeight: '600' }}>
+                            {item?.num_floors || item?.layout_request_details?.num_floors}
+                          </span>
+                        </div>
+                      )}
+                      {(item?.layout_request_details?.location) && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <strong style={{ color: '#15803d' }}>📍 Location:</strong>
+                          <span style={{ marginLeft: '8px', color: '#166534', fontWeight: '600' }}>
+                            {item?.layout_request_details?.location}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Hidden identifiers for backend (use defaultValue to avoid React controlled issues) */}
                 <input type="hidden" name="send_id" defaultValue={String(item?.id || '')} />
@@ -2687,10 +2778,43 @@ const ContractorDashboard = () => {
                       fontWeight: '600'
                     }}
                   />
-                  <input name="structured[project_address]" placeholder="Project Address / Location" />
-                  <input name="structured[plot_size]" placeholder="Plot Size (sq.ft / sq.m)" />
-                  <input name="structured[built_up_area]" placeholder="Built-up Area (sq.ft / sq.m)" />
-                  <select name="structured[floors]" defaultValue="">
+                  <input 
+                    name="structured[project_address]" 
+                    placeholder="Project Address / Location" 
+                    defaultValue={item?.layout_request_details?.location || ''}
+                  />
+                  <input 
+                    name="structured[plot_size]" 
+                    placeholder="Plot Size (sq.ft / sq.m)" 
+                    defaultValue={item?.plot_size || item?.layout_request_details?.plot_size || ''}
+                    style={item?.plot_size || item?.layout_request_details?.plot_size ? {
+                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                      border: '2px solid #22c55e',
+                      color: '#15803d',
+                      fontWeight: '600'
+                    } : {}}
+                  />
+                  <input 
+                    name="structured[built_up_area]" 
+                    placeholder="Built-up Area (sq.ft / sq.m)" 
+                    defaultValue={item?.building_size || item?.layout_request_details?.building_size || ''}
+                    style={item?.building_size || item?.layout_request_details?.building_size ? {
+                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                      border: '2px solid #22c55e',
+                      color: '#15803d',
+                      fontWeight: '600'
+                    } : {}}
+                  />
+                  <select 
+                    name="structured[floors]" 
+                    defaultValue={item?.num_floors || item?.layout_request_details?.num_floors || ""}
+                    style={item?.num_floors || item?.layout_request_details?.num_floors ? {
+                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                      border: '2px solid #22c55e',
+                      color: '#15803d',
+                      fontWeight: '600'
+                    } : {}}
+                  >
                     <option value="" disabled>Number of Floors</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -3642,7 +3766,13 @@ const ContractorDashboard = () => {
             className={`toggle-btn ${progressView === 'payment' ? 'active' : ''}`}
             onClick={() => setProgressView('payment')}
           >
-            💰 Request Payment
+            💰 Stage Payment
+          </button>
+          <button 
+            className={`toggle-btn ${progressView === 'custom-payment' ? 'active' : ''}`}
+            onClick={() => setProgressView('custom-payment')}
+          >
+            💳 Custom Payment
           </button>
           <button 
             className={`toggle-btn ${progressView === 'history' ? 'active' : ''}`}
@@ -3665,17 +3795,24 @@ const ContractorDashboard = () => {
             onUpdateSubmitted={handleUpdateSubmitted}
           />
         ) : progressView === 'timeline' ? (
-          <ProgressTimeline 
+          <ContractorConstructionTimeline 
             contractorId={user?.id}
-            userRole="contractor"
           />
         ) : progressView === 'payment' ? (
           <div className="payment-section">
             <SimplePaymentRequestForm 
               contractorId={user?.id}
               onPaymentRequested={(data) => {
-                toast.success(`Payment request submitted successfully!`);
-                // Optionally refresh data or update UI
+                toast.success(`Stage payment request submitted successfully!`);
+              }}
+            />
+          </div>
+        ) : progressView === 'custom-payment' ? (
+          <div className="custom-payment-section">
+            <CustomPaymentRequestForm 
+              contractorId={user?.id}
+              onPaymentRequested={(data) => {
+                toast.success(`Custom payment request submitted successfully!`);
               }}
             />
           </div>

@@ -474,12 +474,19 @@ Generate a design description that captures the complete transformation vision b
             logger.info(f"✅ REAL AI image saved successfully:")
             logger.info(f"   - Path: {image_path}")
             logger.info(f"   - Size: {file_size} bytes")
-            logger.info(f"   - URL: /buildhub/uploads/conceptual_images/{filename}")
+            
+            # Construct the correct URL based on the output directory
+            if "room_improvements" in output_dir:
+                image_url = f"/buildhub/uploads/room_improvements/{filename}"
+            else:
+                image_url = f"/buildhub/uploads/conceptual_images/{filename}"
+            
+            logger.info(f"   - URL: {image_url}")
             
             return {
                 "success": True,
                 "image_path": image_path,
-                "image_url": f"/buildhub/uploads/conceptual_images/{filename}",
+                "image_url": image_url,
                 "disclaimer": "Conceptual Visualization / Inspirational Preview",
                 "metadata": {
                     "prompt_used": image_prompt,
@@ -764,10 +771,16 @@ Generate a design description that captures the complete transformation vision b
                 file_path = file_path.replace('.png', '.txt')
                 filename = filename.replace('.png', '.txt')
             
+            # Construct the correct URL based on the output directory
+            if "room_improvements" in output_dir:
+                image_url = f"/buildhub/uploads/room_improvements/{filename}"
+            else:
+                image_url = f"/buildhub/uploads/conceptual_images/{filename}"
+            
             return {
                 "success": True,
                 "image_path": file_path,
-                "image_url": f"/buildhub/uploads/conceptual_images/{filename}",
+                "image_url": image_url,
                 "metadata": {
                     "prompt_used": f"Enhanced placeholder for {room_type}",
                     "model_id": "enhanced_placeholder",

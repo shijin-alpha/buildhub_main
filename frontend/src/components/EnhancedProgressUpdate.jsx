@@ -7,8 +7,16 @@ import {
   calculateOptimalWage,
   standardHourlyRates 
 } from '../utils/progressValidation.js';
+import {
+  CONSTRUCTION_STAGES,
+  getStageProgressBreakdown,
+  getAvailableStages,
+  validateDailyProgress,
+  getStageProgressSummary
+} from '../utils/stageProgressionLogic.js';
 import GeoPhotoCapture from './GeoPhotoCapture.jsx';
 import '../styles/EnhancedProgress.css';
+import '../styles/StageProgression.css';
 
 const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
   const toast = useToast();
@@ -16,6 +24,11 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
   
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
+  const [projectProgressUpdates, setProjectProgressUpdates] = useState([]);
+  const [currentProjectProgress, setCurrentProjectProgress] = useState(null);
+  const [stageBreakdown, setStageBreakdown] = useState(null);
+  const [availableStages, setAvailableStages] = useState([]);
+  const [progressSummary, setProgressSummary] = useState(null);
   const [activeSection, setActiveSection] = useState('daily'); // 'daily', 'weekly', 'monthly'
   const [loading, setLoading] = useState(false);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -70,10 +83,8 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
   const [loadingWorkers, setLoadingWorkers] = useState(false);
   const [availableWorkerTypes, setAvailableWorkerTypes] = useState([]);
 
-  const stages = [
-    'Foundation', 'Structure', 'Brickwork', 'Roofing', 
-    'Electrical', 'Plumbing', 'Finishing', 'Other'
-  ];
+  // Remove the old static stages array - we'll use CONSTRUCTION_STAGES from utils
+  // const stages = [...] - REMOVED
 
   const weatherConditions = [
     'Sunny', 'Cloudy', 'Rainy', 'Stormy', 'Foggy', 'Hot', 'Cold', 'Windy'
@@ -421,6 +432,24 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         errors.progress_photos = 'Photos are mandatory for completion claims of 10% or more';
       }
       
+      // Stage progression validation
+      if (dailyForm.construction_stage && dailyForm.incremental_completion_percentage && stageBreakdown) {
+        const stageValidation = validateDailyProgress(
+          dailyForm.construction_stage,
+          parseFloat(dailyForm.incremental_completion_percentage),
+          stageBreakdown
+        );
+        
+        if (!stageValidation.isValid) {
+          errors.stage_progression = stageValidation.errors.join('; ');
+        }
+        
+        // Store warnings for display
+        if (stageValidation.warnings.length > 0) {
+          errors.stage_warnings = stageValidation.warnings;
+        }
+      }
+      
     } else if (formType === 'weekly') {
       formData = weeklyForm;
       
@@ -526,6 +555,126 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
       }));
     }
   }, [activeSection]);
+
+  // Load project progress data when project is selected
+  useEffect(() => {
+    console.log('Project selection useEffect triggered:', selectedProject);
+    if (selectedProject) {
+      console.log('Loading project data for:', selectedProject);
+      loadProjectProgressData(selectedProject);
+      loadCurrentProjectProgress(selectedProject);
+    } else {
+      console.log('No project selected - clearing data');
+      setProjectProgressUpdates([]);
+      setCurrentProjectProgress(null);
+      setStageBreakdown(null);
+      setAvailableStages([]);
+      setProgressSummary(null);
+    }
+  }, [selectedProject]);
+
+  // Calculate stage breakdown when progress data changes OR when project is selected
+  useEffect(() => {
+    if (selectedProject) {
+      if (projectProgressUpdates.length > 0) {
+        // Project has existing progress - calculate based on updates
+        console.log('Calculating stages from progress updates:', projectProgressUpdates);
+        const breakdown = getStageProgressBreakdown(projectProgressUpdates);
+        console.log('Stage breakdown calculated:', breakdown);
+        const available = getAvailableStages(breakdown);
+        const summary = getStageProgressSummary(breakdown);
+        console.log('Progress summary:', summary);
+        
+        setStageBreakdown(breakdown);
+        setAvailableStages(available);
+        setProgressSummary(summary);
+        
+        // Auto-select current active stage if none selected
+        if (!dailyForm.construction_stage && available.length > 0) {
+          const currentStage = available.find(s => s.is_current) || available[0];
+          setDailyForm(prev => ({
+            ...prev,
+            construction_stage: currentStage.name
+          }));
+        }
+      } else {
+        // New project with no progress - start with Foundation stage
+        console.log('New project with no progress - setting up Foundation stage');
+        const initialBreakdown = getStageProgressBreakdown([]);
+        const initialAvailable = [{
+          ...CONSTRUCTION_STAGES[0], // Foundation stage
+          is_current: true,
+          remaining_percentage: CONSTRUCTION_STAGES[0].percentage
+        }];
+        const initialSummary = getStageProgressSummary(initialBreakdown);
+        
+        setStageBreakdown(initialBreakdown);
+        setAvailableStages(initialAvailable);
+        setProgressSummary(initialSummary);
+        
+        // Auto-select Foundation stage for new projects
+        if (!dailyForm.construction_stage) {
+          setDailyForm(prev => ({
+            ...prev,
+            construction_stage: CONSTRUCTION_STAGES[0].name
+          }));
+        }
+      }
+    } else {
+      // No project selected - clear stages
+      setStageBreakdown(null);
+      setAvailableStages([]);
+      setProgressSummary(null);
+    }
+  }, [projectProgressUpdates, selectedProject]);
+
+  const loadProjectProgressData = async (projectId) => {
+    console.log('Loading project progress data for project:', projectId);
+    try {
+      const response = await fetch(`/buildhub/backend/api/contractor/get_project_progress.php?project_id=${projectId}`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Project progress API response:', data);
+        if (data.success) {
+          console.log('Setting project progress updates:', data.progress_updates || []);
+          setProjectProgressUpdates(data.progress_updates || []);
+        } else {
+          console.error('Failed to load project progress:', data.message);
+          setProjectProgressUpdates([]);
+        }
+      } else {
+        console.error('Project progress API response not ok:', response.status);
+        setProjectProgressUpdates([]);
+      }
+    } catch (error) {
+      console.error('Error loading project progress:', error);
+      setProjectProgressUpdates([]);
+    }
+  };
+
+  const loadCurrentProjectProgress = async (projectId) => {
+    try {
+      const response = await fetch(`/buildhub/backend/api/contractor/get_project_current_progress.php?project_id=${projectId}`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setCurrentProjectProgress(data.data);
+        } else {
+          console.error('Failed to load current project progress:', data.message);
+          setCurrentProjectProgress(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading current project progress:', error);
+      setCurrentProjectProgress(null);
+    }
+  };
 
   // Load phase-specific workers when construction stage changes
   useEffect(() => {
@@ -1010,6 +1159,15 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         if (onUpdateSubmitted) {
           onUpdateSubmitted(data.data);
         }
+        
+        // Refresh project progress data to update the progress bars
+        if (selectedProject) {
+          loadProjectProgressData(selectedProject);
+          loadCurrentProjectProgress(selectedProject);
+        }
+        
+        // Refresh projects list to update the update counts in real-time
+        loadAssignedProjects();
       } else {
         toast.error('Failed to submit update: ' + data.message);
       }
@@ -1059,6 +1217,14 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         
         if (onUpdateSubmitted) {
           onUpdateSubmitted(data.data);
+        }
+        
+        // Refresh projects list to update the update counts in real-time
+        loadAssignedProjects();
+        
+        // Refresh current project progress to update the progress bar
+        if (selectedProject) {
+          loadCurrentProjectProgress(selectedProject);
         }
       } else {
         toast.error('Failed to submit summary: ' + data.message);
@@ -1111,6 +1277,14 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         if (onUpdateSubmitted) {
           onUpdateSubmitted(data.data);
         }
+        
+        // Refresh projects list to update the update counts in real-time
+        loadAssignedProjects();
+        
+        // Refresh current project progress to update the progress bar
+        if (selectedProject) {
+          loadCurrentProjectProgress(selectedProject);
+        }
       } else {
         toast.error('Failed to submit report: ' + data.message);
       }
@@ -1124,7 +1298,66 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
 
   const getSelectedProjectInfo = () => {
     const project = projects.find(p => (p.id || p.project_id) == selectedProject);
+    
+    // If we found the project, check if we should use a different version with more complete data
+    if (project && selectedProject) {
+      // Look for the same project from different sources and prioritize the one with most complete data
+      const allVersions = projects.filter(p => {
+        // Match by homeowner_id and similar project names, or same estimate_id
+        return (p.homeowner_id === project.homeowner_id && 
+                (p.project_name === project.project_name || 
+                 p.estimate_id === project.estimate_id ||
+                 (p.client_name && p.client_name === project.client_name))) ||
+               (p.id == selectedProject || p.project_id == selectedProject);
+      });
+      
+      if (allVersions.length > 1) {
+        // Prioritize by data completeness and source
+        const prioritized = allVersions.sort((a, b) => {
+          // Calculate completeness score
+          const scoreA = calculateProjectDataScore(a);
+          const scoreB = calculateProjectDataScore(b);
+          
+          // Prefer contractor_send_estimate source with structured data
+          if (a.source === 'contractor_send_estimate' && a.structured_data && scoreA > scoreB) return -1;
+          if (b.source === 'contractor_send_estimate' && b.structured_data && scoreB > scoreA) return 1;
+          
+          // Otherwise prefer higher completeness score
+          return scoreB - scoreA;
+        });
+        
+        return prioritized[0];
+      }
+    }
+    
     return project || null;
+  };
+  
+  // Helper function to calculate project data completeness score
+  const calculateProjectDataScore = (project) => {
+    let score = 0;
+    
+    // Essential fields
+    if (project.estimate_cost && project.estimate_cost > 0) score += 10;
+    if (project.plot_size && project.plot_size !== 'N/A') score += 5;
+    if (project.built_up_area && project.built_up_area !== 'N/A') score += 5;
+    if (project.floors && project.floors !== 'N/A') score += 3;
+    if (project.location && project.location !== 'N/A') score += 3;
+    if (project.timeline && project.timeline !== 'N/A') score += 2;
+    
+    // Structured data bonus
+    if (project.structured_data) score += 15;
+    
+    // Contact information
+    if (project.homeowner_email && project.homeowner_email !== 'N/A') score += 2;
+    if (project.homeowner_phone && project.homeowner_phone !== 'N/A') score += 2;
+    if (project.contractor_email && project.contractor_email !== 'N/A') score += 2;
+    
+    // Source preference
+    if (project.source === 'contractor_send_estimate') score += 5;
+    if (project.source === 'construction_project') score += 3;
+    
+    return score;
   };
 
   return (
@@ -1145,6 +1378,7 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
               id="project"
               value={selectedProject}
               onChange={(e) => {
+                console.log('Project selected:', e.target.value);
                 setSelectedProject(e.target.value);
                 handleFieldValidation('selectedProject', e.target.value);
               }}
@@ -1153,12 +1387,41 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
               className={`project-select ${getFieldErrorClass('selectedProject')}`}
             >
               <option value="">Choose a project...</option>
-              {projects.map(project => {
+              {projects
+                .sort((a, b) => {
+                  // Sort by data completeness score (highest first)
+                  const scoreA = calculateProjectDataScore(a);
+                  const scoreB = calculateProjectDataScore(b);
+                  return scoreB - scoreA;
+                })
+                .map(project => {
                 const projectId = project.id || project.project_id;
                 const projectName = project.project_name || project.project_display_name || 'Unnamed Project';
+                
+                // Format budget display
+                let budgetDisplay = '';
+                if (project.estimate_cost) {
+                  budgetDisplay = ` (₹${project.estimate_cost.toLocaleString('en-IN')})`;
+                } else if (project.budget_range) {
+                  budgetDisplay = ` (${project.budget_range})`;
+                }
+                
+                // Add data quality indicator
+                const dataScore = calculateProjectDataScore(project);
+                let qualityIndicator = '';
+                if (dataScore >= 30) {
+                  qualityIndicator = ' ✅'; // Complete data
+                } else if (dataScore >= 15) {
+                  qualityIndicator = ' ⚠️'; // Partial data
+                } else {
+                  qualityIndicator = ' ❌'; // Incomplete data
+                }
+                
+                const displayName = projectName + budgetDisplay + qualityIndicator;
+                
                 return (
                   <option key={projectId} value={projectId}>
-                    {projectName}
+                    {displayName}
                   </option>
                 );
               })}
@@ -1180,14 +1443,14 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
             
             const homeownerName = projectInfo.homeowner_name || structured.client_name || projectInfo.project_summary?.homeowner_name || 'Unknown';
             const statusDisplay = projectInfo.status || projectInfo.project_summary?.status_display || 'N/A';
-            const contractorName = projectInfo.project_summary?.contractor_name || 'N/A';
+            const contractorName = projectInfo.contractor_name || projectInfo.project_summary?.contractor_name || 'N/A';
             const homeownerEmail = projectInfo.homeowner_email || 'N/A';
             const homeownerPhone = projectInfo.homeowner_phone || structured.client_contact || 'N/A';
             const contractorEmail = projectInfo.contractor_email || 'N/A';
             const plotSize = projectInfo.plot_size || structured.plot_size || 'N/A';
             const builtUpArea = projectInfo.built_up_area || structured.built_up_area || 'N/A';
             const floors = projectInfo.floors || structured.floors || 'N/A';
-            const location = projectInfo.location || structured.project_address || 'N/A';
+            const location = projectInfo.location || projectInfo.project_location || structured.project_address || 'N/A';
             
             return (
               <div className="selected-project-details">
@@ -1257,15 +1520,103 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                 
                 <div className="project-overall-progress">
                   <div className="progress-header">
-                    <strong>Overall Progress</strong>
-                    <span>{projectInfo.completion_percentage || projectInfo.latest_progress || 0}%</span>
+                    <strong>
+                      {currentProjectProgress ? (
+                        <span className="project-title-with-budget">
+                          {currentProjectProgress.project_name}
+                          {currentProjectProgress.budget_formatted && (
+                            <span className="budget-info"> ({currentProjectProgress.budget_formatted})</span>
+                          )}
+                        </span>
+                      ) : (
+                        'Overall Progress'
+                      )}
+                    </strong>
+                    <span className="progress-percentage">
+                      {currentProjectProgress ? 
+                        currentProjectProgress.current_progress.toFixed(1) : 
+                        (progressSummary ? 
+                          progressSummary.total_progress.toFixed(1) : 
+                          (projectInfo.completion_percentage || projectInfo.latest_progress || 0)
+                        )
+                      }%
+                    </span>
                   </div>
                   <div className="progress-bar-large">
                     <div 
                       className="progress-fill-large"
-                      style={{ width: `${projectInfo.latest_progress}%` }}
+                      style={{ 
+                        width: `${currentProjectProgress ? 
+                          currentProjectProgress.current_progress : 
+                          (progressSummary ? 
+                            progressSummary.total_progress : 
+                            (projectInfo.latest_progress || 0)
+                          )
+                        }%`,
+                        backgroundColor: (() => {
+                          const progress = currentProjectProgress ? 
+                            currentProjectProgress.current_progress : 
+                            (progressSummary ? progressSummary.total_progress : 0);
+                          return progress >= 90 ? '#10b981' : 
+                                 progress >= 50 ? '#3b82f6' : '#f59e0b';
+                        })()
+                      }}
                     ></div>
                   </div>
+                  
+                  {/* Real Database Progress Info */}
+                  {currentProjectProgress && (
+                    <div className="database-progress-info">
+                      <div className="progress-details">
+                        <span className="progress-source">
+                          📊 Database Progress: {currentProjectProgress.current_progress.toFixed(1)}%
+                        </span>
+                        {currentProjectProgress.latest_stage && (
+                          <span className="latest-stage">
+                            Latest Stage: {currentProjectProgress.latest_stage}
+                          </span>
+                        )}
+                      </div>
+                      <div className="project-budget-details">
+                        {currentProjectProgress.project_timeline && (
+                          <span className="timeline-info">
+                            Timeline: {currentProjectProgress.project_timeline}
+                          </span>
+                        )}
+                        {currentProjectProgress.original_budget_range && (
+                          <span className="original-budget">
+                            Original Range: {currentProjectProgress.original_budget_range}
+                          </span>
+                        )}
+                      </div>
+                      {currentProjectProgress.latest_update_date && (
+                        <div className="last-update-info">
+                          <span className="update-date">
+                            Last Updated: {new Date(currentProjectProgress.latest_update_date).toLocaleDateString()}
+                          </span>
+                          <span className="total-updates">
+                            Total Updates: {currentProjectProgress.total_updates}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Stage Progress Indicator (fallback if no database progress) */}
+                  {!currentProjectProgress && progressSummary && (
+                    <div className="stage-progress-indicator">
+                      <div className="stage-info">
+                        <span className="completed-stages">
+                          {progressSummary.completed_stages}/{progressSummary.total_stages} stages completed
+                        </span>
+                        {progressSummary.current_stage && (
+                          <span className="current-stage-name">
+                            Current: {progressSummary.current_stage.icon} {progressSummary.current_stage.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {projectInfo.requirements && (
@@ -1315,6 +1666,85 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
         <form onSubmit={submitDailyUpdate} className="progress-section daily-section">
           <h4>📅 Daily Progress Update</h4>
           
+          {/* Project Progress Overview */}
+          {progressSummary && (
+            <div className="project-progress-overview">
+              <div className="progress-overview-header">
+                <h5>🏗️ Project Progress Overview</h5>
+                <div className="overall-progress-badge">
+                  {progressSummary.total_progress.toFixed(1)}% Complete
+                </div>
+              </div>
+              
+              <div className="overall-progress-bar">
+                <div 
+                  className="overall-progress-fill"
+                  style={{ 
+                    width: `${progressSummary.total_progress}%`,
+                    backgroundColor: progressSummary.total_progress >= 90 ? '#10b981' : 
+                                   progressSummary.total_progress >= 50 ? '#3b82f6' : '#f59e0b'
+                  }}
+                ></div>
+              </div>
+              
+              <div className="stages-overview">
+                <div className="stages-grid">
+                  {progressSummary.stage_details.map((stage, index) => (
+                    <div 
+                      key={stage.name} 
+                      className={`stage-card ${stage.is_completed ? 'completed' : stage.is_active ? 'active' : 'pending'}`}
+                    >
+                      <div className="stage-header">
+                        <span className="stage-icon">{stage.icon}</span>
+                        <span className="stage-name">{stage.name}</span>
+                        <span className="stage-status">
+                          {stage.is_completed ? '✅' : stage.is_active ? '🔄' : '⏳'}
+                        </span>
+                      </div>
+                      <div className="stage-progress">
+                        <div className="stage-progress-bar">
+                          <div 
+                            className="stage-progress-fill"
+                            style={{ 
+                              width: `${stage.progress_percent}%`,
+                              backgroundColor: stage.is_completed ? '#10b981' : 
+                                             stage.is_active ? '#3b82f6' : '#e5e7eb'
+                            }}
+                          ></div>
+                        </div>
+                        <div className="stage-progress-text">
+                          {stage.current_progress.toFixed(1)}/12.5%
+                          {stage.days_worked > 0 && (
+                            <span className="days-worked"> • {stage.days_worked} days</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="progress-summary-stats">
+                  <div className="stat-item">
+                    <span className="stat-value">{progressSummary.completed_stages}</span>
+                    <span className="stat-label">Completed Stages</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-value">
+                      {progressSummary.current_stage ? progressSummary.current_stage.name : 'None'}
+                    </span>
+                    <span className="stat-label">Current Stage</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-value">
+                      {progressSummary.next_stage ? progressSummary.next_stage.name : 'Final'}
+                    </span>
+                    <span className="stat-label">Next Stage</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="form-row">
             <div className={`form-group ${getFieldErrorClass('update_date')}`}>
               <label htmlFor="update_date">Date *</label>
@@ -1332,7 +1762,14 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
             </div>
             
             <div className={`form-group ${getFieldErrorClass('construction_stage')}`}>
-              <label htmlFor="construction_stage">Construction Stage *</label>
+              <label htmlFor="construction_stage">
+                Construction Stage * 
+                {progressSummary && (
+                  <span className="stage-progress-info">
+                    ({progressSummary.completed_stages}/{progressSummary.total_stages} completed)
+                  </span>
+                )}
+              </label>
               <select
                 id="construction_stage"
                 name="construction_stage"
@@ -1342,12 +1779,59 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                 required
                 className={getFieldErrorClass('construction_stage')}
               >
-                <option value="">Select stage...</option>
-                {stages.map(stage => (
-                  <option key={stage} value={stage}>{stage}</option>
+                <option value="">
+                  {availableStages.length === 0 
+                    ? 'No stages available - select project first' 
+                    : 'Select stage...'
+                  }
+                </option>
+                {availableStages.map(stage => (
+                  <option key={stage.name} value={stage.name}>
+                    {stage.icon} {stage.name} 
+                    {stage.is_current ? ' (Current)' : ''} 
+                    - {stage.remaining_percentage.toFixed(1)}% remaining
+                  </option>
                 ))}
               </select>
+              
+              {/* Stage progression info */}
+              {progressSummary && (
+                <div className="stage-progression-info">
+                  <div className="current-stage-info">
+                    {progressSummary.current_stage ? (
+                      <span className="current-stage">
+                        🔄 Current: {progressSummary.current_stage.icon} {progressSummary.current_stage.name} 
+                        ({progressSummary.current_stage.current_progress.toFixed(1)}/12.5%)
+                      </span>
+                    ) : (
+                      <span className="no-active-stage">
+                        ⏳ No active stage - ready to start next phase
+                      </span>
+                    )}
+                  </div>
+                  
+                  {progressSummary.next_stage && (
+                    <div className="next-stage-info">
+                      <span className="next-stage">
+                        ⏭️ Next: {progressSummary.next_stage.icon} {progressSummary.next_stage.name}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               {renderFieldError('construction_stage')}
+              
+              {/* Stage progression warnings */}
+              {validationErrors.stage_warnings && (
+                <div className="stage-warnings">
+                  {validationErrors.stage_warnings.map((warning, index) => (
+                    <div key={index} className="warning-message">
+                      ⚠️ {warning}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -1376,7 +1860,19 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
 
           <div className="form-row">
             <div className={`form-group ${getFieldErrorClass('incremental_completion_percentage')}`}>
-              <label htmlFor="incremental_completion_percentage">Incremental Completion % *</label>
+              <label htmlFor="incremental_completion_percentage">
+                Daily Progress % *
+                {dailyForm.construction_stage && stageBreakdown && (
+                  <span className="stage-limit-info">
+                    (Max: {(() => {
+                      const stage = CONSTRUCTION_STAGES.find(s => s.name === dailyForm.construction_stage);
+                      const stageData = stageBreakdown.stages[dailyForm.construction_stage];
+                      const remaining = stage ? stage.percentage - stageData.current_progress : 0;
+                      return remaining.toFixed(1);
+                    })()}% for this stage)
+                  </span>
+                )}
+              </label>
               <div className="percentage-input">
                 <input
                   type="number"
@@ -1386,7 +1882,15 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                   onChange={handleDailyInputChange}
                   onBlur={() => markFieldTouched('incremental_completion_percentage')}
                   min="0"
-                  max="100"
+                  max={(() => {
+                    if (dailyForm.construction_stage && stageBreakdown) {
+                      const stage = CONSTRUCTION_STAGES.find(s => s.name === dailyForm.construction_stage);
+                      const stageData = stageBreakdown.stages[dailyForm.construction_stage];
+                      const remaining = stage ? stage.percentage - stageData.current_progress : 100;
+                      return Math.max(0, remaining);
+                    }
+                    return 100;
+                  })()}
                   step="0.1"
                   required
                   className={getFieldErrorClass('incremental_completion_percentage')}
@@ -1394,7 +1898,67 @@ const EnhancedProgressUpdate = ({ contractorId, onUpdateSubmitted }) => {
                 />
                 <span className="percentage-symbol">%</span>
               </div>
-              <div className="field-info">Daily progress should typically be 0.5% - 5%</div>
+              
+              {/* Stage-specific progress info */}
+              {dailyForm.construction_stage && stageBreakdown && (
+                <div className="stage-progress-details">
+                  {(() => {
+                    const stage = CONSTRUCTION_STAGES.find(s => s.name === dailyForm.construction_stage);
+                    const stageData = stageBreakdown.stages[dailyForm.construction_stage];
+                    const remaining = stage ? stage.percentage - stageData.current_progress : 0;
+                    const progressPercent = stage ? (stageData.current_progress / stage.percentage) * 100 : 0;
+                    
+                    return (
+                      <div className="stage-progress-bar">
+                        <div className="stage-progress-header">
+                          <span>{stage?.icon} {dailyForm.construction_stage} Stage Progress</span>
+                          <span>{stageData.current_progress.toFixed(1)}/{stage?.percentage}%</span>
+                        </div>
+                        <div className="mini-progress-bar">
+                          <div 
+                            className="mini-progress-fill"
+                            style={{ 
+                              width: `${Math.min(progressPercent, 100)}%`,
+                              backgroundColor: progressPercent >= 95 ? '#10b981' : progressPercent >= 75 ? '#3b82f6' : '#f59e0b'
+                            }}
+                          ></div>
+                        </div>
+                        <div className="stage-progress-text">
+                          {remaining > 0 ? (
+                            <span className="remaining-progress">
+                              {remaining.toFixed(1)}% remaining in this stage
+                            </span>
+                          ) : (
+                            <span className="stage-complete">
+                              ✅ Stage completed!
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              
+              <div className="field-info">
+                {dailyForm.construction_stage && stageBreakdown ? (
+                  (() => {
+                    const stage = CONSTRUCTION_STAGES.find(s => s.name === dailyForm.construction_stage);
+                    const stageData = stageBreakdown.stages[dailyForm.construction_stage];
+                    const remaining = stage ? stage.percentage - stageData.current_progress : 0;
+                    
+                    if (remaining <= 0) {
+                      return 'This stage is completed. Select the next stage.';
+                    } else if (remaining < 1) {
+                      return `Only ${remaining.toFixed(1)}% remaining in this stage`;
+                    } else {
+                      return `Recommended: 0.5% - 2.0% daily (${remaining.toFixed(1)}% remaining in stage)`;
+                    }
+                  })()
+                ) : (
+                  'Daily progress should typically be 0.5% - 5%'
+                )}
+              </div>
               {renderFieldError('incremental_completion_percentage')}
             </div>
             

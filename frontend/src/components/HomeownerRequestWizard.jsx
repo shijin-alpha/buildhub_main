@@ -6,7 +6,6 @@ import WizardLayout from './wizard/WizardLayout';
 import SearchableDropdown from './SearchableDropdown';
 import TourGuide from './TourGuide';
 import ArchitectSelection from './ArchitectSelection';
-import HouseStyleSuggestions from './HouseStyleSuggestions';
 import { stateDistricts, keralaPanchayatsMunicipalities } from '../data/locationData';
 // Import removed: TimelinePrediction
 // Import removed: designRulesEngine
@@ -85,19 +84,17 @@ export default function HomeownerRequestWizard() {
   });
 
   const [selectedArchitects, setSelectedArchitects] = useState([]); // Store architect objects with names
-  const [selectedStyle, setSelectedStyle] = useState(null); // AI style choice
 
   const [loading, setLoading] = useState(false);
   const [showTourGuide, setShowTourGuide] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const prev = () => setStep(s => Math.max(s - 1, 0));
 
-  // Validation & ML helper state (kept simple to avoid undefined refs)
+  // Validation & helper state
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldWarnings, setFieldWarnings] = useState({});
-  const [suggestions, setSuggestions] = useState({});
 
-  // Derived heuristics for AI hints
+  // Derived heuristics for hints
   const plotCategory = useMemo(() => {
     const size = parseFloat(data.plot_size) || 0;
     if (!size) return null;
@@ -661,10 +658,7 @@ export default function HomeownerRequestWizard() {
     });
   };
 
-  const renderSuggestions = () => {
-    // Removed suggestions banner as requested
-    return null;
-  };
+
 
   const renderFieldErrors = () => {
     if (Object.keys(fieldErrors).length === 0) return null;
@@ -710,66 +704,7 @@ export default function HomeownerRequestWizard() {
     );
   };
 
-  // Real-time feedback component
-  const RealTimeFeedback = ({ fieldName, recommendations, errors, warnings }) => {
-    if (!recommendations && !errors && !warnings) return null;
 
-    return (
-      <div className="real-time-feedback" style={{ marginTop: '8px' }}>
-        {/* Real-time recommendations */}
-        {recommendations && recommendations.length > 0 && (
-          <div style={{ marginBottom: '8px' }}>
-            {recommendations.map((rec, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  backgroundColor: rec.type === 'warning' ? '#fef3c7' : '#d1fae5',
-                  border: `1px solid ${rec.type === 'warning' ? '#f59e0b' : '#10b981'}`,
-                  color: rec.type === 'warning' ? '#92400e' : '#065f46',
-                  marginBottom: '4px'
-                }}
-              >
-                {rec.type === 'warning' ? '⚠️' : '💡'} {rec.message}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Field errors */}
-        {errors && (
-          <div style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            backgroundColor: '#fee2e2',
-            border: '1px solid #f87171',
-            color: '#dc2626',
-            marginBottom: '4px'
-          }}>
-            ❌ {errors}
-          </div>
-        )}
-
-        {/* Field warnings */}
-        {warnings && (
-          <div style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            backgroundColor: '#fef3c7',
-            border: '1px solid #f59e0b',
-            color: '#92400e',
-            marginBottom: '4px'
-          }}>
-            ⚠️ {warnings}
-          </div>
-        )}
-      </div>
-    );
-  };
 
 
   return (
@@ -1056,37 +991,7 @@ export default function HomeownerRequestWizard() {
             </div>
           </div>
 
-          {/* ML Suggestions for Site Details Page */}
-          {(estimatedCost > 0 || plotCategory || budgetCategory) && (
-            <div style={{
-              backgroundColor: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              borderRadius: '12px',
-              padding: '20px',
-              marginBottom: '20px'
-            }}>
-              <h3 style={{ margin: '0 0 16px 0', color: '#166534', fontSize: '18px' }}>
-                🤖 AI Suggestions
-              </h3>
-              <div style={{ fontSize: '14px', color: '#166534' }}>
-                {plotCategory && plotCategory !== 'unknown' && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 For {plotCategory} plot size, consider {plotCategory === 'small' ? '[1, 2]' : plotCategory === 'medium' ? '[1, 2, 3]' : plotCategory === 'large' ? '[2, 3, 4]' : plotCategory === 'xlarge' ? '[3, 4, 5, 6]' : '[4, 5, 6]'} floors
-                  </div>
-                )}
-                {estimatedCost && estimatedCost > 0 && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 Estimated cost: ₹{Math.round(estimatedCost).toLocaleString()} (₹{Math.round(estimatedCost / (data.building_size || 1000))}/sq ft)
-                  </div>
-                )}
-                {budgetCategory && budgetCategory !== 'unknown' && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 Recommended materials for {budgetCategory} budget
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
 
           {/* Validation Summary for Site Details Page */}
           {(fieldErrors.num_floors || fieldWarnings.num_floors) && (
@@ -1544,7 +1449,7 @@ export default function HomeownerRequestWizard() {
                                           borderRadius: '2px',
                                           border: '1px solid #bbf7d0'
                                         }}>
-                                          🤖 Auto
+                                          Auto
                                         </span>
                                         {roomImages.length > 0 && (
                                           <span style={{
@@ -1941,51 +1846,12 @@ export default function HomeownerRequestWizard() {
                   })}
                 </div>
 
-                <div style={{
-                  marginTop: '12px',
-                  padding: '8px 12px',
-                  backgroundColor: '#f0fdf4',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  color: '#166534'
-                }}>
-                  💡 <strong>Smart Planning:</strong> Plan room distribution across floors. Each room type can have its own reference images for better visualization and planning.
-                </div>
+
               </div>
             )}
           </div>
 
-          {/* ML Suggestions for Family Needs Page */}
-          {(estimatedCost > 0 || plotCategory || budgetCategory) && (
-            <div style={{
-              backgroundColor: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              borderRadius: '12px',
-              padding: '20px',
-              marginBottom: '20px'
-            }}>
-              <h3 style={{ margin: '0 0 16px 0', color: '#166534', fontSize: '18px' }}>
-                🤖 AI Suggestions
-              </h3>
-              <div style={{ fontSize: '14px', color: '#166534' }}>
-                {plotCategory && plotCategory !== 'unknown' && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 For {plotCategory} plot size, consider {plotCategory === 'small' ? '[1, 2]' : plotCategory === 'medium' ? '[1, 2, 3]' : plotCategory === 'large' ? '[2, 3, 4]' : plotCategory === 'xlarge' ? '[3, 4, 5, 6]' : '[4, 5, 6]'} floors
-                  </div>
-                )}
-                {estimatedCost && estimatedCost > 0 && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 Estimated cost: ₹{Math.round(estimatedCost).toLocaleString()} (₹{Math.round(estimatedCost / (data.building_size || 1000))}/sq ft)
-                  </div>
-                )}
-                {budgetCategory && budgetCategory !== 'unknown' && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 Recommended materials for {budgetCategory} budget
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
 
           <div className="wizard-footer">
             <button className="btn btn-secondary" onClick={prev}>Back</button>
@@ -2053,8 +1919,7 @@ export default function HomeownerRequestWizard() {
                     const newValue = e.target.value;
                     console.log('🎨 User manually selected aesthetic:', newValue);
                     setData(prev => ({ ...prev, aesthetic: newValue }));
-                    // Clear any AI suggestions when user manually selects
-                    setSelectedStyle(null);
+                    // Clear any suggestions when user manually selects
                   }}
                   style={{
                     width: '100%',
@@ -2150,103 +2015,12 @@ export default function HomeownerRequestWizard() {
               </div>
             </div>
 
-            {/* Option 2: AI-Powered Suggestions */}
-            <div style={{
-              backgroundColor: '#f8fafc',
-              border: '2px solid #e2e8f0',
-              borderRadius: '16px',
-              padding: '24px',
-              marginBottom: '24px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginBottom: '20px',
-                paddingBottom: '16px',
-                borderBottom: '2px solid #f1f5f9'
-              }}>
-                <span style={{ fontSize: '24px' }}>🤖</span>
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '20px',
-                  fontWeight: '700',
-                  color: '#1f2937'
-                }}>
-                  Option 2: AI-Powered Style Recommendations
-                </h3>
-                <span style={{
-                  fontSize: '12px',
-                  backgroundColor: '#fef3c7',
-                  color: '#92400e',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  fontWeight: '600'
-                }}>
-                  Smart Suggestions
-                </span>
-              </div>
 
-              <div style={{
-                fontSize: '14px',
-                color: '#6b7280',
-                marginBottom: '20px',
-                padding: '12px 16px',
-                backgroundColor: '#f1f5f9',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0'
-              }}>
-                💡 <strong>Based on your project details:</strong> Plot size, budget range, building size, and room requirements
-              </div>
-
-              <HouseStyleSuggestions
-                formData={data}
-                onStyleChange={(style) => {
-                  console.log('🤖 User selected AI suggestion:', style.name);
-                  setSelectedStyle(style);
-                  setData(prev => ({ ...prev, aesthetic: style.name }));
-                }}
-                showSuggestions={true}
-                autoSelect={false}
-              />
-            </div>
           </div>
 
-          {/* Show suggestions */}
-          {renderSuggestions()}
 
-          {/* ML Suggestions for Preferences Page */}
-          {(estimatedCost > 0 || plotCategory || budgetCategory) && (
-            <div style={{
-              backgroundColor: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              borderRadius: '12px',
-              padding: '20px',
-              marginBottom: '20px'
-            }}>
-              <h3 style={{ margin: '0 0 16px 0', color: '#166534', fontSize: '18px' }}>
-                🤖 AI Suggestions
-              </h3>
-              <div style={{ fontSize: '14px', color: '#166534' }}>
-                {plotCategory && plotCategory !== 'unknown' && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 For {plotCategory} plot size, consider {plotCategory === 'small' ? '[1, 2]' : plotCategory === 'medium' ? '[1, 2, 3]' : plotCategory === 'large' ? '[2, 3, 4]' : plotCategory === 'xlarge' ? '[3, 4, 5, 6]' : '[4, 5, 6]'} floors
-                  </div>
-                )}
-                {estimatedCost && estimatedCost > 0 && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 Estimated cost: ₹{Math.round(estimatedCost).toLocaleString()} (₹{Math.round(estimatedCost / (data.building_size || 1000))}/sq ft)
-                  </div>
-                )}
-                {budgetCategory && budgetCategory !== 'unknown' && (
-                  <div style={{ marginBottom: '8px', padding: '8px', backgroundColor: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
-                    💡 Recommended materials for {budgetCategory} budget
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
+
 
           {/* Validation Summary for Preferences Page */}
           {(fieldErrors.aesthetic || fieldWarnings.aesthetic) && (
@@ -2286,187 +2060,7 @@ export default function HomeownerRequestWizard() {
           <div className="section-header">Review</div>
 
           {/* Comprehensive Rules Summary */}
-          <div style={{
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '20px'
-          }}>
-            <h3 style={{ margin: '0 0 16px 0', color: '#1e293b', fontSize: '18px' }}>
-              🤖 AI-Powered Design Summary
-            </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <h4 style={{ margin: '0 0 12px 0', color: '#374151', fontSize: '16px' }}>📊 Project Overview</h4>
-                <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.6' }}>
-                  <div><strong>Plot Size:</strong> {data.plot_size} sq ft</div>
-                  <div><strong>Building Size:</strong> {data.building_size} sq ft</div>
-                  <div><strong>Floors:</strong> {data.num_floors}</div>
-                  <div><strong>Budget:</strong> {data.budget_range}</div>
-                  <div><strong>Style:</strong> {data.aesthetic}</div>
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <h4 style={{ margin: '0 0 12px 0', color: '#374151', fontSize: '16px' }}>🏠 Room Requirements</h4>
-                <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.6' }}>
-                  {data.rooms && data.rooms.length > 0 ? (
-                    <div>
-                      {/* Show selected room types */}
-                      <div style={{ marginBottom: '12px' }}>
-                        <strong>Selected Room Types:</strong>
-                        <div style={{ marginTop: '4px' }}>
-                          {data.rooms.map(room => (
-                            <span key={room} style={{
-                              display: 'inline-block',
-                              margin: '2px 4px 2px 0',
-                              padding: '2px 6px',
-                              backgroundColor: '#f3f4f6',
-                              borderRadius: '4px',
-                              fontSize: '12px'
-                            }}>
-                              {room.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Show floor-wise room counts */}
-                      {data.num_floors && parseInt(data.num_floors) >= 2 && data.floor_rooms && Object.keys(data.floor_rooms).length > 0 && (
-                        <div>
-                          <strong>Floor-wise Room Distribution:</strong>
-                          <div style={{ marginTop: '8px' }}>
-                            {Array.from({ length: parseInt(data.num_floors) || 0 }, (_, index) => {
-                              const floorNumber = index + 1;
-                              const floorKey = `floor${floorNumber}`;
-                              const floorRooms = data.floor_rooms[floorKey] || {};
-                              const totalRooms = Object.values(floorRooms).reduce((sum, count) => sum + (count || 0), 0);
-
-                              if (totalRooms === 0) return null;
-
-                              return (
-                                <div key={floorKey} style={{
-                                  marginBottom: '8px',
-                                  padding: '8px',
-                                  backgroundColor: '#f9fafb',
-                                  borderRadius: '6px',
-                                  border: '1px solid #e5e7eb'
-                                }}>
-                                  <div style={{ fontWeight: '600', marginBottom: '4px', color: '#374151' }}>
-                                    {floorNumber === 1 ? 'Ground Floor' : `Floor ${floorNumber}`}
-                                  </div>
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                    {Object.entries(floorRooms).map(([roomType, count]) => {
-                                      if (!count || count === 0) return null;
-
-                                      const roomIcon = {
-                                        'master_bedroom': '👑',
-                                        'bedrooms': '🛏️',
-                                        'attached_bathrooms': '🚿',
-                                        'common_bathrooms': '🚽',
-                                        'living_room': '🛋️',
-                                        'dining_room': '🍽️',
-                                        'kitchen': '🍳',
-                                        'study_area': '📚',
-                                        'prayer_area': '🕉️',
-                                        'guest_room': '🏠',
-                                        'store_room': '📦',
-                                        'balcony': '🌅',
-                                        'terrace': '🏞️',
-                                        'garage': '🚗',
-                                        'utility_area': '🔧'
-                                      }[roomType] || '🏠';
-
-                                      return (
-                                        <span key={roomType} style={{
-                                          display: 'inline-flex',
-                                          alignItems: 'center',
-                                          gap: '4px',
-                                          padding: '2px 6px',
-                                          backgroundColor: '#e0f2fe',
-                                          borderRadius: '4px',
-                                          fontSize: '11px',
-                                          color: '#0c4a6e',
-                                          border: '1px solid #bae6fd'
-                                        }}>
-                                          <span>{roomIcon}</span>
-                                          <span>{roomType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                                          <span style={{ fontWeight: '600' }}>×{count}</span>
-                                        </span>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Show total room count */}
-                      {(() => {
-                        const totalRooms = data.floor_rooms ?
-                          Object.values(data.floor_rooms).reduce((total, floorRooms) => {
-                            return total + Object.values(floorRooms).reduce((sum, count) => sum + (count || 0), 0);
-                          }, 0) : 0;
-
-                        if (totalRooms > 0) {
-                          return (
-                            <div style={{
-                              marginTop: '12px',
-                              padding: '8px',
-                              backgroundColor: '#f0fdf4',
-                              borderRadius: '6px',
-                              border: '1px solid #bbf7d0'
-                            }}>
-                              <strong style={{ color: '#166534' }}>Total Rooms: {totalRooms}</strong>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                  ) : (
-                    <div>No rooms selected</div>
-                  )}
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <h4 style={{ margin: '0 0 12px 0', color: '#374151', fontSize: '16px' }}>⏱️ Project Timeline</h4>
-                <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.6' }}>
-                  {timelineData ? (
-                    <div>
-                      <div><strong>Estimated Duration:</strong> {timelineData.months} months</div>
-                      {timelineData.estimatedCompletion && (
-                        <div><strong>Completion Date:</strong> {timelineData.estimatedCompletion.toLocaleDateString()}</div>
-                      )}
-                      <div><strong>Phases:</strong> {timelineData.phases?.length || 0} phases planned</div>
-                    </div>
-                  ) : (
-                    <div>Timeline not calculated</div>
-                  )}
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <h4 style={{ margin: '0 0 12px 0', color: '#374151', fontSize: '16px' }}>🎨 Selected Style</h4>
-                <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.6' }}>
-                  {selectedStyle ? (
-                    <div>
-                      <div><strong>Style:</strong> {selectedStyle.name}</div>
-                      <div><strong>Description:</strong> {selectedStyle.description}</div>
-                      <div><strong>Match:</strong> {selectedStyle.suitability}% suitability</div>
-                    </div>
-                  ) : (
-                    <div>No style selected</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div className="wizard-footer">
             <button className="btn btn-secondary" onClick={prev}>Back</button>
@@ -2486,7 +2080,6 @@ export default function HomeownerRequestWizard() {
                 setSelectedArchitects(selectedArchitectObjects || []);
               }}
               layoutRequestId={null}
-              showAIRecommendations={true}
               stylePreferences={data.aesthetic ? { aesthetic: data.aesthetic } : {}}
             />
           </div>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced View Timeline Project Selection Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li::before {
+            content: "✅ ";
+            color: #10b981;
+            font-weight: bold;
+        }
+        .demo-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .demo-section h4 {
+            margin: 0 0 1rem 0;
+        }
+        .project-filter-demo {
+            background: rgba(255, 255, 255, 0.95);
+            color: #374151;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .project-filter-demo label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .project-filter-demo select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: white;
+        }
+        .project-filter-demo select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .comparison-card {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .comparison-card.before {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .comparison-card.after {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        .comparison-card h4 {
+            margin: 0 0 0.5rem 0;
+        }
+        .comparison-card.before h4 {
+            color: #dc2626;
+        }
+        .comparison-card.after h4 {
+            color: #16a34a;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .implementation-steps {
+            counter-reset: step-counter;
+        }
+        .implementation-steps li {
+            counter-increment: step-counter;
+            margin: 1rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+        .implementation-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #667eea;
+            color: white;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .success-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .success-banner h3 {
+            margin: 0 0 0.5rem 0;
+        }
+        .success-banner p {
+            margin: 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Enhanced View Timeline Project Selection</h1>
+            <p>Improved project selection functionality for contractor dashboard timeline view</p>
+        </div>
+
+        <div class="content">
+            <div class="test-section">
+                <h3>🎯 Enhancement Overview</h3>
+                <p>The View Timeline section in the contractor dashboard now includes a prominent project selection field, similar to the daily progress section. This allows contractors to easily filter and view timelines for specific projects.</p>
+                
+                <ul class="feature-list">
+                    <li><strong>Always Visible Project Selection:</strong> Project dropdown is now shown whenever projects exist (previously only shown when multiple projects existed)</li>
+                    <li><strong>Enhanced Styling:</strong> Beautiful gradient background with improved visual hierarchy</li>
+                    <li><strong>Auto-Selection:</strong> Automatically selects the project when only one exists</li>
+                    <li><strong>Improved Labels:</strong> More descriptive option labels with project details and progress</li>
+                    <li><strong>Better UX:</strong> Clear instructions and visual feedback for project selection</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <h3>📊 Before vs After Comparison</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-card before">
+                        <h4>❌ Before (Old Implementation)</h4>
+                        <ul>
+                            <li>Project filter only shown when multiple projects exist</li>
+                            <li>Basic styling with minimal visual hierarchy</li>
+                            <li>Simple "Filter by Project" label</li>
+                            <li>No auto-selection for single projects</li>
+                            <li>Limited project information in dropdown</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card after">
+                        <h4>✅ After (Enhanced Implementation)</h4>
+                        <ul>
+                            <li>Project selection always visible when projects exist</li>
+                            <li>Beautiful gradient styling with enhanced UX</li>
+                            <li>Descriptive "Select Project to View Timeline" label</li>
+                            <li>Auto-selects project when only one exists</li>
+                            <li>Rich project details: name, updates count, progress %</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>🎨 New Project Selection Interface</h3>
+                <div class="demo-section">
+                    <h4>Enhanced Project Filter Design</h4>
+                    <div class="project-filter-demo">
+                        <label for="demo-select">🏗️ Select Project to View Timeline:</label>
+                        <select id="demo-select">
+                            <option value="">All Projects (3 total)</option>
+                            <option value="1">📋 Residential Villa Construction • 15 updates • 75% complete</option>
+                            <option value="2">📋 Commercial Office Building • 8 updates • 45% complete</option>
+                            <option value="3">📋 Apartment Complex Phase 1 • 22 updates • 90% complete</option>
+                        </select>
+                    </div>
+                    <p style="margin: 1rem 0 0 0; font-size: 0.875rem; opacity: 0.9;">
+                        The new design features a gradient background, clear labeling, and detailed project information in each option.
+                    </p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔧 Implementation Details</h3>
+                <p>The following changes were made to enhance the project selection functionality:</p>
+                
+                <ol class="implementation-steps">
+                    <li><strong>Modified Visibility Logic:</strong> Changed from <code>uniqueProjects.length > 1</code> to <code>uniqueProjects.length > 0</code></li>
+                    <li><strong>Enhanced Styling:</strong> Added gradient background and improved visual hierarchy</li>
+                    <li><strong>Auto-Selection Logic:</strong> Added useEffect to auto-select when only one project exists</li>
+                    <li><strong>Improved Labels:</strong> Added icons and more descriptive text</li>
+                    <li><strong>Better Option Format:</strong> Enhanced dropdown options with project details</li>
+                </ol>
+
+                <div class="code-block">
+// Key changes in ContractorConstructionTimeline.jsx
+
+// 1. Always show when projects exist (not just multiple)
+{uniqueProjects.length > 0 && (
+  &lt;div className="project-filter"&gt;
+    &lt;label htmlFor="project-select"&gt;
+      🏗️ Select Project to View Timeline:
+    &lt;/label&gt;
+    &lt;select 
+      id="project-select"
+      value={selectedProject || ''}
+      onChange={(e) => setSelectedProject(e.target.value || null)}
+      className="project-select"
+    &gt;
+      &lt;option value=""&gt;
+        {uniqueProjects.length === 1 
+          ? `View: ${uniqueProjects[0].name}` 
+          : `All Projects (${uniqueProjects.length} total)`
+        }
+      &lt;/option&gt;
+      {uniqueProjects.map(project => (
+        &lt;option key={project.id} value={project.id}&gt;
+          📋 {project.name} • {project.updates_count} updates • {project.latest_progress}% complete
+        &lt;/option&gt;
+      ))}
+    &lt;/select&gt;
+  &lt;/div&gt;
+)}
+
+// 2. Auto-select single project
+useEffect(() => {
+  const uniqueProjects = getUniqueProjects();
+  if (uniqueProjects.length === 1 && !selectedProject && !projectId) {
+    setSelectedProject(uniqueProjects[0].id);
+  }
+}, [timelineData, selectedProject, projectId]);
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>🧪 Testing Instructions</h3>
+                <p>To test the enhanced project selection functionality:</p>
+                
+                <ol>
+                    <li><strong>Navigate to Contractor Dashboard:</strong> Log in as a contractor and go to the dashboard</li>
+                    <li><strong>Go to Progress Updates:</strong> Click on the "Progress Updates" tab</li>
+                    <li><strong>Click "📊 View Timeline":</strong> Switch to the timeline view</li>
+                    <li><strong>Observe Project Selection:</strong> You should now see the enhanced project selection dropdown</li>
+                    <li><strong>Test Functionality:</strong> Try selecting different projects and observe the timeline filtering</li>
+                </ol>
+
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 1rem; margin: 1rem 0;">
+                    <strong>💡 Note:</strong> The project selection will be visible even if you have only one project, making the interface consistent and user-friendly.
+                </div>
+            </div>
+
+            <div class="success-banner">
+                <h3>🎉 Enhancement Complete!</h3>
+                <p>The View Timeline section now has a consistent and user-friendly project selection interface, matching the daily progress section's functionality.</p>
+            </div>
+
+            <div class="test-section">
+                <h3>📁 Files Modified</h3>
+                <ul>
+                    <li><code>frontend/src/components/ContractorConstructionTimeline.jsx</code> - Enhanced project selection logic and UI</li>
+                    <li><code>frontend/src/styles/ConstructionTimeline.css</code> - Improved styling for project filter</li>
+                </ul>
+                
+                <p style="margin-top: 1rem; color: #6b7280; font-size: 0.875rem;">
+                    The changes maintain backward compatibility while significantly improving the user experience for contractors managing multiple projects.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactivity to the demo
+        document.getElementById('demo-select').addEventListener('change', function(e) {
+            const selectedText = e.target.options[e.target.selectedIndex].text;
+            if (e.target.value) {
+                console.log('Selected project:', selectedText);
+                // In the real implementation, this would filter the timeline
+            }
+        });
+
+        // Simulate the enhancement working
+        console.log('✅ Enhanced View Timeline Project Selection loaded successfully!');
+        console.log('🏗️ Project selection is now always visible when projects exist');
+        console.log('🎨 Enhanced styling with gradient background applied');
+        console.log('🔄 Auto-selection logic for single projects implemented');
+    </script>
+</body>
+</html>

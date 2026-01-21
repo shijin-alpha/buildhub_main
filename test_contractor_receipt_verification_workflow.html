@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Contractor Receipt Verification Workflow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.success {
+            background: #28a745;
+        }
+        button.success:hover {
+            background: #218838;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .payment-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .payment-info h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Contractor Receipt Verification Workflow</h1>
+        <p>This test verifies that contractors can view and verify payment receipts uploaded by homeowners, but cannot upload receipts themselves.</p>
+        
+        <div class="form-group">
+            <label>Test Session Setup:</label>
+            <button onclick="setupContractorSession()">Setup Contractor Session</button>
+            <button onclick="setupHomeownerSession()">Setup Homeowner Session (Should Fail Verification)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📋 Step 1: Get Payment History</h2>
+        <p>First, let's get the payment history to see which payments have receipts pending verification.</p>
+        
+        <div class="form-group">
+            <label for="project_id">Project ID</label>
+            <input type="number" id="project_id" value="37" placeholder="Enter project ID">
+        </div>
+        
+        <button onclick="getPaymentHistory()">Get Payment History</button>
+        <div id="paymentHistoryResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Step 2: Verify Payment Receipt</h2>
+        <p>Select a payment with uploaded receipt to verify or reject.</p>
+        
+        <div class="payment-info" id="selectedPaymentInfo" style="display: none;">
+            <h3>Selected Payment Information</h3>
+            <div id="paymentDetails"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="verify_payment_id">Payment ID to Verify</label>
+            <input type="number" id="verify_payment_id" placeholder="Enter payment ID with uploaded receipt">
+        </div>
+
+        <div class="form-group">
+            <label for="verification_notes">Verification Notes</label>
+            <textarea id="verification_notes" rows="4" placeholder="Add notes about the verification (required for rejection, optional for approval)..."></textarea>
+        </div>
+
+        <button class="success" onclick="verifyPayment('verified')">✅ Verify & Accept Payment</button>
+        <button class="danger" onclick="verifyPayment('rejected')">❌ Reject & Request Correction</button>
+        
+        <div id="verificationResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>❌ Step 3: Test Contractor Upload (Should Fail)</h2>
+        <p>This should fail because contractors should not be able to upload receipts - only homeowners should.</p>
+        
+        <div class="form-group">
+            <label for="contractor_payment_id">Payment ID</label>
+            <input type="number" id="contractor_payment_id" value="1">
+        </div>
+        
+        <button onclick="testContractorUpload()">Try Contractor Upload (Should Fail)</button>
+        <div id="contractorUploadResult"></div>
+    </div>
+
+    <script>
+        async function setupContractorSession() {
+            try {
+                const response = await fetch('/buildhub/establish_contractor_session.php', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                showResult('contractorUploadResult', data.success ? 'Contractor session established successfully' : 'Failed to setup contractor session: ' + data.message, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult('contractorUploadResult', 'Error setting up contractor session: ' + error.message, 'error');
+            }
+        }
+
+        async function setupHomeownerSession() {
+            try {
+                const response = await fetch('/buildhub/establish_homeowner_session.php', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                showResult('contractorUploadResult', 'Homeowner session established (verification should fail)', 'info');
+            } catch (error) {
+                showResult('contractorUploadResult', 'Error setting up homeowner session: ' + error.message, 'error');
+            }
+        }
+
+        async function getPaymentHistory() {
+            const projectId = document.getElementById('project_id').value;
+            if (!projectId) {
+                showResult('paymentHistoryResult', 'Please enter a project ID', 'error');
+                return;
+            }
+
+            try {
+                showResult('paymentHistoryResult', 'Loading payment history...', 'info');
+                
+                const response = await fetch(`/buildhub/backend/api/contractor/get_payment_history.php?project_id=${projectId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const payments = data.data.payment_requests || [];
+                    const paymentsWithReceipts = payments.filter(p => p.receipt_file_path && p.verification_status === 'pending');
+                    
+                    let result = `✅ Found ${payments.length} payment requests\n`;
+                    result += `📄 ${paymentsWithReceipts.length} payments have receipts pending verification\n\n`;
+                    
+                    if (paymentsWithReceipts.length > 0) {
+                        result += 'Payments with receipts pending verification:\n';
+                        paymentsWithReceipts.forEach(p => {
+                            result += `- Payment ID: ${p.id}, Stage: ${p.stage_name}, Amount: ₹${p.requested_amount}, Status: ${p.status}\n`;
+                        });
+                        
+                        // Auto-select first payment for verification
+                        const firstPayment = paymentsWithReceipts[0];
+                        document.getElementById('verify_payment_id').value = firstPayment.id;
+                        showPaymentInfo(firstPayment);
+                    } else {
+                        result += 'No payments with pending receipt verification found.\n';
+                        result += 'Upload a receipt first using the homeowner interface.';
+                    }
+                    
+                    showResult('paymentHistoryResult', result, 'success');
+                } else {
+                    showResult('paymentHistoryResult', '❌ Failed to get payment history: ' + data.message, 'error');
+                }
+                
+            } catch (error) {
+                showResult('paymentHistoryResult', '❌ Error getting payment history: ' + error.message, 'error');
+            }
+        }
+
+        function showPaymentInfo(payment) {
+            const infoDiv = document.getElementById('selectedPaymentInfo');
+            const detailsDiv = document.getElementById('paymentDetails');
+            
+            detailsDiv.innerHTML = `
+                <p><strong>Payment ID:</strong> ${payment.id}</p>
+                <p><strong>Stage:</strong> ${payment.stage_name}</p>
+                <p><strong>Amount:</strong> ₹${payment.requested_amount}</p>
+                <p><strong>Status:</strong> ${payment.status}</p>
+                <p><strong>Verification Status:</strong> ${payment.verification_status}</p>
+                <p><strong>Transaction Reference:</strong> ${payment.transaction_reference || 'N/A'}</p>
+                <p><strong>Payment Date:</strong> ${payment.payment_date || 'N/A'}</p>
+                <p><strong>Payment Method:</strong> ${payment.payment_method || 'N/A'}</p>
+            `;
+            
+            infoDiv.style.display = 'block';
+        }
+
+        async function verifyPayment(status) {
+            const paymentId = document.getElementById('verify_payment_id').value;
+            const notes = document.getElementById('verification_notes').value;
+            
+            if (!paymentId) {
+                showResult('verificationResult', 'Please enter a payment ID', 'error');
+                return;
+            }
+            
+            if (status === 'rejected' && !notes.trim()) {
+                showResult('verificationResult', 'Please provide notes when rejecting a payment', 'error');
+                return;
+            }
+
+            try {
+                showResult('verificationResult', `${status === 'verified' ? 'Verifying' : 'Rejecting'} payment...`, 'info');
+                
+                const response = await fetch('/buildhub/backend/api/contractor/verify_payment_receipt.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        payment_id: parseInt(paymentId),
+                        verification_status: status,
+                        verification_notes: notes
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const action = status === 'verified' ? 'verified and accepted' : 'rejected';
+                    showResult('verificationResult', `✅ Payment ${action} successfully!\n\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult('verificationResult', `❌ Verification failed: ${data.message}\n\nFull response: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('verificationResult', '❌ Error verifying payment: ' + error.message, 'error');
+            }
+        }
+
+        async function testContractorUpload() {
+            const paymentId = document.getElementById('contractor_payment_id').value;
+            
+            try {
+                showResult('contractorUploadResult', 'Testing contractor upload (this should fail)...', 'info');
+                
+                // Create a dummy form data
+                const formData = new FormData();
+                formData.append('payment_id', paymentId);
+                formData.append('transaction_reference', 'TEST123');
+                formData.append('payment_date', new Date().toISOString().split('T')[0]);
+                formData.append('payment_method', 'bank_transfer');
+                formData.append('notes', 'Test contractor upload - should fail');
+                
+                // Try to upload using homeowner API (should fail for contractor)
+                const response = await fetch('/buildhub/backend/api/homeowner/upload_payment_receipt.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('contractorUploadResult', '❌ SECURITY ISSUE: Contractor was able to upload receipt! This should not happen.\n\nResponse: ' + JSON.stringify(data, null, 2), 'error');
+                } else {
+                    showResult('contractorUploadResult', '✅ Good! Contractor upload correctly failed: ' + data.message + '\n\nThis is the expected behavior - only homeowners should upload receipts.', 'success');
+                }
+                
+            } catch (error) {
+                showResult('contractorUploadResult', '✅ Good! Contractor upload failed with error: ' + error.message + '\n\nThis is expected behavior.', 'success');
+            }
+        }
+
+        function showResult(elementId, message, type) {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.textContent = message;
+            resultDiv.className = 'result ' + type;
+        }
+    </script>
+</body>
+</html>

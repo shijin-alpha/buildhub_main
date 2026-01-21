@@ -100,7 +100,7 @@ class AIServiceConnector {
      * @param string $room_type Type of room
      * @return array Job initiation results with job_id
      */
-    public function startAsyncConceptualImageGeneration($improvement_suggestions, $detected_objects, $visual_features, $spatial_guidance, $room_type) {
+    public function startAsyncConceptualImageGeneration($improvement_suggestions, $detected_objects, $visual_features, $spatial_guidance, $room_type, $job_id = null) {
         try {
             // Check if AI service is available
             if (!$this->isServiceAvailable()) {
@@ -116,6 +116,11 @@ class AIServiceConnector {
                 'room_type' => $room_type,
                 'save_image' => 'true'
             ];
+            
+            // Add job_id if provided
+            if ($job_id) {
+                $post_data['job_id'] = $job_id;
+            }
             
             // Make request to start asynchronous conceptual generation
             $response = $this->makeRequest('/generate-concept', $post_data);
@@ -212,6 +217,39 @@ class AIServiceConnector {
                 'error' => $e->getMessage(),
                 'status' => 'unknown'
             ];
+        }
+    }
+    
+    /**
+     * Call Gemini API for text generation and refinement
+     * 
+     * @param string $prompt The prompt to send to Gemini
+     * @param array $options Additional options for the API call
+     * @return string The generated text response
+     */
+    public function callGeminiAPI($prompt, $options = []) {
+        try {
+            // Prepare request data for Gemini API
+            $post_data = [
+                'prompt' => $prompt,
+                'max_tokens' => $options['max_tokens'] ?? 500,
+                'temperature' => $options['temperature'] ?? 0.7,
+                'model' => $options['model'] ?? 'gemini-pro'
+            ];
+            
+            // Make request to AI service Gemini endpoint
+            $response = $this->makeRequest('/gemini-generate', $post_data);
+            
+            if ($response && isset($response['success']) && $response['success']) {
+                return $response['generated_text'] ?? '';
+            } else {
+                $error_message = isset($response['detail']) ? $response['detail'] : 'Gemini API error';
+                throw new Exception("Gemini API error: " . $error_message);
+            }
+            
+        } catch (Exception $e) {
+            error_log("Gemini API call failed: " . $e->getMessage());
+            throw $e;
         }
     }
     
@@ -464,9 +502,10 @@ class AIServiceConnector {
      * Get fallback analysis when AI service is unavailable
      */
     private function getFallbackAnalysis($room_type, $improvement_notes, $error_message = '') {
-est section 
-
-            'ai_enhancement_available' => false,
+        return [
+            'success' => true,
+            'message' => 'Fallback analysis generated (AI service unavailable)',
+            'error_context' => $error_message,
             'pipeline_type' => 'fallback',
             'stages_completed' => 0,
             

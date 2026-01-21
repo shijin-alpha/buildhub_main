@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Site Details Flow Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0369a1;
+            background: #f0f9ff;
+            border: 1px solid #7dd3fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .warning {
+            color: #d97706;
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .data-display {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .data-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .data-card h4 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+            font-size: 16px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .field-row:last-child {
+            border-bottom: none;
+        }
+        .field-label {
+            font-weight: 500;
+            color: #475569;
+        }
+        .field-value {
+            color: #1e293b;
+            text-align: right;
+        }
+        .field-value.empty {
+            color: #dc2626;
+            font-style: italic;
+        }
+        .field-value.has-data {
+            color: #059669;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Complete Site Details Flow Test</h1>
+    
+    <div class="info">
+        <h3>Test Overview</h3>
+        <p>This comprehensive test checks the complete flow of site details from database tables to the contractor estimation form.</p>
+        <ul>
+            <li>✅ Layout Requests table data</li>
+            <li>✅ House Plans technical details</li>
+            <li>✅ Contractor inbox payload</li>
+            <li>✅ Estimation form data mapping</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>1. Check All Data Sources</h2>
+        <p>Check all possible sources of site details data:</p>
+        
+        <button class="btn" onclick="checkAllDataSources()">Check All Data Sources</button>
+        
+        <div id="data-sources-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Technical Details Integration</h2>
+        <p>Check if technical details contain site specifications:</p>
+        
+        <button class="btn" onclick="testTechnicalDetailsIntegration()">Test Technical Details</button>
+        
+        <div id="technical-details-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Simulate Estimation Form Data</h2>
+        <p>Simulate how data would appear in the contractor estimation form:</p>
+        
+        <button class="btn" onclick="simulateEstimationFormData()">Simulate Estimation Form</button>
+        
+        <div id="estimation-form-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Create Test Data (If Missing)</h2>
+        <p>Create test data if no site details are found:</p>
+        
+        <button class="btn" onclick="createTestData()">Create Test Data</button>
+        
+        <div id="create-data-result"></div>
+    </div>
+
+    <script>
+        // Mock session data
+        const mockUser = {
+            id: 28, // Homeowner ID
+            first_name: 'Shijin',
+            last_name: 'Thomas',
+            email: 'shijin@example.com'
+        };
+        
+        sessionStorage.setItem('user', JSON.stringify(mockUser));
+
+        async function checkAllDataSources() {
+            const resultsDiv = document.getElementById('data-sources-result');
+            resultsDiv.innerHTML = '<p>Checking all data sources...</p>';
+            
+            try {
+                // Check multiple APIs for data
+                const checks = [
+                    {
+                        name: 'Layout Requests',
+                        url: '/buildhub/backend/api/homeowner/get_layout_requests.php',
+                        dataPath: 'requests',
+                        siteFields: ['plot_size', 'building_size', 'budget_range', 'timeline', 'num_floors', 'orientation']
+                    },
+                    {
+                        name: 'Contractor Inbox',
+                        url: '/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37',
+                        dataPath: 'items',
+                        siteFields: ['plot_size', 'building_size', 'budget_range', 'timeline', 'layout_request_details']
+                    }
+                ];
+                
+                let resultsHTML = '<div class="success"><h3>✅ Data Sources Check Results</h3></div>';
+                
+                for (const check of checks) {
+                    try {
+                        const response = await fetch(check.url, { credentials: 'include' });
+                        const result = await response.json();
+                        
+                        if (result.success && result[check.dataPath] && result[check.dataPath].length > 0) {
+                            const data = result[check.dataPath][0]; // Get first item
+                            
+                            resultsHTML += `
+                                <div class="data-card">
+                                    <h4>📊 ${check.name}</h4>
+                                    <p><strong>Status:</strong> <span class="field-value has-data">✅ Data Found (${result[check.dataPath].length} items)</span></p>
+                                    
+                                    <h5>Site Details Available:</h5>
+                            `;
+                            
+                            check.siteFields.forEach(field => {
+                                const value = data[field];
+                                const hasValue = value && value !== '' && value !== 'NOT SET';
+                                resultsHTML += `
+                                    <div class="field-row">
+                                        <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                        <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                                    </div>
+                                `;
+                            });
+                            
+                            resultsHTML += '</div>';
+                        } else {
+                            resultsHTML += `
+                                <div class="data-card">
+                                    <h4>📊 ${check.name}</h4>
+                                    <p><strong>Status:</strong> <span class="field-value empty">❌ No Data Found</span></p>
+                                    <p>Response: ${JSON.stringify(result, null, 2)}</p>
+                                </div>
+                            `;
+                        }
+                    } catch (error) {
+                        resultsHTML += `
+                            <div class="data-card">
+                                <h4>📊 ${check.name}</h4>
+                                <p><strong>Status:</strong> <span class="field-value empty">❌ Error: ${error.message}</span></p>
+                            </div>
+                        `;
+                    }
+                }
+                
+                resultsDiv.innerHTML = resultsHTML;
+                
+            } catch (error) {
+                console.error('Data sources check error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Check Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testTechnicalDetailsIntegration() {
+            const resultsDiv = document.getElementById('technical-details-result');
+            resultsDiv.innerHTML = '<p>Testing technical details integration...</p>';
+            
+            try {
+                // Get contractor inbox to check technical details
+                const response = await fetch('/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.items && result.items.length > 0) {
+                    let resultsHTML = '<div class="success"><h3>✅ Technical Details Integration Test</h3></div>';
+                    
+                    result.items.forEach((item, index) => {
+                        resultsHTML += `<div class="data-card">`;
+                        resultsHTML += `<h4>📋 Inbox Item ${index + 1} (ID: ${item.id})</h4>`;
+                        
+                        // Check technical details
+                        if (item.technical_details) {
+                            resultsHTML += `<h5>🔧 Technical Details Found:</h5>`;
+                            
+                            const techDetails = item.technical_details;
+                            const siteFields = [
+                                'site_area', 'built_up_area', 'carpet_area', 'construction_cost',
+                                'foundation_type', 'structure_type', 'wall_material', 'roofing_type'
+                            ];
+                            
+                            siteFields.forEach(field => {
+                                if (techDetails[field] !== undefined) {
+                                    const value = techDetails[field];
+                                    const hasValue = value && value !== '' && value !== 'NOT SET';
+                                    resultsHTML += `
+                                        <div class="field-row">
+                                            <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                            <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                                        </div>
+                                    `;
+                                }
+                            });
+                        } else {
+                            resultsHTML += `<p><span class="field-value empty">❌ No Technical Details</span></p>`;
+                        }
+                        
+                        // Check layout request details
+                        if (item.layout_request_details) {
+                            resultsHTML += `<h5>📐 Layout Request Details Found:</h5>`;
+                            
+                            const layoutDetails = item.layout_request_details;
+                            const layoutFields = ['plot_size', 'building_size', 'budget_range', 'timeline', 'location'];
+                            
+                            layoutFields.forEach(field => {
+                                if (layoutDetails[field] !== undefined) {
+                                    const value = layoutDetails[field];
+                                    const hasValue = value && value !== '' && value !== 'NOT SET';
+                                    resultsHTML += `
+                                        <div class="field-row">
+                                            <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                            <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                                        </div>
+                                    `;
+                                }
+                            });
+                        } else {
+                            resultsHTML += `<p><span class="field-value empty">❌ No Layout Request Details</span></p>`;
+                        }
+                        
+                        resultsHTML += `</div>`;
+                    });
+                    
+                    resultsDiv.innerHTML = resultsHTML;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Technical Details Data</h3>
+                            <p>No contractor inbox items found with technical details.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Technical details test error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Test Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function simulateEstimationFormData() {
+            const resultsDiv = document.getElementById('estimation-form-result');
+            resultsDiv.innerHTML = '<p>Simulating estimation form data...</p>';
+            
+            try {
+                // Get contractor inbox data
+                const response = await fetch('/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.items && result.items.length > 0) {
+                    const inboxItem = result.items[0];
+                    
+                    // Simulate the EstimationForm data mapping logic
+                    const payload = inboxItem.payload || {};
+                    const layoutRequestDetails = inboxItem.layout_request_details || {};
+                    const parsedRequirements = inboxItem.parsed_requirements || {};
+                    const technicalDetails = inboxItem.technical_details || {};
+                    
+                    // Map data as the EstimationForm would
+                    const formData = {
+                        // Basic Information
+                        project_name: payload.plan_name || `Project for ${inboxItem.homeowner_name}`,
+                        client_name: inboxItem.homeowner_name || '',
+                        location: layoutRequestDetails.location || payload.location || '',
+                        timeline: layoutRequestDetails.timeline || inboxItem.timeline || '90 days',
+                        
+                        // Site Details from multiple sources
+                        plot_size: inboxItem.plot_size || layoutRequestDetails.plot_size || technicalDetails.site_area || '',
+                        building_size: inboxItem.building_size || layoutRequestDetails.building_size || technicalDetails.built_up_area || '',
+                        budget_range: inboxItem.budget_range || layoutRequestDetails.budget_range || '',
+                        num_floors: inboxItem.num_floors || layoutRequestDetails.num_floors || '',
+                        orientation: inboxItem.orientation || layoutRequestDetails.orientation || '',
+                        
+                        // Technical Details
+                        construction_cost: technicalDetails.construction_cost || '',
+                        foundation_type: technicalDetails.foundation_type || '',
+                        structure_type: technicalDetails.structure_type || '',
+                        wall_material: technicalDetails.wall_material || '',
+                        roofing_type: technicalDetails.roofing_type || '',
+                        
+                        // Design Preferences
+                        material_preferences: inboxItem.material_preferences || layoutRequestDetails.material_preferences || '',
+                        preferred_style: inboxItem.preferred_style || layoutRequestDetails.preferred_style || '',
+                        aesthetic: parsedRequirements.aesthetic || '',
+                        
+                        // Requirements
+                        family_needs: parsedRequirements.family_needs || '',
+                        rooms: parsedRequirements.rooms || '',
+                        plot_shape: parsedRequirements.plot_shape || '',
+                        topography: parsedRequirements.topography || ''
+                    };
+                    
+                    let resultsHTML = `
+                        <div class="success">
+                            <h3>✅ Estimation Form Data Simulation</h3>
+                            <p>This shows how data would appear in the contractor estimation form:</p>
+                        </div>
+                        
+                        <div class="data-grid">
+                            <div class="data-card">
+                                <h4>📋 Basic Information</h4>
+                    `;
+                    
+                    const basicFields = ['project_name', 'client_name', 'location', 'timeline', 'plot_size', 'building_size'];
+                    basicFields.forEach(field => {
+                        const value = formData[field];
+                        const hasValue = value && value !== '';
+                        resultsHTML += `
+                            <div class="field-row">
+                                <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    resultsHTML += `
+                            </div>
+                            <div class="data-card">
+                                <h4>🏗️ Site Details</h4>
+                    `;
+                    
+                    const siteFields = ['budget_range', 'num_floors', 'orientation', 'plot_shape', 'topography'];
+                    siteFields.forEach(field => {
+                        const value = formData[field];
+                        const hasValue = value && value !== '';
+                        resultsHTML += `
+                            <div class="field-row">
+                                <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    resultsHTML += `
+                            </div>
+                            <div class="data-card">
+                                <h4>🔧 Technical Details</h4>
+                    `;
+                    
+                    const techFields = ['construction_cost', 'foundation_type', 'structure_type', 'wall_material', 'roofing_type'];
+                    techFields.forEach(field => {
+                        const value = formData[field];
+                        const hasValue = value && value !== '';
+                        resultsHTML += `
+                            <div class="field-row">
+                                <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    resultsHTML += `
+                            </div>
+                            <div class="data-card">
+                                <h4>🎨 Design Preferences</h4>
+                    `;
+                    
+                    const designFields = ['material_preferences', 'preferred_style', 'aesthetic', 'family_needs', 'rooms'];
+                    designFields.forEach(field => {
+                        const value = formData[field];
+                        const hasValue = value && value !== '';
+                        resultsHTML += `
+                            <div class="field-row">
+                                <span class="field-label">${field.replace(/_/g, ' ').toUpperCase()}:</span>
+                                <span class="field-value ${hasValue ? 'has-data' : 'empty'}">${hasValue ? value : 'EMPTY'}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    resultsHTML += `</div></div>`;
+                    
+                    // Add data sources information
+                    resultsHTML += `
+                        <div class="info">
+                            <h4>📊 Data Sources Used:</h4>
+                            <div class="data-display">
+Inbox Item Direct Fields: ${JSON.stringify({
+    plot_size: inboxItem.plot_size,
+    building_size: inboxItem.building_size,
+    budget_range: inboxItem.budget_range
+}, null, 2)}
+
+Layout Request Details: ${JSON.stringify(layoutRequestDetails, null, 2)}
+
+Technical Details (Sample): ${JSON.stringify({
+    site_area: technicalDetails.site_area,
+    built_up_area: technicalDetails.built_up_area,
+    construction_cost: technicalDetails.construction_cost,
+    foundation_type: technicalDetails.foundation_type
+}, null, 2)}
+
+Parsed Requirements: ${JSON.stringify(parsedRequirements, null, 2)}
+                            </div>
+                        </div>
+                    `;
+                    
+                    resultsDiv.innerHTML = resultsHTML;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Data to Simulate</h3>
+                            <p>No contractor inbox items found to simulate estimation form data.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Estimation form simulation error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Simulation Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function createTestData() {
+            const resultsDiv = document.getElementById('create-data-result');
+            resultsDiv.innerHTML = '<p>Creating test data...</p>';
+            
+            try {
+                // Send a test layout with comprehensive site details
+                const testData = {
+                    contractor_id: 37,
+                    homeowner_id: 28,
+                    message: 'Test layout with comprehensive site details for estimation form',
+                    plot_size: '2500 sq ft',
+                    building_size: '1800 sq ft'
+                };
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/send_to_contractor.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Test Data Created Successfully!</h3>
+                            <p><strong>Message:</strong> ${result.message}</p>
+                            <p><strong>Contractor:</strong> ${result.contractor_name}</p>
+                            
+                            <h4>Next Steps:</h4>
+                            <ol>
+                                <li>Click "Check All Data Sources" to verify the data was created</li>
+                                <li>Click "Test Technical Details" to see if technical details are available</li>
+                                <li>Click "Simulate Estimation Form" to see how it would appear in the form</li>
+                                <li>Go to contractor dashboard and open the estimation form to test in real environment</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="data-display">Test Data Sent: ${JSON.stringify(testData, null, 2)}</div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Failed to Create Test Data</h3>
+                            <p><strong>Error:</strong> ${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Create test data error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Creation Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run initial check on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Complete site details flow test loaded');
+            setTimeout(() => {
+                checkAllDataSources();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Payment Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .payment-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .amount { font-size: 24px; font-weight: bold; color: #28a745; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Custom Payment Frontend Test</h1>
+    <p>This page tests the custom payment flow with the PaymentMethodSelector component.</p>
+    
+    <div class="test-section info">
+        <h3>Test Steps:</h3>
+        <ol>
+            <li>Load approved custom payment requests</li>
+            <li>Display payment cards with "Pay Now" buttons</li>
+            <li>Test payment method selector for custom payments</li>
+            <li>Verify correct API endpoints are called</li>
+        </ol>
+    </div>
+    
+    <button onclick="loadCustomPayments()">🔄 Load Custom Payment Requests</button>
+    <button onclick="clearResults()">🗑️ Clear Results</button>
+    
+    <div id="results"></div>
+    
+    <script>
+    let customPayments = [];
+    
+    function clearResults() {
+        document.getElementById('results').innerHTML = '';
+    }
+    
+    function log(message, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `test-section ${type}`;
+        div.innerHTML = message;
+        document.getElementById('results').appendChild(div);
+    }
+    
+    async function loadCustomPayments() {
+        clearResults();
+        
+        try {
+            log('<h3>Loading Custom Payment Requests...</h3>', 'info');
+            
+            const response = await fetch('/buildhub/backend/api/homeowner/get_all_payment_requests.php', {
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                log(`❌ Failed to load payment requests: ${data.message}`, 'error');
+                return;
+            }
+            
+            // Filter for approved custom payments
+            const approvedCustom = data.data.requests.filter(r => 
+                r.request_type === 'custom' && r.status === 'approved'
+            );
+            
+            if (approvedCustom.length === 0) {
+                log('❌ No approved custom payment requests found', 'error');
+                return;
+            }
+            
+            log(`✅ Found ${approvedCustom.length} approved custom payment request(s)`, 'success');
+            
+            // Display payment cards
+            let cardsHtml = '<h3>💰 Approved Custom Payment Requests</h3>';
+            
+            approvedCustom.forEach(request => {
+                cardsHtml += `
+                    <div class="payment-card">
+                        <h4>💰 ${request.request_title}</h4>
+                        <div class="amount">₹${parseFloat(request.approved_amount || request.requested_amount).toLocaleString()}</div>
+                        <p><strong>Category:</strong> ${request.category || 'N/A'}</p>
+                        <p><strong>Contractor:</strong> ${request.contractor_first_name} ${request.contractor_last_name}</p>
+                        <p><strong>Reason:</strong> ${request.request_description || 'N/A'}</p>
+                        <button onclick="testPaymentInitiation(${request.id}, ${request.approved_amount || request.requested_amount}, '${request.request_title}', '${request.request_type}')" 
+                                style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px;">
+                            💳 Test Payment Initiation
+                        </button>
+                    </div>
+                `;
+            });
+            
+            log(cardsHtml, 'success');
+            customPayments = approvedCustom;
+            
+        } catch (error) {
+            log(`❌ Error loading payments: ${error.message}`, 'error');
+        }
+    }
+    
+    async function testPaymentInitiation(requestId, amount, title, requestType) {
+        try {
+            log(`<h3>🧪 Testing Payment Initiation for "${title}"</h3>`, 'info');
+            log(`Request ID: ${requestId}, Amount: ₹${amount}, Type: ${requestType}`, 'info');
+            
+            // Test the correct API endpoint based on request type
+            const apiEndpoint = requestType === 'custom' 
+                ? '/buildhub/backend/api/homeowner/initiate_custom_payment.php'
+                : '/buildhub/backend/api/homeowner/initiate_stage_payment.php';
+            
+            log(`Using API endpoint: ${apiEndpoint}`, 'info');
+            
+            const response = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    payment_request_id: requestId,
+                    amount: amount
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                log(`✅ PAYMENT INITIATION SUCCESS!`, 'success');
+                log(`
+                    <strong>Payment Order Details:</strong><br>
+                    • Transaction ID: ${data.data.transaction_id}<br>
+                    • Razorpay Order ID: ${data.data.razorpay_order_id}<br>
+                    • Amount (paise): ${data.data.amount}<br>
+                    • Currency: ${data.data.currency}<br>
+                    • Payment Type: ${data.data.payment_type || 'stage'}<br>
+                    • Request Title: ${data.data.request_title || data.data.stage_name}<br>
+                    ${data.data.category ? `• Category: ${data.data.category}<br>` : ''}
+                `, 'success');
+                
+                // Simulate what the PaymentMethodSelector would do
+                log(`
+                    <strong>✅ PaymentMethodSelector Integration Test:</strong><br>
+                    • Correct API endpoint selected: ${apiEndpoint}<br>
+                    • Payment order created successfully<br>
+                    • Razorpay order ID received: ${data.data.razorpay_order_id}<br>
+                    • Ready for Razorpay checkout<br>
+                    <em>In the real frontend, this would open the Razorpay payment modal.</em>
+                `, 'success');
+                
+            } else {
+                log(`❌ PAYMENT INITIATION FAILED: ${data.message}`, 'error');
+            }
+            
+        } catch (error) {
+            log(`❌ Error testing payment initiation: ${error.message}`, 'error');
+        }
+    }
+    
+    // Auto-load on page load
+    window.onload = function() {
+        loadCustomPayments();
+    };
+    </script>
+</body>
+</html>

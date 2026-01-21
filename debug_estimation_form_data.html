@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Estimation Form Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .data-display {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Estimation Form Data</h1>
+    
+    <div class="debug-section">
+        <h2>1. Check Contractor Inbox Data</h2>
+        <p>First, let's see what data is actually available in the contractor inbox:</p>
+        
+        <button class="btn" onclick="debugContractorInbox()">Debug Contractor Inbox</button>
+        
+        <div id="inbox-debug-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>2. Check Layout Request Data</h2>
+        <p>Let's check the source layout request data to see what should be available:</p>
+        
+        <button class="btn" onclick="debugLayoutRequests()">Debug Layout Requests</button>
+        
+        <div id="layout-debug-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>3. Test Data Mapping</h2>
+        <p>Test how the data should be mapped from inbox item to estimation form:</p>
+        
+        <button class="btn" onclick="testDataMapping()">Test Data Mapping</button>
+        
+        <div id="mapping-debug-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>4. Check Database Tables</h2>
+        <p>Let's check the actual database tables to see what data exists:</p>
+        
+        <button class="btn" onclick="checkDatabaseTables()">Check Database Tables</button>
+        
+        <div id="database-debug-result"></div>
+    </div>
+
+    <script>
+        // Mock session data
+        const mockUser = {
+            id: 37, // Contractor ID
+            first_name: 'Contractor',
+            last_name: 'User',
+            email: 'contractor@example.com'
+        };
+        
+        sessionStorage.setItem('user', JSON.stringify(mockUser));
+
+        async function debugContractorInbox() {
+            const resultsDiv = document.getElementById('inbox-debug-result');
+            resultsDiv.innerHTML = '<p>Debugging contractor inbox...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                console.log('Contractor inbox debug:', result);
+                
+                if (result.success && result.items && result.items.length > 0) {
+                    let debugHTML = `
+                        <div class="success">
+                            <h3>✅ Contractor Inbox Data Found</h3>
+                            <p><strong>Total Items:</strong> ${result.items.length}</p>
+                        </div>
+                    `;
+                    
+                    result.items.forEach((item, index) => {
+                        debugHTML += `
+                            <h4>📋 Inbox Item ${index + 1} (ID: ${item.id})</h4>
+                            <div class="data-display">
+<strong>Basic Info:</strong>
+- ID: ${item.id}
+- Homeowner: ${item.homeowner_name || 'N/A'}
+- Type: ${item.type || 'N/A'}
+
+<strong>Site Details (Direct Fields):</strong>
+- Plot Size: <span class="highlight">${item.plot_size || 'NOT SET'}</span>
+- Building Size: <span class="highlight">${item.building_size || 'NOT SET'}</span>
+- Budget Range: <span class="highlight">${item.budget_range || 'NOT SET'}</span>
+- Timeline: <span class="highlight">${item.timeline || 'NOT SET'}</span>
+- Number of Floors: <span class="highlight">${item.num_floors || 'NOT SET'}</span>
+- Orientation: <span class="highlight">${item.orientation || 'NOT SET'}</span>
+- Material Preferences: <span class="highlight">${item.material_preferences || 'NOT SET'}</span>
+- Preferred Style: <span class="highlight">${item.preferred_style || 'NOT SET'}</span>
+
+<strong>Layout Request Details:</strong>
+${item.layout_request_details ? JSON.stringify(item.layout_request_details, null, 2) : 'NOT SET'}
+
+<strong>Payload:</strong>
+${item.payload ? JSON.stringify(item.payload, null, 2) : 'NOT SET'}
+
+<strong>Full Item Data:</strong>
+${JSON.stringify(item, null, 2)}
+                            </div>
+                        `;
+                    });
+                    
+                    resultsDiv.innerHTML = debugHTML;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Contractor Inbox Data</h3>
+                            <p>No inbox items found. This could be why the estimation form is empty.</p>
+                            <p><strong>Response:</strong></p>
+                            <div class="data-display">${JSON.stringify(result, null, 2)}</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Contractor inbox debug error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Debug Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function debugLayoutRequests() {
+            const resultsDiv = document.getElementById('layout-debug-result');
+            resultsDiv.innerHTML = '<p>Debugging layout requests...</p>';
+            
+            try {
+                // Try to get layout requests for homeowner ID 28 (SHIJIN THOMAS)
+                const response = await fetch('/buildhub/backend/api/homeowner/get_layout_requests.php', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                console.log('Layout requests debug:', result);
+                
+                if (result.success && result.requests && result.requests.length > 0) {
+                    let debugHTML = `
+                        <div class="success">
+                            <h3>✅ Layout Request Data Found</h3>
+                            <p><strong>Total Requests:</strong> ${result.requests.length}</p>
+                        </div>
+                    `;
+                    
+                    result.requests.slice(0, 3).forEach((request, index) => {
+                        debugHTML += `
+                            <h4>📋 Layout Request ${index + 1} (ID: ${request.id})</h4>
+                            <div class="data-display">
+<strong>Site Details Available:</strong>
+- Plot Size: <span class="highlight">${request.plot_size || 'NOT SET'}</span>
+- Building Size: <span class="highlight">${request.building_size || 'NOT SET'}</span>
+- Budget Range: <span class="highlight">${request.budget_range || 'NOT SET'}</span>
+- Timeline: <span class="highlight">${request.timeline || 'NOT SET'}</span>
+- Number of Floors: <span class="highlight">${request.num_floors || 'NOT SET'}</span>
+- Orientation: <span class="highlight">${request.orientation || 'NOT SET'}</span>
+- Material Preferences: <span class="highlight">${request.material_preferences || 'NOT SET'}</span>
+- Preferred Style: <span class="highlight">${request.preferred_style || 'NOT SET'}</span>
+- Location: <span class="highlight">${request.location || 'NOT SET'}</span>
+- Status: <span class="highlight">${request.status || 'NOT SET'}</span>
+
+<strong>Requirements (JSON):</strong>
+${request.requirements || 'NOT SET'}
+
+<strong>Full Request Data:</strong>
+${JSON.stringify(request, null, 2)}
+                            </div>
+                        `;
+                    });
+                    
+                    resultsDiv.innerHTML = debugHTML;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Layout Request Data</h3>
+                            <p>No layout requests found. This is the source of the problem!</p>
+                            <div class="data-display">${JSON.stringify(result, null, 2)}</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Layout requests debug error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Debug Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testDataMapping() {
+            const resultsDiv = document.getElementById('mapping-debug-result');
+            
+            // Simulate the data mapping logic from EstimationForm
+            const mockInboxItem = {
+                id: 123,
+                homeowner_name: 'SHIJIN THOMAS',
+                plot_size: '2500 sq ft',
+                building_size: '1800 sq ft',
+                budget_range: '30-50 Lakhs',
+                timeline: '12-18 months',
+                num_floors: '2',
+                orientation: 'North-facing',
+                material_preferences: 'Granite, Wood, Natural Stone',
+                preferred_style: 'Contemporary',
+                layout_request_details: {
+                    plot_size: '2500',
+                    building_size: '1800',
+                    budget_range: '30-50 Lakhs',
+                    location: 'Kottayam',
+                    timeline: '12-18 months'
+                },
+                payload: {
+                    plan_name: 'Test House Plan',
+                    location: 'Kottayam'
+                },
+                parsed_requirements: {
+                    plot_shape: 'Rectangular',
+                    topography: 'Flat',
+                    family_needs: 'Garden space',
+                    rooms: '3 bedrooms, 2 bathrooms',
+                    aesthetic: 'Modern'
+                }
+            };
+
+            // Simulate the mapping logic from EstimationForm
+            const payload = mockInboxItem.payload || {};
+            const layoutRequestDetails = mockInboxItem.layout_request_details || {};
+            const parsedRequirements = mockInboxItem.parsed_requirements || {};
+            
+            const mappedFormData = {
+                project_name: payload.plan_name || `Project for ${mockInboxItem.homeowner_name}`,
+                client_name: mockInboxItem.homeowner_name || '',
+                location: layoutRequestDetails.location || payload.location || '',
+                timeline: layoutRequestDetails.timeline || '90 days',
+                // Site details
+                plot_size: mockInboxItem.plot_size || '',
+                building_size: mockInboxItem.building_size || '',
+                budget_range: mockInboxItem.budget_range || '',
+                num_floors: mockInboxItem.num_floors || '',
+                orientation: mockInboxItem.orientation || '',
+                site_considerations: mockInboxItem.site_considerations || '',
+                material_preferences: mockInboxItem.material_preferences || '',
+                budget_allocation: mockInboxItem.budget_allocation || '',
+                preferred_style: mockInboxItem.preferred_style || '',
+                plot_shape: parsedRequirements.plot_shape || '',
+                topography: parsedRequirements.topography || '',
+                development_laws: parsedRequirements.development_laws || '',
+                family_needs: parsedRequirements.family_needs || '',
+                rooms: parsedRequirements.rooms || '',
+                aesthetic: parsedRequirements.aesthetic || ''
+            };
+
+            resultsDiv.innerHTML = `
+                <div class="success">
+                    <h3>✅ Data Mapping Test</h3>
+                    <p>This shows how the data should be mapped from inbox item to estimation form:</p>
+                </div>
+                
+                <h4>📥 Mock Inbox Item Data:</h4>
+                <div class="data-display">${JSON.stringify(mockInboxItem, null, 2)}</div>
+                
+                <h4>📋 Mapped Form Data:</h4>
+                <div class="data-display">${JSON.stringify(mappedFormData, null, 2)}</div>
+                
+                <h4>🔍 Key Mappings:</h4>
+                <div class="data-display">
+Plot Size: "${mockInboxItem.plot_size}" → "${mappedFormData.plot_size}"
+Building Size: "${mockInboxItem.building_size}" → "${mappedFormData.building_size}"
+Budget Range: "${mockInboxItem.budget_range}" → "${mappedFormData.budget_range}"
+Timeline: "${mockInboxItem.timeline}" → "${mappedFormData.timeline}"
+Location: "${layoutRequestDetails.location}" → "${mappedFormData.location}"
+                </div>
+            `;
+        }
+
+        async function checkDatabaseTables() {
+            const resultsDiv = document.getElementById('database-debug-result');
+            resultsDiv.innerHTML = '<p>Checking database tables...</p>';
+            
+            try {
+                // Check layout_requests table
+                const layoutResponse = await fetch('/buildhub/check_database_tables.php', {
+                    credentials: 'include'
+                });
+                
+                let debugHTML = `
+                    <div class="success">
+                        <h3>🗄️ Database Tables Check</h3>
+                        <p>Checking the actual database tables for data availability:</p>
+                    </div>
+                `;
+                
+                // Try to get some sample data
+                const sampleResponse = await fetch('/buildhub/backend/api/homeowner/get_layout_requests.php', {
+                    credentials: 'include'
+                });
+                const sampleResult = await sampleResponse.json();
+                
+                if (sampleResult.success && sampleResult.requests) {
+                    debugHTML += `
+                        <h4>📊 Layout Requests Table Sample:</h4>
+                        <div class="data-display">
+Found ${sampleResult.requests.length} layout requests.
+
+Sample data from first request:
+${sampleResult.requests.length > 0 ? JSON.stringify(sampleResult.requests[0], null, 2) : 'No requests found'}
+                        </div>
+                    `;
+                } else {
+                    debugHTML += `
+                        <div class="error">
+                            <h4>❌ Layout Requests Table Issue</h4>
+                            <p>Could not retrieve layout requests data.</p>
+                            <div class="data-display">${JSON.stringify(sampleResult, null, 2)}</div>
+                        </div>
+                    `;
+                }
+                
+                resultsDiv.innerHTML = debugHTML;
+                
+            } catch (error) {
+                console.error('Database debug error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Database Debug Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run debug on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Debug page loaded');
+            testDataMapping(); // Show the expected mapping first
+        });
+    </script>
+</body>
+</html>

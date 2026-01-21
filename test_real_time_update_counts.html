@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Update Counts Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .project-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .update-counts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .count-card {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .count-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .count-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .refresh-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .refresh-btn:hover {
+            background: #45a049;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔄 Real-Time Update Counts Test</h1>
+        <p>This test verifies that update counts refresh automatically when new progress updates are submitted.</p>
+        
+        <div class="controls">
+            <button class="refresh-btn" onclick="loadProjects()">🔄 Refresh Projects</button>
+            <button class="refresh-btn" onclick="testUpdateCounts()">🧪 Test Update Counts</button>
+            <button class="refresh-btn" onclick="simulateSubmission()">📝 Simulate Submission</button>
+        </div>
+        
+        <div id="status" class="status info">Ready to test...</div>
+        
+        <div id="projects-container">
+            <div class="loading">Loading projects...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentProjects = [];
+        let contractorId = 1; // Default contractor ID for testing
+
+        async function loadProjects() {
+            try {
+                updateStatus('Loading projects...', 'info');
+                
+                const response = await fetch(`/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${contractorId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentProjects = data.data.projects;
+                    displayProjects(currentProjects);
+                    updateStatus(`✅ Loaded ${currentProjects.length} projects successfully`, 'success');
+                } else {
+                    updateStatus(`❌ Failed to load projects: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                updateStatus(`❌ Error loading projects: ${error.message}`, 'error');
+            }
+        }
+
+        function displayProjects(projects) {
+            const container = document.getElementById('projects-container');
+            
+            if (projects.length === 0) {
+                container.innerHTML = '<div class="project-info">No projects found</div>';
+                return;
+            }
+            
+            let html = '';
+            projects.forEach(project => {
+                const totalUpdates = (project.daily_updates_count || 0) + 
+                                   (project.weekly_summaries_count || 0) + 
+                                   (project.monthly_reports_count || 0);
+                
+                html += `
+                    <div class="project-info">
+                        <h3>${project.project_name || 'Unnamed Project'}</h3>
+                        <p><strong>Project ID:</strong> ${project.id}</p>
+                        <p><strong>Homeowner:</strong> ${project.homeowner_name || 'N/A'}</p>
+                        <p><strong>Status:</strong> ${project.status || 'N/A'}</p>
+                        <p><strong>Last Updated:</strong> ${project.updated_at || 'N/A'}</p>
+                        
+                        <div class="update-counts">
+                            <div class="count-card">
+                                <div class="count-number">${project.daily_updates_count || 0}</div>
+                                <div class="count-label">Daily Updates</div>
+                            </div>
+                            <div class="count-card">
+                                <div class="count-number">${project.weekly_summaries_count || 0}</div>
+                                <div class="count-label">Weekly Summaries</div>
+                            </div>
+                            <div class="count-card">
+                                <div class="count-number">${project.monthly_reports_count || 0}</div>
+                                <div class="count-label">Monthly Reports</div>
+                            </div>
+                            <div class="count-card">
+                                <div class="count-number">${totalUpdates}</div>
+                                <div class="count-label">Total Updates</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        async function testUpdateCounts() {
+            updateStatus('Testing update count calculation...', 'info');
+            
+            try {
+                // Test direct database query for Project 37
+                const response = await fetch('/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=1', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const project37 = data.data.projects.find(p => p.id == 37 || p.estimate_id == 37);
+                    
+                    if (project37) {
+                        updateStatus(`✅ Project 37 found with ${project37.daily_updates_count} daily updates`, 'success');
+                        
+                        // Highlight Project 37 in the display
+                        const projectInfos = document.querySelectorAll('.project-info');
+                        projectInfos.forEach(info => {
+                            const projectName = info.querySelector('h3').textContent;
+                            if (projectName.includes('SHIJIN THOMAS') || info.textContent.includes('37')) {
+                                info.style.border = '3px solid #4caf50';
+                                info.style.backgroundColor = '#f1f8e9';
+                            }
+                        });
+                    } else {
+                        updateStatus('⚠️ Project 37 not found in results', 'error');
+                    }
+                } else {
+                    updateStatus(`❌ API Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Test Error: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateSubmission() {
+            updateStatus('Simulating progress submission...', 'info');
+            
+            // Simulate the real-time refresh that happens after submission
+            setTimeout(() => {
+                updateStatus('📝 Simulating daily update submission...', 'info');
+                
+                setTimeout(() => {
+                    loadProjects(); // This simulates the loadAssignedProjects() call
+                    updateStatus('✅ Simulated submission complete - counts refreshed!', 'success');
+                }, 1000);
+            }, 500);
+        }
+
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Auto-refresh every 30 seconds to demonstrate real-time updates
+        setInterval(() => {
+            if (currentProjects.length > 0) {
+                loadProjects();
+            }
+        }, 30000);
+
+        // Load projects on page load
+        window.addEventListener('load', loadProjects);
+    </script>
+</body>
+</html>

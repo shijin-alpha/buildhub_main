@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Plan ID Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+        }
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0369a1;
+            background: #f0f9ff;
+            border: 1px solid #7dd3fc;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .design-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+        }
+        .design-header {
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        .design-details {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 5px 0;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>House Plan ID Fix Test</h1>
+    
+    <div class="info">
+        <h3>Issue Being Fixed</h3>
+        <p><strong>Problem:</strong> "House plan ID is required" error when trying to pay for technical details</p>
+        <p><strong>Root Cause:</strong> House plans have ID format 'hp_123' but API expects numeric house_plan_id</p>
+        <p><strong>Solution:</strong> Extract numeric ID from house_plan_id field or parse 'hp_' prefix</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>1. Test Design Object Structure</h2>
+        <p>First, let's fetch actual design objects to see their structure:</p>
+        
+        <button class="btn" onclick="fetchDesigns()">Fetch Received Designs</button>
+        
+        <div id="designs-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test ID Extraction Logic</h2>
+        <p>Test the logic for extracting house plan IDs from different design object formats:</p>
+        
+        <button class="btn" onclick="testIdExtraction()">Test ID Extraction</button>
+        
+        <div id="extraction-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Payment Initiation</h2>
+        <p>Test payment initiation with corrected house plan ID:</p>
+        
+        <button class="btn" onclick="testPaymentWithCorrectId()">Test Payment Initiation</button>
+        
+        <div id="payment-result"></div>
+    </div>
+
+    <script>
+        // Mock session data
+        const mockUser = {
+            id: 28, // SHIJIN THOMAS
+            first_name: 'Shijin',
+            last_name: 'Thomas',
+            email: 'shijin@example.com'
+        };
+        
+        sessionStorage.setItem('user', JSON.stringify(mockUser));
+
+        async function fetchDesigns() {
+            const resultsDiv = document.getElementById('designs-result');
+            resultsDiv.innerHTML = '<p>Fetching designs...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                console.log('Designs result:', result);
+                
+                if (result.success && result.designs) {
+                    const housePlans = result.designs.filter(d => d.source_type === 'house_plan');
+                    const regularDesigns = result.designs.filter(d => d.source_type === 'design');
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Designs Fetched Successfully!</h3>
+                            <p><strong>Total Designs:</strong> ${result.designs.length}</p>
+                            <p><strong>House Plans:</strong> ${housePlans.length}</p>
+                            <p><strong>Regular Designs:</strong> ${regularDesigns.length}</p>
+                        </div>
+                        
+                        ${housePlans.length > 0 ? `
+                            <h4>House Plans Found:</h4>
+                            ${housePlans.map(hp => `
+                                <div class="design-card">
+                                    <div class="design-header">${hp.design_title}</div>
+                                    <div class="design-details"><strong>ID:</strong> ${hp.id}</div>
+                                    <div class="design-details"><strong>House Plan ID:</strong> ${hp.house_plan_id}</div>
+                                    <div class="design-details"><strong>Unlock Price:</strong> ₹${hp.unlock_price}</div>
+                                    <div class="design-details"><strong>Technical Details Unlocked:</strong> ${hp.is_technical_details_unlocked ? 'Yes' : 'No'}</div>
+                                    <div class="design-details"><strong>Payment Status:</strong> ${hp.payment_status || 'None'}</div>
+                                </div>
+                            `).join('')}
+                        ` : '<p>No house plans found.</p>'}
+                        
+                        <h4>Raw Data Sample:</h4>
+                        <pre>${JSON.stringify(result.designs.slice(0, 2), null, 2)}</pre>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>Failed to Fetch Designs</h3>
+                            <p><strong>Error:</strong> ${result.message || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Fetch designs error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testIdExtraction() {
+            const resultsDiv = document.getElementById('extraction-result');
+            
+            // Test cases for different design object formats
+            const testCases = [
+                {
+                    name: 'House Plan with house_plan_id field',
+                    design: {
+                        id: 'hp_123',
+                        house_plan_id: 123,
+                        source_type: 'house_plan',
+                        design_title: 'Test House Plan'
+                    }
+                },
+                {
+                    name: 'House Plan with only prefixed ID',
+                    design: {
+                        id: 'hp_456',
+                        source_type: 'house_plan',
+                        design_title: 'Another House Plan'
+                    }
+                },
+                {
+                    name: 'Regular Design',
+                    design: {
+                        id: 789,
+                        source_type: 'design',
+                        design_title: 'Regular Design'
+                    }
+                },
+                {
+                    name: 'Invalid Design (no ID)',
+                    design: {
+                        source_type: 'house_plan',
+                        design_title: 'Invalid Design'
+                    }
+                }
+            ];
+
+            // ID extraction logic (same as in the fixed function)
+            function extractHousePlanId(design) {
+                const planId = design.house_plan_id || (typeof design.id === 'string' && design.id.startsWith('hp_') ? 
+                    parseInt(design.id.replace('hp_', '')) : design.id);
+                return planId;
+            }
+
+            let results = '<h4>ID Extraction Test Results:</h4>';
+            
+            testCases.forEach((testCase, index) => {
+                const extractedId = extractHousePlanId(testCase.design);
+                const isValid = extractedId && extractedId > 0;
+                
+                results += `
+                    <div class="design-card">
+                        <div class="design-header">Test ${index + 1}: ${testCase.name}</div>
+                        <div class="design-details"><strong>Input ID:</strong> ${testCase.design.id || 'undefined'}</div>
+                        <div class="design-details"><strong>House Plan ID:</strong> ${testCase.design.house_plan_id || 'undefined'}</div>
+                        <div class="design-details"><strong>Extracted ID:</strong> ${extractedId}</div>
+                        <div class="design-details"><strong>Valid:</strong> <span style="color: ${isValid ? 'green' : 'red'}">${isValid ? 'Yes' : 'No'}</span></div>
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = `
+                <div class="success">
+                    <h3>ID Extraction Logic Test Complete</h3>
+                    <p>Testing the logic used to extract house plan IDs from design objects.</p>
+                </div>
+                ${results}
+            `;
+        }
+
+        async function testPaymentWithCorrectId() {
+            const resultsDiv = document.getElementById('payment-result');
+            resultsDiv.innerHTML = '<p>Testing payment initiation...</p>';
+            
+            // First fetch a real house plan to test with
+            try {
+                const designsResponse = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    credentials: 'include'
+                });
+                
+                const designsResult = await designsResponse.json();
+                
+                if (!designsResult.success || !designsResult.designs) {
+                    throw new Error('Failed to fetch designs for testing');
+                }
+                
+                const housePlans = designsResult.designs.filter(d => d.source_type === 'house_plan');
+                
+                if (housePlans.length === 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>No House Plans Available</h3>
+                            <p>Cannot test payment without house plans. Please ensure there are house plans in the system.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const testHousePlan = housePlans[0];
+                
+                // Extract the correct house plan ID
+                const planId = testHousePlan.house_plan_id || (typeof testHousePlan.id === 'string' && testHousePlan.id.startsWith('hp_') ? 
+                    parseInt(testHousePlan.id.replace('hp_', '')) : testHousePlan.id);
+                
+                console.log('Testing with house plan:', testHousePlan);
+                console.log('Extracted plan ID:', planId);
+                
+                // Test payment initiation with correct ID
+                const paymentResponse = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        house_plan_id: planId,
+                        amount: testHousePlan.unlock_price || 8000
+                    })
+                });
+                
+                const paymentResult = await paymentResponse.json();
+                console.log('Payment initiation result:', paymentResult);
+                
+                if (paymentResult.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Payment Initiation Successful! ✅</h3>
+                            <p><strong>House Plan:</strong> ${testHousePlan.design_title}</p>
+                            <p><strong>Original ID:</strong> ${testHousePlan.id}</p>
+                            <p><strong>Extracted House Plan ID:</strong> ${planId}</p>
+                            <p><strong>Payment ID:</strong> ${paymentResult.payment_id}</p>
+                            <p><strong>Razorpay Order ID:</strong> ${paymentResult.razorpay_order_id}</p>
+                            <p><strong>Amount:</strong> ₹${paymentResult.amount / 100}</p>
+                            <p><strong>Description:</strong> ${paymentResult.description}</p>
+                        </div>
+                        
+                        <div class="info">
+                            <h4>Fix Verification</h4>
+                            <p>✅ House plan ID extracted correctly</p>
+                            <p>✅ Payment API accepts the ID</p>
+                            <p>✅ No "House plan ID is required" error</p>
+                            <p>✅ Razorpay order created successfully</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>Payment Initiation Failed</h3>
+                            <p><strong>House Plan:</strong> ${testHousePlan.design_title}</p>
+                            <p><strong>Original ID:</strong> ${testHousePlan.id}</p>
+                            <p><strong>Extracted House Plan ID:</strong> ${planId}</p>
+                            <p><strong>Error:</strong> ${paymentResult.message}</p>
+                        </div>
+                        
+                        <h4>Debug Info:</h4>
+                        <pre>${JSON.stringify({
+                            testHousePlan: testHousePlan,
+                            extractedId: planId,
+                            requestBody: {
+                                house_plan_id: planId,
+                                amount: testHousePlan.unlock_price || 8000
+                            },
+                            response: paymentResult
+                        }, null, 2)}</pre>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Payment test error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Test Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run basic tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, running basic tests...');
+            testIdExtraction();
+        });
+    </script>
+</body>
+</html>

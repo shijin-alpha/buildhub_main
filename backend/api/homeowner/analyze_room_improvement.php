@@ -116,10 +116,14 @@ try {
     $analysis_json = json_encode($analysis_result);
     $stmt->execute([$homeowner_id, $room_type, $improvement_notes, $filename, $analysis_json]);
     
+    // Get the inserted analysis ID
+    $analysis_id = $db->lastInsertId();
+    
     echo json_encode([
         'success' => true,
         'message' => 'Room analysis completed successfully',
-        'analysis' => $analysis_result
+        'analysis' => $analysis_result,
+        'analysis_id' => (int)$analysis_id
     ]);
     
 } catch (Exception $e) {

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Parsing Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-case {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .test-case.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .test-case.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .budget-input {
+            font-weight: bold;
+            color: #495057;
+        }
+        .budget-output {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .auto-populated {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Budget Parsing Fix Test</h1>
+        <p>Testing the updated budget parsing logic with real database values:</p>
+
+        <div id="test-results"></div>
+
+        <button onclick="runTests()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Run Budget Parsing Tests
+        </button>
+    </div>
+
+    <script>
+        // Simulate the updated calculateEstimatedCost function
+        function calculateEstimatedCost(requestInfo) {
+            if (requestInfo && requestInfo.budget_range) {
+                const budgetRange = requestInfo.budget_range.toString().trim();
+                
+                console.log('Debug - Budget Range:', budgetRange);
+                
+                // Parse different budget formats
+                if (budgetRange.includes('-')) {
+                    // Format like "20-30 lakhs" or "₹25-30 lakhs"
+                    const parts = budgetRange.toLowerCase().split('-');
+                    if (parts.length === 2) {
+                        const lowBudget = parseFloat(parts[0].replace(/[^0-9.]/g, ''));
+                        const highBudget = parseFloat(parts[1].replace(/[^0-9.]/g, ''));
+                        
+                        console.log('Debug - Parsed values:', { lowBudget, highBudget });
+                        
+                        if (!isNaN(lowBudget) && !isNaN(highBudget) && lowBudget > 0 && highBudget > 0) {
+                            // Convert lakhs to actual amount if needed
+                            const multiplier = budgetRange.toLowerCase().includes('lakh') ? 100000 : 1;
+                            const lowAmount = Math.round(lowBudget * multiplier);
+                            const highAmount = Math.round(highBudget * multiplier);
+                            
+                            console.log('Debug - Final amounts:', { lowAmount, highAmount, multiplier });
+                            
+                            return `₹${lowAmount.toLocaleString()} - ₹${highAmount.toLocaleString()}`;
+                        }
+                    }
+                } else {
+                    // Single budget value like "25 lakhs" or "₹2500000"
+                    const budgetValue = parseFloat(budgetRange.replace(/[^0-9.]/g, ''));
+                    if (!isNaN(budgetValue) && budgetValue > 0) {
+                        const multiplier = budgetRange.toLowerCase().includes('lakh') ? 100000 : 1;
+                        const amount = Math.round(budgetValue * multiplier);
+                        
+                        // Create a range around the budget (±10%)
+                        const lowAmount = Math.round(amount * 0.9);
+                        const highAmount = Math.round(amount * 1.1);
+                        
+                        return `₹${lowAmount.toLocaleString()} - ₹${highAmount.toLocaleString()}`;
+                    }
+                }
+                
+                // If we can't parse the budget, return it as-is with a note
+                return `${budgetRange} (Please verify format)`;
+            }
+            
+            return 'Enter based on homeowner budget';
+        }
+
+        // Simulate auto-population logic
+        function autoPopulateConstructionCost(requestInfo) {
+            if (requestInfo && requestInfo.budget_range) {
+                const budgetRange = requestInfo.budget_range.toString().trim();
+                
+                console.log('Debug - Auto-populate budget:', budgetRange);
+                
+                // Parse budget and set construction cost within the range
+                if (budgetRange.includes('-')) {
+                    // Format like "20-30 lakhs" or "₹25-30 lakhs"
+                    const parts = budgetRange.toLowerCase().split('-');
+                    if (parts.length === 2) {
+                        const lowBudget = parseFloat(parts[0].replace(/[^0-9.]/g, ''));
+                        const highBudget = parseFloat(parts[1].replace(/[^0-9.]/g, ''));
+                        
+                        if (!isNaN(lowBudget) && !isNaN(highBudget) && lowBudget > 0 && highBudget > 0) {
+                            // Convert lakhs to actual amount if needed
+                            const multiplier = budgetRange.toLowerCase().includes('lakh') ? 100000 : 1;
+                            const lowAmount = Math.round(lowBudget * multiplier);
+                            const highAmount = Math.round(highBudget * multiplier);
+                            
+                            // Set construction cost to the middle of the range
+                            const midAmount = Math.round((lowAmount + highAmount) / 2);
+                            
+                            console.log('Debug - Auto-populated cost:', midAmount.toLocaleString());
+                            return midAmount.toLocaleString();
+                        }
+                    }
+                } else {
+                    // Single budget value like "25 lakhs" or "₹2500000"
+                    const budgetValue = parseFloat(budgetRange.replace(/[^0-9.]/g, ''));
+                    if (!isNaN(budgetValue) && budgetValue > 0) {
+                        const multiplier = budgetRange.toLowerCase().includes('lakh') ? 100000 : 1;
+                        const amount = Math.round(budgetValue * multiplier);
+                        
+                        console.log('Debug - Auto-populated single cost:', amount.toLocaleString());
+                        return amount.toLocaleString();
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        function runTests() {
+            // Real database values from the test
+            const testCases = [
+                { id: 112, budget_range: "20-30 Lakhs" },
+                { id: 111, budget_range: "10-15 lakhs" },
+                { id: 105, budget_range: "50-75 Lakhs" },
+                { id: 102, budget_range: "₹15-20 lakhs" },
+                { id: 103, budget_range: "₹25-30 lakhs" }
+            ];
+
+            let resultsHTML = '<h3>Test Results:</h3>';
+
+            testCases.forEach(testCase => {
+                const budgetRange = calculateEstimatedCost(testCase);
+                const autoPopulated = autoPopulateConstructionCost(testCase);
+                
+                const isSuccess = budgetRange.includes('₹') && !budgetRange.includes('0 - ₹0');
+                
+                resultsHTML += `
+                    <div class="test-case ${isSuccess ? 'success' : 'error'}">
+                        <h4>Request ID: ${testCase.id}</h4>
+                        <p><span class="budget-input">Input:</span> "${testCase.budget_range}"</p>
+                        <p><span class="budget-output">Budget Range:</span> ${budgetRange}</p>
+                        <p><span class="auto-populated">Auto-populated Cost:</span> ₹${autoPopulated || 'Not calculated'}</p>
+                        <p><strong>Status:</strong> ${isSuccess ? '✅ SUCCESS' : '❌ FAILED'}</p>
+                    </div>
+                `;
+            });
+
+            document.getElementById('test-results').innerHTML = resultsHTML;
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', function() {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

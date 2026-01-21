@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Improvement Persistence Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Room Improvement Persistence Test</h1>
+        <p>Test the new room improvement analysis persistence and history features.</p>
+        
+        <div class="test-section">
+            <h3>📋 Test Analysis History API</h3>
+            <p>Test retrieving the list of previous room improvement analyses.</p>
+            <button class="btn" onclick="testHistoryAPI()">Get Analysis History</button>
+            <div id="history-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 Test Single Analysis API</h3>
+            <p>Test retrieving a specific analysis by ID.</p>
+            <input type="number" id="analysis-id" placeholder="Enter Analysis ID" style="padding: 0.5rem; margin-right: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+            <button class="btn" onclick="testSingleAnalysis()">Get Analysis</button>
+            <div id="single-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>💾 Test localStorage Persistence</h3>
+            <p>Test saving and loading analysis data from localStorage.</p>
+            <button class="btn" onclick="testSaveToStorage()">Save Test Data</button>
+            <button class="btn btn-secondary" onclick="testLoadFromStorage()">Load Test Data</button>
+            <button class="btn btn-secondary" onclick="clearStorage()">Clear Storage</button>
+            <div id="storage-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎨 Test Complete Workflow</h3>
+            <p>Test the complete workflow with a mock room analysis.</p>
+            <button class="btn" onclick="testCompleteWorkflow()">Run Complete Test</button>
+            <div id="workflow-result"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testHistoryAPI() {
+            try {
+                showResult('history-result', 'Testing history API...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=5', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const message = `✅ History API Success!\n\nTotal analyses: ${data.data.pagination.total}\nReturned: ${data.data.analyses.length}\n\nSample data:\n${JSON.stringify(data.data.analyses.slice(0, 2), null, 2)}`;
+                    showResult('history-result', message, 'success');
+                } else {
+                    showResult('history-result', `❌ API Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('history-result', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSingleAnalysis() {
+            const analysisId = document.getElementById('analysis-id').value;
+            
+            if (!analysisId) {
+                showResult('single-result', '❌ Please enter an Analysis ID', 'error');
+                return;
+            }
+            
+            try {
+                showResult('single-result', `Testing single analysis API for ID: ${analysisId}...`, 'info');
+                
+                const response = await fetch(`/buildhub/backend/api/homeowner/get_room_improvement_analysis.php?id=${analysisId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const message = `✅ Single Analysis API Success!\n\nAnalysis ID: ${data.data.id}\nRoom Type: ${data.data.room_type}\nCreated: ${data.data.created_at}\n\nAnalysis Preview:\n${JSON.stringify(data.data.analysis_result, null, 2).substring(0, 500)}...`;
+                    showResult('single-result', message, 'success');
+                } else {
+                    showResult('single-result', `❌ API Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('single-result', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testSaveToStorage() {
+            const testData = {
+                analysisResult: {
+                    concept_name: "Modern Minimalist Bedroom Enhancement",
+                    room_condition_summary: "Well-lit bedroom with potential for modern upgrades",
+                    style_recommendation: {
+                        style: "Modern Minimalist",
+                        description: "Clean lines with natural elements"
+                    },
+                    ai_enhancements: {
+                        conceptual_visualization: {
+                            success: true,
+                            image_url: "/buildhub/uploads/conceptual_images/test_image.png"
+                        }
+                    }
+                },
+                currentAnalysisId: 123,
+                formData: {
+                    room_type: 'bedroom',
+                    improvement_notes: 'Make it more modern and cozy'
+                },
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('bh_room_improvement_current', JSON.stringify(testData));
+            showResult('storage-result', '✅ Test data saved to localStorage!\n\nData:\n' + JSON.stringify(testData, null, 2), 'success');
+        }
+
+        function testLoadFromStorage() {
+            try {
+                const saved = localStorage.getItem('bh_room_improvement_current');
+                
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    const age = Math.round((Date.now() - data.timestamp) / 1000);
+                    showResult('storage-result', `✅ Data loaded from localStorage!\n\nAge: ${age} seconds\nAnalysis ID: ${data.currentAnalysisId}\nRoom Type: ${data.formData.room_type}\n\nFull data:\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult('storage-result', '❌ No data found in localStorage', 'error');
+                }
+            } catch (error) {
+                showResult('storage-result', `❌ Error loading from localStorage: ${error.message}`, 'error');
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('bh_room_improvement_current');
+            showResult('storage-result', '✅ localStorage cleared!', 'success');
+        }
+
+        async function testCompleteWorkflow() {
+            showResult('workflow-result', '🔄 Running complete workflow test...', 'info');
+            
+            let results = [];
+            
+            try {
+                // Step 1: Test history API
+                results.push('Step 1: Testing history API...');
+                const historyResponse = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=3', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const historyData = await historyResponse.json();
+                
+                if (historyData.success) {
+                    results.push(`✅ History API: Found ${historyData.data.analyses.length} analyses`);
+                    
+                    // Step 2: If we have analyses, test loading one
+                    if (historyData.data.analyses.length > 0) {
+                        const firstAnalysis = historyData.data.analyses[0];
+                        results.push(`Step 2: Testing single analysis API for ID ${firstAnalysis.id}...`);
+                        
+                        const singleResponse = await fetch(`/buildhub/backend/api/homeowner/get_room_improvement_analysis.php?id=${firstAnalysis.id}`, {
+                            method: 'GET',
+                            credentials: 'include'
+                        });
+                        const singleData = await singleResponse.json();
+                        
+                        if (singleData.success) {
+                            results.push(`✅ Single Analysis API: Loaded analysis "${singleData.data.analysis_result?.concept_name || 'Unnamed'}"`);
+                            
+                            // Step 3: Test localStorage persistence
+                            results.push('Step 3: Testing localStorage persistence...');
+                            const persistData = {
+                                analysisResult: singleData.data.analysis_result,
+                                currentAnalysisId: singleData.data.id,
+                                formData: {
+                                    room_type: singleData.data.room_type,
+                                    improvement_notes: singleData.data.improvement_notes
+                                },
+                                timestamp: Date.now()
+                            };
+                            
+                            localStorage.setItem('bh_room_improvement_current', JSON.stringify(persistData));
+                            results.push('✅ localStorage: Data persisted successfully');
+                            
+                            // Step 4: Test loading from localStorage
+                            const loaded = JSON.parse(localStorage.getItem('bh_room_improvement_current'));
+                            if (loaded && loaded.currentAnalysisId === singleData.data.id) {
+                                results.push('✅ localStorage: Data loaded and verified');
+                            } else {
+                                results.push('❌ localStorage: Data verification failed');
+                            }
+                        } else {
+                            results.push(`❌ Single Analysis API: ${singleData.message}`);
+                        }
+                    } else {
+                        results.push('ℹ️ No existing analyses found - create one first to test complete workflow');
+                    }
+                } else {
+                    results.push(`❌ History API: ${historyData.message}`);
+                }
+                
+                results.push('\n🎉 Complete workflow test finished!');
+                showResult('workflow-result', results.join('\n'), 'success');
+                
+            } catch (error) {
+                results.push(`❌ Workflow Error: ${error.message}`);
+                showResult('workflow-result', results.join('\n'), 'error');
+            }
+        }
+    </script>
+</body>
+</html>

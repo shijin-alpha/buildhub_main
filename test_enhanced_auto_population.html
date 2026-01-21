@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Auto-Population Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .data-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .expected-values {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        .debug-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .error {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .field-test {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .field-name {
+            font-weight: bold;
+            color: #495057;
+        }
+        .field-value {
+            color: #007bff;
+            font-family: monospace;
+        }
+        .field-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-empty {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Enhanced Auto-Population Test</h1>
+        <p>This test verifies that the TechnicalDetailsModal auto-population is working correctly with data from the layout_requests table.</p>
+        
+        <div class="test-section">
+            <h3>📊 Database Data Fetch</h3>
+            <button class="btn" onclick="fetchLayoutRequestData()">🔄 Fetch Latest Layout Request Data</button>
+            <div id="database-data"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Auto-Population Logic Test</h3>
+            <button class="btn btn-success" onclick="testAutoPopulation()">🚀 Test Auto-Population Logic</button>
+            <div id="auto-population-test"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Expected vs Actual Values</h3>
+            <div id="field-comparison"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🐛 Debug Information</h3>
+            <div id="debug-info"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentLayoutRequestData = null;
+        let autoPopulationResults = null;
+
+        async function fetchLayoutRequestData() {
+            const container = document.getElementById('database-data');
+            container.innerHTML = '<div class="debug-info">⏳ Fetching layout request data...</div>';
+            
+            try {
+                const response = await fetch('/buildhub/debug_layout_request_data.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentLayoutRequestData = result;
+                    
+                    container.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Successfully fetched layout request data</h4>
+                            <p><strong>Layout Request ID:</strong> ${result.layout_request_id}</p>
+                        </div>
+                        <div class="data-display">
+                            <h4>📋 Raw Database Data:</h4>
+                            <div class="field-test">
+                                <span class="field-name">Plot Size:</span>
+                                <span class="field-value">${result.request_data.plot_size || 'N/A'}</span>
+                            </div>
+                            <div class="field-test">
+                                <span class="field-name">Building Size:</span>
+                                <span class="field-value">${result.request_data.building_size || 'N/A'}</span>
+                            </div>
+                            <div class="field-test">
+                                <span class="field-name">Budget Range:</span>
+                                <span class="field-value">${result.request_data.budget_range || 'N/A'}</span>
+                            </div>
+                            <div class="field-test">
+                                <span class="field-name">Location:</span>
+                                <span class="field-value">${result.request_data.location || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="expected-values">
+                            <h4>🎯 Expected Auto-Population Values:</h4>
+                            <div class="field-test">
+                                <span class="field-name">Site Area:</span>
+                                <span class="field-value">${result.expected_auto_population.site_area || 'N/A'} sq ft</span>
+                            </div>
+                            <div class="field-test">
+                                <span class="field-name">Land Area:</span>
+                                <span class="field-value">${result.expected_auto_population.land_area || 'N/A'} sq ft</span>
+                            </div>
+                            <div class="field-test">
+                                <span class="field-name">Built-up Area:</span>
+                                <span class="field-value">${result.expected_auto_population.built_up_area || 'N/A'} sq ft</span>
+                            </div>
+                            <div class="field-test">
+                                <span class="field-name">Carpet Area:</span>
+                                <span class="field-value">${result.expected_auto_population.carpet_area || 'N/A'} sq ft</span>
+                            </div>
+                        </div>
+                        <details>
+                            <summary>🔍 View Full Response</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    container.innerHTML = `<div class="error">❌ Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        function testAutoPopulation() {
+            const container = document.getElementById('auto-population-test');
+            
+            if (!currentLayoutRequestData) {
+                container.innerHTML = '<div class="error">❌ Please fetch layout request data first</div>';
+                return;
+            }
+            
+            container.innerHTML = '<div class="debug-info">⏳ Testing auto-population logic...</div>';
+            
+            // Simulate the TechnicalDetailsModal auto-population logic
+            const dataSource = currentLayoutRequestData.request_data;
+            const updates = {};
+            
+            // Test plot_size parsing
+            let plotSizeValue = dataSource.plot_size;
+            let buildingSizeValue = dataSource.building_size;
+            
+            console.log('Testing with plot_size:', plotSizeValue);
+            console.log('Testing with building_size:', buildingSizeValue);
+            
+            if (plotSizeValue) {
+                const plotSize = plotSizeValue.toString().toLowerCase();
+                
+                if (plotSize.includes('x')) {
+                    // Format like "30x40"
+                    const dimensions = plotSize.split('x');
+                    if (dimensions.length === 2) {
+                        const width = parseFloat(dimensions[0].trim());
+                        const height = parseFloat(dimensions[1].replace(/[^0-9.]/g, ''));
+                        if (!isNaN(width) && !isNaN(height)) {
+                            const area = width * height;
+                            updates.site_area = area.toString();
+                            updates.land_area = area.toString();
+                        }
+                    }
+                } else {
+                    // Format like "2000 sq ft"
+                    const area = parseFloat(plotSize.replace(/[^0-9.]/g, ''));
+                    if (!isNaN(area) && area > 0) {
+                        updates.site_area = area.toString();
+                        updates.land_area = area.toString();
+                    }
+                }
+            }
+            
+            if (buildingSizeValue) {
+                const buildingSize = parseFloat(buildingSizeValue.toString().replace(/[^0-9.]/g, ''));
+                if (!isNaN(buildingSize) && buildingSize > 0) {
+                    updates.built_up_area = buildingSize.toString();
+                    updates.carpet_area = Math.round(buildingSize * 0.7).toString();
+                }
+            }
+            
+            // Set default setbacks based on plot size
+            const plotSizeNum = parseFloat(updates.site_area || plotSizeValue || 0);
+            if (plotSizeNum > 0) {
+                if (plotSizeNum < 1000) {
+                    updates.setback_front = '3';
+                    updates.setback_rear = '3';
+                    updates.setback_left = '3';
+                    updates.setback_right = '3';
+                } else if (plotSizeNum < 2000) {
+                    updates.setback_front = '5';
+                    updates.setback_rear = '3';
+                    updates.setback_left = '3';
+                    updates.setback_right = '3';
+                } else if (plotSizeNum < 5000) {
+                    updates.setback_front = '10';
+                    updates.setback_rear = '5';
+                    updates.setback_left = '5';
+                    updates.setback_right = '5';
+                } else {
+                    updates.setback_front = '15';
+                    updates.setback_rear = '10';
+                    updates.setback_left = '10';
+                    updates.setback_right = '10';
+                }
+            }
+            
+            autoPopulationResults = updates;
+            
+            container.innerHTML = `
+                <div class="success">
+                    <h4>✅ Auto-Population Logic Test Complete</h4>
+                    <p>Successfully processed ${Object.keys(updates).length} fields</p>
+                </div>
+                <div class="data-display">
+                    <h4>🔧 Auto-Populated Values:</h4>
+                    ${Object.entries(updates).map(([key, value]) => `
+                        <div class="field-test">
+                            <span class="field-name">${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
+                            <span class="field-value">${value}</span>
+                            <span class="field-status status-success">✓ Set</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <details>
+                    <summary>🔍 View Processing Details</summary>
+                    <pre>Input Data:
+Plot Size: ${plotSizeValue}
+Building Size: ${buildingSizeValue}
+
+Processing Results:
+${JSON.stringify(updates, null, 2)}</pre>
+                </details>
+            `;
+            
+            // Update field comparison
+            updateFieldComparison();
+        }
+
+        function updateFieldComparison() {
+            const container = document.getElementById('field-comparison');
+            
+            if (!currentLayoutRequestData || !autoPopulationResults) {
+                container.innerHTML = '<div class="debug-info">⏳ Complete both tests above to see comparison</div>';
+                return;
+            }
+            
+            const expected = currentLayoutRequestData.expected_auto_population;
+            const actual = autoPopulationResults;
+            
+            const fields = ['site_area', 'land_area', 'built_up_area', 'carpet_area'];
+            
+            let allMatch = true;
+            const comparisons = fields.map(field => {
+                const expectedValue = expected[field];
+                const actualValue = actual[field];
+                const match = expectedValue == actualValue; // Use loose equality for number/string comparison
+                
+                if (!match) allMatch = false;
+                
+                return `
+                    <div class="field-test">
+                        <span class="field-name">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
+                        <span class="field-value">Expected: ${expectedValue || 'N/A'} | Actual: ${actualValue || 'N/A'}</span>
+                        <span class="field-status ${match ? 'status-success' : 'status-error'}">
+                            ${match ? '✓ Match' : '✗ Mismatch'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = `
+                <div class="${allMatch ? 'success' : 'error'}">
+                    <h4>${allMatch ? '✅ All Fields Match!' : '❌ Some Fields Don\'t Match'}</h4>
+                    <p>${allMatch ? 'Auto-population is working correctly' : 'There are discrepancies in the auto-population logic'}</p>
+                </div>
+                <div class="data-display">
+                    ${comparisons}
+                </div>
+            `;
+        }
+
+        function updateDebugInfo() {
+            const container = document.getElementById('debug-info');
+            
+            const debugData = {
+                'Current Time': new Date().toLocaleString(),
+                'Layout Request Data Available': !!currentLayoutRequestData,
+                'Auto-Population Results Available': !!autoPopulationResults,
+                'Browser': navigator.userAgent,
+                'Test Status': currentLayoutRequestData && autoPopulationResults ? 'Complete' : 'Incomplete'
+            };
+            
+            container.innerHTML = `
+                <div class="debug-info">
+                    <h4>🐛 Debug Information</h4>
+                    ${Object.entries(debugData).map(([key, value]) => `
+                        <div class="field-test">
+                            <span class="field-name">${key}:</span>
+                            <span class="field-value">${value}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="data-display">
+                    <h4>📝 Instructions:</h4>
+                    <ol>
+                        <li>Click "Fetch Latest Layout Request Data" to get database data</li>
+                        <li>Click "Test Auto-Population Logic" to simulate the modal logic</li>
+                        <li>Check the "Expected vs Actual Values" section for verification</li>
+                        <li>If values don't match, check the TechnicalDetailsModal.jsx auto-population logic</li>
+                    </ol>
+                </div>
+            `;
+        }
+
+        // Initialize debug info on page load
+        updateDebugInfo();
+        
+        // Auto-fetch data on page load
+        setTimeout(fetchLayoutRequestData, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend Approval Flow</title>
+</head>
+<body>
+    <h1>Test Custom Payment Request Approval</h1>
+    <div id="results"></div>
+    
+    <script>
+    async function testApprovalFlow() {
+        const resultsDiv = document.getElementById('results');
+        
+        try {
+            // Step 1: Fetch payment requests (like the frontend does)
+            resultsDiv.innerHTML += '<h3>Step 1: Fetching payment requests...</h3>';
+            
+            const fetchResponse = await fetch('/buildhub/backend/api/homeowner/get_all_payment_requests.php?homeowner_id=28', {
+                credentials: 'include'
+            });
+            const fetchData = await fetchResponse.json();
+            
+            if (!fetchData.success) {
+                resultsDiv.innerHTML += `<p style="color: red;">Failed to fetch requests: ${fetchData.message}</p>`;
+                return;
+            }
+            
+            resultsDiv.innerHTML += `<p style="color: green;">Found ${fetchData.data.requests.length} requests</p>`;
+            
+            // Step 2: Find the custom payment request
+            const customRequest = fetchData.data.requests.find(r => r.request_type === 'custom' && r.status === 'pending');
+            
+            if (!customRequest) {
+                resultsDiv.innerHTML += '<p style="color: red;">No pending custom payment request found</p>';
+                return;
+            }
+            
+            resultsDiv.innerHTML += `<h3>Step 2: Found custom request</h3>`;
+            resultsDiv.innerHTML += `<p>ID: ${customRequest.id}, Type: ${customRequest.request_type}, Title: ${customRequest.request_title}</p>`;
+            
+            // Step 3: Simulate approval (like the frontend does)
+            resultsDiv.innerHTML += '<h3>Step 3: Attempting approval...</h3>';
+            
+            const isCustomPayment = customRequest.request_type === 'custom';
+            const apiEndpoint = isCustomPayment 
+                ? '/buildhub/backend/api/homeowner/respond_to_custom_payment.php'
+                : '/buildhub/backend/api/homeowner/respond_payment_request.php';
+            
+            resultsDiv.innerHTML += `<p>Using API: ${apiEndpoint}</p>`;
+            resultsDiv.innerHTML += `<p>Is Custom Payment: ${isCustomPayment}</p>`;
+            
+            const approvalResponse = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    request_id: customRequest.id,
+                    action: 'approve',
+                    homeowner_notes: 'Test approval from frontend simulation',
+                    approved_amount: customRequest.requested_amount
+                })
+            });
+            
+            const approvalData = await approvalResponse.json();
+            
+            if (approvalData.success) {
+                resultsDiv.innerHTML += `<p style="color: green;">SUCCESS: ${approvalData.message}</p>`;
+                resultsDiv.innerHTML += `<p>New Status: ${approvalData.data.status}</p>`;
+            } else {
+                resultsDiv.innerHTML += `<p style="color: red;">FAILED: ${approvalData.message}</p>`;
+            }
+            
+        } catch (error) {
+            resultsDiv.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    }
+    
+    // Run the test
+    testApprovalFlow();
+    </script>
+</body>
+</html>

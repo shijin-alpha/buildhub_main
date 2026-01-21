@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ProgressTimeline from './ProgressTimeline';
+import EnhancedProgressTimeline from './EnhancedProgressTimeline';
 import HomeownerPaymentWithdrawals from './HomeownerPaymentWithdrawals';
 import '../styles/HomeownerProgress.css';
 
@@ -217,7 +217,7 @@ const HomeownerProgressView = ({ homeownerId }) => {
           {/* Tab Content */}
           {activeTab === 'progress' && selectedProject && (
             <div className="timeline-section">
-              <ProgressTimeline 
+              <EnhancedProgressTimeline 
                 homeownerId={homeownerId}
                 projectId={selectedProject}
                 userRole="homeowner"

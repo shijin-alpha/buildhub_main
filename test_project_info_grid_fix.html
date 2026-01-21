@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Info Grid UI Fix Test</title>
+    <link rel="stylesheet" href="frontend/src/styles/EnhancedProgress.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .test-header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .test-header p {
+            color: #6c757d;
+            margin: 0;
+        }
+        .resize-instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Project Info Grid UI Fix Test</h1>
+            <p>Testing the improved layout to prevent overlapping content</p>
+        </div>
+        
+        <div class="resize-instructions">
+            <strong>Test Instructions:</strong>
+            <ul>
+                <li>Resize your browser window to different widths</li>
+                <li>Check that cards don't overlap at any screen size</li>
+                <li>Verify proper spacing and alignment</li>
+                <li>Test on mobile, tablet, and desktop sizes</li>
+            </ul>
+        </div>
+
+        <!-- Simulated Project Info Card -->
+        <div class="selected-project-info-card">
+            <div class="project-info-header">
+                <h4>Selected Project Details</h4>
+                <div class="project-status-badge">
+                    Construction Started
+                </div>
+            </div>
+            
+            <div class="project-participants">
+                <div class="participant">
+                    <strong>Homeowner:</strong> John Smith
+                    <br />
+                    <small>📧 john.smith@email.com | 📱 +91-9876543210</small>
+                </div>
+                <div class="participant">
+                    <strong>Contractor:</strong> ABC Construction
+                    <br />
+                    <small>📧 contractor@abcconstruction.com</small>
+                </div>
+            </div>
+            
+            <!-- This is the main grid that was causing overlap issues -->
+            <div class="project-info-grid">
+                <div class="info-card">
+                    <strong>Plot Details</strong>
+                    <div>Plot Size: 2800 sq ft</div>
+                    <div>Built-up Area: 2000 sq ft</div>
+                    <div>Floors: 2</div>
+                    <small>Style: Modern Contemporary</small>
+                </div>
+                
+                <div class="info-card">
+                    <strong>Location</strong>
+                    <div>Bangalore, Karnataka</div>
+                    <small>📍 GPS: Electronic City Phase 1</small>
+                </div>
+                
+                <div class="info-card">
+                    <strong>Budget & Cost</strong>
+                    <div>Budget: ₹25-30 Lakhs</div>
+                    <div>Estimate: ₹28,50,000</div>
+                </div>
+                
+                <div class="info-card">
+                    <strong>Timeline</strong>
+                    <div>Requested: 8 months</div>
+                    <div>Estimate: 10 months</div>
+                </div>
+                
+                <div class="info-card">
+                    <strong>Progress Status</strong>
+                    <div>45% complete</div>
+                    <div>Completed Stages: 4</div>
+                </div>
+                
+                <div class="info-card">
+                    <strong>Update History</strong>
+                    <div>Daily: 25 updates</div>
+                    <div>Weekly: 6 summaries</div>
+                    <div>Monthly: 2 reports</div>
+                    <small>Last: 2026-01-20 14:30:00</small>
+                </div>
+            </div>
+            
+            <div class="project-overall-progress">
+                <div class="progress-header">
+                    <strong>Overall Progress</strong>
+                    <span class="progress-percentage">45.0%</span>
+                </div>
+                <div class="progress-bar-large">
+                    <div class="progress-fill-large" style="width: 45%;"></div>
+                </div>
+            </div>
+            
+            <div class="project-requirements-full">
+                <strong>Project Requirements:</strong>
+                <p>Modern 2-story house with contemporary design, energy-efficient features, and smart home integration. Includes landscaping and parking for 2 cars.</p>
+            </div>
+            
+            <div class="project-dates">
+                <small>
+                    <strong>Request Date:</strong> 2025-11-15 | 
+                    <strong> Estimate Date:</strong> 2025-11-20 | 
+                    <strong> Acknowledged:</strong> 2025-11-22
+                </small>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724;">
+            <strong>✅ Fix Applied:</strong>
+            <ul style="margin: 10px 0 0 0;">
+                <li>Improved CSS Grid layout with proper overflow handling</li>
+                <li>Added responsive breakpoints for better mobile experience</li>
+                <li>Enhanced card sizing and spacing</li>
+                <li>Prevented text overflow with word-wrap</li>
+                <li>Added proper box-sizing and flex-shrink properties</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

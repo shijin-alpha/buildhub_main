@@ -72,11 +72,16 @@ const HousePlanDrawer = ({
   // Download functionality state
   const [downloadLoading, setDownloadLoading] = useState(false);
 
+  // Plan ID tracking for auto-save
+  const [currentPlanId, setCurrentPlanId] = useState(existingPlan?.id || null);
+
   // Floor management state
   const [currentFloor, setCurrentFloor] = useState(1);
   const [totalFloors, setTotalFloors] = useState(1);
   const [floorNames, setFloorNames] = useState({ 1: 'Ground Floor' });
   const [floorOffsets, setFloorOffsets] = useState({ 1: { x: 0, y: 0 } }); // Custom positioning for each floor
+  const [floorSectionCollapsed, setFloorSectionCollapsed] = useState(false);
+  const [positioningSectionCollapsed, setPositioningSectionCollapsed] = useState(true); // Start collapsed to save space
 
   // Plan data - Initialize with proper handling of existing plan
   const [planData, setPlanData] = useState(() => {
@@ -411,6 +416,9 @@ const HousePlanDrawer = ({
     if (existingPlan) {
       console.log('Loading existing plan:', existingPlan); // Debug log
       
+      // Set the current plan ID for auto-save tracking
+      setCurrentPlanId(existingPlan.id);
+      
       // Parse plan_data if it's a string
       let parsedPlanData = existingPlan.plan_data;
       if (typeof parsedPlanData === 'string') {
@@ -617,12 +625,14 @@ const HousePlanDrawer = ({
         status: 'draft' // Always save as draft for auto-save
       };
 
-      const url = existingPlan 
+      // Use currentPlanId to determine if we should update or create
+      const isUpdate = currentPlanId || existingPlan?.id;
+      const url = isUpdate 
         ? '/buildhub/backend/api/architect/update_house_plan.php'
         : '/buildhub/backend/api/architect/create_house_plan.php';
 
-      if (existingPlan) {
-        payload.plan_id = existingPlan.id;
+      if (isUpdate) {
+        payload.plan_id = currentPlanId || existingPlan.id;
       }
 
       const response = await fetch(url, {
@@ -651,19 +661,21 @@ const HousePlanDrawer = ({
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
         
+        // Update currentPlanId if this was a new plan creation
+        if (result.plan_id && !currentPlanId) {
+          setCurrentPlanId(result.plan_id);
+          console.log('Auto-save created new plan with ID:', result.plan_id);
+        }
+        
         // Show success message only occasionally to avoid spam
         if (retryCount === 0) {
-          showInfo('Auto-saved', 'Your changes have been automatically saved as draft', 2000);
+          const action = isUpdate ? 'updated' : 'created';
+          showInfo('Auto-saved', `Your changes have been automatically ${action} as draft`, 2000);
         }
         
         // Trigger real-time dashboard refresh for auto-saves
         if (window.refreshDashboard) {
           setTimeout(() => window.refreshDashboard(), 1000);
-        }
-        
-        // If this was a new plan that got saved, update our reference
-        if (result.plan_id && !existingPlan) {
-          console.log('Auto-save created new plan with ID:', result.plan_id);
         }
       } else {
         throw new Error(result.message || 'Auto-save failed');
@@ -1831,31 +1843,46 @@ const HousePlanDrawer = ({
       
       const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
       
-      // Add title
-      pdf.setFontSize(20);
+      // Add title and header
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
       pdf.text(planData.plan_name, 20, 20);
       
-      // Add basic info
+      // Add subtitle
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`House Plan with Room-Specific Dimensions`, 20, 30);
+      pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 38);
+      
+      // Add basic project info
       pdf.setFontSize(12);
-      let yPos = 40;
+      pdf.setFont('helvetica', 'bold');
+      let yPos = 50;
       
-      pdf.text(`Plot Size: ${planData.plot_width}' × ${planData.plot_height}'`, 20, yPos);
-      yPos += 10;
+      pdf.text('PROJECT OVERVIEW', 20, yPos);
+      yPos += 8;
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Plot Size: ${planData.plot_width}' × ${planData.plot_height}' (${(planData.plot_width * planData.plot_height).toFixed(0)} sq ft)`, 20, yPos);
+      yPos += 6;
       pdf.text(`Total Floors: ${totalFloors}`, 20, yPos);
-      yPos += 10;
+      yPos += 6;
+      pdf.text(`Total Rooms: ${planData.rooms.length}`, 20, yPos);
+      yPos += 6;
       pdf.text(`Layout Area: ${calculateTotalArea().toFixed(0)} sq ft`, 20, yPos);
-      yPos += 10;
+      yPos += 6;
       pdf.text(`Construction Area: ${calculateConstructionArea().toFixed(0)} sq ft`, 20, yPos);
-      yPos += 10;
-      pdf.text(`Number of Rooms: ${planData.rooms.length}`, 20, yPos);
-      yPos += 10;
-      pdf.text(`Scale Ratio: 1:${planData.scale_ratio}`, 20, yPos);
-      yPos += 20;
+      yPos += 6;
+      pdf.text(`Scale Ratio: 1:${planData.scale_ratio} (Layout to Construction)`, 20, yPos);
+      yPos += 6;
+      pdf.text(`Coverage: ${((calculateConstructionArea() / (planData.plot_width * planData.plot_height)) * 100).toFixed(1)}%`, 20, yPos);
+      yPos += 15;
       
-      // Add room details by floor
+      // Add detailed room specifications by floor
       if (planData.rooms && planData.rooms.length > 0) {
         pdf.setFontSize(14);
-        pdf.text('Room Details by Floor:', 20, yPos);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('DETAILED ROOM SPECIFICATIONS', 20, yPos);
         yPos += 10;
         
         // Group rooms by floor
@@ -1863,28 +1890,160 @@ const HousePlanDrawer = ({
           const floorRooms = planData.rooms.filter(room => room.floor === floorNum);
           
           if (floorRooms.length > 0) {
+            // Floor header
             pdf.setFontSize(12);
-            pdf.text(`${floorNames[floorNum] || `Floor ${floorNum}`} (${floorRooms.length} rooms):`, 20, yPos);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`${floorNames[floorNum] || `Floor ${floorNum}`} - ${floorRooms.length} Rooms`, 20, yPos);
             yPos += 8;
             
-            pdf.setFontSize(10);
-            floorRooms.forEach((room) => {
+            // Calculate floor totals
+            const floorLayoutArea = floorRooms.reduce((total, room) => total + (room.layout_width * room.layout_height), 0);
+            const floorConstructionArea = floorRooms.reduce((total, room) => {
               const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
               const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
-              const roomText = `  • ${room.name}: Layout ${room.layout_width}' × ${room.layout_height}' | Construction ${actualWidth.toFixed(1)}' × ${actualHeight.toFixed(1)}' (${(actualWidth * actualHeight).toFixed(0)} sq ft)`;
-              pdf.text(roomText, 20, yPos);
+              return total + (actualWidth * actualHeight);
+            }, 0);
+            
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'italic');
+            pdf.text(`Floor Total - Layout: ${floorLayoutArea.toFixed(0)} sq ft | Construction: ${floorConstructionArea.toFixed(0)} sq ft`, 25, yPos);
+            yPos += 8;
+            
+            // Room details table header
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Room Name', 25, yPos);
+            pdf.text('Layout Dims', 90, yPos);
+            pdf.text('Construction Dims', 140, yPos);
+            pdf.text('Area (sq ft)', 200, yPos);
+            pdf.text('Position', 240, yPos);
+            yPos += 6;
+            
+            // Draw header line
+            pdf.line(25, yPos, 280, yPos);
+            yPos += 4;
+            
+            pdf.setFont('helvetica', 'normal');
+            floorRooms.forEach((room, index) => {
+              const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
+              const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
+              const layoutArea = room.layout_width * room.layout_height;
+              const constructionArea = actualWidth * actualHeight;
+              
+              // Room name
+              pdf.text(`${index + 1}. ${room.name}`, 25, yPos);
+              
+              // Layout dimensions
+              pdf.text(`${room.layout_width}' × ${room.layout_height}'`, 90, yPos);
+              
+              // Construction dimensions
+              pdf.text(`${actualWidth.toFixed(1)}' × ${actualHeight.toFixed(1)}'`, 140, yPos);
+              
+              // Areas
+              pdf.text(`L: ${layoutArea.toFixed(0)} | C: ${constructionArea.toFixed(0)}`, 200, yPos);
+              
+              // Position
+              pdf.text(`(${room.x}, ${room.y})`, 240, yPos);
+              
               yPos += 6;
+              
+              // Add room specifications if available
+              if (room.wall_thickness || room.ceiling_height || room.floor_type || room.wall_material) {
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'italic');
+                let specs = [];
+                if (room.wall_thickness) specs.push(`Wall: ${room.wall_thickness}'`);
+                if (room.ceiling_height) specs.push(`Height: ${room.ceiling_height}'`);
+                if (room.floor_type) specs.push(`Floor: ${room.floor_type}`);
+                if (room.wall_material) specs.push(`Material: ${room.wall_material}`);
+                if (room.rotation && room.rotation !== 0) specs.push(`Rotation: ${room.rotation}°`);
+                
+                if (specs.length > 0) {
+                  pdf.text(`    Specs: ${specs.join(', ')}`, 30, yPos);
+                  yPos += 5;
+                }
+                
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'normal');
+              }
               
               // Start new page if needed
               if (yPos > 180) {
                 pdf.addPage();
                 yPos = 20;
+                
+                // Re-add headers on new page
+                pdf.setFontSize(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(`${floorNames[floorNum] || `Floor ${floorNum}`} (continued)`, 20, yPos);
+                yPos += 10;
+                
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Room Name', 25, yPos);
+                pdf.text('Layout Dims', 90, yPos);
+                pdf.text('Construction Dims', 140, yPos);
+                pdf.text('Area (sq ft)', 200, yPos);
+                pdf.text('Position', 240, yPos);
+                yPos += 6;
+                pdf.line(25, yPos, 280, yPos);
+                yPos += 4;
+                pdf.setFont('helvetica', 'normal');
               }
             });
             
-            yPos += 5; // Extra space between floors
+            yPos += 8; // Extra space between floors
           }
         }
+        
+        // Add summary table
+        if (yPos > 150) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('ROOM SUMMARY BY CATEGORY', 20, yPos);
+        yPos += 10;
+        
+        // Group rooms by category
+        const roomsByCategory = {};
+        planData.rooms.forEach(room => {
+          const category = room.category || 'Other';
+          if (!roomsByCategory[category]) {
+            roomsByCategory[category] = [];
+          }
+          roomsByCategory[category].push(room);
+        });
+        
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Category', 25, yPos);
+        pdf.text('Count', 80, yPos);
+        pdf.text('Layout Area', 120, yPos);
+        pdf.text('Construction Area', 180, yPos);
+        pdf.text('Avg Room Size', 240, yPos);
+        yPos += 6;
+        pdf.line(25, yPos, 280, yPos);
+        yPos += 4;
+        
+        pdf.setFont('helvetica', 'normal');
+        Object.entries(roomsByCategory).forEach(([category, rooms]) => {
+          const categoryLayoutArea = rooms.reduce((total, room) => total + (room.layout_width * room.layout_height), 0);
+          const categoryConstructionArea = rooms.reduce((total, room) => {
+            const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
+            const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
+            return total + (actualWidth * actualHeight);
+          }, 0);
+          const avgRoomSize = categoryConstructionArea / rooms.length;
+          
+          pdf.text(category, 25, yPos);
+          pdf.text(rooms.length.toString(), 80, yPos);
+          pdf.text(`${categoryLayoutArea.toFixed(0)} sq ft`, 120, yPos);
+          pdf.text(`${categoryConstructionArea.toFixed(0)} sq ft`, 180, yPos);
+          pdf.text(`${avgRoomSize.toFixed(0)} sq ft`, 240, yPos);
+          yPos += 6;
+        });
       }
       
       // Add canvas visualization if available
@@ -1892,39 +2051,132 @@ const HousePlanDrawer = ({
         try {
           // Dynamic import for html2canvas
           const html2canvas = (await import('html2canvas')).default;
-          const canvas = await html2canvas(canvasRef.current);
+          const canvas = await html2canvas(canvasRef.current, {
+            backgroundColor: '#ffffff',
+            scale: 2 // Higher resolution for better PDF quality
+          });
           const imgData = canvas.toDataURL('image/png');
           
           // Add new page for the plan visualization
           pdf.addPage();
-          pdf.setFontSize(14);
-          pdf.text('Plan Layout:', 20, 20);
+          pdf.setFontSize(16);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('VISUAL PLAN LAYOUT', 20, 20);
+          
+          // Add scale information
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`Scale: 1 foot = ${PIXELS_PER_FOOT} pixels | Grid: ${GRID_SIZE} pixels`, 20, 30);
+          pdf.text(`Layout to Construction Ratio: 1:${planData.scale_ratio}`, 20, 36);
           
           // Calculate dimensions to fit the page
-          const imgWidth = 250;
+          const maxWidth = 250;
+          const maxHeight = 160;
+          const imgWidth = Math.min(maxWidth, (canvas.width * maxHeight) / canvas.height);
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
           
-          pdf.addImage(imgData, 'PNG', 20, 30, imgWidth, imgHeight);
+          pdf.addImage(imgData, 'PNG', 20, 45, imgWidth, imgHeight);
+          
+          // Add legend
+          const legendY = 45 + imgHeight + 10;
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('LEGEND:', 20, legendY);
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.text('• Blue borders: Selected rooms', 25, legendY + 8);
+          pdf.text('• Grid lines: 1 foot increments', 25, legendY + 14);
+          pdf.text('• Room labels show both layout and construction dimensions', 25, legendY + 20);
+          pdf.text('• Position coordinates are relative to plot origin (top-left)', 25, legendY + 26);
+          
         } catch (error) {
           console.error('Error adding canvas to PDF:', error);
+          // Add error note in PDF
+          pdf.addPage();
+          pdf.setFontSize(12);
+          pdf.text('Visual Layout: Unable to generate (technical error)', 20, 20);
         }
       }
       
+      // Add construction specifications page
+      pdf.addPage();
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('CONSTRUCTION SPECIFICATIONS', 20, 20);
+      yPos = 35;
+      
+      // Group rooms by construction specifications
+      const specGroups = {};
+      planData.rooms.forEach(room => {
+        const key = `${room.wall_thickness || 0.5}-${room.ceiling_height || 9}-${room.floor_type || 'ceramic'}-${room.wall_material || 'brick'}`;
+        if (!specGroups[key]) {
+          specGroups[key] = {
+            wall_thickness: room.wall_thickness || 0.5,
+            ceiling_height: room.ceiling_height || 9,
+            floor_type: room.floor_type || 'ceramic',
+            wall_material: room.wall_material || 'brick',
+            rooms: []
+          };
+        }
+        specGroups[key].rooms.push(room);
+      });
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      Object.entries(specGroups).forEach(([key, group]) => {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Specification Group (${group.rooms.length} rooms):`, 20, yPos);
+        yPos += 8;
+        
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Wall Thickness: ${group.wall_thickness}' | Ceiling Height: ${group.ceiling_height}'`, 25, yPos);
+        yPos += 6;
+        pdf.text(`Floor Type: ${group.floor_type} | Wall Material: ${group.wall_material}`, 25, yPos);
+        yPos += 6;
+        
+        pdf.text(`Rooms: ${group.rooms.map(r => r.name).join(', ')}`, 25, yPos);
+        yPos += 12;
+        
+        if (yPos > 180) {
+          pdf.addPage();
+          yPos = 20;
+        }
+      });
+      
       // Add notes if available
-      if (planData.notes) {
-        pdf.addPage();
+      if (planData.notes && planData.notes.trim()) {
+        if (yPos > 150) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
         pdf.setFontSize(14);
-        pdf.text('Notes:', 20, 20);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('PROJECT NOTES', 20, yPos);
+        yPos += 10;
+        
         pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
         
         // Split notes into lines that fit the page
         const lines = pdf.splitTextToSize(planData.notes, 250);
-        pdf.text(lines, 20, 35);
+        pdf.text(lines, 20, yPos);
+      }
+      
+      // Add footer with generation info
+      const pageCount = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text(`Generated by BuildHub House Plan Designer - Page ${i} of ${pageCount}`, 20, 200);
+        pdf.text(`${new Date().toLocaleString()}`, 200, 200);
       }
       
       // Save the PDF
-      pdf.save(`${planData.plan_name.replace(/[^a-z0-9]/gi, '_')}_house_plan.pdf`);
-      showSuccess('PDF Downloaded', 'Your house plan has been downloaded as PDF');
+      const fileName = `${planData.plan_name.replace(/[^a-z0-9]/gi, '_')}_detailed_house_plan.pdf`;
+      pdf.save(fileName);
+      showSuccess('Enhanced PDF Downloaded', 'Your detailed house plan with room-specific dimensions has been downloaded as PDF');
       
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -1975,39 +2227,183 @@ const HousePlanDrawer = ({
     }
 
     try {
+      // Calculate detailed statistics
+      const roomsByCategory = {};
+      const roomsByFloor = {};
+      let totalLayoutArea = 0;
+      let totalConstructionArea = 0;
+      
+      planData.rooms.forEach(room => {
+        const category = room.category || 'Other';
+        const floor = room.floor || 1;
+        const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
+        const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
+        const layoutArea = room.layout_width * room.layout_height;
+        const constructionArea = actualWidth * actualHeight;
+        
+        totalLayoutArea += layoutArea;
+        totalConstructionArea += constructionArea;
+        
+        // Group by category
+        if (!roomsByCategory[category]) {
+          roomsByCategory[category] = {
+            count: 0,
+            layout_area: 0,
+            construction_area: 0,
+            rooms: []
+          };
+        }
+        roomsByCategory[category].count++;
+        roomsByCategory[category].layout_area += layoutArea;
+        roomsByCategory[category].construction_area += constructionArea;
+        roomsByCategory[category].rooms.push(room.name);
+        
+        // Group by floor
+        if (!roomsByFloor[floor]) {
+          roomsByFloor[floor] = {
+            floor_name: floorNames[floor] || `Floor ${floor}`,
+            count: 0,
+            layout_area: 0,
+            construction_area: 0,
+            rooms: []
+          };
+        }
+        roomsByFloor[floor].count++;
+        roomsByFloor[floor].layout_area += layoutArea;
+        roomsByFloor[floor].construction_area += constructionArea;
+        roomsByFloor[floor].rooms.push({
+          name: room.name,
+          category: room.category,
+          layout_dimensions: `${room.layout_width}' × ${room.layout_height}'`,
+          construction_dimensions: `${actualWidth.toFixed(1)}' × ${actualHeight.toFixed(1)}'`,
+          layout_area: layoutArea,
+          construction_area: constructionArea,
+          position: { x: room.x, y: room.y },
+          rotation: room.rotation || 0
+        });
+      });
+
       const exportData = {
+        metadata: {
+          export_version: "2.0",
+          generated_at: new Date().toISOString(),
+          generated_by: "BuildHub House Plan Designer",
+          export_type: "detailed_room_specifications"
+        },
         plan_info: {
           name: planData.plan_name,
-          plot_width: planData.plot_width,
-          plot_height: planData.plot_height,
-          layout_area: calculateTotalArea(),
-          construction_area: calculateConstructionArea(),
+          plot_dimensions: {
+            width: planData.plot_width,
+            height: planData.plot_height,
+            area: planData.plot_width * planData.plot_height,
+            units: "feet"
+          },
+          areas: {
+            plot_area: planData.plot_width * planData.plot_height,
+            total_layout_area: totalLayoutArea,
+            total_construction_area: totalConstructionArea,
+            coverage_percentage: ((totalConstructionArea / (planData.plot_width * planData.plot_height)) * 100).toFixed(2),
+            efficiency_ratio: (totalConstructionArea / totalLayoutArea).toFixed(3)
+          },
           scale_ratio: planData.scale_ratio,
           total_floors: totalFloors,
-          floor_names: floorNames,
+          total_rooms: planData.rooms.length,
           created_at: new Date().toISOString()
         },
-        floors: {
+        floor_management: {
           total_floors: totalFloors,
           current_floor: currentFloor,
           floor_names: floorNames,
-          rooms_by_floor: Array.from({ length: totalFloors }, (_, i) => i + 1).reduce((acc, floorNum) => {
-            acc[floorNum] = planData.rooms.filter(room => room.floor === floorNum);
-            return acc;
-          }, {})
+          floor_offsets: floorOffsets,
+          rooms_by_floor: roomsByFloor
         },
-        rooms: planData.rooms.map(room => ({
-          ...room,
-          actual_width: room.actual_width || room.layout_width * planData.scale_ratio,
-          actual_height: room.actual_height || room.layout_height * planData.scale_ratio
-        })),
-        notes: planData.notes,
+        room_categories: roomsByCategory,
+        detailed_room_specifications: planData.rooms.map((room, index) => {
+          const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
+          const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
+          const layoutArea = room.layout_width * room.layout_height;
+          const constructionArea = actualWidth * actualHeight;
+          
+          return {
+            id: room.id || index + 1,
+            name: room.name,
+            category: room.category || 'Other',
+            type: room.type || 'room',
+            floor: room.floor || 1,
+            floor_name: floorNames[room.floor] || `Floor ${room.floor}`,
+            dimensions: {
+              layout: {
+                width: room.layout_width,
+                height: room.layout_height,
+                area: layoutArea,
+                perimeter: 2 * (room.layout_width + room.layout_height),
+                units: "feet"
+              },
+              construction: {
+                width: actualWidth,
+                height: actualHeight,
+                area: constructionArea,
+                perimeter: 2 * (actualWidth + actualHeight),
+                units: "feet"
+              },
+              scale_factor: planData.scale_ratio
+            },
+            position: {
+              x: room.x,
+              y: room.y,
+              rotation: room.rotation || 0,
+              coordinates_system: "canvas_pixels_from_top_left"
+            },
+            construction_specs: {
+              wall_thickness: room.wall_thickness || 0.5,
+              ceiling_height: room.ceiling_height || 9,
+              floor_type: room.floor_type || 'ceramic',
+              wall_material: room.wall_material || 'brick',
+              volume: constructionArea * (room.ceiling_height || 9)
+            },
+            visual_properties: {
+              color: room.color || '#e3f2fd',
+              icon: room.icon || '🏠'
+            },
+            notes: room.notes || ''
+          };
+        }),
+        construction_summary: {
+          total_volume: planData.rooms.reduce((total, room) => {
+            const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
+            const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
+            const constructionArea = actualWidth * actualHeight;
+            return total + (constructionArea * (room.ceiling_height || 9));
+          }, 0),
+          material_estimates: {
+            wall_area_estimate: planData.rooms.reduce((total, room) => {
+              const actualWidth = room.actual_width || room.layout_width * planData.scale_ratio;
+              const actualHeight = room.actual_height || room.layout_height * planData.scale_ratio;
+              const perimeter = 2 * (actualWidth + actualHeight);
+              return total + (perimeter * (room.ceiling_height || 9));
+            }, 0),
+            floor_area: totalConstructionArea,
+            ceiling_area: totalConstructionArea
+          }
+        },
+        project_notes: planData.notes || '',
         requirements_reference: requirementsData ? {
           homeowner_name: requirementsData.homeowner_name,
           budget: requirementsData.budget,
           location: requirementsData.location,
+          plot_size: requirementsData.plot_size,
           requirements: requirementsData.parsed_requirements
-        } : null
+        } : null,
+        technical_specifications: {
+          grid_size: 20,
+          pixels_per_foot: 20,
+          measurement_units: "feet",
+          coordinate_system: "top_left_origin",
+          canvas_dimensions: canvasRef.current ? {
+            width: canvasRef.current.width,
+            height: canvasRef.current.height
+          } : null
+        }
       };
       
       const dataStr = JSON.stringify(exportData, null, 2);
@@ -2015,13 +2411,13 @@ const HousePlanDrawer = ({
       
       const link = document.createElement('a');
       link.href = URL.createObjectURL(dataBlob);
-      link.download = `${planData.plan_name.replace(/[^a-z0-9]/gi, '_')}_data.json`;
+      link.download = `${planData.plan_name.replace(/[^a-z0-9]/gi, '_')}_detailed_specifications.json`;
       link.click();
       
       // Clean up
       URL.revokeObjectURL(link.href);
       
-      showSuccess('JSON Downloaded', 'Your house plan data has been downloaded as JSON');
+      showSuccess('Enhanced JSON Downloaded', 'Your detailed house plan specifications have been downloaded as JSON');
     } catch (error) {
       console.error('Error generating JSON:', error);
       showError('Download Failed', 'Error generating JSON file. Please try again.');
@@ -2154,14 +2550,25 @@ const HousePlanDrawer = ({
         floors: {
           total_floors: totalFloors,
           current_floor: currentFloor,
-          floor_names: floorNames
+          floor_names: floorNames,
+          floor_offsets: floorOffsets
         }
       },
       notes: planData.notes,
       status: 'draft'
     };
 
-    const response = await fetch('/buildhub/backend/api/architect/create_house_plan.php', {
+    // Use currentPlanId to determine if we should update or create
+    const isUpdate = currentPlanId || existingPlan?.id;
+    const url = isUpdate 
+      ? '/buildhub/backend/api/architect/update_house_plan.php'
+      : '/buildhub/backend/api/architect/create_house_plan.php';
+
+    if (isUpdate) {
+      payload.plan_id = currentPlanId || existingPlan.id;
+    }
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -2175,7 +2582,14 @@ const HousePlanDrawer = ({
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    
+    // Update currentPlanId if this was a new plan creation
+    if (result.success && result.plan_id && !currentPlanId) {
+      setCurrentPlanId(result.plan_id);
+    }
+
+    return result;
   };
 
   // Helper function to validate plan data before saving
@@ -2247,15 +2661,18 @@ const HousePlanDrawer = ({
         floors: {
           total_floors: totalFloors,
           current_floor: currentFloor,
-          floor_names: floorNames
+          floor_names: floorNames,
+          floor_offsets: floorOffsets
         }
       },
       notes: planData.notes,
       status: 'draft'
     };
 
-    if (existingPlan) {
-      payload.plan_id = existingPlan.id;
+    // Use currentPlanId to determine if we should update or create
+    const isUpdate = currentPlanId || existingPlan?.id;
+    if (isUpdate) {
+      payload.plan_id = currentPlanId || existingPlan.id;
     }
 
     // Validate payload
@@ -2269,13 +2686,13 @@ const HousePlanDrawer = ({
     showInfo('Saving Plan', 'Please wait while we save your house plan...');
     
     try {
-      const url = existingPlan 
+      const url = isUpdate 
         ? '/buildhub/backend/api/architect/update_house_plan.php'
         : '/buildhub/backend/api/architect/create_house_plan.php';
 
       console.log('Saving plan with payload:', payload); // Debug log
       console.log('Using URL:', url); // Debug log
-      console.log('Existing plan:', existingPlan); // Debug log
+      console.log('Is Update:', isUpdate, 'Current Plan ID:', currentPlanId); // Debug log
 
       const response = await fetch(url, {
         method: 'POST',
@@ -2288,7 +2705,6 @@ const HousePlanDrawer = ({
       });
 
       console.log('Response status:', response.status); // Debug log
-      console.log('Response headers:', Object.fromEntries(response.headers.entries())); // Debug log
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2313,6 +2729,12 @@ const HousePlanDrawer = ({
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
         
+        // Update currentPlanId if this was a new plan creation
+        if (result.plan_id && !currentPlanId) {
+          setCurrentPlanId(result.plan_id);
+          console.log('Manual save created new plan with ID:', result.plan_id);
+        }
+        
         // Clear auto-save timer
         if (autoSaveTimer) {
           clearTimeout(autoSaveTimer);
@@ -2320,9 +2742,10 @@ const HousePlanDrawer = ({
         }
         
         // Show success toast notification
+        const action = isUpdate ? 'updated' : 'created';
         showSuccess(
           'Plan Saved Successfully!', 
-          `Your house plan "${planData.plan_name}" has been saved with ${planData.rooms.length} rooms covering ${calculateConstructionArea().toFixed(0)} sq ft.`
+          `Your house plan "${planData.plan_name}" has been ${action} with ${planData.rooms.length} rooms covering ${calculateConstructionArea().toFixed(0)} sq ft.`
         );
         
         // Clear history after successful save and reinitialize
@@ -2331,12 +2754,6 @@ const HousePlanDrawer = ({
         setTimeout(() => {
           saveToHistory();
         }, 100);
-        
-        // Update the existing plan reference to prevent data loss on next edit
-        if (result.plan_id && !existingPlan) {
-          // If this was a new plan, we now have an ID - this helps with future saves
-          console.log('New plan created with ID:', result.plan_id);
-        }
         
         // Trigger real-time dashboard refresh
         if (window.refreshDashboard) {
@@ -2371,6 +2788,7 @@ const HousePlanDrawer = ({
   const currentRoom = selectedRoom !== null ? planData.rooms[selectedRoom] : null;
 
   return (
+    <>
     <div className="house-plan-drawer">
       <NotificationToast 
         notifications={notifications} 
@@ -2394,6 +2812,7 @@ const HousePlanDrawer = ({
         onSubmit={handleTechnicalDetailsSubmit}
         planData={planData}
         loading={submissionLoading}
+        requestInfo={requirementsData}
       />
       
       <div className="drawer-header">
@@ -2469,39 +2888,43 @@ const HousePlanDrawer = ({
           </div>
           
           <div className="drawer-actions">
-            <div className="download-actions">
-              <button 
-                onClick={downloadCurrentPlanAsPDF} 
-                disabled={loading || downloadLoading || !planData.plan_name.trim()}
-                className="download-btn"
-                title="Download plan as PDF"
-              >
-                {downloadLoading ? '⏳' : '📄'} PDF
-              </button>
-              <button 
-                onClick={downloadCurrentPlanAsImage} 
-                disabled={loading || downloadLoading || !planData.plan_name.trim()}
-                className="download-btn"
-                title="Download layout as image"
-              >
-                {downloadLoading ? '⏳' : '🖼️'} PNG
-              </button>
-              <button 
-                onClick={downloadCurrentPlanAsJSON} 
-                disabled={loading || downloadLoading || !planData.plan_name.trim()}
-                className="download-btn"
-                title="Download plan data as JSON"
-              >
-                {downloadLoading ? '⏳' : '📊'} JSON
-              </button>
+            <div className="plan-actions">
+              <div className="download-actions">
+                <button 
+                  onClick={downloadCurrentPlanAsPDF} 
+                  disabled={loading || downloadLoading || !planData.plan_name.trim()}
+                  className="download-btn pdf-btn"
+                  title="Download as PDF with visual design and room-specific dimensions"
+                >
+                  {downloadLoading ? '⏳' : '📄'} PDF
+                </button>
+                <button 
+                  onClick={downloadCurrentPlanAsImage} 
+                  disabled={loading || downloadLoading || !planData.plan_name.trim()}
+                  className="download-btn image-btn"
+                  title="Download layout as high-resolution image"
+                >
+                  {downloadLoading ? '⏳' : '🖼️'} PNG
+                </button>
+                <button 
+                  onClick={downloadCurrentPlanAsJSON} 
+                  disabled={loading || downloadLoading || !planData.plan_name.trim()}
+                  className="download-btn json-btn"
+                  title="Download as structured JSON data with room specifications"
+                >
+                  {downloadLoading ? '⏳' : '📊'} JSON
+                </button>
+              </div>
+              <div className="status-actions">
+                <button onClick={handleSave} disabled={loading} className="edit-btn">
+                  {loading ? 'Saving...' : 'Save Plan'}
+                </button>
+                <button onClick={handleSubmitToHomeowner} disabled={loading} className="submit-btn">
+                  {loading ? 'Submitting...' : 'Submit'}
+                </button>
+                <button onClick={onCancel} className="delete-btn">Cancel</button>
+              </div>
             </div>
-            <button onClick={handleSave} disabled={loading} className="save-btn">
-              {loading ? 'Saving...' : 'Save Plan'}
-            </button>
-            <button onClick={handleSubmitToHomeowner} disabled={loading} className="submit-btn">
-              {loading ? 'Submitting...' : 'Submit to Homeowner'}
-            </button>
-            <button onClick={onCancel} className="cancel-btn">Cancel</button>
           </div>
         </div>
       </div>
@@ -2720,7 +3143,17 @@ const HousePlanDrawer = ({
 
           {/* Floor Management Section */}
           <div className="floor-management-section">
-            <h4>🏢 Floor Management</h4>
+            <div className="floor-header">
+              <h4>🏢 Floor Management</h4>
+              <button 
+                className="collapse-btn"
+                onClick={() => setFloorSectionCollapsed(!floorSectionCollapsed)}
+                title={floorSectionCollapsed ? "Expand floor controls" : "Collapse floor controls"}
+              >
+                {floorSectionCollapsed ? '▶️' : '▼️'}
+              </button>
+            </div>
+            
             <div className="floor-controls">
               <div className="current-floor-info">
                 <span className="floor-label">Current Floor:</span>
@@ -2754,152 +3187,166 @@ const HousePlanDrawer = ({
                 </button>
               </div>
               
-              <div className="floor-actions">
-                <div className="floor-name-edit">
-                  <input
-                    type="text"
-                    value={floorNames[currentFloor] || `Floor ${currentFloor}`}
-                    onChange={(e) => updateFloorName(currentFloor, e.target.value)}
-                    className="floor-name-input"
-                    placeholder="Floor name"
-                  />
-                </div>
-                
-                <div className="floor-buttons">
-                  {totalFloors > 1 && (
-                    <button
-                      className="floor-action-btn remove-floor"
-                      onClick={() => removeFloor(currentFloor)}
-                      title="Remove current floor"
-                    >
-                      🗑️ Remove Floor
-                    </button>
-                  )}
-                  
-                  {selectedRoom !== null && (
-                    <div className="copy-room-section">
-                      <span className="copy-label">Copy selected room to:</span>
-                      <div className="copy-floor-buttons">
-                        {Array.from({ length: totalFloors }, (_, i) => i + 1)
-                          .filter(floorNum => floorNum !== currentFloor)
-                          .map(floorNum => (
-                            <button
-                              key={floorNum}
-                              className="copy-floor-btn"
-                              onClick={() => copyRoomToFloor(planData.rooms[selectedRoom], floorNum)}
-                              title={`Copy to ${floorNames[floorNum] || `Floor ${floorNum}`}`}
-                            >
-                              → {floorNum}
-                            </button>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Floor Positioning Controls */}
-              <div className="floor-positioning-section">
-                <h5>📐 Floor Position</h5>
-                <div className="positioning-controls">
-                  <div className="position-info">
-                    <span className="position-label">Current Position:</span>
-                    <span className="position-values">
-                      X: {floorOffsets[currentFloor]?.x || 0}px, 
-                      Y: {floorOffsets[currentFloor]?.y || 0}px
-                    </span>
-                  </div>
-                  
-                  <div className="position-inputs">
-                    <div className="position-input-group">
-                      <label>X Offset:</label>
+              {!floorSectionCollapsed && (
+                <>
+                  <div className="floor-actions">
+                    <div className="floor-name-edit">
                       <input
-                        type="number"
-                        value={floorOffsets[currentFloor]?.x || 0}
-                        onChange={(e) => {
-                          const newX = parseInt(e.target.value) || 0;
-                          const currentY = floorOffsets[currentFloor]?.y || 0;
-                          updateFloorOffset(currentFloor, newX, currentY);
-                        }}
-                        className="position-input"
-                        step="10"
+                        type="text"
+                        value={floorNames[currentFloor] || `Floor ${currentFloor}`}
+                        onChange={(e) => updateFloorName(currentFloor, e.target.value)}
+                        className="floor-name-input"
+                        placeholder="Floor name"
                       />
-                      <span className="input-unit">px</span>
                     </div>
                     
-                    <div className="position-input-group">
-                      <label>Y Offset:</label>
-                      <input
-                        type="number"
-                        value={floorOffsets[currentFloor]?.y || 0}
-                        onChange={(e) => {
-                          const newY = parseInt(e.target.value) || 0;
-                          const currentX = floorOffsets[currentFloor]?.x || 0;
-                          updateFloorOffset(currentFloor, currentX, newY);
-                        }}
-                        className="position-input"
-                        step="10"
-                      />
-                      <span className="input-unit">px</span>
+                    <div className="floor-buttons">
+                      {totalFloors > 1 && (
+                        <button
+                          className="floor-action-btn remove-floor"
+                          onClick={() => removeFloor(currentFloor)}
+                          title="Remove current floor"
+                        >
+                          🗑️ Remove Floor
+                        </button>
+                      )}
+                      
+                      {selectedRoom !== null && (
+                        <div className="copy-room-section">
+                          <span className="copy-label">Copy selected room to:</span>
+                          <div className="copy-floor-buttons">
+                            {Array.from({ length: totalFloors }, (_, i) => i + 1)
+                              .filter(floorNum => floorNum !== currentFloor)
+                              .map(floorNum => (
+                                <button
+                                  key={floorNum}
+                                  className="copy-floor-btn"
+                                  onClick={() => copyRoomToFloor(planData.rooms[selectedRoom], floorNum)}
+                                  title={`Copy to ${floorNames[floorNum] || `Floor ${floorNum}`}`}
+                                >
+                                  → {floorNum}
+                                </button>
+                              ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="position-buttons">
-                    <button
-                      className="position-btn move-btn"
-                      onClick={() => moveFloorRooms(currentFloor, 0, -50)}
-                      title="Move floor up"
-                    >
-                      ⬆️ Up
-                    </button>
-                    <button
-                      className="position-btn move-btn"
-                      onClick={() => moveFloorRooms(currentFloor, 0, 50)}
-                      title="Move floor down"
-                    >
-                      ⬇️ Down
-                    </button>
-                    <button
-                      className="position-btn move-btn"
-                      onClick={() => moveFloorRooms(currentFloor, -50, 0)}
-                      title="Move floor left"
-                    >
-                      ⬅️ Left
-                    </button>
-                    <button
-                      className="position-btn move-btn"
-                      onClick={() => moveFloorRooms(currentFloor, 50, 0)}
-                      title="Move floor right"
-                    >
-                      ➡️ Right
-                    </button>
+                  {/* Floor Positioning Controls - Collapsible */}
+                  <div className="floor-positioning-section">
+                    <div className="positioning-header">
+                      <h5>📐 Floor Position</h5>
+                      <button 
+                        className="collapse-positioning-btn"
+                        onClick={() => setPositioningSectionCollapsed(!positioningSectionCollapsed)}
+                        title={positioningSectionCollapsed ? "Show positioning controls" : "Hide positioning controls"}
+                      >
+                        {positioningSectionCollapsed ? '▶️' : '▼️'}
+                      </button>
+                    </div>
+                    
+                    {!positioningSectionCollapsed && (
+                      <div className="positioning-controls">
+                        <div className="position-info">
+                          <span className="position-label">Position:</span>
+                          <span className="position-values">
+                            X: {floorOffsets[currentFloor]?.x || 0}px, 
+                            Y: {floorOffsets[currentFloor]?.y || 0}px
+                          </span>
+                        </div>
+                        
+                        <div className="position-inputs">
+                          <div className="position-input-group">
+                            <label>X:</label>
+                            <input
+                              type="number"
+                              value={floorOffsets[currentFloor]?.x || 0}
+                              onChange={(e) => {
+                                const newX = parseInt(e.target.value) || 0;
+                                const currentY = floorOffsets[currentFloor]?.y || 0;
+                                updateFloorOffset(currentFloor, newX, currentY);
+                              }}
+                              className="position-input"
+                              step="10"
+                            />
+                          </div>
+                          
+                          <div className="position-input-group">
+                            <label>Y:</label>
+                            <input
+                              type="number"
+                              value={floorOffsets[currentFloor]?.y || 0}
+                              onChange={(e) => {
+                                const newY = parseInt(e.target.value) || 0;
+                                const currentX = floorOffsets[currentFloor]?.x || 0;
+                                updateFloorOffset(currentFloor, currentX, newY);
+                              }}
+                              className="position-input"
+                              step="10"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="position-buttons">
+                          <button
+                            className="position-btn move-btn"
+                            onClick={() => moveFloorRooms(currentFloor, 0, -50)}
+                            title="Move floor up"
+                          >
+                            ⬆️
+                          </button>
+                          <button
+                            className="position-btn move-btn"
+                            onClick={() => moveFloorRooms(currentFloor, 0, 50)}
+                            title="Move floor down"
+                          >
+                            ⬇️
+                          </button>
+                          <button
+                            className="position-btn move-btn"
+                            onClick={() => moveFloorRooms(currentFloor, -50, 0)}
+                            title="Move floor left"
+                          >
+                            ⬅️
+                          </button>
+                          <button
+                            className="position-btn move-btn"
+                            onClick={() => moveFloorRooms(currentFloor, 50, 0)}
+                            title="Move floor right"
+                          >
+                            ➡️
+                          </button>
+                        </div>
+                        
+                        <div className="position-presets">
+                          <button
+                            className="position-btn preset-btn"
+                            onClick={() => resetFloorPosition(currentFloor)}
+                            title="Reset to default position"
+                          >
+                            🔄 Reset
+                          </button>
+                          <button
+                            className="position-btn preset-btn"
+                            onClick={() => updateFloorOffset(currentFloor, 0, 400)}
+                            title="Move to bottom area"
+                          >
+                            📍 Bottom
+                          </button>
+                          <button
+                            className="position-btn preset-btn"
+                            onClick={() => updateFloorOffset(currentFloor, 500, 0)}
+                            title="Move to right side"
+                          >
+                            📍 Right
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  
-                  <div className="position-presets">
-                    <button
-                      className="position-btn preset-btn"
-                      onClick={() => resetFloorPosition(currentFloor)}
-                      title="Reset to default position"
-                    >
-                      🔄 Reset Position
-                    </button>
-                    <button
-                      className="position-btn preset-btn"
-                      onClick={() => updateFloorOffset(currentFloor, 0, 400)}
-                      title="Move to bottom area"
-                    >
-                      📍 Bottom Area
-                    </button>
-                    <button
-                      className="position-btn preset-btn"
-                      onClick={() => updateFloorOffset(currentFloor, 500, 0)}
-                      title="Move to right side"
-                    >
-                      📍 Right Side
-                    </button>
-                  </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -3566,6 +4013,7 @@ const HousePlanDrawer = ({
         </div>
       )}
     </div>
+    </>
   );
 };
 

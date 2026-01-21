@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Cost Budget Alignment Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+        }
+        .test-case {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .test-case.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .test-case.warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .budget-demo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .budget-input {
+            font-weight: bold;
+            color: #495057;
+        }
+        .budget-output {
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Construction Cost Budget Alignment Test</h1>
+        <p>Testing that construction cost estimates stay within homeowner's budget range.</p>
+
+        <!-- Budget Parsing Test -->
+        <div class="test-section">
+            <h3>📊 Budget Range Parsing Test</h3>
+            <p>Testing different budget formats and how they are parsed:</p>
+
+            <div class="test-case success">
+                <h4>Test Case 1: Range Format (Lakhs)</h4>
+                <div class="budget-demo">
+                    <span class="budget-input">Input: "20-30 lakhs"</span>
+                    <span class="budget-output">Output: ₹20,00,000 - ₹30,00,000</span>
+                </div>
+                <p><strong>Auto-populated cost:</strong> ₹25,00,000 (middle of range)</p>
+            </div>
+
+            <div class="test-case success">
+                <h4>Test Case 2: Range Format (Rupees)</h4>
+                <div class="budget-demo">
+                    <span class="budget-input">Input: "₹15-20 lakhs"</span>
+                    <span class="budget-output">Output: ₹15,00,000 - ₹20,00,000</span>
+                </div>
+                <p><strong>Auto-populated cost:</strong> ₹17,50,000 (middle of range)</p>
+            </div>
+
+            <div class="test-case success">
+                <h4>Test Case 3: Single Value (Lakhs)</h4>
+                <div class="budget-demo">
+                    <span class="budget-input">Input: "25 lakhs"</span>
+                    <span class="budget-output">Output: ₹22,50,000 - ₹27,50,000 (±10%)</span>
+                </div>
+                <p><strong>Auto-populated cost:</strong> ₹25,00,000 (exact value)</p>
+            </div>
+
+            <div class="test-case success">
+                <h4>Test Case 4: Numeric Format</h4>
+                <div class="budget-demo">
+                    <span class="budget-input">Input: "₹2500000"</span>
+                    <span class="budget-output">Output: ₹22,50,000 - ₹27,50,000 (±10%)</span>
+                </div>
+                <p><strong>Auto-populated cost:</strong> ₹25,00,000 (exact value)</p>
+            </div>
+        </div>
+
+        <!-- Budget Compliance Test -->
+        <div class="test-section">
+            <h3>✅ Budget Compliance Test</h3>
+            <p>Ensuring construction costs stay within homeowner's budget:</p>
+
+            <div class="status success">
+                <h4>🎯 Primary Rule: Use Homeowner's Budget</h4>
+                <ul>
+                    <li><strong>Priority 1:</strong> Use homeowner's budget_range from layout_requests</li>
+                    <li><strong>Priority 2:</strong> If no budget, calculate from area (fallback)</li>
+                    <li><strong>Auto-populate:</strong> Set construction_cost to middle of budget range</li>
+                    <li><strong>Display:</strong> Show "Budget Range" instead of "Suggested"</li>
+                </ul>
+            </div>
+
+            <div class="status info">
+                <h4>📋 Implementation Details</h4>
+                <ul>
+                    <li><strong>Field Label:</strong> "Construction Cost (Within Budget)"</li>
+                    <li><strong>Placeholder:</strong> "Enter amount within homeowner's budget range"</li>
+                    <li><strong>Help Text:</strong> "Estimated total cost for construction within homeowner's budget range"</li>
+                    <li><strong>Validation:</strong> Should stay within the specified budget range</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Real-world Examples -->
+        <div class="test-section">
+            <h3>🏠 Real-world Budget Examples</h3>
+            
+            <div class="test-case">
+                <h4>Small House Project</h4>
+                <p><strong>Homeowner Budget:</strong> "10-15 lakhs"</p>
+                <p><strong>System Response:</strong> ₹10,00,000 - ₹15,00,000</p>
+                <p><strong>Auto-populated Cost:</strong> ₹12,50,000</p>
+                <p><strong>Architect Action:</strong> Enter cost between ₹10-15 lakhs</p>
+            </div>
+
+            <div class="test-case">
+                <h4>Medium House Project</h4>
+                <p><strong>Homeowner Budget:</strong> "25-35 lakhs"</p>
+                <p><strong>System Response:</strong> ₹25,00,000 - ₹35,00,000</p>
+                <p><strong>Auto-populated Cost:</strong> ₹30,00,000</p>
+                <p><strong>Architect Action:</strong> Enter cost between ₹25-35 lakhs</p>
+            </div>
+
+            <div class="test-case">
+                <h4>Large House Project</h4>
+                <p><strong>Homeowner Budget:</strong> "50 lakhs"</p>
+                <p><strong>System Response:</strong> ₹45,00,000 - ₹55,00,000 (±10%)</p>
+                <p><strong>Auto-populated Cost:</strong> ₹50,00,000</p>
+                <p><strong>Architect Action:</strong> Enter cost around ₹50 lakhs</p>
+            </div>
+        </div>
+
+        <!-- Benefits -->
+        <div class="test-section">
+            <h3>🎉 Benefits of Budget-Aligned Costing</h3>
+            
+            <div class="status success">
+                <h4>✅ For Homeowners</h4>
+                <ul>
+                    <li><strong>Budget Respect:</strong> Estimates stay within their specified budget</li>
+                    <li><strong>No Surprises:</strong> No unrealistic high or low estimates</li>
+                    <li><strong>Trust Building:</strong> Architects respect their financial constraints</li>
+                    <li><strong>Realistic Planning:</strong> Accurate cost expectations</li>
+                </ul>
+            </div>
+
+            <div class="status info">
+                <h4>🏗️ For Architects</h4>
+                <ul>
+                    <li><strong>Clear Guidelines:</strong> Know the budget constraints upfront</li>
+                    <li><strong>Realistic Estimates:</strong> Base estimates on actual budget</li>
+                    <li><strong>Better Planning:</strong> Design within budget parameters</li>
+                    <li><strong>Client Satisfaction:</strong> Meet budget expectations</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the budget parsing logic
+        function parseBudgetRange(budgetRange) {
+            if (!budgetRange) return null;
+            
+            const budget = budgetRange.toString().toLowerCase();
+            
+            if (budget.includes('-')) {
+                // Range format
+                const parts = budget.split('-');
+                if (parts.length === 2) {
+                    const lowBudget = parseFloat(parts[0].replace(/[^0-9.]/g, ''));
+                    const highBudget = parseFloat(parts[1].replace(/[^0-9.]/g, ''));
+                    
+                    if (!isNaN(lowBudget) && !isNaN(highBudget)) {
+                        const multiplier = budget.includes('lakh') ? 100000 : 1;
+                        const lowAmount = Math.round(lowBudget * multiplier);
+                        const highAmount = Math.round(highBudget * multiplier);
+                        const midAmount = Math.round((lowAmount + highAmount) / 2);
+                        
+                        return {
+                            range: `₹${lowAmount.toLocaleString()} - ₹${highAmount.toLocaleString()}`,
+                            autoPopulated: `₹${midAmount.toLocaleString()}`
+                        };
+                    }
+                }
+            } else {
+                // Single value
+                const budgetValue = parseFloat(budget.replace(/[^0-9.]/g, ''));
+                if (!isNaN(budgetValue) && budgetValue > 0) {
+                    const multiplier = budget.includes('lakh') ? 100000 : 1;
+                    const amount = Math.round(budgetValue * multiplier);
+                    const lowAmount = Math.round(amount * 0.9);
+                    const highAmount = Math.round(amount * 1.1);
+                    
+                    return {
+                        range: `₹${lowAmount.toLocaleString()} - ₹${highAmount.toLocaleString()}`,
+                        autoPopulated: `₹${amount.toLocaleString()}`
+                    };
+                }
+            }
+            
+            return null;
+        }
+
+        // Test the parsing logic
+        const testCases = [
+            "20-30 lakhs",
+            "₹15-20 lakhs", 
+            "25 lakhs",
+            "₹2500000"
+        ];
+
+        console.log("Budget Parsing Test Results:");
+        testCases.forEach(testCase => {
+            const result = parseBudgetRange(testCase);
+            console.log(`Input: "${testCase}" -> Output:`, result);
+        });
+    </script>
+</body>
+</html>

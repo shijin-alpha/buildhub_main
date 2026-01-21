@@ -78,7 +78,7 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
   const fetchPaymentRequests = async () => {
     setPaymentsLoading(true);
     try {
-      const response = await fetch('/buildhub/backend/api/homeowner/get_payment_requests.php', {
+      const response = await fetch('/buildhub/backend/api/homeowner/get_all_payment_requests.php', {
         credentials: 'include'
       });
       const data = await response.json();
@@ -162,7 +162,13 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
 
   const respondToPaymentRequest = async (requestId, action, notes = '', rejectionReason = '') => {
     try {
-      const response = await fetch('/buildhub/backend/api/homeowner/respond_payment_request.php', {
+      // Determine which API to use based on the selected payment request type
+      const isCustomPayment = selectedPaymentRequest?.request_type === 'custom';
+      const apiEndpoint = isCustomPayment 
+        ? '/buildhub/backend/api/homeowner/respond_to_custom_payment.php'
+        : '/buildhub/backend/api/homeowner/respond_payment_request.php';
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -256,10 +262,28 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
   // Load data when component becomes active
   useEffect(() => {
     if (activeTab === 'progress' && isVisible) {
-      fetchProgressReports();
-      fetchPaymentRequests();
+      // First establish session, then fetch data
+      establishSession().then(() => {
+        fetchProgressReports();
+        fetchPaymentRequests();
+      });
     }
   }, [activeTab, isVisible]);
+
+  // Function to establish session for authentication
+  const establishSession = async () => {
+    try {
+      const response = await fetch('/buildhub/backend/api/homeowner/session_bridge.php', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      if (!data.success) {
+        console.warn('Session establishment failed:', data.message);
+      }
+    } catch (error) {
+      console.warn('Session establishment error:', error);
+    }
+  };
 
   // Handle escape key for modal
   useEffect(() => {
@@ -489,7 +513,25 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                           alignItems: 'center',
                           gap: '8px'
                         }}>
-                          🏗️ {request.stage_name} Stage
+                          {request.request_type === 'custom' ? (
+                            <>
+                              💰 {request.request_title}
+                              {request.urgency_level && (
+                                <span style={{
+                                  fontSize: '12px',
+                                  padding: '2px 6px',
+                                  borderRadius: '10px',
+                                  background: request.urgency_badge?.color || '#6c757d',
+                                  color: 'white',
+                                  marginLeft: '8px'
+                                }}>
+                                  {request.urgency_badge?.icon} {request.urgency_badge?.label}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <>🏗️ {request.stage_name || request.request_title} Stage</>
+                          )}
                         </h3>
                         <p style={{ 
                           margin: '0', 
@@ -498,6 +540,18 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                           fontWeight: '500'
                         }}>
                           {request.contractor_first_name} {request.contractor_last_name}
+                          {request.request_type === 'custom' && request.category && (
+                            <span style={{ 
+                              marginLeft: '8px', 
+                              padding: '2px 6px', 
+                              background: '#e3f2fd', 
+                              color: '#1976d2', 
+                              borderRadius: '8px', 
+                              fontSize: '11px' 
+                            }}>
+                              {request.category}
+                            </span>
+                          )}
                         </p>
                       </div>
                       {getPaymentStatusBadge(request.status)}
@@ -514,7 +568,11 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                         ₹{parseFloat(request.requested_amount).toLocaleString()}
                       </div>
                       <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                        {request.completion_percentage}% of {request.stage_name} stage completed
+                        {request.request_type === 'custom' ? (
+                          <>Custom payment request - {request.category || 'Additional work'}</>
+                        ) : (
+                          <>{request.completion_percentage}% of {request.stage_name || request.request_title} stage completed</>
+                        )}
                       </div>
                     </div>
 
@@ -537,7 +595,7 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                       </div>
                     </div>
 
-                    {request.work_description && (
+                    {(request.work_description || request.request_description) && (
                       <div className="work-description" style={{
                         background: '#f8f9fa',
                         padding: '12px',
@@ -546,10 +604,10 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                         fontSize: '14px',
                         lineHeight: '1.4'
                       }}>
-                        <strong>Work Description:</strong><br />
-                        {request.work_description.length > 100 ? 
-                          request.work_description.substring(0, 100) + '...' : 
-                          request.work_description}
+                        <strong>{request.request_type === 'custom' ? 'Request Reason:' : 'Work Description:'}</strong><br />
+                        {((request.work_description || request.request_description) || '').length > 100 ? 
+                          (request.work_description || request.request_description).substring(0, 100) + '...' : 
+                          (request.work_description || request.request_description)}
                       </div>
                     )}
 
@@ -695,7 +753,25 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                           alignItems: 'center',
                           gap: '8px'
                         }}>
-                          🏗️ {request.stage_name} Stage
+                          {request.request_type === 'custom' ? (
+                            <>
+                              💰 {request.request_title}
+                              {request.urgency_level && (
+                                <span style={{
+                                  fontSize: '12px',
+                                  padding: '2px 6px',
+                                  borderRadius: '10px',
+                                  background: request.urgency_badge?.color || '#6c757d',
+                                  color: 'white',
+                                  marginLeft: '8px'
+                                }}>
+                                  {request.urgency_badge?.icon} {request.urgency_badge?.label}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <>🏗️ {request.stage_name || request.request_title} Stage</>
+                          )}
                         </h3>
                         <p style={{ 
                           margin: '0', 
@@ -704,6 +780,18 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                           fontWeight: '500'
                         }}>
                           {request.contractor_first_name} {request.contractor_last_name}
+                          {request.request_type === 'custom' && request.category && (
+                            <span style={{ 
+                              marginLeft: '8px', 
+                              padding: '2px 6px', 
+                              background: '#e3f2fd', 
+                              color: '#1976d2', 
+                              borderRadius: '8px', 
+                              fontSize: '11px' 
+                            }}>
+                              {request.category}
+                            </span>
+                          )}
                         </p>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
@@ -740,7 +828,11 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                         ₹{parseFloat(request.requested_amount).toLocaleString()}
                       </div>
                       <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                        {request.completion_percentage}% of {request.stage_name} stage completed
+                        {request.request_type === 'custom' ? (
+                          <>Custom payment request - {request.category || 'Additional work'}</>
+                        ) : (
+                          <>{request.completion_percentage}% of {request.stage_name || request.request_title} stage completed</>
+                        )}
                       </div>
                     </div>
 
@@ -1086,10 +1178,21 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
             }}>
               <div>
                 <h2 style={{ margin: '0 0 8px 0' }}>
-                  💰 Payment Request: {selectedPaymentRequest.stage_name} Stage
+                  💰 Payment Request: {selectedPaymentRequest.request_type === 'custom' ? selectedPaymentRequest.request_title : `${selectedPaymentRequest.stage_name || selectedPaymentRequest.request_title} Stage`}
                 </h2>
                 <p style={{ margin: '0', opacity: '0.9' }}>
                   Requested by {selectedPaymentRequest.contractor_first_name} {selectedPaymentRequest.contractor_last_name} on {formatDate(selectedPaymentRequest.request_date)}
+                  {selectedPaymentRequest.request_type === 'custom' && selectedPaymentRequest.category && (
+                    <span style={{ 
+                      marginLeft: '8px', 
+                      padding: '2px 6px', 
+                      background: 'rgba(255,255,255,0.2)', 
+                      borderRadius: '8px', 
+                      fontSize: '12px' 
+                    }}>
+                      {selectedPaymentRequest.category}
+                    </span>
+                  )}
                 </p>
               </div>
               <button 
@@ -1134,7 +1237,11 @@ const HomeownerProgressReports = ({ activeTab, isVisible = true }) => {
                   ₹{parseFloat(selectedPaymentRequest.requested_amount).toLocaleString()}
                 </div>
                 <div style={{ fontSize: '16px', color: '#6c757d', marginBottom: '12px' }}>
-                  {selectedPaymentRequest.completion_percentage}% of {selectedPaymentRequest.stage_name} stage completed
+                  {selectedPaymentRequest.request_type === 'custom' ? (
+                    <>Custom payment request - {selectedPaymentRequest.category || 'Additional work'}</>
+                  ) : (
+                    <>{selectedPaymentRequest.completion_percentage}% of {selectedPaymentRequest.stage_name || selectedPaymentRequest.request_title} stage completed</>
+                  )}
                 </div>
                 {getPaymentStatusBadge(selectedPaymentRequest.status)}
               </div>

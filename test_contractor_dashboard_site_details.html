@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Contractor Dashboard Site Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0369a1;
+            background: #f0f9ff;
+            border: 1px solid #7dd3fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .warning {
+            color: #d97706;
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Test Contractor Dashboard Site Details</h1>
+    
+    <div class="success">
+        <h3>✅ Site Details Implementation Complete!</h3>
+        <p>The contractor dashboard estimation form has been enhanced with site details auto-population.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Changes Made to ContractorDashboard.jsx</h2>
+        
+        <h3>1. Auto-populated Fields in Basic Project Information:</h3>
+        <ul>
+            <li><strong>📍 Project Address:</strong> Auto-populated from <code>layout_request_details.location</code></li>
+            <li><strong>📐 Plot Size:</strong> Auto-populated from <code>plot_size</code> or <code>layout_request_details.plot_size</code></li>
+            <li><strong>🏠 Built-up Area:</strong> Auto-populated from <code>building_size</code> or <code>layout_request_details.building_size</code></li>
+            <li><strong>🏢 Number of Floors:</strong> Auto-populated from <code>num_floors</code> or <code>layout_request_details.num_floors</code></li>
+        </ul>
+        
+        <h3>2. Visual Indicators:</h3>
+        <ul>
+            <li><strong>Green highlighting:</strong> Auto-populated fields have green background and border</li>
+            <li><strong>Site Details Preview:</strong> New section showing available site details before the form</li>
+            <li><strong>Auto-populated badge:</strong> Visual indicator showing fields are pre-filled</li>
+        </ul>
+        
+        <h3>3. Site Details Preview Section:</h3>
+        <ul>
+            <li><strong>📐 Plot Size</strong></li>
+            <li><strong>🏠 Building Size</strong></li>
+            <li><strong>💰 Budget Range</strong></li>
+            <li><strong>⏱️ Timeline</strong></li>
+            <li><strong>🏢 Number of Floors</strong></li>
+            <li><strong>📍 Location</strong></li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 How to Test in Contractor Dashboard</h2>
+        
+        <div class="info">
+            <h3>Step-by-Step Testing:</h3>
+            <ol>
+                <li><strong>Login as Contractor:</strong> Use contractor ID 37</li>
+                <li><strong>Go to Inbox:</strong> Check for layout requests from homeowners</li>
+                <li><strong>Find the Test Item:</strong> Look for the layout send we created (ID: 24) with site details</li>
+                <li><strong>Expand "Create Estimate":</strong> Click the dropdown to open the estimation form</li>
+                <li><strong>Check Site Details Preview:</strong> You should see a green section showing available site details</li>
+                <li><strong>Check Basic Information Fields:</strong> Plot Size and Built-up Area should be pre-filled with green highlighting</li>
+            </ol>
+        </div>
+        
+        <div class="warning">
+            <h3>Expected Results:</h3>
+            <ul>
+                <li><strong>Site Details Preview:</strong> Green section showing "📐 Plot Size: 2000 sq ft", "🏠 Building Size: 1800 sq ft", etc.</li>
+                <li><strong>Plot Size Field:</strong> Pre-filled with "2000 sq ft" and green highlighting</li>
+                <li><strong>Built-up Area Field:</strong> Pre-filled with "1800 sq ft" and green highlighting</li>
+                <li><strong>Number of Floors:</strong> Pre-selected as "2" with green highlighting</li>
+                <li><strong>Project Address:</strong> Pre-filled with "Mumbai, Maharashtra"</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Next Steps</h2>
+        
+        <div class="info">
+            <h3>If Site Details Don't Appear:</h3>
+            <ol>
+                <li><strong>Check Data:</strong> Run <code>php check_technical_details_site_data.php</code> to verify data exists</li>
+                <li><strong>Refresh Browser:</strong> Clear cache and refresh the contractor dashboard</li>
+                <li><strong>Check Console:</strong> Look for any JavaScript errors in browser console</li>
+                <li><strong>Verify Inbox Item:</strong> Make sure you're looking at the correct inbox item with site details</li>
+            </ol>
+        </div>
+        
+        <div class="success">
+            <h3>✅ Implementation Summary:</h3>
+            <p>The contractor estimation form now automatically populates site details from the homeowner's layout request, eliminating manual data entry and ensuring accurate estimates based on the actual project requirements.</p>
+        </div>
+    </div>
+</body>
+</html>

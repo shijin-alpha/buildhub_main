@@ -101,6 +101,7 @@ try {
     $technical_details = null;
     $layout_plot_size = null;
     $layout_building_size = null;
+    $layout_request_details = null;
     
     if ($layout_id) {
         try {
@@ -132,14 +133,50 @@ try {
         }
     }
     
+    // Get layout request details if homeowner_id is available
+    if ($homeowner_id) {
+        try {
+            $layoutRequestStmt = $db->prepare("
+                SELECT 
+                    plot_size, building_size, budget_range, location, timeline, 
+                    num_floors, orientation, site_considerations, material_preferences,
+                    budget_allocation, preferred_style, requirements
+                FROM layout_requests 
+                WHERE homeowner_id = :homeowner_id 
+                AND status NOT IN ('deleted', 'rejected')
+                ORDER BY created_at DESC 
+                LIMIT 1
+            ");
+            $layoutRequestStmt->bindValue(':homeowner_id', $homeowner_id, PDO::PARAM_INT);
+            $layoutRequestStmt->execute();
+            $layoutRequestRow = $layoutRequestStmt->fetch(PDO::FETCH_ASSOC);
+            if ($layoutRequestRow) {
+                $layout_request_details = $layoutRequestRow;
+                // Parse requirements if it's JSON
+                if (!empty($layoutRequestRow['requirements'])) {
+                    try {
+                        $parsed_requirements = json_decode($layoutRequestRow['requirements'], true);
+                        if (is_array($parsed_requirements)) {
+                            $layout_request_details['parsed_requirements'] = $parsed_requirements;
+                        }
+                    } catch (Throwable $e) {
+                        // Keep original requirements if JSON parsing fails
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            error_log("Failed to get layout request details: " . $e->getMessage());
+        }
+    }
+    
     // Also try to get technical details from forwarded design
     if (!$technical_details && $forwarded_design && isset($forwarded_design['technical_details'])) {
         $technical_details = $forwarded_design['technical_details'];
     }
     
-    // Use layout values if provided, otherwise use passed values
-    $final_plot_size = $layout_plot_size ?: $plot_size;
-    $final_building_size = $layout_building_size ?: $building_size;
+    // Use layout request values first, then layout values, then passed values
+    $final_plot_size = ($layout_request_details['plot_size'] ?? null) ?: $layout_plot_size ?: $plot_size;
+    $final_building_size = ($layout_request_details['building_size'] ?? null) ?: $layout_building_size ?: $building_size;
 
     $payload = [
         'layout_id' => $layout_id ?: null,
@@ -151,6 +188,7 @@ try {
         'technical_details' => $technical_details,
         'plot_size' => $final_plot_size ?: null,
         'building_size' => $final_building_size ?: null,
+        'layout_request_details' => $layout_request_details,
     ];
 
     $ins = $db->prepare("INSERT INTO contractor_layout_sends (contractor_id, homeowner_id, layout_id, design_id, message, payload) VALUES (:cid, :hid, :lid, :did, :msg, :payload)");

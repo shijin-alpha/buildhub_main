@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from './ToastProvider.jsx';
 import ProjectInfoCard from './ProjectInfoCard.jsx';
+import PaymentReceiptViewer from './PaymentReceiptViewer.jsx';
 import '../styles/PaymentHistory.css';
 
 const PaymentHistory = ({ contractorId }) => {
@@ -14,7 +15,6 @@ const PaymentHistory = ({ contractorId }) => {
   const [verifyingPayment, setVerifyingPayment] = useState(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [selectedPaymentForVerify, setSelectedPaymentForVerify] = useState(null);
-  const [verificationNotes, setVerificationNotes] = useState('');
   const [summary, setSummary] = useState({
     total_requests: 0,
     total_requested: 0,
@@ -141,87 +141,63 @@ const PaymentHistory = ({ contractorId }) => {
     });
   };
 
-  const handleUploadReceipt = (request) => {
-    // Create a modal or redirect to upload receipt page
-    toast.info(`Upload receipt for ${request.stage_name} stage payment of ${formatCurrency(request.approved_amount || request.requested_amount)}`);
-    
-    // You can implement one of these approaches:
-    // 1. Open a modal for receipt upload
-    // 2. Navigate to a dedicated upload page
-    // 3. Show an inline upload form
-    
-    // For now, we'll show a simple alert - you can replace this with your preferred implementation
-    const uploadUrl = `/buildhub/upload-receipt?payment_id=${request.id}&stage=${request.stage_name}&amount=${request.approved_amount || request.requested_amount}`;
-    
-    // Option 1: Open in new tab/window
-    window.open(uploadUrl, '_blank');
-    
-    // Option 2: Navigate in same window (uncomment if preferred)
-    // window.location.href = uploadUrl;
-    
-    // Option 3: You could also trigger a modal here
-    // setShowUploadModal(true);
-    // setSelectedPaymentForUpload(request);
+  const handleReceiptView = (request) => {
+    // Open receipt viewer for contractor to see homeowner's uploaded receipt
+    setSelectedPaymentForVerify(request);
+    setShowVerifyModal(true);
   };
 
-  const handleVerifyPayment = async (paymentId, verificationStatus) => {
-    try {
-      setVerifyingPayment(paymentId);
-      
-      console.log('Verifying payment:', { paymentId, verificationStatus, notes: verificationNotes });
-      
-      const response = await fetch('/buildhub/backend/api/contractor/verify_payment_receipt.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          payment_id: paymentId,
-          verification_status: verificationStatus,
-          verification_notes: verificationNotes
-        })
-      });
-      
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Non-JSON response:', text);
-        throw new Error('Server returned an error. Please check if you are logged in and try again.');
-      }
-      
-      const data = await response.json();
-      console.log('Response data:', data);
-      
-      if (data.success) {
-        toast.success(data.message);
-        // Reload payment history to show updated status
-        await loadPaymentHistory();
-        // Close modal and reset
-        setShowVerifyModal(false);
-        setSelectedPaymentForVerify(null);
-        setVerificationNotes('');
-      } else {
-        console.error('Verification failed:', data.message);
-        toast.error(data.message || 'Failed to verify payment');
-      }
-    } catch (error) {
-      console.error('Error verifying payment:', error);
-      toast.error(error.message || 'Failed to verify payment. Please try again.');
-    } finally {
-      setVerifyingPayment(null);
+  const handleVerifyPayment = async (paymentId, notes) => {
+    const response = await fetch('/buildhub/backend/api/contractor/verify_payment_receipt.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        payment_id: paymentId,
+        verification_status: 'verified',
+        verification_notes: notes
+      })
+    });
+    
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+    
+    // Reload payment history
+    if (selectedProject) {
+      loadPaymentHistory();
     }
   };
 
-  const openVerifyModal = (request, status) => {
-    setSelectedPaymentForVerify({ ...request, verificationStatus: status });
-    setVerificationNotes('');
-    setShowVerifyModal(true);
+  const handleRejectPayment = async (paymentId, notes) => {
+    const response = await fetch('/buildhub/backend/api/contractor/verify_payment_receipt.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        payment_id: paymentId,
+        verification_status: 'rejected',
+        verification_notes: notes
+      })
+    });
+    
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+    
+    // Reload payment history
+    if (selectedProject) {
+      loadPaymentHistory();
+    }
   };
+
+
 
   const selectedProjectInfo = projects.find(p => p.id == selectedProject);
 
@@ -532,27 +508,26 @@ const PaymentHistory = ({ contractorId }) => {
                           {/* Verification Actions for Pending Receipts */}
                           {request.verification_status === 'pending' && (
                             <div className="verification-actions">
-                              <button
-                                className="btn btn-verify"
-                                onClick={() => openVerifyModal(request, 'verified')}
-                                disabled={verifyingPayment === request.id}
-                              >
-                                ✅ Verify Payment
-                              </button>
-                              <button
-                                className="btn btn-reject"
-                                onClick={() => openVerifyModal(request, 'rejected')}
-                                disabled={verifyingPayment === request.id}
-                              >
-                                ❌ Request Correction
-                              </button>
+                              <div className="verification-header">
+                                <h6>🔍 Contractor Verification Required</h6>
+                                <p>Review the homeowner's payment receipt and verify the payment details.</p>
+                              </div>
+                              <div className="verification-buttons">
+                                <button
+                                  className="btn btn-view-receipt"
+                                  onClick={() => handleReceiptView(request)}
+                                  disabled={verifyingPayment === request.id}
+                                >
+                                  👁️ View & Verify Receipt
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
                       </div>
                     )}
 
-                    {/* Receipt Upload Status for Approved Payments */}
+                    {/* Receipt Status for Approved Payments */}
                     {request.status === 'approved' && !request.receipt_file_path && (
                       <div className="receipt-pending">
                         <div className="receipt-pending-message">
@@ -560,15 +535,8 @@ const PaymentHistory = ({ contractorId }) => {
                           <div className="pending-text">
                             <strong>Awaiting Payment Receipt</strong>
                             <p>Homeowner needs to upload payment receipt for verification</p>
+                            <p className="instruction-text">The homeowner will upload the payment receipt through their dashboard. You will be notified when it's ready for verification.</p>
                           </div>
-                        </div>
-                        <div className="receipt-upload-action">
-                          <button 
-                            className="btn btn-upload-receipt"
-                            onClick={() => handleUploadReceipt(request)}
-                          >
-                            📤 Upload Receipt
-                          </button>
                         </div>
                       </div>
                     )}
@@ -616,78 +584,17 @@ const PaymentHistory = ({ contractorId }) => {
         </div>
       )}
 
-      {/* Verification Modal */}
-      {showVerifyModal && selectedPaymentForVerify && (
-        <div className="modal-overlay" onClick={() => setShowVerifyModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>
-                {selectedPaymentForVerify.verificationStatus === 'verified' 
-                  ? '✅ Verify Payment Receipt' 
-                  : '❌ Request Receipt Correction'}
-              </h3>
-              <button 
-                className="modal-close"
-                onClick={() => setShowVerifyModal(false)}
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="modal-body">
-              <div className="payment-summary-modal">
-                <h4>Payment Details:</h4>
-                <p><strong>Stage:</strong> {selectedPaymentForVerify.stage_name}</p>
-                <p><strong>Amount:</strong> {formatCurrency(selectedPaymentForVerify.approved_amount || selectedPaymentForVerify.requested_amount)}</p>
-                <p><strong>Payment Method:</strong> {selectedPaymentForVerify.payment_method || 'Not specified'}</p>
-                {selectedPaymentForVerify.transaction_reference && (
-                  <p><strong>Transaction Ref:</strong> {selectedPaymentForVerify.transaction_reference}</p>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="verification-notes">
-                  {selectedPaymentForVerify.verificationStatus === 'verified' 
-                    ? 'Verification Notes (Optional):' 
-                    : 'Reason for Correction Request:'}
-                </label>
-                <textarea
-                  id="verification-notes"
-                  value={verificationNotes}
-                  onChange={(e) => setVerificationNotes(e.target.value)}
-                  placeholder={selectedPaymentForVerify.verificationStatus === 'verified' 
-                    ? 'Add any notes about the verification...' 
-                    : 'Please explain what needs to be corrected...'}
-                  rows="4"
-                  className="verification-notes-input"
-                />
-              </div>
-
-              {selectedPaymentForVerify.verificationStatus === 'rejected' && !verificationNotes && (
-                <p className="warning-text">⚠️ Please provide a reason for requesting correction</p>
-              )}
-            </div>
-
-            <div className="modal-footer">
-              <button
-                className="btn btn-cancel"
-                onClick={() => setShowVerifyModal(false)}
-                disabled={verifyingPayment === selectedPaymentForVerify.id}
-              >
-                Cancel
-              </button>
-              <button
-                className={`btn ${selectedPaymentForVerify.verificationStatus === 'verified' ? 'btn-verify' : 'btn-reject'}`}
-                onClick={() => handleVerifyPayment(selectedPaymentForVerify.id, selectedPaymentForVerify.verificationStatus)}
-                disabled={verifyingPayment === selectedPaymentForVerify.id || (selectedPaymentForVerify.verificationStatus === 'rejected' && !verificationNotes)}
-              >
-                {verifyingPayment === selectedPaymentForVerify.id ? '⏳ Processing...' : 
-                  selectedPaymentForVerify.verificationStatus === 'verified' ? '✅ Confirm Verification' : '❌ Request Correction'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Payment Receipt Viewer Modal */}
+      <PaymentReceiptViewer
+        show={showVerifyModal}
+        paymentRequest={selectedPaymentForVerify}
+        onVerify={handleVerifyPayment}
+        onReject={handleRejectPayment}
+        onClose={() => {
+          setShowVerifyModal(false);
+          setSelectedPaymentForVerify(null);
+        }}
+      />
     </div>
   );
 };

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complete Payment Approval Flow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 3px; margin: 10px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Complete Payment Approval Flow Test</h1>
+    <p>This test will simulate the complete flow of approving a custom payment request.</p>
+    
+    <button onclick="runCompleteTest()">🚀 Run Complete Test</button>
+    <button onclick="clearResults()">🗑️ Clear Results</button>
+    
+    <div id="results"></div>
+    
+    <script>
+    let resultsDiv;
+    
+    function clearResults() {
+        document.getElementById('results').innerHTML = '';
+    }
+    
+    function log(message, type = 'info') {
+        if (!resultsDiv) resultsDiv = document.getElementById('results');
+        const div = document.createElement('div');
+        div.className = `step ${type}`;
+        div.innerHTML = message;
+        resultsDiv.appendChild(div);
+        console.log(message.replace(/<[^>]*>/g, ''));
+    }
+    
+    async function runCompleteTest() {
+        clearResults();
+        resultsDiv = document.getElementById('results');
+        
+        try {
+            // Step 1: Establish Session
+            log('<h3>Step 1: Establishing Session</h3>', 'info');
+            
+            const sessionResponse = await fetch('/buildhub/backend/api/homeowner/session_bridge.php', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            const sessionData = await sessionResponse.json();
+            
+            if (sessionData.success) {
+                log(`✅ Session established for ${sessionData.user.first_name} ${sessionData.user.last_name} (ID: ${sessionData.user.id})`, 'success');
+            } else {
+                log(`❌ Session establishment failed: ${sessionData.message}`, 'error');
+                return;
+            }
+            
+            // Step 2: Fetch Payment Requests
+            log('<h3>Step 2: Fetching Payment Requests</h3>', 'info');
+            
+            const fetchResponse = await fetch('/buildhub/backend/api/homeowner/get_all_payment_requests.php', {
+                credentials: 'include'
+            });
+            
+            const fetchData = await fetchResponse.json();
+            
+            if (!fetchData.success) {
+                log(`❌ Failed to fetch payment requests: ${fetchData.message}`, 'error');
+                return;
+            }
+            
+            log(`✅ Found ${fetchData.data.requests.length} payment requests`, 'success');
+            
+            // Display all requests
+            let requestsHtml = '<div class="log"><strong>Payment Requests:</strong><br>';
+            fetchData.data.requests.forEach(request => {
+                const icon = request.request_type === 'custom' ? '💰' : '🏗️';
+                requestsHtml += `${icon} ID: ${request.id}, Type: ${request.request_type}, Title: ${request.request_title}, Amount: ₹${request.requested_amount}, Status: ${request.status}<br>`;
+            });
+            requestsHtml += '</div>';
+            log(requestsHtml, 'info');
+            
+            // Step 3: Find Custom Payment Request
+            log('<h3>Step 3: Finding Custom Payment Request</h3>', 'info');
+            
+            const customRequest = fetchData.data.requests.find(r => r.request_type === 'custom' && r.status === 'pending');
+            
+            if (!customRequest) {
+                log('❌ No pending custom payment request found', 'error');
+                
+                // Check if there are any custom requests at all
+                const allCustom = fetchData.data.requests.filter(r => r.request_type === 'custom');
+                if (allCustom.length > 0) {
+                    log(`Found ${allCustom.length} custom request(s) but none are pending:`, 'info');
+                    allCustom.forEach(req => {
+                        log(`- ID: ${req.id}, Status: ${req.status}, Title: ${req.request_title}`, 'info');
+                    });
+                }
+                return;
+            }
+            
+            log(`✅ Found pending custom payment request: ID ${customRequest.id}, Title: "${customRequest.request_title}", Amount: ₹${customRequest.requested_amount}`, 'success');
+            
+            // Step 4: Approve the Custom Payment Request
+            log('<h3>Step 4: Approving Custom Payment Request</h3>', 'info');
+            
+            const isCustomPayment = customRequest.request_type === 'custom';
+            const apiEndpoint = isCustomPayment 
+                ? '/buildhub/backend/api/homeowner/respond_to_custom_payment.php'
+                : '/buildhub/backend/api/homeowner/respond_payment_request.php';
+            
+            log(`Using API endpoint: ${apiEndpoint}`, 'info');
+            log(`Request Type: ${customRequest.request_type} (isCustomPayment: ${isCustomPayment})`, 'info');
+            
+            const approvalPayload = {
+                request_id: customRequest.id,
+                action: 'approve',
+                homeowner_notes: 'Approved via complete flow test',
+                approved_amount: customRequest.requested_amount
+            };
+            
+            log(`<div class="log">Approval Payload: ${JSON.stringify(approvalPayload, null, 2)}</div>`, 'info');
+            
+            const approvalResponse = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(approvalPayload)
+            });
+            
+            const approvalData = await approvalResponse.json();
+            
+            if (approvalData.success) {
+                log(`✅ SUCCESS: ${approvalData.message}`, 'success');
+                log(`New Status: ${approvalData.data.status}`, 'success');
+                log(`Approved Amount: ₹${approvalData.data.approved_amount}`, 'success');
+                log(`Contractor: ${approvalData.data.contractor_name}`, 'success');
+            } else {
+                log(`❌ APPROVAL FAILED: ${approvalData.message}`, 'error');
+                log(`<div class="log">Full Response: ${JSON.stringify(approvalData, null, 2)}</div>`, 'error');
+            }
+            
+            // Step 5: Verify the Change
+            log('<h3>Step 5: Verifying the Change</h3>', 'info');
+            
+            const verifyResponse = await fetch('/buildhub/backend/api/homeowner/get_all_payment_requests.php', {
+                credentials: 'include'
+            });
+            
+            const verifyData = await verifyResponse.json();
+            
+            if (verifyData.success) {
+                const updatedRequest = verifyData.data.requests.find(r => r.id === customRequest.id);
+                if (updatedRequest) {
+                    log(`✅ Request updated successfully: Status is now "${updatedRequest.status}"`, 'success');
+                    if (updatedRequest.status === 'approved') {
+                        log('🎉 COMPLETE SUCCESS: Custom payment request has been approved!', 'success');
+                    }
+                } else {
+                    log('❌ Could not find the updated request', 'error');
+                }
+            } else {
+                log(`❌ Failed to verify changes: ${verifyData.message}`, 'error');
+            }
+            
+        } catch (error) {
+            log(`❌ Unexpected error: ${error.message}`, 'error');
+            console.error('Complete test error:', error);
+        }
+    }
+    </script>
+</body>
+</html>

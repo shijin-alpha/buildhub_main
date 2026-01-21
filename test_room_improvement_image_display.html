@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Improvement Image Display Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .image-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .image-info {
+            padding: 1rem;
+        }
+        
+        .image-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #374151;
+        }
+        
+        .image-info p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-success {
+            background: #10b981;
+        }
+        
+        .status-error {
+            background: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Room Improvement Image Display Test</h1>
+        <p>Test the room improvement image storage and display functionality.</p>
+        
+        <div class="test-section">
+            <h3>🔧 Fix Image Locations</h3>
+            <p>Move existing room improvement images to the correct directory and update database URLs.</p>
+            <button class="btn" onclick="fixImageLocations()">Fix Image Locations</button>
+            <div id="fix-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Test Analysis History</h3>
+            <p>Load room improvement analyses and check if images are accessible.</p>
+            <button class="btn" onclick="testAnalysisHistory()">Load Analysis History</button>
+            <div id="history-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🖼️ Image Accessibility Test</h3>
+            <p>Test direct access to room improvement images.</p>
+            <button class="btn" onclick="testImageAccess()">Test Image Access</button>
+            <div id="access-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎨 Generate New Test Image</h3>
+            <p>Create a new room improvement analysis to test the updated image generation.</p>
+            <button class="btn" onclick="generateTestAnalysis()">Generate Test Analysis</button>
+            <div id="generate-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📸 Image Gallery</h3>
+            <p>Display all accessible room improvement images.</p>
+            <button class="btn btn-secondary" onclick="showImageGallery()">Show Image Gallery</button>
+            <div id="gallery-result"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function fixImageLocations() {
+            try {
+                showResult('fix-result', 'Running image location fix...', 'info');
+                
+                const response = await fetch('/buildhub/fix_room_improvement_images.php', {
+                    method: 'GET'
+                });
+                
+                const text = await response.text();
+                
+                if (response.ok) {
+                    showResult('fix-result', `✅ Image fix completed!\n\n${text}`, 'success');
+                } else {
+                    showResult('fix-result', `❌ Fix failed: ${text}`, 'error');
+                }
+            } catch (error) {
+                showResult('fix-result', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAnalysisHistory() {
+            try {
+                showResult('history-result', 'Loading analysis history...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=10', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let message = `✅ Found ${data.data.analyses.length} analyses:\n\n`;
+                    
+                    for (const analysis of data.data.analyses) {
+                        const hasImage = analysis.analysis_result?.ai_enhancements?.conceptual_visualization?.image_url;
+                        const imageStatus = hasImage ? '🖼️ Has Image' : '❌ No Image';
+                        
+                        message += `ID: ${analysis.id} | Room: ${analysis.room_type} | ${imageStatus}\n`;
+                        
+                        if (hasImage) {
+                            message += `   Image URL: ${hasImage}\n`;
+                            
+                            // Test image accessibility
+                            try {
+                                const imgResponse = await fetch(hasImage, { method: 'HEAD' });
+                                const accessStatus = imgResponse.ok ? '✅ Accessible' : '❌ Not Found';
+                                message += `   Status: ${accessStatus}\n`;
+                            } catch {
+                                message += `   Status: ❌ Network Error\n`;
+                            }
+                        }
+                        message += '\n';
+                    }
+                    
+                    showResult('history-result', message, 'success');
+                } else {
+                    showResult('history-result', `❌ API Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('history-result', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testImageAccess() {
+            try {
+                showResult('access-result', 'Testing image access...', 'info');
+                
+                // Test both directories
+                const testUrls = [
+                    '/buildhub/uploads/room_improvements/',
+                    '/buildhub/uploads/conceptual_images/'
+                ];
+                
+                let message = '';
+                
+                for (const baseUrl of testUrls) {
+                    message += `Testing directory: ${baseUrl}\n`;
+                    
+                    // Try to access some common image patterns
+                    const testPatterns = [
+                        'real_ai_bedroom_',
+                        'real_ai_living_room_',
+                        'real_ai_kitchen_'
+                    ];
+                    
+                    for (const pattern of testPatterns) {
+                        // Generate a test filename (this is just for testing URL construction)
+                        const testFilename = `${pattern}20260119_000000.png`;
+                        const testUrl = baseUrl + testFilename;
+                        
+                        try {
+                            const response = await fetch(testUrl, { method: 'HEAD' });
+                            if (response.ok) {
+                                message += `   ✅ Found: ${testFilename}\n`;
+                            }
+                        } catch {
+                            // Ignore errors for test URLs
+                        }
+                    }
+                }
+                
+                // Also test actual files from the analysis history
+                const historyResponse = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=5', {
+                    credentials: 'include'
+                });
+                
+                if (historyResponse.ok) {
+                    const historyData = await historyResponse.json();
+                    if (historyData.success) {
+                        message += '\nTesting actual analysis images:\n';
+                        
+                        for (const analysis of historyData.data.analyses) {
+                            const imageUrl = analysis.analysis_result?.ai_enhancements?.conceptual_visualization?.image_url;
+                            if (imageUrl) {
+                                try {
+                                    const imgResponse = await fetch(imageUrl, { method: 'HEAD' });
+                                    const status = imgResponse.ok ? '✅ Accessible' : '❌ Not Found';
+                                    message += `   ${status}: ${imageUrl}\n`;
+                                } catch {
+                                    message += `   ❌ Network Error: ${imageUrl}\n`;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                showResult('access-result', message || 'No images found to test', 'info');
+                
+            } catch (error) {
+                showResult('access-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateTestAnalysis() {
+            try {
+                showResult('generate-result', 'Creating test room analysis...', 'info');
+                
+                // Create a test image
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 300;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw a simple room
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, 400, 300);
+                
+                ctx.fillStyle = '#8b4513';
+                ctx.fillRect(0, 250, 400, 50); // Floor
+                
+                ctx.fillStyle = '#87ceeb';
+                ctx.fillRect(0, 0, 400, 250); // Wall
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '20px Arial';
+                ctx.fillText('Test Bedroom', 150, 150);
+                
+                // Convert to blob
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                
+                // Create form data
+                const formData = new FormData();
+                formData.append('room_type', 'bedroom');
+                formData.append('improvement_notes', 'Test room improvement for image display verification');
+                formData.append('room_image', blob, 'test_room.jpg');
+                
+                // Submit analysis
+                const response = await fetch('/buildhub/backend/api/homeowner/analyze_room_improvement.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let message = `✅ Test analysis created successfully!\n\n`;
+                    message += `Analysis ID: ${data.analysis_id}\n`;
+                    message += `Concept: ${data.analysis.concept_name}\n`;
+                    
+                    const imageUrl = data.analysis.ai_enhancements?.conceptual_visualization?.image_url;
+                    if (imageUrl) {
+                        message += `Image URL: ${imageUrl}\n`;
+                        
+                        // Test image accessibility
+                        try {
+                            const imgResponse = await fetch(imageUrl, { method: 'HEAD' });
+                            const status = imgResponse.ok ? '✅ Image Accessible' : '❌ Image Not Found';
+                            message += `Image Status: ${status}\n`;
+                        } catch {
+                            message += `Image Status: ❌ Network Error\n`;
+                        }
+                    } else {
+                        message += `Image: ❌ No image URL returned\n`;
+                    }
+                    
+                    showResult('generate-result', message, 'success');
+                } else {
+                    showResult('generate-result', `❌ Analysis failed: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('generate-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function showImageGallery() {
+            try {
+                showResult('gallery-result', 'Loading image gallery...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_room_improvement_history.php?limit=20', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let galleryHtml = '<div class="image-grid">';
+                    
+                    for (const analysis of data.data.analyses) {
+                        const imageUrl = analysis.analysis_result?.ai_enhancements?.conceptual_visualization?.image_url;
+                        
+                        if (imageUrl) {
+                            galleryHtml += `
+                                <div class="image-card">
+                                    <img src="${imageUrl}" alt="Room Analysis ${analysis.id}" 
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div style="display:none; padding: 2rem; text-align: center; color: #6b7280;">
+                                        <span class="status-indicator status-error"></span>
+                                        Image not accessible
+                                    </div>
+                                    <div class="image-info">
+                                        <h4>
+                                            <span class="status-indicator status-success"></span>
+                                            ${analysis.analysis_result?.concept_name || 'Room Analysis'}
+                                        </h4>
+                                        <p><strong>Room:</strong> ${analysis.room_type}</p>
+                                        <p><strong>Created:</strong> ${new Date(analysis.created_at).toLocaleDateString()}</p>
+                                        <p><strong>ID:</strong> ${analysis.id}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    galleryHtml += '</div>';
+                    
+                    if (galleryHtml === '<div class="image-grid"></div>') {
+                        galleryHtml = '<p>No images found in analysis history.</p>';
+                    }
+                    
+                    document.getElementById('gallery-result').innerHTML = galleryHtml;
+                } else {
+                    showResult('gallery-result', `❌ Failed to load gallery: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('gallery-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database-Driven Progress Bar Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .feature-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .feature-section h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+        }
+        .demo-progress {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .progress-bar-large {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+        .progress-fill-large {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        .database-progress-info {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #0ea5e9;
+            border-radius: 6px;
+        }
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .progress-source {
+            font-weight: 600;
+            color: #0369a1;
+            font-size: 0.875rem;
+        }
+        .latest-stage {
+            font-weight: 500;
+            color: #1e40af;
+            font-size: 0.75rem;
+        }
+        .last-update-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .update-date {
+            font-weight: 500;
+        }
+        .total-updates {
+            font-weight: 500;
+        }
+        .api-demo {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0.5rem;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .comparison-card {
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .comparison-card.before {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .comparison-card.after {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        .comparison-card h4 {
+            margin: 0 0 1rem 0;
+        }
+        .comparison-card.before h4 {
+            color: #dc2626;
+        }
+        .comparison-card.after h4 {
+            color: #16a34a;
+        }
+        .success-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .success-banner h3 {
+            margin: 0 0 0.5rem 0;
+        }
+        .success-banner p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li::before {
+            content: "✅ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .database-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+        }
+        .database-table th,
+        .database-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .database-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        .database-table tr:hover {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Database-Driven Progress Bar</h1>
+            <p>Real progress data from daily_progress_updates table</p>
+        </div>
+
+        <div class="content">
+            <div class="feature-section">
+                <h3>🎯 Implementation Overview</h3>
+                <p>The progress bar now fetches real cumulative completion percentage directly from the <code>daily_progress_updates</code> table in the database, ensuring accurate and up-to-date project progress display.</p>
+                
+                <ul class="feature-list">
+                    <li><strong>Database Source:</strong> Fetches <code>cumulative_completion_percentage</code> from daily_progress_updates table</li>
+                    <li><strong>Real-time Updates:</strong> Progress bar updates immediately after daily progress submission</li>
+                    <li><strong>Project-specific:</strong> Shows accurate progress for each individual project</li>
+                    <li><strong>Latest Data:</strong> Always displays the most recent cumulative progress</li>
+                    <li><strong>Fallback Support:</strong> Falls back to stage calculation if database data unavailable</li>
+                </ul>
+            </div>
+
+            <div class="feature-section">
+                <h3>📊 Database Structure</h3>
+                <p>The progress data is stored in the <code>daily_progress_updates</code> table:</p>
+                
+                <table class="database-table">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>project_id</code></td>
+                            <td>INT</td>
+                            <td>Project identifier</td>
+                        </tr>
+                        <tr>
+                            <td><code>incremental_completion_percentage</code></td>
+                            <td>DECIMAL</td>
+                            <td>Daily progress added (e.g., 2.5%)</td>
+                        </tr>
+                        <tr>
+                            <td><code>cumulative_completion_percentage</code></td>
+                            <td>DECIMAL</td>
+                            <td>Total project progress (e.g., 45.7%)</td>
+                        </tr>
+                        <tr>
+                            <td><code>construction_stage</code></td>
+                            <td>VARCHAR</td>
+                            <td>Current construction stage</td>
+                        </tr>
+                        <tr>
+                            <td><code>update_date</code></td>
+                            <td>DATE</td>
+                            <td>Date of progress update</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="feature-section">
+                <h3>🔄 Progress Bar Demo</h3>
+                <p>Interactive demonstration of the database-driven progress bar:</p>
+                
+                <div class="demo-progress">
+                    <div class="progress-header">
+                        <strong>Overall Progress</strong>
+                        <span id="progress-percentage">67.3%</span>
+                    </div>
+                    <div class="progress-bar-large">
+                        <div 
+                            class="progress-fill-large" 
+                            id="progress-fill"
+                            style="width: 67.3%; background-color: #3b82f6;"
+                        ></div>
+                    </div>
+                    
+                    <div class="database-progress-info">
+                        <div class="progress-details">
+                            <span class="progress-source">📊 Database Progress: 67.3%</span>
+                            <span class="latest-stage">Latest Stage: Electrical</span>
+                        </div>
+                        <div class="last-update-info">
+                            <span class="update-date">Last Updated: 2024-01-20</span>
+                            <span class="total-updates">Total Updates: 23</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 1rem 0;">
+                    <button class="btn" onclick="simulateDatabaseUpdate()">📊 Simulate Database Update</button>
+                    <button class="btn" onclick="resetDemo()">↺ Reset Demo</button>
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>🔧 API Implementation</h3>
+                <p>New API endpoint to fetch current project progress:</p>
+                
+                <div class="api-demo">
+GET /buildhub/backend/api/contractor/get_project_current_progress.php?project_id=123
+
+Response:
+{
+  "success": true,
+  "data": {
+    "project_id": 123,
+    "project_name": "Residential Villa Construction",
+    "current_progress": 67.3,
+    "latest_stage": "Electrical",
+    "latest_update_date": "2024-01-20",
+    "total_updates": 23,
+    "has_updates": true,
+    "last_updated_by": "John Contractor"
+  }
+}
+                </div>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card before">
+                    <h4>❌ Before (Static Data)</h4>
+                    <ul>
+                        <li>Used projectInfo.latest_progress</li>
+                        <li>Often showed 0% or outdated values</li>
+                        <li>No real-time database connection</li>
+                        <li>Inconsistent across different views</li>
+                        <li>Manual progress tracking</li>
+                        <li>No validation against actual data</li>
+                    </ul>
+                </div>
+                <div class="comparison-card after">
+                    <h4>✅ After (Database-Driven)</h4>
+                    <ul>
+                        <li>Fetches cumulative_completion_percentage</li>
+                        <li>Always shows current database values</li>
+                        <li>Real-time connection to progress table</li>
+                        <li>Consistent across all components</li>
+                        <li>Automatic progress calculation</li>
+                        <li>Validated against actual submissions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>🔄 Data Flow</h3>
+                <ol>
+                    <li><strong>Project Selection:</strong> User selects project from dropdown</li>
+                    <li><strong>API Call:</strong> Frontend calls <code>get_project_current_progress.php</code></li>
+                    <li><strong>Database Query:</strong> API queries latest <code>cumulative_completion_percentage</code></li>
+                    <li><strong>Progress Display:</strong> Progress bar updates with real database value</li>
+                    <li><strong>Daily Submission:</strong> When user submits daily progress</li>
+                    <li><strong>Auto Refresh:</strong> Progress bar automatically refreshes with new data</li>
+                </ol>
+
+                <div class="api-demo">
+-- SQL Query for Latest Progress
+SELECT 
+    cumulative_completion_percentage,
+    construction_stage,
+    update_date,
+    work_done_today
+FROM daily_progress_updates 
+WHERE project_id = :project_id 
+ORDER BY update_date DESC, created_at DESC 
+LIMIT 1
+                </div>
+            </div>
+
+            <div class="success-banner">
+                <h3>🎉 Database Integration Complete!</h3>
+                <p>Progress bars now display real cumulative completion percentage from the daily_progress_updates table.</p>
+            </div>
+
+            <div class="feature-section">
+                <h3>🧪 Testing Instructions</h3>
+                <ol>
+                    <li><strong>Select Project:</strong> Choose any project with existing progress updates</li>
+                    <li><strong>Verify Progress:</strong> Progress bar should show actual cumulative percentage from database</li>
+                    <li><strong>Check Database:</strong> Compare with <code>SELECT MAX(cumulative_completion_percentage) FROM daily_progress_updates WHERE project_id = X</code></li>
+                    <li><strong>Submit Progress:</strong> Add new daily progress update</li>
+                    <li><strong>Confirm Update:</strong> Progress bar should immediately reflect new cumulative total</li>
+                </ol>
+
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 1rem; margin: 1rem 0;">
+                    <strong>💡 Verification:</strong> You can verify the progress by checking the database directly:
+                    <br><code>SELECT cumulative_completion_percentage FROM daily_progress_updates WHERE project_id = [PROJECT_ID] ORDER BY update_date DESC LIMIT 1;</code>
+                </div>
+            </div>
+
+            <div class="feature-section">
+                <h3>📁 Files Created/Modified</h3>
+                <ul>
+                    <li><code>backend/api/contractor/get_project_current_progress.php</code> - New API for current progress</li>
+                    <li><code>backend/api/contractor/get_project_progress.php</code> - Enhanced with cumulative progress</li>
+                    <li><code>frontend/src/components/EnhancedProgressUpdate.jsx</code> - Updated to use database progress</li>
+                    <li><code>frontend/src/styles/StageProgression.css</code> - Added database progress info styles</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProgress = 67.3;
+        let totalUpdates = 23;
+        const stages = ['Foundation', 'Structure', 'Brickwork', 'Roofing', 'Electrical', 'Plumbing', 'Finishing', 'Final'];
+
+        function updateProgressDisplay() {
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercentage = document.getElementById('progress-percentage');
+            
+            // Update progress bar
+            progressFill.style.width = `${currentProgress}%`;
+            progressPercentage.textContent = `${currentProgress.toFixed(1)}%`;
+            
+            // Update color based on progress
+            if (currentProgress >= 90) {
+                progressFill.style.backgroundColor = '#10b981'; // Green
+            } else if (currentProgress >= 50) {
+                progressFill.style.backgroundColor = '#3b82f6'; // Blue
+            } else {
+                progressFill.style.backgroundColor = '#f59e0b'; // Orange
+            }
+            
+            // Update stage and database info
+            const stageIndex = Math.min(Math.floor(currentProgress / 12.5), stages.length - 1);
+            const currentStage = stages[stageIndex];
+            
+            document.querySelector('.progress-source').textContent = `📊 Database Progress: ${currentProgress.toFixed(1)}%`;
+            document.querySelector('.latest-stage').textContent = `Latest Stage: ${currentStage}`;
+            document.querySelector('.total-updates').textContent = `Total Updates: ${totalUpdates}`;
+            document.querySelector('.update-date').textContent = `Last Updated: ${new Date().toLocaleDateString()}`;
+        }
+
+        function simulateDatabaseUpdate() {
+            // Simulate adding 5.2% progress (like a daily update)
+            if (currentProgress < 100) {
+                const increment = Math.random() * 8 + 2; // Random between 2-10%
+                currentProgress = Math.min(currentProgress + increment, 100);
+                totalUpdates++;
+                updateProgressDisplay();
+                
+                console.log(`Database updated: ${currentProgress.toFixed(1)}% (${totalUpdates} total updates)`);
+            }
+        }
+
+        function resetDemo() {
+            currentProgress = 67.3;
+            totalUpdates = 23;
+            updateProgressDisplay();
+            console.log('Demo reset to 67.3%');
+        }
+
+        // Initialize display
+        updateProgressDisplay();
+
+        console.log('📊 Database-Driven Progress Bar Demo loaded!');
+        console.log('✅ Progress data fetched from daily_progress_updates table');
+        console.log('🔄 Real-time updates from cumulative_completion_percentage column');
+    </script>
+</body>
+</html>

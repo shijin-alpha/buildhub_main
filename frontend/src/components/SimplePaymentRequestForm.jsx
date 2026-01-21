@@ -18,6 +18,8 @@ const SimplePaymentRequestForm = ({
   const [customStageCosts, setCustomStageCosts] = useState({});
   const [loading, setLoading] = useState(false);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [unavailableStages, setUnavailableStages] = useState([]);
+  const [existingRequests, setExistingRequests] = useState([]);
   
   const [paymentForm, setPaymentForm] = useState({
     stage_name: '',
@@ -124,6 +126,54 @@ const SimplePaymentRequestForm = ({
     }
   };
 
+  const loadProjectPaymentRequests = async (projectId) => {
+    try {
+      const response = await fetch(
+        `/buildhub/backend/api/contractor/get_project_payment_requests.php?contractor_id=${contractorId}&project_id=${projectId}`,
+        { credentials: 'include' }
+      );
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setExistingRequests(data.data.requests || []);
+        
+        // Get stages that are paid OR have pending/approved requests
+        const unavailableStages = [];
+        const paidStagesOnly = [];
+        
+        data.data.requests.forEach(request => {
+          if (request.status === 'paid') {
+            paidStagesOnly.push(request.stage_name);
+            unavailableStages.push(request.stage_name);
+          } else if (['pending', 'approved'].includes(request.status)) {
+            unavailableStages.push(request.stage_name);
+          }
+        });
+        
+        setUnavailableStages(unavailableStages); // This will filter out all unavailable stages
+        
+        // Show appropriate info messages
+        if (paidStagesOnly.length > 0) {
+          toast.info(`${paidStagesOnly.length} stage(s) already paid: ${paidStagesOnly.join(', ')}`);
+        }
+        
+        const pendingApprovedStages = unavailableStages.filter(stage => !paidStagesOnly.includes(stage));
+        if (pendingApprovedStages.length > 0) {
+          toast.info(`${pendingApprovedStages.length} stage(s) have pending/approved requests: ${pendingApprovedStages.join(', ')}`);
+        }
+      } else {
+        console.error('Failed to load payment requests:', data.message);
+      setExistingRequests([]);
+      setUnavailableStages([]);
+      }
+    } catch (error) {
+      console.error('Error loading payment requests:', error);
+      setExistingRequests([]);
+      setUnavailableStages([]);
+    }
+  };
+
   const handleProjectSelect = (projectId) => {
     const project = projects.find(p => p.id == projectId);
     if (project) {
@@ -140,6 +190,9 @@ const SimplePaymentRequestForm = ({
         setManualCostEntry(true);
         toast.info('No approved estimate found. Please enter the total project cost manually.');
       }
+      
+      // Load existing payment requests for this project
+      loadProjectPaymentRequests(projectId);
       
       // Reset form when project changes
       setSelectedStage('');
@@ -262,7 +315,6 @@ const SimplePaymentRequestForm = ({
     setLoading(true);
     
     try {
-      // Simulate API call - replace with actual API endpoint
       const response = await fetch('/buildhub/backend/api/contractor/submit_payment_request.php', {
         method: 'POST',
         credentials: 'include',
@@ -282,7 +334,7 @@ const SimplePaymentRequestForm = ({
       const data = await response.json();
       
       if (data.success) {
-        toast.success(`Payment request submitted successfully! ₹${parseFloat(paymentForm.requested_amount).toLocaleString()} for ${paymentForm.stage_name} stage`);
+        toast.success(`Payment request submitted successfully! ₹${parseFloat(paymentForm.requested_amount).toLocaleString()} for ${paymentForm.stage_name} stage to ${data.data.homeowner_name}`);
         
         // Reset form
         setPaymentForm({
@@ -300,6 +352,9 @@ const SimplePaymentRequestForm = ({
         });
         setSelectedStage('');
         
+        // Reload payment requests to update paid stages
+        loadProjectPaymentRequests(selectedProject);
+        
         if (onPaymentRequested) {
           onPaymentRequested(data.data);
         }
@@ -308,23 +363,7 @@ const SimplePaymentRequestForm = ({
       }
     } catch (error) {
       console.error('Error submitting payment request:', error);
-      toast.success(`Payment request submitted successfully! ₹${parseFloat(paymentForm.requested_amount).toLocaleString()} for ${paymentForm.stage_name} stage to ${projectDetails.homeowner_name}`);
-      
-      // Reset form on success simulation
-      setPaymentForm({
-        stage_name: '',
-        requested_amount: '',
-        work_description: '',
-        completion_percentage: '',
-        materials_used: '',
-        labor_count: '',
-        work_start_date: '',
-        work_end_date: '',
-        contractor_notes: '',
-        quality_check: false,
-        safety_compliance: false
-      });
-      setSelectedStage('');
+      toast.error('Error submitting payment request. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -467,33 +506,93 @@ const SimplePaymentRequestForm = ({
       {selectedProject && totalProjectCost && (
         <div className="stage-selection-section">
           <h4>🏗️ Select Construction Stage</h4>
+          
+          {/* Show unavailable stages info */}
+          {unavailableStages.length > 0 && (
+            <div className="unavailable-stages-info" style={{
+              background: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '8px',
+              padding: '12px',
+              marginBottom: '20px',
+              color: '#856404'
+            }}>
+              <h5 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
+                ⚠️ Unavailable Stages ({unavailableStages.length})
+              </h5>
+              <p style={{ margin: '0', fontSize: '13px' }}>
+                The following stages are not available for new payment requests: <strong>{unavailableStages.join(', ')}</strong>
+              </p>
+              <p style={{ margin: '5px 0 0 0', fontSize: '12px', fontStyle: 'italic' }}>
+                (Includes paid stages and stages with existing pending/approved requests)
+              </p>
+            </div>
+          )}
+          
           <div className="stages-grid">
-            {constructionStages.map(stage => {
-              const suggestedAmount = customStageCosts[stage.name] || Math.round((parseFloat(totalProjectCost) * stage.percentage) / 100);
-              return (
-                <div 
-                  key={stage.name}
-                  className={`stage-card ${selectedStage === stage.name ? 'selected' : ''}`}
-                  onClick={() => handleStageSelect(stage)}
-                >
-                  <div className="stage-header">
-                    <h5>{stage.name}</h5>
-                    <span className="stage-percentage">{stage.percentage}%</span>
+            {constructionStages
+              .filter(stage => !unavailableStages.includes(stage.name)) // Filter out unavailable stages
+              .map(stage => {
+                const suggestedAmount = customStageCosts[stage.name] || Math.round((parseFloat(totalProjectCost) * stage.percentage) / 100);
+                return (
+                  <div 
+                    key={stage.name}
+                    className={`stage-card ${selectedStage === stage.name ? 'selected' : ''}`}
+                    onClick={() => handleStageSelect(stage)}
+                  >
+                    <div className="stage-header">
+                      <h5>{stage.name}</h5>
+                      <span className="stage-percentage">{stage.percentage}%</span>
+                    </div>
+                    <p className="stage-description">{stage.description}</p>
+                    <div className="stage-amount">₹{suggestedAmount.toLocaleString()}</div>
+                    <div className="stage-deliverables">
+                      <strong>Key Deliverables:</strong>
+                      <ul>
+                        {stage.deliverables.map((deliverable, idx) => (
+                          <li key={idx}>{deliverable}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                  <p className="stage-description">{stage.description}</p>
-                  <div className="stage-amount">₹{suggestedAmount.toLocaleString()}</div>
-                  <div className="stage-deliverables">
-                    <strong>Key Deliverables:</strong>
-                    <ul>
-                      {stage.deliverables.map((deliverable, idx) => (
-                        <li key={idx}>{deliverable}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
+          
+          {/* Show message if all stages are unavailable */}
+          {unavailableStages.length === constructionStages.length && (
+            <div className="all-stages-paid" style={{
+              background: '#f8f9fa',
+              border: '2px solid #28a745',
+              borderRadius: '12px',
+              padding: '30px',
+              textAlign: 'center',
+              color: '#155724'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '15px' }}>🎉</div>
+              <h4 style={{ margin: '0 0 10px 0', color: '#28a745' }}>All Stages Have Requests!</h4>
+              <p style={{ margin: '0', fontSize: '16px' }}>
+                All construction stages for this project already have payment requests. No new payment requests can be created.
+              </p>
+            </div>
+          )}
+          
+          {/* Show message if no available stages */}
+          {constructionStages.filter(stage => !unavailableStages.includes(stage.name)).length === 0 && unavailableStages.length < constructionStages.length && (
+            <div className="no-available-stages" style={{
+              background: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '8px',
+              padding: '20px',
+              textAlign: 'center',
+              color: '#856404'
+            }}>
+              <h5 style={{ margin: '0 0 10px 0' }}>⚠️ No Available Stages</h5>
+              <p style={{ margin: '0' }}>
+                No construction stages are currently available for payment requests.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

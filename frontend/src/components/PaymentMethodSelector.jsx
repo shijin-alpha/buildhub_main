@@ -81,7 +81,7 @@ const PaymentMethodSelector = ({
       await initiateRazorpayPayment();
     } else {
       // Handle alternative payment methods
-      await initiateAlternativePayment(methodKey);
+      await initiateAlternativePayment(methodKey, method);
     }
   };
 
@@ -101,8 +101,13 @@ const PaymentMethodSelector = ({
         return;
       }
 
-      // Create Razorpay order
-      const orderResponse = await fetch('/buildhub/backend/api/homeowner/initiate_stage_payment.php', {
+      // Create Razorpay order - use different API based on payment type
+      const isCustomPayment = paymentRequest.request_type === 'custom';
+      const apiEndpoint = isCustomPayment 
+        ? '/buildhub/backend/api/homeowner/initiate_custom_payment.php'
+        : '/buildhub/backend/api/homeowner/initiate_stage_payment.php';
+      
+      const orderResponse = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -118,16 +123,24 @@ const PaymentMethodSelector = ({
       }
 
       // Initialize Razorpay payment
+      const paymentDescription = isCustomPayment 
+        ? `Payment for ${paymentRequest.request_title || 'Custom Request'}`
+        : `Payment for ${paymentRequest.stage_name} stage`;
+      
       const options = {
         key: orderData.data.razorpay_key_id,
         amount: orderData.data.amount,
         currency: orderData.data.currency,
         name: 'BuildHub',
-        description: `Payment for ${paymentRequest.stage_name} stage`,
+        description: paymentDescription,
         order_id: orderData.data.razorpay_order_id,
         handler: async function (response) {
           try {
-            const verifyResponse = await fetch('/buildhub/backend/api/homeowner/verify_stage_payment.php', {
+            const verifyEndpoint = isCustomPayment 
+              ? '/buildhub/backend/api/homeowner/verify_custom_payment.php'
+              : '/buildhub/backend/api/homeowner/verify_stage_payment.php';
+              
+            const verifyResponse = await fetch(verifyEndpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -173,15 +186,18 @@ const PaymentMethodSelector = ({
     }
   };
 
-  const initiateAlternativePayment = async (methodKey) => {
+  const initiateAlternativePayment = async (methodKey, method) => {
     try {
       setLoading(true);
+      
+      const isCustomPayment = paymentRequest.request_type === 'custom';
+      const paymentType = isCustomPayment ? 'custom_payment' : 'stage_payment';
       
       const response = await fetch('/buildhub/backend/api/homeowner/initiate_alternative_payment.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          payment_type: 'stage_payment',
+          payment_type: paymentType,
           reference_id: paymentRequest.id,
           payment_method: methodKey,
           amount: amount,
@@ -196,7 +212,7 @@ const PaymentMethodSelector = ({
         setAlternativePaymentId(data.data.payment_id);
         setShowInstructions(true);
         
-        toast.success(`${selectedMethod.name} payment initiated. Please follow the instructions.`);
+        toast.success(`${method.name} payment initiated. Please follow the instructions.`);
         
         if (onPaymentInitiated) {
           onPaymentInitiated(data.data);

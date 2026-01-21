@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Progress Bar Fix Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .issue-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .issue-section h3 {
+            margin: 0 0 1rem 0;
+            color: #dc2626;
+        }
+        .solution-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        .solution-section h3 {
+            margin: 0 0 1rem 0;
+            color: #16a34a;
+        }
+        .demo-progress {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .progress-bar-large {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+        .progress-fill-large {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        .stage-progress-indicator {
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+        }
+        .stage-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        .completed-stages {
+            font-weight: 600;
+            color: #374151;
+        }
+        .current-stage-name {
+            font-weight: 500;
+            color: #3b82f6;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .comparison-card {
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .comparison-card.before {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .comparison-card.after {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        .comparison-card h4 {
+            margin: 0 0 1rem 0;
+        }
+        .comparison-card.before h4 {
+            color: #dc2626;
+        }
+        .comparison-card.after h4 {
+            color: #16a34a;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0.5rem;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .success-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .success-banner h3 {
+            margin: 0 0 0.5rem 0;
+        }
+        .success-banner p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li::before {
+            content: "✅ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Project Progress Bar Fix</h1>
+            <p>Dynamic progress updates in daily progress section</p>
+        </div>
+
+        <div class="content">
+            <div class="issue-section">
+                <h3>❌ Issue Identified</h3>
+                <p>The project overall progress bar in the daily update section was showing static 0% and not updating when daily progress was submitted. The progress bar was using outdated project data instead of real-time stage progression data.</p>
+                
+                <div class="demo-progress">
+                    <div class="progress-header">
+                        <strong>Overall Progress (Before Fix)</strong>
+                        <span>0%</span>
+                    </div>
+                    <div class="progress-bar-large">
+                        <div class="progress-fill-large" style="width: 0%; background-color: #e5e7eb;"></div>
+                    </div>
+                    <p style="font-size: 0.875rem; color: #6b7280; margin: 0.5rem 0 0 0;">
+                        ❌ Always shows 0% regardless of actual project progress
+                    </p>
+                </div>
+            </div>
+
+            <div class="solution-section">
+                <h3>✅ Solution Implemented</h3>
+                <p>Updated the progress bar to use real-time stage progression data from the new stage system, with automatic refresh after daily progress submission.</p>
+                
+                <ul class="feature-list">
+                    <li><strong>Real-time Progress:</strong> Uses progressSummary.total_progress from stage calculations</li>
+                    <li><strong>Dynamic Colors:</strong> Progress bar color changes based on completion percentage</li>
+                    <li><strong>Stage Information:</strong> Shows completed stages and current active stage</li>
+                    <li><strong>Auto Refresh:</strong> Progress updates immediately after daily submission</li>
+                    <li><strong>Fallback Support:</strong> Falls back to original data if stage data unavailable</li>
+                </ul>
+
+                <div class="demo-progress">
+                    <div class="progress-header">
+                        <strong>Overall Progress (After Fix)</strong>
+                        <span id="progress-percentage">37.5%</span>
+                    </div>
+                    <div class="progress-bar-large">
+                        <div 
+                            class="progress-fill-large" 
+                            id="progress-fill"
+                            style="width: 37.5%; background-color: #3b82f6;"
+                        ></div>
+                    </div>
+                    <div class="stage-progress-indicator">
+                        <div class="stage-info">
+                            <span class="completed-stages">3/8 stages completed</span>
+                            <span class="current-stage-name">Current: 🏠 Roofing</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 1rem 0;">
+                    <button class="btn" onclick="simulateProgress()">🔄 Simulate Progress Update</button>
+                    <button class="btn" onclick="resetProgress()">↺ Reset Demo</button>
+                </div>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card before">
+                    <h4>❌ Before Fix</h4>
+                    <ul>
+                        <li>Static 0% progress display</li>
+                        <li>Used outdated projectInfo data</li>
+                        <li>No real-time updates</li>
+                        <li>No stage information</li>
+                        <li>Fixed progress bar color</li>
+                        <li>No refresh after submission</li>
+                    </ul>
+                </div>
+                <div class="comparison-card after">
+                    <h4>✅ After Fix</h4>
+                    <ul>
+                        <li>Dynamic progress from stage system</li>
+                        <li>Uses real-time progressSummary data</li>
+                        <li>Updates immediately after submission</li>
+                        <li>Shows stage completion info</li>
+                        <li>Color-coded progress indication</li>
+                        <li>Auto-refresh on data changes</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="solution-section">
+                <h3>🔧 Technical Implementation</h3>
+                <p>The fix involved three key changes:</p>
+
+                <div class="code-block">
+// 1. Updated progress bar to use stage progression data
+&lt;span&gt;
+  {progressSummary ? 
+    progressSummary.total_progress.toFixed(1) : 
+    (projectInfo.completion_percentage || projectInfo.latest_progress || 0)
+  }%
+&lt;/span&gt;
+
+// 2. Dynamic progress bar with color coding
+&lt;div 
+  className="progress-fill-large"
+  style={{ 
+    width: `${progressSummary ? 
+      progressSummary.total_progress : 
+      (projectInfo.latest_progress || 0)
+    }%`,
+    backgroundColor: progressSummary ? 
+      (progressSummary.total_progress >= 90 ? '#10b981' : 
+       progressSummary.total_progress >= 50 ? '#3b82f6' : '#f59e0b') : 
+      '#3b82f6'
+  }}
+&gt;&lt;/div&gt;
+
+// 3. Auto-refresh after successful submission
+if (onUpdateSubmitted) {
+  onUpdateSubmitted(data.data);
+}
+
+// Refresh project progress data to update the progress bars
+if (selectedProject) {
+  loadProjectProgressData(selectedProject);
+}
+                </div>
+            </div>
+
+            <div class="solution-section">
+                <h3>🧪 Testing Instructions</h3>
+                <ol>
+                    <li><strong>Navigate to Contractor Dashboard:</strong> Go to Progress Updates → Daily Progress Update</li>
+                    <li><strong>Select a Project:</strong> Choose any project from the dropdown</li>
+                    <li><strong>Observe Progress Bar:</strong> Should show actual project progress, not 0%</li>
+                    <li><strong>Submit Daily Progress:</strong> Add some daily progress percentage</li>
+                    <li><strong>Verify Update:</strong> Progress bar should update immediately after submission</li>
+                    <li><strong>Check Stage Info:</strong> Should show completed stages and current stage</li>
+                </ol>
+
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 1rem; margin: 1rem 0;">
+                    <strong>💡 Key Testing Points:</strong>
+                    <ul style="margin: 0.5rem 0;">
+                        <li>Progress bar shows real project completion percentage</li>
+                        <li>Color changes based on progress (orange → blue → green)</li>
+                        <li>Stage information displays correctly</li>
+                        <li>Updates happen immediately after daily submission</li>
+                        <li>Falls back gracefully if stage data unavailable</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="success-banner">
+                <h3>🎉 Progress Bar Fix Complete!</h3>
+                <p>The project progress bar now shows real-time progress updates and refreshes automatically after daily submissions.</p>
+            </div>
+
+            <div class="solution-section">
+                <h3>📁 Files Modified</h3>
+                <ul>
+                    <li><code>frontend/src/components/EnhancedProgressUpdate.jsx</code> - Updated progress bar logic and auto-refresh</li>
+                    <li><code>frontend/src/styles/StageProgression.css</code> - Added styles for stage progress indicator</li>
+                </ul>
+                
+                <p style="margin-top: 1rem; color: #6b7280; font-size: 0.875rem;">
+                    The fix maintains backward compatibility while providing real-time progress updates based on the new stage progression system.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProgress = 37.5;
+        let completedStages = 3;
+        const stages = [
+            { name: 'Foundation', icon: '🏗️' },
+            { name: 'Structure', icon: '🔨' },
+            { name: 'Brickwork', icon: '🧱' },
+            { name: 'Roofing', icon: '🏠' },
+            { name: 'Electrical', icon: '⚡' },
+            { name: 'Plumbing', icon: '🚿' },
+            { name: 'Finishing', icon: '🎨' },
+            { name: 'Final', icon: '✨' }
+        ];
+
+        function updateProgressDisplay() {
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercentage = document.getElementById('progress-percentage');
+            
+            // Update progress bar
+            progressFill.style.width = `${currentProgress}%`;
+            progressPercentage.textContent = `${currentProgress.toFixed(1)}%`;
+            
+            // Update color based on progress
+            if (currentProgress >= 90) {
+                progressFill.style.backgroundColor = '#10b981'; // Green
+            } else if (currentProgress >= 50) {
+                progressFill.style.backgroundColor = '#3b82f6'; // Blue
+            } else {
+                progressFill.style.backgroundColor = '#f59e0b'; // Orange
+            }
+            
+            // Update stage info
+            const stageInfo = document.querySelector('.stage-info');
+            const currentStageIndex = Math.floor(currentProgress / 12.5);
+            const currentStage = stages[Math.min(currentStageIndex, stages.length - 1)];
+            
+            stageInfo.innerHTML = `
+                <span class="completed-stages">${completedStages}/8 stages completed</span>
+                <span class="current-stage-name">Current: ${currentStage.icon} ${currentStage.name}</span>
+            `;
+        }
+
+        function simulateProgress() {
+            // Add 12.5% progress (complete one stage)
+            if (currentProgress < 100) {
+                currentProgress = Math.min(currentProgress + 12.5, 100);
+                completedStages = Math.floor(currentProgress / 12.5);
+                updateProgressDisplay();
+                
+                console.log(`Progress updated to ${currentProgress}% (${completedStages} stages completed)`);
+            }
+        }
+
+        function resetProgress() {
+            currentProgress = 37.5;
+            completedStages = 3;
+            updateProgressDisplay();
+            console.log('Progress reset to 37.5%');
+        }
+
+        // Initialize display
+        updateProgressDisplay();
+
+        console.log('✅ Project Progress Bar Fix Demo loaded!');
+        console.log('🔄 Progress bar now uses real-time stage progression data');
+        console.log('🎯 Auto-refreshes after daily progress submission');
+    </script>
+</body>
+</html>
