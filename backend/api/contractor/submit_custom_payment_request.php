@@ -5,6 +5,7 @@ header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../../config/database.php';
+require_once '../../utils/PaymentRequestValidator.php';
 
 try {
     $database = new Database();
@@ -32,7 +33,56 @@ try {
         exit;
     }
     
-    // Validate required fields
+    // Add contractor_id to input for validation
+    $input['contractor_id'] = $contractor_id;
+    
+    // Get project data for validation
+    $project_data = [];
+    if (isset($input['project_id'])) {
+        $projectQuery = "
+            SELECT cse.total_cost, cse.timeline, cls.homeowner_id
+            FROM contractor_send_estimates cse
+            INNER JOIN contractor_layout_sends cls ON cse.send_id = cls.id
+            WHERE cse.id = :project_id AND cse.contractor_id = :contractor_id
+            LIMIT 1
+        ";
+        
+        $projectStmt = $db->prepare($projectQuery);
+        $projectStmt->execute([
+            ':project_id' => $input['project_id'],
+            ':contractor_id' => $contractor_id
+        ]);
+        
+        $project_data = $projectStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        
+        if (empty($project_data)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Project not found or contractor not assigned'
+            ]);
+            exit;
+        }
+        
+        // Add homeowner_id to input
+        $input['homeowner_id'] = $project_data['homeowner_id'];
+    }
+    
+    // Comprehensive validation using PaymentRequestValidator
+    $validation_result = PaymentRequestValidator::validateCustomPaymentRequest($input, $project_data);
+    
+    if (!$validation_result['is_valid']) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Payment request validation failed',
+            'validation_errors' => $validation_result['errors'],
+            'validation_warnings' => $validation_result['warnings'],
+            'validation_score' => $validation_result['validation_score'],
+            'validation_summary' => PaymentRequestValidator::getValidationSummary($validation_result)
+        ]);
+        exit;
+    }
+    
+    // Validate required fields (basic check already done in validator)
     $required_fields = [
         'project_id', 'homeowner_id', 'request_title', 'request_reason',
         'requested_amount', 'work_description', 'urgency_level'
@@ -48,39 +98,7 @@ try {
         }
     }
     
-    // Validate contractor has access to this project
-    $projectCheckQuery = "
-        SELECT COUNT(*) as count 
-        FROM contractor_send_estimates cse
-        WHERE cse.id = :project_id 
-        AND cse.contractor_id = :contractor_id 
-        AND cse.status IN ('accepted', 'project_created')
-    ";
-    
-    $projectCheckStmt = $db->prepare($projectCheckQuery);
-    $projectCheckStmt->execute([
-        ':project_id' => $input['project_id'],
-        ':contractor_id' => $contractor_id
-    ]);
-    
-    $projectCheck = $projectCheckStmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($projectCheck['count'] == 0) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'You do not have access to this project or project is not accepted'
-        ]);
-        exit;
-    }
-    
-    // Validate amounts
-    if ($input['requested_amount'] <= 0) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Requested amount must be greater than 0'
-        ]);
-        exit;
-    }
+    // Validate contractor has access to this project (already done above)
     
     // Insert custom payment request
     $insertQuery = "
@@ -128,6 +146,12 @@ try {
                 'homeowner_name' => $homeowner ? $homeowner['first_name'] . ' ' . $homeowner['last_name'] : 'Homeowner',
                 'status' => 'pending',
                 'urgency_level' => $input['urgency_level']
+            ],
+            'validation_result' => [
+                'score' => $validation_result['validation_score'],
+                'warnings' => $validation_result['warnings'],
+                'recommendations' => $validation_result['recommendations'] ?? [],
+                'summary' => PaymentRequestValidator::getValidationSummary($validation_result)
             ]
         ]);
     } else {

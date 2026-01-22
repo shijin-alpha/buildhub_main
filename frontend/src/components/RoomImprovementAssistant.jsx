@@ -844,7 +844,7 @@ const RoomImprovementAssistant = ({ show, onClose }) => {
                               <h5>🎨 Real AI-Generated Conceptual Visualization</h5>
                               <div className="generated-image-container">
                                 {(() => {
-                                  // Always construct Apache URL explicitly - never use relative paths
+                                  // Construct proper URL for Apache server (port 80, not 3000)
                                   const apacheUrl = `http://localhost${imageUrl}`;
                                   console.log('🔍 [DEBUG] Visual Reference - Final image rendering:');
                                   console.log('🔍 [DEBUG] - Original image_url from backend:', imageUrl);
@@ -927,7 +927,7 @@ const RoomImprovementAssistant = ({ show, onClose }) => {
                             {analysisResult.ai_enhancements.conceptual_visualization.image_url && (
                               <div className="generated-image-container">
                                 {(() => {
-                                  // Always construct Apache URL explicitly - never use relative paths
+                                  // Construct proper URL for Apache server (port 80, not 3000)
                                   const imageUrl = analysisResult.ai_enhancements.conceptual_visualization.image_url;
                                   const apacheUrl = `http://localhost${imageUrl}`;
                                   console.log('🖼️ [Conceptual Visualization] Loading image from Apache:', apacheUrl);
@@ -1014,6 +1014,22 @@ const RoomImprovementAssistant = ({ show, onClose }) => {
                                 <p><em>💡 Use this visualization as design inspiration. Consult with interior design professionals for implementation guidance.</em></p>
                               </div>
                             </div>
+                          </div>
+                        ) : imageGenerationStatus && (imageGenerationStatus.status === 'pending' || imageGenerationStatus.status === 'processing') ? (
+                          <div className="visualization-generating">
+                            <div className="generating-icon">🎨</div>
+                            <h5>Generating Real AI Image...</h5>
+                            <p>
+                              {imageGenerationStatus.status === 'pending' && 'Image generation queued...'}
+                              {imageGenerationStatus.status === 'processing' && 'Creating real AI interior design image...'}
+                            </p>
+                            <div className="progress-bar">
+                              <div className="progress-fill"></div>
+                            </div>
+                            <p className="generating-note">
+                              <strong>Note:</strong> Real AI image generation takes 1-5 minutes depending on system performance.
+                              The page will automatically update when complete.
+                            </p>
                           </div>
                         ) : (
                           <div className="visualization-unavailable">
@@ -1177,6 +1193,18 @@ const RoomImprovementAssistant = ({ show, onClose }) => {
                                     <div className="professional-note">
                                       <p><em>💡 This collaborative AI visualization combines multiple AI technologies for inspirational design concepts.</em></p>
                                     </div>
+                                  </div>
+                                </div>
+                              ) : imageGenerationStatus && (imageGenerationStatus.status === 'pending' || imageGenerationStatus.status === 'processing') ? (
+                                <div className="visualization-generating">
+                                  <div className="generating-content">
+                                    <span className="generating-icon">🎨</span>
+                                    <h6>Generating Real AI Image...</h6>
+                                    <p>
+                                      {imageGenerationStatus.status === 'pending' && 'Image generation queued...'}
+                                      {imageGenerationStatus.status === 'processing' && 'Creating real AI interior design image...'}
+                                    </p>
+                                    <small>Please wait while the AI creates your visualization</small>
                                   </div>
                                 </div>
                               ) : (

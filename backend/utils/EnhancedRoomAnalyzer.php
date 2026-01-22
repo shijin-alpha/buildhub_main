@@ -65,9 +65,16 @@ class EnhancedRoomAnalyzer {
             // Stage 5: Start ASYNC conceptual image generation (non-blocking)
             $async_image_job = null;
             if ($ai_enhancement['ai_enhancement_available']) {
+                // Create improvement suggestions structure for async image generation
+                $improvement_suggestions = [
+                    'lighting' => $room_analysis['lighting_suggestion'] ?? '',
+                    'color_ambience' => $room_analysis['color_suggestion'] ?? '',
+                    'furniture_layout' => $room_analysis['furniture_suggestion'] ?? ''
+                ];
+                
                 $async_image_job = self::startAsyncConceptualImageGeneration(
                     $ai_connector,
-                    $room_analysis['improvement_suggestions'],
+                    $improvement_suggestions,
                     $ai_enhancement['detected_objects'],
                     $visual_features,
                     $ai_enhancement['spatial_guidance'],
@@ -192,30 +199,48 @@ class EnhancedRoomAnalyzer {
         $enhanced = $base_template;
         
         // Enhance lighting suggestions based on visual analysis
-        $lighting_condition = $design_attributes['lighting_condition'];
-        if ($lighting_condition['primary_assessment'] === 'poor_lighting') {
+        $lighting_condition = $design_attributes['lighting_condition'] ?? [];
+        if (isset($lighting_condition['primary_assessment']) && $lighting_condition['primary_assessment'] === 'poor_lighting') {
             $enhanced['lighting_suggestion'] = "Visual analysis reveals insufficient lighting (brightness: {$visual_features['brightness']}/255). Priority should be adding multiple light sources. " . $enhanced['lighting_suggestion'];
-        } elseif ($lighting_condition['primary_assessment'] === 'bright_lighting') {
+        } elseif (isset($lighting_condition['primary_assessment']) && $lighting_condition['primary_assessment'] === 'bright_lighting') {
             $enhanced['lighting_suggestion'] = "Your room has abundant light (brightness: {$visual_features['brightness']}/255). Focus on controlling and diffusing this light. " . $enhanced['lighting_suggestion'];
         }
         
         // Enhance color suggestions based on color analysis
-        $ambience = $design_attributes['ambience_character'];
-        $color_temp = $visual_features['color_temperature'];
-        if ($color_temp['category'] === 'warm') {
-            $enhanced['color_suggestion'] = "Your room currently has a warm color palette ({$color_temp['confidence']}% warm bias). This creates a naturally cozy atmosphere. " . $enhanced['color_suggestion'];
-        } elseif ($color_temp['category'] === 'cool') {
-            $enhanced['color_suggestion'] = "Your room features a cool color scheme ({$color_temp['confidence']}% cool bias). Consider adding warm accents for comfort. " . $enhanced['color_suggestion'];
+        $ambience = $design_attributes['ambience_character'] ?? [];
+        $color_temp = $visual_features['color_temperature'] ?? [];
+        if (isset($color_temp['category']) && $color_temp['category'] === 'warm') {
+            $confidence = $color_temp['score'] ?? 0;
+            $enhanced['color_suggestion'] = "Your room currently has a warm color palette ({$confidence}% warm bias). This creates a naturally cozy atmosphere. " . $enhanced['color_suggestion'];
+        } elseif (isset($color_temp['category']) && $color_temp['category'] === 'cool') {
+            $confidence = $color_temp['score'] ?? 0;
+            $enhanced['color_suggestion'] = "Your room features a cool color scheme ({$confidence}% cool bias). Consider adding warm accents for comfort. " . $enhanced['color_suggestion'];
         }
         
         // Add visual observations
-        $enhanced['visual_observations'] = [
-            "Lighting condition: {$lighting_condition['primary_assessment']} (confidence: {$lighting_condition['confidence']}%)",
-            "Dominant colors: " . implode(', ', array_keys($visual_features['dominant_colors'])),
-            "Color temperature: {$color_temp['category']} bias ({$color_temp['confidence']}%)",
-            "Contrast level: {$visual_features['contrast']}%",
-            "Saturation level: {$visual_features['saturation_level']}%"
-        ];
+        $enhanced['visual_observations'] = [];
+        
+        if (isset($lighting_condition['primary_assessment'])) {
+            $confidence = $lighting_condition['confidence'] ?? 0;
+            $enhanced['visual_observations'][] = "Lighting condition: {$lighting_condition['primary_assessment']} (confidence: {$confidence}%)";
+        }
+        
+        if (isset($visual_features['dominant_colors']) && is_array($visual_features['dominant_colors'])) {
+            $enhanced['visual_observations'][] = "Dominant colors: " . implode(', ', array_keys($visual_features['dominant_colors']));
+        }
+        
+        if (isset($color_temp['category'])) {
+            $confidence = $color_temp['score'] ?? 0;
+            $enhanced['visual_observations'][] = "Color temperature: {$color_temp['category']} bias ({$confidence}%)";
+        }
+        
+        if (isset($visual_features['contrast'])) {
+            $enhanced['visual_observations'][] = "Contrast level: {$visual_features['contrast']}%";
+        }
+        
+        if (isset($visual_features['saturation_level'])) {
+            $enhanced['visual_observations'][] = "Saturation level: {$visual_features['saturation_level']}%";
+        }
         
         return $enhanced;
     }

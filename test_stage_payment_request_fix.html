@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage Payment Request Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .projects-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .project-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+        .project-item:hover {
+            background-color: #f0f8ff;
+            cursor: pointer;
+        }
+        .project-item.selected {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Stage Payment Request Fix Test</h1>
+        <p>Testing the enhanced stage payment request submission with improved project validation and error handling.</p>
+        
+        <!-- Step 1: Load Contractor Projects -->
+        <div class="test-section">
+            <h3>Step 1: Load Contractor Projects</h3>
+            <div class="form-group">
+                <label for="contractor-id">Contractor ID:</label>
+                <input type="number" id="contractor-id" value="1" placeholder="Enter contractor ID">
+            </div>
+            <button class="btn" onclick="loadContractorProjects()">Load Projects</button>
+            <div id="projects-result" class="result" style="display: none;"></div>
+            <div id="projects-list" class="projects-list" style="display: none;"></div>
+        </div>
+
+        <!-- Step 2: Test Payment Request Submission -->
+        <div class="test-section">
+            <h3>Step 2: Submit Stage Payment Request</h3>
+            <div class="form-group">
+                <label for="selected-project-id">Selected Project ID:</label>
+                <input type="number" id="selected-project-id" placeholder="Select a project from above">
+            </div>
+            <div class="form-group">
+                <label for="homeowner-id">Homeowner ID:</label>
+                <input type="number" id="homeowner-id" placeholder="Will be auto-filled from project">
+            </div>
+            <div class="form-group">
+                <label for="stage-name">Stage Name:</label>
+                <select id="stage-name">
+                    <option value="">Select Stage</option>
+                    <option value="Foundation">Foundation</option>
+                    <option value="Structure">Structure</option>
+                    <option value="Brickwork">Brickwork</option>
+                    <option value="Roofing">Roofing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Finishing">Finishing</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="requested-amount">Requested Amount (₹):</label>
+                <input type="number" id="requested-amount" value="50000" min="1" step="1000">
+            </div>
+            <div class="form-group">
+                <label for="work-description">Work Description:</label>
+                <textarea id="work-description" rows="3" placeholder="Describe the work completed for this stage...">Foundation work completed including site preparation, excavation, and concrete pouring. All structural elements are in place according to approved plans.</textarea>
+            </div>
+            <div class="form-group">
+                <label for="completion-percentage">Completion Percentage:</label>
+                <input type="number" id="completion-percentage" value="20" min="0" max="100" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="labor-count">Number of Workers:</label>
+                <input type="number" id="labor-count" value="5" min="1">
+            </div>
+            <div class="form-group">
+                <label for="total-project-cost">Total Project Cost (₹):</label>
+                <input type="number" id="total-project-cost" value="500000" min="1" step="1000">
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="quality-check" checked> Quality check completed
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="safety-compliance" checked> Safety compliance verified
+                </label>
+            </div>
+            <button class="btn btn-success" onclick="submitPaymentRequest()">Submit Payment Request</button>
+            <div id="payment-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Step 3: Debug Information -->
+        <div class="test-section">
+            <h3>Step 3: Debug Information</h3>
+            <button class="btn" onclick="checkProjectAccess()">Check Project Access</button>
+            <button class="btn" onclick="checkExistingRequests()">Check Existing Requests</button>
+            <div id="debug-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedProject = null;
+        let contractorProjects = [];
+
+        // Establish contractor session first
+        async function establishContractorSession() {
+            try {
+                const response = await fetch('/buildhub/establish_contractor_session.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contractor_id: parseInt(document.getElementById('contractor-id').value) })
+                });
+                
+                const data = await response.json();
+                console.log('Session establishment:', data);
+                return data.success;
+            } catch (error) {
+                console.error('Session establishment error:', error);
+                return false;
+            }
+        }
+
+        async function loadContractorProjects() {
+            const contractorId = document.getElementById('contractor-id').value;
+            const resultDiv = document.getElementById('projects-result');
+            const projectsList = document.getElementById('projects-list');
+            
+            if (!contractorId) {
+                showResult(resultDiv, 'Please enter a contractor ID', 'error');
+                return;
+            }
+
+            try {
+                // Establish session first
+                const sessionEstablished = await establishContractorSession();
+                if (!sessionEstablished) {
+                    showResult(resultDiv, 'Failed to establish contractor session', 'error');
+                    return;
+                }
+
+                showResult(resultDiv, 'Loading contractor projects...', 'info');
+                
+                const response = await fetch(`/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${contractorId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    contractorProjects = data.data.projects || [];
+                    showResult(resultDiv, `✅ Loaded ${contractorProjects.length} projects successfully`, 'success');
+                    
+                    // Display projects list
+                    if (contractorProjects.length > 0) {
+                        let projectsHtml = '<h4>Available Projects:</h4>';
+                        contractorProjects.forEach(project => {
+                            projectsHtml += `
+                                <div class="project-item" onclick="selectProject(${project.id}, '${project.homeowner_id}', '${project.project_name}')">
+                                    <strong>ID: ${project.id}</strong> - ${project.project_name}<br>
+                                    <small>Homeowner: ${project.homeowner_name} (ID: ${project.homeowner_id})</small><br>
+                                    <small>Cost: ₹${project.estimate_cost ? project.estimate_cost.toLocaleString() : 'Not set'}</small><br>
+                                    <small>Status: ${project.status} | Source: ${project.source}</small>
+                                </div>
+                            `;
+                        });
+                        projectsList.innerHTML = projectsHtml;
+                        projectsList.style.display = 'block';
+                    } else {
+                        projectsList.innerHTML = '<p>No projects found for this contractor.</p>';
+                        projectsList.style.display = 'block';
+                    }
+                } else {
+                    showResult(resultDiv, `❌ Error: ${data.message}`, 'error');
+                    projectsList.style.display = 'none';
+                }
+            } catch (error) {
+                showResult(resultDiv, `❌ Network error: ${error.message}`, 'error');
+                projectsList.style.display = 'none';
+            }
+        }
+
+        function selectProject(projectId, homeownerId, projectName) {
+            selectedProject = contractorProjects.find(p => p.id == projectId);
+            document.getElementById('selected-project-id').value = projectId;
+            document.getElementById('homeowner-id').value = homeownerId;
+            
+            // Update total project cost if available
+            if (selectedProject && selectedProject.estimate_cost) {
+                document.getElementById('total-project-cost').value = selectedProject.estimate_cost;
+            }
+            
+            // Highlight selected project
+            document.querySelectorAll('.project-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.closest('.project-item').classList.add('selected');
+            
+            console.log('Selected project:', selectedProject);
+        }
+
+        async function submitPaymentRequest() {
+            const resultDiv = document.getElementById('payment-result');
+            
+            // Collect form data
+            const formData = {
+                project_id: parseInt(document.getElementById('selected-project-id').value),
+                homeowner_id: parseInt(document.getElementById('homeowner-id').value),
+                stage_name: document.getElementById('stage-name').value,
+                requested_amount: parseFloat(document.getElementById('requested-amount').value),
+                work_description: document.getElementById('work-description').value,
+                completion_percentage: parseFloat(document.getElementById('completion-percentage').value),
+                labor_count: parseInt(document.getElementById('labor-count').value),
+                total_project_cost: parseFloat(document.getElementById('total-project-cost').value),
+                quality_check: document.getElementById('quality-check').checked,
+                safety_compliance: document.getElementById('safety-compliance').checked,
+                materials_used: 'Concrete, steel rebar, cement, sand, gravel',
+                contractor_notes: 'Stage completed as per schedule and quality standards'
+            };
+
+            // Validate required fields
+            if (!formData.project_id || !formData.stage_name || !formData.requested_amount || !formData.work_description) {
+                showResult(resultDiv, '❌ Please fill in all required fields', 'error');
+                return;
+            }
+
+            try {
+                showResult(resultDiv, 'Submitting payment request...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/contractor/submit_payment_request.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(resultDiv, `✅ Payment request submitted successfully!\n\nDetails:\n${JSON.stringify(data.data, null, 2)}`, 'success');
+                } else {
+                    let errorMessage = `❌ Failed to submit payment request: ${data.message}`;
+                    if (data.debug) {
+                        errorMessage += `\n\nDebug Information:\n${JSON.stringify(data.debug, null, 2)}`;
+                    }
+                    showResult(resultDiv, errorMessage, 'error');
+                }
+            } catch (error) {
+                showResult(resultDiv, `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkProjectAccess() {
+            const resultDiv = document.getElementById('debug-result');
+            const projectId = document.getElementById('selected-project-id').value;
+            const contractorId = document.getElementById('contractor-id').value;
+            
+            if (!projectId || !contractorId) {
+                showResult(resultDiv, '❌ Please select a project and contractor ID first', 'error');
+                return;
+            }
+
+            try {
+                showResult(resultDiv, 'Checking project access...', 'info');
+                
+                // This is a debug endpoint we'll create to test project validation
+                const response = await fetch('/buildhub/debug_project_access.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        project_id: parseInt(projectId),
+                        contractor_id: parseInt(contractorId)
+                    })
+                });
+                
+                const data = await response.json();
+                showResult(resultDiv, `Project Access Check:\n${JSON.stringify(data, null, 2)}`, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult(resultDiv, `❌ Error checking project access: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkExistingRequests() {
+            const resultDiv = document.getElementById('debug-result');
+            const projectId = document.getElementById('selected-project-id').value;
+            const contractorId = document.getElementById('contractor-id').value;
+            
+            if (!projectId || !contractorId) {
+                showResult(resultDiv, '❌ Please select a project and contractor ID first', 'error');
+                return;
+            }
+
+            try {
+                showResult(resultDiv, 'Checking existing payment requests...', 'info');
+                
+                const response = await fetch(`/buildhub/backend/api/contractor/get_project_payment_requests.php?contractor_id=${contractorId}&project_id=${projectId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                showResult(resultDiv, `Existing Payment Requests:\n${JSON.stringify(data, null, 2)}`, data.success ? 'success' : 'info');
+            } catch (error) {
+                showResult(resultDiv, `❌ Error checking existing requests: ${error.message}`, 'error');
+            }
+        }
+
+        function showResult(element, message, type) {
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        // Auto-load projects on page load
+        window.addEventListener('load', () => {
+            loadContractorProjects();
+        });
+    </script>
+</body>
+</html>

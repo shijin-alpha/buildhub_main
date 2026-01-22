@@ -307,6 +307,88 @@
   color: #6c757d;
 }
 
+.no-projects-message {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+  margin: 20px 0;
+}
+
+.no-projects-icon {
+  font-size: 64px;
+  opacity: 0.7;
+  margin-bottom: 15px;
+}
+
+.no-projects-message h4 {
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.no-projects-message > p {
+  color: #6c757d;
+  margin: 0 0 25px 0;
+  font-size: 16px;
+}
+
+.no-projects-help {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: left;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.no-projects-help h5 {
+  color: #007bff;
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.no-projects-help ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.no-projects-help li {
+  padding: 8px 0;
+  color: #2c3e50;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.no-projects-actions {
+  margin-top: 25px;
+}
+
+.no-projects-actions .btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.no-projects-actions .btn:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+}
+
 .info-message {
   display: flex;
   flex-direction: column;
@@ -329,6 +411,38 @@
   margin: 0;
   max-width: 400px;
   line-height: 1.5;
+}
+
+.project-help {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: left;
+  max-width: 400px;
+}
+
+.project-help h5 {
+  color: #007bff;
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.project-help ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.project-help li {
+  padding: 6px 0;
+  color: #2c3e50;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Loading States */

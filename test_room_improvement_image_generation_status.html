@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Improvement Image Generation Status Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .status-display {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .status-generating {
+            background: linear-gradient(135deg, #e7f3ff 0%, #f0f8ff 100%);
+            border: 2px solid #0066cc;
+        }
+        
+        .status-error {
+            background: #ffebee;
+            border: 2px solid #f44336;
+        }
+        
+        .generating-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+        
+        .error-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 102, 204, 0.2);
+            border-radius: 3px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066cc, #4da6ff);
+            border-radius: 3px;
+            animation: progressSlide 2s ease-in-out infinite;
+        }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        @keyframes progressSlide {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(0%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Room Improvement Image Generation Status</h1>
+            <p>Test the different states of image generation in the room improvement system</p>
+        </div>
+
+        <div class="test-section">
+            <h3>Current Status Display</h3>
+            <div id="statusDisplay" class="status-display status-generating">
+                <div class="generating-icon">🎨</div>
+                <h5>Generating Real AI Image...</h5>
+                <p>Creating real AI interior design image...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <p style="font-size: 0.875rem; color: #718096; font-style: italic; margin-top: 1rem;">
+                    <strong>Note:</strong> Real AI image generation takes 1-5 minutes depending on system performance.
+                    The page will automatically update when complete.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="test-button" onclick="showGeneratingState()">Show Generating</button>
+                <button class="test-button" onclick="showErrorState()">Show Error</button>
+                <button class="test-button" onclick="showCompletedState()">Show Completed</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Integration Test</h3>
+            <p>This simulates the actual room improvement component behavior:</p>
+            
+            <div class="concept-section">
+                <h5>🖼️ Visual Reference</h5>
+                <div class="visual-reference">
+                    <div class="reference-note">
+                        <strong>Note:</strong> This is a conceptual and inspirational reference only. 
+                        Actual implementation may vary based on your specific room conditions and preferences.
+                    </div>
+                    
+                    <div id="visualReferenceContent">
+                        <!-- This will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate different states
+        let currentState = 'generating';
+        let generatingImage = true;
+        let imageGenerationStatus = 'processing';
+        let analysisResult = {
+            ai_enhancements: {
+                conceptual_visualization: {
+                    success: false,
+                    error: 'Conceptual generation disabled'
+                }
+            }
+        };
+
+        function showGeneratingState() {
+            currentState = 'generating';
+            generatingImage = true;
+            imageGenerationStatus = 'processing';
+            updateDisplay();
+        }
+
+        function showErrorState() {
+            currentState = 'error';
+            generatingImage = false;
+            imageGenerationStatus = null;
+            analysisResult.ai_enhancements.conceptual_visualization.success = false;
+            updateDisplay();
+        }
+
+        function showCompletedState() {
+            currentState = 'completed';
+            generatingImage = false;
+            imageGenerationStatus = 'completed';
+            analysisResult.ai_enhancements.conceptual_visualization = {
+                success: true,
+                image_url: '/buildhub/uploads/conceptual_images/sample_room.png'
+            };
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const statusDisplay = document.getElementById('statusDisplay');
+            const visualReferenceContent = document.getElementById('visualReferenceContent');
+            
+            // Update main status display
+            if (currentState === 'generating') {
+                statusDisplay.className = 'status-display status-generating';
+                statusDisplay.innerHTML = `
+                    <div class="generating-icon">🎨</div>
+                    <h5>Generating Real AI Image...</h5>
+                    <p>Creating real AI interior design image...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <p style="font-size: 0.875rem; color: #718096; font-style: italic; margin-top: 1rem;">
+                        <strong>Note:</strong> Real AI image generation takes 1-5 minutes depending on system performance.
+                        The page will automatically update when complete.
+                    </p>
+                `;
+            } else if (currentState === 'error') {
+                statusDisplay.className = 'status-display status-error';
+                statusDisplay.innerHTML = `
+                    <div class="error-icon">⚠️</div>
+                    <h5>Conceptual Visualization Unavailable</h5>
+                    <p>Conceptual generation disabled</p>
+                    <p style="font-size: 0.875rem; color: #666;">Your room analysis and improvement suggestions are still available above.</p>
+                `;
+            } else if (currentState === 'completed') {
+                statusDisplay.className = 'status-display';
+                statusDisplay.style.background = '#e8f5e8';
+                statusDisplay.style.border = '2px solid #4caf50';
+                statusDisplay.innerHTML = `
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">✅</div>
+                    <h5>Image Generation Completed!</h5>
+                    <p>Your AI-generated room concept is ready</p>
+                `;
+            }
+            
+            // Update visual reference content (simulating the actual component logic)
+            if (generatingImage) {
+                visualReferenceContent.innerHTML = `
+                    <div class="async-generation-status" style="background: #e7f3ff; border: 2px solid #0066cc; border-radius: 12px; padding: 2rem; text-align: center; margin: 1rem 0;">
+                        <div class="generation-progress">
+                            <div class="progress-icon" style="font-size: 3rem; margin-bottom: 1rem; animation: pulse 2s infinite;">🎨</div>
+                            <h6>Generating Real AI Image...</h6>
+                            <div class="progress-details">
+                                <p>🎨 Creating real AI interior design image...</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <p style="font-size: 0.875rem; color: #718096; font-style: italic; margin-top: 1rem;">
+                                    <strong>Note:</strong> Real AI image generation takes 1-5 minutes depending on system performance.
+                                    The page will automatically update when complete.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (analysisResult.ai_enhancements?.conceptual_visualization) {
+                if (analysisResult.ai_enhancements.conceptual_visualization.success) {
+                    visualReferenceContent.innerHTML = `
+                        <div class="conceptual-visualization">
+                            <div class="generated-image-container" style="text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                                <img src="${analysisResult.ai_enhancements.conceptual_visualization.image_url}" 
+                                     alt="AI-generated room improvement concept" 
+                                     style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div style="display: none; padding: 2rem; color: #666;">
+                                    <div style="font-size: 2rem; margin-bottom: 1rem;">🎨</div>
+                                    <p>Real AI image generated but not available for display</p>
+                                    <p>The AI successfully created a visualization based on your room analysis.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    visualReferenceContent.innerHTML = `
+                        <div class="generation-error" style="background: #ffebee; border: 2px solid #f44336; border-radius: 8px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                            <h6>Conceptual Visualization Unavailable</h6>
+                            <p>${analysisResult.ai_enhancements.conceptual_visualization.error || 'Conceptual generation disabled'}</p>
+                            <p style="font-size: 0.875rem; color: #666;">Your room analysis and improvement suggestions are still available above.</p>
+                        </div>
+                    `;
+                }
+            } else {
+                visualReferenceContent.innerHTML = `
+                    <div class="default-visual-reference">
+                        <p>A space perfectly tailored to your needs through intelligent visual analysis.</p>
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <button style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                                🎨 Generate Visual Concept
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize display
+        updateDisplay();
+
+        // Auto-cycle through states for demonstration
+        let autoDemo = false;
+        function startAutoDemo() {
+            if (autoDemo) return;
+            autoDemo = true;
+            
+            const states = ['generating', 'completed', 'error'];
+            let currentIndex = 0;
+            
+            setInterval(() => {
+                if (states[currentIndex] === 'generating') {
+                    showGeneratingState();
+                } else if (states[currentIndex] === 'completed') {
+                    showCompletedState();
+                } else {
+                    showErrorState();
+                }
+                currentIndex = (currentIndex + 1) % states.length;
+            }, 4000);
+        }
+
+        // Add auto demo button
+        document.addEventListener('DOMContentLoaded', function() {
+            const testSection = document.querySelector('.test-section');
+            const autoDemoBtn = document.createElement('button');
+            autoDemoBtn.className = 'test-button';
+            autoDemoBtn.textContent = 'Start Auto Demo';
+            autoDemoBtn.onclick = startAutoDemo;
+            testSection.querySelector('div[style*="text-align: center"]').appendChild(autoDemoBtn);
+        });
+    </script>
+</body>
+</html>

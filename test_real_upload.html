@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Room Improvement Upload - FIXED</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, textarea, input[type="file"] { width: 100%; max-width: 400px; padding: 8px; }
+        button { padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        .result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background: #f9f9f9; }
+        .error { border-color: #d32f2f; background: #ffebee; }
+        .success { border-color: #388e3c; background: #e8f5e9; }
+        .loading { color: #1976d2; }
+    </style>
+</head>
+<body>
+    <h1>Room Improvement API Test - FIXED VERSION</h1>
+    <p><strong>This test page will help identify the exact issue with the frontend API call.</strong></p>
+    
+    <form id="testForm">
+        <div class="form-group">
+            <label>Room Type:</label>
+            <select name="room_type" required>
+                <option value="">Select Room Type</option>
+                <option value="bedroom">Bedroom</option>
+                <option value="living_room">Living Room</option>
+                <option value="kitchen">Kitchen</option>
+                <option value="dining_room">Dining Room</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Improvement Notes:</label>
+            <textarea name="improvement_notes" placeholder="What would you like to improve?" rows="3"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Room Image:</label>
+            <input type="file" name="room_image" accept="image/jpeg,image/jpg,image/png" required>
+        </div>
+        
+        <button type="submit" id="submitBtn">Analyze Room</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const resultDiv = document.getElementById('result');
+            
+            // Get form data
+            const formData = new FormData();
+            const roomType = document.querySelector('select[name="room_type"]').value;
+            const improvementNotes = document.querySelector('textarea[name="improvement_notes"]').value;
+            const roomImage = document.querySelector('input[name="room_image"]').files[0];
+            
+            // Validation
+            if (!roomType) {
+                resultDiv.innerHTML = '<div class="result error">Please select a room type</div>';
+                return;
+            }
+            
+            if (!roomImage) {
+                resultDiv.innerHTML = '<div class="result error">Please select an image file</div>';
+                return;
+            }
+            
+            // Validate file type
+            if (!['image/jpeg', 'image/jpg', 'image/png'].includes(roomImage.type)) {
+                resultDiv.innerHTML = '<div class="result error">Only JPG and PNG files are supported</div>';
+                return;
+            }
+            
+            // Validate file size (5MB limit)
+            if (roomImage.size > 5 * 1024 * 1024) {
+                resultDiv.innerHTML = '<div class="result error">File size must be less than 5MB</div>';
+                return;
+            }
+            
+            // Prepare form data
+            formData.append('room_type', roomType);
+            formData.append('improvement_notes', improvementNotes);
+            formData.append('room_image', roomImage);
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Analyzing...';
+            resultDiv.innerHTML = '<div class="result loading">🔍 Analyzing room image and generating improvement concepts...</div>';
+            
+            console.log('Sending request with data:', {
+                room_type: roomType,
+                improvement_notes: improvementNotes,
+                file_name: roomImage.name,
+                file_size: roomImage.size,
+                file_type: roomImage.type
+            });
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/analyze_room_improvement.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    throw new Error('Invalid JSON response: ' + responseText.substring(0, 200));
+                }
+                
+                console.log('Parsed response:', data);
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Analysis Successful!</h3>
+                            <p><strong>Analysis ID:</strong> ${data.analysis_id}</p>
+                            <p><strong>Concept:</strong> ${data.analysis.concept_name}</p>
+                            <p><strong>Room Summary:</strong> ${data.analysis.room_condition_summary}</p>
+                            <h4>Improvement Suggestions:</h4>
+                            <ul>
+                                <li><strong>Lighting:</strong> ${data.analysis.improvement_suggestions.lighting}</li>
+                                <li><strong>Color & Ambience:</strong> ${data.analysis.improvement_suggestions.color_ambience}</li>
+                                <li><strong>Furniture & Layout:</strong> ${data.analysis.improvement_suggestions.furniture_layout}</li>
+                            </ul>
+                            <h4>Style Recommendation:</h4>
+                            <p><strong>${data.analysis.style_recommendation.style}:</strong> ${data.analysis.style_recommendation.description}</p>
+                            ${data.analysis.ai_enhancements?.async_image_generation?.job_id ? 
+                                `<p><strong>AI Image Generation:</strong> Started (Job ID: ${data.analysis.ai_enhancements.async_image_generation.job_id})</p>` : 
+                                ''
+                            }
+                        </div>
+                    `;
+                } else {
+                    console.error('API returned error:', data);
+                    let debugInfo = '';
+                    if (data.debug) {
+                        debugInfo = '<h4>Debug Information:</h4><pre>' + JSON.stringify(data.debug, null, 2) + '</pre>';
+                    }
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Analysis Failed</h3>
+                            <p><strong>Error:</strong> ${data.message}</p>
+                            ${debugInfo}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Request failed:', error);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Request Failed</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Check the browser console for more details.</p>
+                    </div>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Analyze Room';
+            }
+        });
+    </script>
+</body>
+</html>

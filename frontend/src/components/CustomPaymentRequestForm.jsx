@@ -63,21 +63,26 @@ const CustomPaymentRequestForm = ({
       );
       
       const data = await response.json();
+      console.log('Projects API response:', data); // Debug log
       
       if (data.success) {
         const projects = data.data.projects || [];
         setProjects(projects);
         
         if (projects.length === 0) {
-          toast.info('No construction projects available yet.');
+          console.log('No projects found for contractor:', contractorId);
+          toast.info('No construction projects available yet. Complete some estimates first to create projects.');
+        } else {
+          console.log(`Loaded ${projects.length} projects for contractor:`, contractorId);
         }
       } else {
+        console.error('API returned error:', data);
         toast.error('Failed to load projects: ' + (data.message || 'Unknown error'));
         setProjects([]);
       }
     } catch (error) {
       console.error('Error loading projects:', error);
-      toast.error('Failed to load projects. Please try again.');
+      toast.error('Failed to load projects. Please check your connection and try again.');
       setProjects([]);
     } finally {
       setLoadingProjects(false);
@@ -274,7 +279,26 @@ const CustomPaymentRequestForm = ({
           
           {projects.length === 0 && (
             <div className="no-projects-message">
-              <p>📋 No construction projects available yet.</p>
+              <div className="no-projects-icon">📋</div>
+              <h4>No Construction Projects Available</h4>
+              <p>To create custom payment requests, you need active construction projects.</p>
+              <div className="no-projects-help">
+                <h5>How to get projects:</h5>
+                <ul>
+                  <li>✅ Submit estimates to homeowners</li>
+                  <li>✅ Wait for homeowner approval</li>
+                  <li>✅ Approved estimates become construction projects</li>
+                  <li>✅ Then you can request custom payments</li>
+                </ul>
+              </div>
+              <div className="no-projects-actions">
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => window.location.reload()}
+                >
+                  🔄 Refresh Projects
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -494,12 +518,22 @@ const CustomPaymentRequestForm = ({
       )}
 
       {/* No Project Selected */}
-      {!selectedProject && (
+      {!selectedProject && projects.length > 0 && (
         <div className="no-project-selected">
           <div className="info-message">
             <div className="info-icon">💰</div>
             <h4>Select a Project</h4>
             <p>Choose a project above to create custom payment requests for additional work or expenses.</p>
+            <div className="project-help">
+              <h5>Custom payments are for:</h5>
+              <ul>
+                <li>🔧 Additional work not in original estimate</li>
+                <li>📈 Material cost increases</li>
+                <li>⚠️ Unforeseen site conditions</li>
+                <li>🎨 Design changes requested by homeowner</li>
+                <li>🛠️ Equipment rental needs</li>
+              </ul>
+            </div>
           </div>
         </div>
       )}

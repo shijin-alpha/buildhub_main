@@ -6,6 +6,7 @@ import WizardLayout from './wizard/WizardLayout';
 import SearchableDropdown from './SearchableDropdown';
 import TourGuide from './TourGuide';
 import ArchitectSelection from './ArchitectSelection';
+import HouseStyleSuggestions from './HouseStyleSuggestions';
 import { stateDistricts, keralaPanchayatsMunicipalities } from '../data/locationData';
 // Import removed: TimelinePrediction
 // Import removed: designRulesEngine
@@ -2015,6 +2016,87 @@ export default function HomeownerRequestWizard() {
               </div>
             </div>
 
+            {/* Option 2: AI Style Suggestions */}
+            <div style={{
+              backgroundColor: '#ffffff',
+              border: '2px solid #e5e7eb',
+              borderRadius: '16px',
+              padding: '24px',
+              marginBottom: '24px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '20px',
+                paddingBottom: '16px',
+                borderBottom: '2px solid #f1f5f9'
+              }}>
+                <span style={{ fontSize: '24px' }}>🤖</span>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '20px',
+                  fontWeight: '700',
+                  color: '#1f2937'
+                }}>
+                  Option 2: AI-Powered Style Recommendations
+                </h3>
+                <span style={{
+                  fontSize: '12px',
+                  backgroundColor: '#dcfce7',
+                  color: '#166534',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  fontWeight: '600'
+                }}>
+                  Smart Choice
+                </span>
+              </div>
+
+              <div style={{
+                marginBottom: '20px',
+                padding: '16px',
+                backgroundColor: '#f8fafc',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <p style={{
+                  margin: 0,
+                  fontSize: '14px',
+                  color: '#64748b',
+                  lineHeight: '1.5'
+                }}>
+                  Get personalized house style recommendations based on your plot size, budget, location, and preferences. 
+                  Our AI analyzes your project details to suggest the most suitable architectural styles.
+                </p>
+              </div>
+
+              <HouseStyleSuggestions
+                formData={{
+                  plot_size: data.plot_size,
+                  plot_unit: data.plot_unit,
+                  building_size: data.building_size,
+                  budget_range: data.budget_range,
+                  num_floors: data.num_floors,
+                  rooms: data.rooms,
+                  location: data.location,
+                  district: data.district,
+                  state: data.state
+                }}
+                onStyleChange={(selectedStyle) => {
+                  console.log('🤖 AI suggested style selected:', selectedStyle.name);
+                  setData(prev => ({ 
+                    ...prev, 
+                    aesthetic: selectedStyle.name,
+                    ai_suggested_style: selectedStyle // Store the full suggestion for reference
+                  }));
+                }}
+                showSuggestions={true}
+                autoSelect={false}
+              />
+            </div>
+
 
           </div>
 
@@ -2058,9 +2140,471 @@ export default function HomeownerRequestWizard() {
       {step === 4 && (
         <div className="section">
           <div className="section-header">Review</div>
+          <div className="section-body">
+            <div style={{
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              padding: '24px',
+              marginBottom: '24px'
+            }}>
+              <h3 style={{ 
+                margin: '0 0 20px 0', 
+                color: '#1f2937', 
+                fontSize: '24px',
+                fontWeight: '700',
+                textAlign: 'center'
+              }}>
+                📋 Review Your Request
+              </h3>
+              <p style={{
+                textAlign: 'center',
+                color: '#6b7280',
+                fontSize: '16px',
+                marginBottom: '32px'
+              }}>
+                Please review all your selections before proceeding to architect selection
+              </p>
 
-          {/* Comprehensive Rules Summary */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', 
+                gap: '24px' 
+              }}>
+                {/* Preliminary Information */}
+                <div style={{ 
+                  backgroundColor: 'white', 
+                  padding: '20px', 
+                  borderRadius: '12px', 
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <h4 style={{ 
+                    margin: '0 0 16px 0', 
+                    color: '#1f2937', 
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    📏 Preliminary Details
+                  </h4>
+                  <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#374151' }}>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Plot Size:</strong> {data.plot_size} {data.plot_unit || 'sq ft'}
+                      {data.plot_size && data.plot_unit === 'cents' && (
+                        <span style={{ color: '#6b7280', fontSize: '12px' }}>
+                          {' '}({(data.plot_size * 435.6).toFixed(0)} sq ft)
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Building Size:</strong> {data.building_size} sq ft
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Budget Range:</strong> {data.budget_range === 'Custom' ? `₹${parseFloat(data.custom_budget || 0).toLocaleString()}` : data.budget_range}
+                    </div>
+                    {estimatedCost > 0 && (
+                      <div style={{ marginBottom: '8px', color: '#059669' }}>
+                        <strong>Estimated Cost:</strong> ₹{Math.round(estimatedCost).toLocaleString()}
+                      </div>
+                    )}
+                    {budgetCategory && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Budget Category:</strong> 
+                        <span style={{ 
+                          marginLeft: '8px',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          backgroundColor: budgetCategory === 'luxury' ? '#fef3c7' : budgetCategory === 'premium' ? '#dbeafe' : budgetCategory === 'standard' ? '#d1fae5' : '#f3f4f6',
+                          color: budgetCategory === 'luxury' ? '#92400e' : budgetCategory === 'premium' ? '#1e40af' : budgetCategory === 'standard' ? '#065f46' : '#374151'
+                        }}>
+                          {budgetCategory.charAt(0).toUpperCase() + budgetCategory.slice(1)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
+                {/* Site Information */}
+                <div style={{ 
+                  backgroundColor: 'white', 
+                  padding: '20px', 
+                  borderRadius: '12px', 
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <h4 style={{ 
+                    margin: '0 0 16px 0', 
+                    color: '#1f2937', 
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    🏞️ Site Details
+                  </h4>
+                  <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#374151' }}>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Plot Shape:</strong> {data.plot_shape || 'Not specified'}
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Topography:</strong> {data.topography || 'Not specified'}
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Development Laws:</strong> {data.development_laws || 'Not specified'}
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Number of Floors:</strong> {data.num_floors || 'Not specified'}
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Location:</strong> {data.location || 'Not specified'}
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong>Timeline:</strong> {data.timeline || 'Not specified'}
+                    </div>
+                    {timelineData && (
+                      <div style={{ marginBottom: '8px', color: '#059669' }}>
+                        <strong>Predicted Duration:</strong> {timelineData.months} months
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Family & Room Requirements */}
+                <div style={{ 
+                  backgroundColor: 'white', 
+                  padding: '20px', 
+                  borderRadius: '12px', 
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <h4 style={{ 
+                    margin: '0 0 16px 0', 
+                    color: '#1f2937', 
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    👨‍👩‍👧‍👦 Family & Rooms
+                  </h4>
+                  <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#374151' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                      <strong>Family Needs:</strong>
+                      {Array.isArray(data.family_needs) && data.family_needs.length > 0 ? (
+                        <div style={{ marginTop: '4px' }}>
+                          {data.family_needs.map((need, index) => (
+                            <span key={index} style={{
+                              display: 'inline-block',
+                              margin: '2px 4px 2px 0',
+                              padding: '2px 8px',
+                              backgroundColor: '#dbeafe',
+                              color: '#1e40af',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: '500'
+                            }}>
+                              {need}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontStyle: 'italic' }}> Not specified</span>
+                      )}
+                    </div>
+                    
+                    <div style={{ marginBottom: '12px' }}>
+                      <strong>Room Types:</strong>
+                      {Array.isArray(data.rooms) && data.rooms.length > 0 ? (
+                        <div style={{ marginTop: '4px' }}>
+                          {data.rooms.map((room, index) => {
+                            const roomType = roomTypes.find(rt => rt.key === room);
+                            return (
+                              <span key={index} style={{
+                                display: 'inline-block',
+                                margin: '2px 4px 2px 0',
+                                padding: '4px 8px',
+                                backgroundColor: '#f0fdf4',
+                                color: '#166534',
+                                borderRadius: '12px',
+                                fontSize: '12px',
+                                fontWeight: '500'
+                              }}>
+                                {roomType ? `${roomType.icon} ${roomType.label}` : room}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontStyle: 'italic' }}> Not specified</span>
+                      )}
+                    </div>
+
+                    {/* Floor-wise Room Distribution */}
+                    {data.floor_rooms && Object.keys(data.floor_rooms).length > 0 && (
+                      <div style={{ marginBottom: '12px' }}>
+                        <strong>Floor-wise Room Distribution:</strong>
+                        <div style={{ marginTop: '8px' }}>
+                          {Object.entries(data.floor_rooms).map(([floorKey, rooms]) => {
+                            const floorNumber = floorKey.replace('floor', '');
+                            const floorName = floorNumber === '1' ? 'Ground Floor' : `Floor ${floorNumber}`;
+                            return (
+                              <div key={floorKey} style={{
+                                marginBottom: '8px',
+                                padding: '8px 12px',
+                                backgroundColor: '#f8fafc',
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0'
+                              }}>
+                                <div style={{ fontWeight: '600', marginBottom: '4px', color: '#374151' }}>
+                                  {floorName}:
+                                </div>
+                                <div style={{ fontSize: '13px' }}>
+                                  {Object.entries(rooms).map(([roomType, count]) => {
+                                    const roomTypeInfo = roomTypes.find(rt => rt.key === roomType);
+                                    return (
+                                      <span key={roomType} style={{
+                                        display: 'inline-block',
+                                        margin: '2px 4px 2px 0',
+                                        padding: '2px 6px',
+                                        backgroundColor: '#e0f2fe',
+                                        color: '#0c4a6e',
+                                        borderRadius: '8px',
+                                        fontSize: '11px'
+                                      }}>
+                                        {roomTypeInfo ? roomTypeInfo.icon : '🏠'} {count}x {roomTypeInfo ? roomTypeInfo.label : roomType}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Preferences */}
+                <div style={{ 
+                  backgroundColor: 'white', 
+                  padding: '20px', 
+                  borderRadius: '12px', 
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <h4 style={{ 
+                    margin: '0 0 16px 0', 
+                    color: '#1f2937', 
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    🎨 Design Preferences
+                  </h4>
+                  <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#374151' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                      <strong>House Style:</strong> 
+                      {data.aesthetic ? (
+                        <span style={{
+                          marginLeft: '8px',
+                          padding: '4px 12px',
+                          backgroundColor: '#fef3c7',
+                          color: '#92400e',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          fontWeight: '500'
+                        }}>
+                          {data.aesthetic}
+                        </span>
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontStyle: 'italic' }}> Not specified</span>
+                      )}
+                    </div>
+
+                    {data.material_preferences && Array.isArray(data.material_preferences) && data.material_preferences.length > 0 && (
+                      <div style={{ marginBottom: '12px' }}>
+                        <strong>Material Preferences:</strong>
+                        <div style={{ marginTop: '4px' }}>
+                          {data.material_preferences.map((material, index) => (
+                            <span key={index} style={{
+                              display: 'inline-block',
+                              margin: '2px 4px 2px 0',
+                              padding: '2px 8px',
+                              backgroundColor: '#f3e8ff',
+                              color: '#7c3aed',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: '500'
+                            }}>
+                              {material}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {data.orientation && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Site Orientation:</strong> {data.orientation}
+                      </div>
+                    )}
+
+                    {data.budget_allocation && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Budget Allocation:</strong> {data.budget_allocation}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Additional Requirements */}
+                <div style={{ 
+                  backgroundColor: 'white', 
+                  padding: '20px', 
+                  borderRadius: '12px', 
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                  gridColumn: '1 / -1'
+                }}>
+                  <h4 style={{ 
+                    margin: '0 0 16px 0', 
+                    color: '#1f2937', 
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    📝 Additional Requirements
+                  </h4>
+                  <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#374151' }}>
+                    {data.requirements ? (
+                      <div style={{
+                        padding: '12px 16px',
+                        backgroundColor: '#f8fafc',
+                        borderRadius: '8px',
+                        border: '1px solid #e2e8f0',
+                        fontStyle: 'italic'
+                      }}>
+                        "{data.requirements}"
+                      </div>
+                    ) : (
+                      <div style={{ 
+                        color: '#9ca3af', 
+                        fontStyle: 'italic',
+                        textAlign: 'center',
+                        padding: '20px'
+                      }}>
+                        No additional requirements specified
+                      </div>
+                    )}
+
+                    {data.site_considerations && (
+                      <div style={{ marginTop: '12px' }}>
+                        <strong>Site Considerations:</strong>
+                        <div style={{
+                          marginTop: '4px',
+                          padding: '12px 16px',
+                          backgroundColor: '#f0f9ff',
+                          borderRadius: '8px',
+                          border: '1px solid #bae6fd',
+                          fontStyle: 'italic'
+                        }}>
+                          "{data.site_considerations}"
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary Statistics */}
+              <div style={{
+                marginTop: '24px',
+                padding: '16px',
+                backgroundColor: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: '8px'
+              }}>
+                <h5 style={{ margin: '0 0 12px 0', color: '#166534', fontSize: '16px', fontWeight: '600' }}>
+                  📊 Request Summary
+                </h5>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                  gap: '12px',
+                  fontSize: '14px',
+                  color: '#166534'
+                }}>
+                  <div><strong>Total Rooms:</strong> {Array.isArray(data.rooms) ? data.rooms.length : 0}</div>
+                  <div><strong>Family Needs:</strong> {Array.isArray(data.family_needs) ? data.family_needs.length : 0}</div>
+                  <div><strong>Plot Category:</strong> {plotCategory || 'Standard'}</div>
+                  <div><strong>Budget Category:</strong> {budgetCategory || 'Standard'}</div>
+                  {timelineData && <div><strong>Est. Duration:</strong> {timelineData.months} months</div>}
+                  <div><strong>Completion:</strong> {
+                    Math.round(
+                      ((data.plot_size ? 1 : 0) + 
+                       (data.building_size ? 1 : 0) + 
+                       (data.budget_range ? 1 : 0) + 
+                       (data.plot_shape ? 1 : 0) + 
+                       (data.topography ? 1 : 0) + 
+                       (data.development_laws ? 1 : 0) + 
+                       (data.num_floors ? 1 : 0) + 
+                       (Array.isArray(data.rooms) && data.rooms.length > 0 ? 1 : 0) + 
+                       (data.aesthetic ? 1 : 0)) / 9 * 100
+                    )
+                  }%</div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{
+                marginTop: '24px',
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '12px'
+              }}>
+                <button
+                  onClick={() => setStep(0)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#f3f4f6',
+                    color: '#374151',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📝 Edit Details
+                </button>
+                <button
+                  onClick={() => setStep(3)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#f3f4f6',
+                    color: '#374151',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🎨 Edit Preferences
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div className="wizard-footer">
             <button className="btn btn-secondary" onClick={prev}>Back</button>

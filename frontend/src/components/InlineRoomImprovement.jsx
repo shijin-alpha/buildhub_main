@@ -904,7 +904,29 @@ const InlineRoomImprovement = () => {
                   </div>
                   
                   {/* Conceptual Image Generation - Async Support */}
-                  {analysisResult.ai_enhancements?.conceptual_visualization ? (
+                  {generatingImage ? (
+                    <div className="async-generation-status">
+                      <div className="generation-progress">
+                        <div className="progress-icon">🎨</div>
+                        <h6>Generating Real AI Image...</h6>
+                        <div className="progress-details">
+                          {imageGenerationStatus === 'pending' && (
+                            <p>⏳ Image generation queued...</p>
+                          )}
+                          {imageGenerationStatus === 'processing' && (
+                            <p>🎨 Creating real AI interior design image...</p>
+                          )}
+                          <div className="progress-bar">
+                            <div className="progress-fill"></div>
+                          </div>
+                          <p className="progress-note">
+                            <strong>Note:</strong> Real AI image generation takes 1-5 minutes depending on system performance.
+                            The page will automatically update when complete.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : analysisResult.ai_enhancements?.conceptual_visualization ? (
                     <div className="conceptual-visualization">
                       {analysisResult.ai_enhancements.conceptual_visualization.success ? (
                         <div className="generated-image-container">
@@ -970,28 +992,6 @@ const InlineRoomImprovement = () => {
                           <p className="error-note">Your room analysis and improvement suggestions are still available above.</p>
                         </div>
                       )}
-                    </div>
-                  ) : generatingImage ? (
-                    <div className="async-generation-status">
-                      <div className="generation-progress">
-                        <div className="progress-icon">🎨</div>
-                        <h6>Generating Real AI Image...</h6>
-                        <div className="progress-details">
-                          {imageGenerationStatus === 'pending' && (
-                            <p>⏳ Image generation queued...</p>
-                          )}
-                          {imageGenerationStatus === 'processing' && (
-                            <p>🎨 Creating real AI interior design image...</p>
-                          )}
-                          <div className="progress-bar">
-                            <div className="progress-fill"></div>
-                          </div>
-                          <p className="progress-note">
-                            <strong>Note:</strong> Real AI image generation takes 1-5 minutes depending on system performance.
-                            The page will automatically update when complete.
-                          </p>
-                        </div>
-                      </div>
                     </div>
                   ) : analysisResult.ai_enhancements?.async_image_generation?.job_id ? (
                     <div className="async-generation-info">

@@ -2151,3 +2151,97 @@
   font-family: monospace;
   font-size: 11px;
 }
+
+/* Image Generation States */
+.visualization-generating {
+  background: linear-gradient(135deg, #e7f3ff 0%, #f0f8ff 100%);
+  border: 2px solid #0066cc;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.generating-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+}
+
+.visualization-generating h5 {
+  color: #0066cc;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.visualization-generating p {
+  color: #4a5568;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.generating-note {
+  font-size: 0.875rem !important;
+  color: #718096 !important;
+  font-style: italic;
+  margin-top: 1rem !important;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 102, 204, 0.2);
+  border-radius: 3px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0066cc, #4da6ff);
+  border-radius: 3px;
+  animation: progressSlide 2s ease-in-out infinite;
+}
+
+@keyframes progressSlide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+.generating-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.generating-content .generating-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.generating-content h6 {
+  color: #0066cc;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.generating-content p {
+  color: #4a5568;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.generating-content small {
+  color: #718096;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}

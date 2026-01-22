@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 require_once '../../utils/send_mail.php';
+require_once '../../utils/PaymentRequestValidator.php';
 
 try {
     $database = new Database();
@@ -111,6 +112,52 @@ try {
     
     $homeowner_id = $project['homeowner_id'] ?: $project['layout_homeowner_id'];
     $total_cost = $project['total_cost'];
+    
+    // Prepare project data for validation
+    $project_data = [
+        'total_cost' => $total_cost,
+        'timeline' => $project['timeline'] ?? null
+    ];
+    
+    // Prepare request data for validation
+    $validation_input = [
+        'project_id' => $project_id,
+        'contractor_id' => $contractor_id,
+        'homeowner_id' => $homeowner_id,
+        'stage_name' => $stage_name,
+        'requested_amount' => $requested_amount,
+        'work_description' => $work_description,
+        'completion_percentage' => $completion_percentage,
+        'contractor_notes' => $contractor_notes,
+        'materials_used' => $materials_used,
+        'labor_cost' => $labor_cost,
+        'material_cost' => $material_cost,
+        'equipment_cost' => $equipment_cost,
+        'other_expenses' => $other_expenses,
+        'work_start_date' => $work_start_date,
+        'work_end_date' => $work_end_date,
+        'quality_check_status' => $quality_check_status,
+        'safety_compliance' => $safety_compliance,
+        'weather_delays' => $weather_delays,
+        'workers_count' => $workers_count,
+        'supervisor_name' => $supervisor_name,
+        'next_stage_readiness' => $next_stage_readiness
+    ];
+    
+    // Comprehensive validation using PaymentRequestValidator
+    $validation_result = PaymentRequestValidator::validateStagePaymentRequest($validation_input, $project_data);
+    
+    if (!$validation_result['is_valid']) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Payment request validation failed',
+            'validation_errors' => $validation_result['errors'],
+            'validation_warnings' => $validation_result['warnings'],
+            'validation_score' => $validation_result['validation_score'],
+            'validation_summary' => PaymentRequestValidator::getValidationSummary($validation_result)
+        ]);
+        exit;
+    }
     
     // Calculate percentage of total project cost
     $percentage_of_total = ($requested_amount / $total_cost) * 100;
@@ -351,6 +398,13 @@ try {
                     'other_expenses' => $other_expenses,
                     'total' => $requested_amount
                 ]
+            ],
+            'validation_result' => [
+                'score' => $validation_result['validation_score'],
+                'warnings' => $validation_result['warnings'],
+                'recommendations' => $validation_result['recommendations'] ?? [],
+                'summary' => PaymentRequestValidator::getValidationSummary($validation_result),
+                'details' => $validation_result['validation_details'] ?? []
             ]
         ]);
     } else {

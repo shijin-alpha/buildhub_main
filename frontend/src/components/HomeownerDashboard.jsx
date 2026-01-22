@@ -6,6 +6,7 @@ import TourGuide from './TourGuide.jsx';
 import HomeownerDashboardTour from './HomeownerDashboardTour.jsx';
 import ArchitectSelection from './ArchitectSelection.jsx';
 import GeoPhotoViewer from './GeoPhotoViewer.jsx';
+import HouseStyleSuggestions from './HouseStyleSuggestions.jsx';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -4121,6 +4122,39 @@ const HomeownerDashboard = () => {
                           </button>
                         ))}
                       </div>
+                    </div>
+                  </div>
+
+                  {/* AI-Powered House Style Suggestions */}
+                  <div className="form-row">
+                    <div className="form-group" style={{ width: '100%' }}>
+                      <label>🤖 AI-Powered House Style Recommendations</label>
+                      <p style={{ fontSize: '0.9rem', color: '#666', margin: '4px 0 12px 0' }}>
+                        Get personalized style suggestions based on your project details
+                      </p>
+                      <HouseStyleSuggestions
+                        formData={{
+                          plot_size: requestData.plot_size,
+                          plot_unit: requestData.plot_unit,
+                          building_size: requestData.building_size,
+                          budget_range: requestData.budget_range,
+                          num_floors: requestData.num_floors,
+                          rooms: requestData.rooms,
+                          location: requestData.location,
+                          district: requestData.district
+                        }}
+                        onStyleChange={(selectedStyle) => {
+                          console.log('🤖 AI suggested style selected:', selectedStyle.name);
+                          // Update the aesthetic field with the selected style
+                          setRequestData(prev => ({ 
+                            ...prev, 
+                            aesthetic: selectedStyle.name,
+                            ai_suggested_style: selectedStyle // Store the full suggestion for reference
+                          }));
+                        }}
+                        showSuggestions={Object.keys(requestData).length > 3} // Show suggestions when form has some data
+                        autoSelect={false}
+                      />
                     </div>
                   </div>
                 </div>
