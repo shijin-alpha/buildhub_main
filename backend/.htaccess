@@ -1,0 +1,7 @@
+# Allow Google Sign-In popup communication
+<IfModule mod_headers.c>
+  Header always set Cross-Origin-Opener-Policy "same-origin-allow-popups"
+  # Avoid cross-origin isolation that breaks Google Identity postMessage
+  Header always set Cross-Origin-Embedder-Policy "unsafe-none"
+  Header always set Cross-Origin-Resource-Policy "cross-origin"
+</IfModule>

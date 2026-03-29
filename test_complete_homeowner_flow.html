@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Homeowner Flow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .step { margin: 20px 0; padding: 15px; border-radius: 8px; }
+        .step.loading { background: #fff3cd; border: 1px solid #ffeaa7; }
+        .step.success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .step.error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .filter-tabs { display: flex; gap: 10px; margin: 20px 0; }
+        .filter-tab { padding: 10px 20px; border: 2px solid #007bff; background: white; color: #007bff; border-radius: 6px; cursor: pointer; }
+        .filter-tab.active { background: #007bff; color: white; }
+        .report-card { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 8px; background: #f9f9f9; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+        .stat-card { background: white; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #ddd; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .debug { background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Complete Homeowner Flow Test</h1>
+        <p>This test simulates the exact flow that the React component follows</p>
+
+        <div id="step1" class="step loading">
+            <h3>Step 1: Establish Session</h3>
+            <div id="step1-content">Establishing homeowner session...</div>
+        </div>
+
+        <div id="step2" class="step loading">
+            <h3>Step 2: Fetch Inspection Reports</h3>
+            <div id="step2-content">Waiting for session...</div>
+        </div>
+
+        <div id="step3" class="step loading">
+            <h3>Step 3: Display Results</h3>
+            <div id="step3-content">Waiting for data...</div>
+        </div>
+
+        <!-- Filter Tabs (like in React component) -->
+        <div class="filter-tabs">
+            <div class="filter-tab" data-filter="all">📋 All Reports</div>
+            <div class="filter-tab" data-filter="daily">📅 Daily Reports</div>
+            <div class="filter-tab" data-filter="payment_requests">💰 Payment Requests</div>
+            <div class="filter-tab active" data-filter="inspection_reports">🔍 Inspection Reports</div>
+        </div>
+
+        <!-- Results Display -->
+        <div id="results-container">
+            <div id="loading-display" style="text-align: center; padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+                <h3>Loading Inspection Reports...</h3>
+                <p>Fetching inspection reports from site inspectors</p>
+            </div>
+
+            <div id="stats-container" style="display: none;">
+                <h2>📊 Statistics</h2>
+                <div id="stats" class="stats-grid"></div>
+            </div>
+
+            <div id="reports-container" style="display: none;">
+                <h2>📋 Inspection Reports</h2>
+                <div id="reports"></div>
+            </div>
+
+            <div id="no-reports" style="display: none; text-align: center; padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+                <h3>No Inspection Reports</h3>
+                <p>No inspection reports have been created for your projects yet.</p>
+                <div class="debug">
+                    <strong>Debug Info:</strong><br/>
+                    <span id="debug-info">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="debug">
+            <h3>🔧 Debug Information</h3>
+            <pre id="debug-log">Starting test...\n</pre>
+        </div>
+    </div>
+
+    <script>
+        let debugLog = '';
+        
+        function log(message) {
+            debugLog += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            document.getElementById('debug-log').textContent = debugLog;
+            console.log(message);
+        }
+
+        function updateStep(stepId, status, content) {
+            const step = document.getElementById(stepId);
+            step.className = `step ${status}`;
+            document.getElementById(stepId + '-content').innerHTML = content;
+        }
+
+        // Step 1: Establish Session (like React component does)
+        async function establishSession() {
+            log('🔄 Starting session establishment...');
+            updateStep('step1', 'loading', 'Establishing homeowner session...');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/session_bridge.php', {
+                    credentials: 'include'
+                });
+                
+                log(`📡 Session response status: ${response.status}`);
+                const data = await response.json();
+                log(`📊 Session data: ${JSON.stringify(data)}`);
+                
+                if (data.success) {
+                    updateStep('step1', 'success', `✅ Session established for user ${data.user.id} (${data.user.role})`);
+                    log('✅ Session established successfully');
+                    return true;
+                } else {
+                    updateStep('step1', 'error', `❌ Session failed: ${data.message}`);
+                    log(`❌ Session failed: ${data.message}`);
+                    return false;
+                }
+            } catch (error) {
+                updateStep('step1', 'error', `❌ Session error: ${error.message}`);
+                log(`❌ Session error: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Step 2: Fetch Inspection Reports (exactly like React component)
+        async function fetchInspectionReports() {
+            log('🔍 Starting inspection reports fetch...');
+            updateStep('step2', 'loading', 'Fetching inspection reports...');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_inspection_reports.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                log(`📡 API response status: ${response.status}`);
+                log(`📡 API response headers: ${JSON.stringify([...response.headers.entries()])}`);
+                
+                const result = await response.json();
+                log(`📊 API result: ${JSON.stringify(result, null, 2).substring(0, 500)}...`);
+                
+                if (result.success) {
+                    updateStep('step2', 'success', `✅ Loaded ${result.reports.length} inspection reports`);
+                    log(`✅ Successfully loaded ${result.reports.length} reports`);
+                    return result;
+                } else {
+                    updateStep('step2', 'error', `❌ API failed: ${result.message}`);
+                    log(`❌ API failed: ${result.message}`);
+                    return null;
+                }
+            } catch (error) {
+                updateStep('step2', 'error', `❌ Fetch error: ${error.message}`);
+                log(`❌ Fetch error: ${error.message}`);
+                return null;
+            }
+        }
+
+        // Step 3: Display Results (like React component)
+        function displayResults(apiResult) {
+            log('🎨 Starting results display...');
+            updateStep('step3', 'loading', 'Processing results...');
+            
+            try {
+                const inspectionReports = apiResult.reports || [];
+                const inspectionStats = apiResult.statistics || {};
+                
+                log(`📊 Processing ${inspectionReports.length} reports`);
+                log(`📈 Stats: ${JSON.stringify(inspectionStats)}`);
+                
+                // Hide loading
+                document.getElementById('loading-display').style.display = 'none';
+                
+                if (inspectionReports.length === 0) {
+                    // Show no reports message (like React component)
+                    document.getElementById('no-reports').style.display = 'block';
+                    document.getElementById('debug-info').innerHTML = `
+                        Reports Array Length: ${inspectionReports.length}<br/>
+                        Loading State: false<br/>
+                        Stats: ${JSON.stringify(inspectionStats)}
+                    `;
+                    updateStep('step3', 'success', '✅ No reports to display (showing empty state)');
+                    log('📋 No reports found - showing empty state');
+                } else {
+                    // Show statistics
+                    document.getElementById('stats-container').style.display = 'block';
+                    const statsHtml = `
+                        <div class="stat-card">
+                            <div style="font-size: 24px; font-weight: bold; color: #0369a1;">${inspectionStats.total_reports || 0}</div>
+                            <div style="color: #64748b; font-size: 14px;">Total Reports</div>
+                        </div>
+                        <div class="stat-card">
+                            <div style="font-size: 24px; font-weight: bold; color: #16a34a;">${inspectionStats.approved_count || 0}</div>
+                            <div style="color: #64748b; font-size: 14px;">Approved</div>
+                        </div>
+                        <div class="stat-card">
+                            <div style="font-size: 24px; font-weight: bold; color: #d97706;">${inspectionStats.needs_attention_count || 0}</div>
+                            <div style="color: #64748b; font-size: 14px;">Need Attention</div>
+                        </div>
+                        <div class="stat-card">
+                            <div style="font-size: 24px; font-weight: bold; color: #dc2626;">${inspectionStats.rejected_count || 0}</div>
+                            <div style="color: #64748b; font-size: 14px;">Rejected</div>
+                        </div>
+                    `;
+                    document.getElementById('stats').innerHTML = statsHtml;
+                    
+                    // Show reports
+                    document.getElementById('reports-container').style.display = 'block';
+                    const reportsHtml = inspectionReports.map(report => `
+                        <div class="report-card">
+                            <h3>🏗️ ${report.project.name}</h3>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 15px 0;">
+                                <div><strong>Inspector:</strong> ${report.inspector.name}</div>
+                                <div><strong>Date:</strong> ${new Date(report.inspection.date).toLocaleDateString()}</div>
+                                <div><strong>Status:</strong> 
+                                    <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; 
+                                        background: ${report.inspection.status === 'approved' ? '#d1fae5' : 
+                                                   report.inspection.status === 'rejected' ? '#fee2e2' : 
+                                                   report.inspection.status === 'needs_attention' ? '#fef3c7' : '#f3f4f6'};
+                                        color: ${report.inspection.status === 'approved' ? '#065f46' : 
+                                                report.inspection.status === 'rejected' ? '#991b1b' : 
+                                                report.inspection.status === 'needs_attention' ? '#92400e' : '#374151'};">
+                                        ${report.inspection.status.toUpperCase()}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 15px 0;">
+                                <div><strong>Stage:</strong> ${report.inspection.stage}</div>
+                                <div><strong>Type:</strong> ${report.inspection.type}</div>
+                                <div><strong>Quality Score:</strong> ${report.inspection.quality_score || 'N/A'}</div>
+                                <div><strong>Safety:</strong> ${report.inspection.safety_compliance}</div>
+                            </div>
+                            ${report.inspection.notes ? `<div style="background: #f0f0f0; padding: 10px; border-radius: 4px; margin: 10px 0;"><strong>Notes:</strong> ${report.inspection.notes}</div>` : ''}
+                            ${report.inspection.recommendations ? `<div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0;"><strong>Recommendations:</strong> ${report.inspection.recommendations}</div>` : ''}
+                            ${report.inspection.issues_identified ? `<div style="background: #fef3c7; padding: 10px; border-radius: 4px; margin: 10px 0;"><strong>Issues:</strong> ${report.inspection.issues_identified}</div>` : ''}
+                        </div>
+                    `).join('');
+                    document.getElementById('reports').innerHTML = reportsHtml;
+                    
+                    updateStep('step3', 'success', `✅ Displayed ${inspectionReports.length} reports with statistics`);
+                    log(`✅ Successfully displayed ${inspectionReports.length} reports`);
+                }
+            } catch (error) {
+                updateStep('step3', 'error', `❌ Display error: ${error.message}`);
+                log(`❌ Display error: ${error.message}`);
+            }
+        }
+
+        // Main test flow
+        async function runTest() {
+            log('🚀 Starting complete homeowner flow test');
+            
+            // Step 1: Establish session
+            const sessionSuccess = await establishSession();
+            if (!sessionSuccess) {
+                log('❌ Test failed at session establishment');
+                return;
+            }
+            
+            // Step 2: Fetch inspection reports
+            const apiResult = await fetchInspectionReports();
+            if (!apiResult) {
+                log('❌ Test failed at API fetch');
+                return;
+            }
+            
+            // Step 3: Display results
+            displayResults(apiResult);
+            
+            log('✅ Test completed successfully');
+        }
+
+        // Start test when page loads
+        document.addEventListener('DOMContentLoaded', runTest);
+    </script>
+</body>
+</html>

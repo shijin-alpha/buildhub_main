@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test ML from Dev Server</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test ML from Development Server</h1>
+    
+    <div class="test-section">
+        <h3>Test ML API from Dev Server</h3>
+        <button onclick="testMLFromDev()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Test ML API
+        </button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function testMLFromDev() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>🔄 Testing ML API from dev server...</p>';
+            
+            const testData = {
+                plot_size: 2000,
+                budget: 3000000,
+                num_floors: 2
+            };
+            
+            try {
+                console.log('🧪 Testing ML API from dev server...');
+                console.log('Test data:', testData);
+                
+                const response = await fetch('http://localhost/buildhub/backend/api/ml_working.php?action=validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                const result = await response.json();
+                console.log('ML API Result:', result);
+                
+                if (result.success && result.data) {
+                    results.innerHTML = `
+                        <div class="success">
+                            <h4>✅ ML API Working from Dev Server!</h4>
+                            <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h4>⚠️ ML API Response Issue</h4>
+                            <p>Response: ${JSON.stringify(result)}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('❌ ML API Error:', error);
+                results.innerHTML = `
+                    <div class="error">
+                        <h4>❌ ML API Connection Failed</h4>
+                        <p>Error: ${error.message}</p>
+                        <p>This might be a CORS issue. Check browser console for details.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run test
+        testMLFromDev();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

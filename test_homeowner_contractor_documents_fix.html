@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeowner Contractor Documents Display Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .document-card { 
+            background: white; 
+            border: 1px solid #e9ecef; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        .document-grid { 
+            display: grid; 
+            gap: 20px; 
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:hover { background: #0056b3; }
+     

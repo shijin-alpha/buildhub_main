@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BuildHub ML Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 BuildHub ML Integration Debug Test</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Test Instructions:</h3>
+        <ol>
+            <li>Open this page in your browser: <code>http://localhost/buildhub/backend/debug_ml.html</code></li>
+            <li>Click "Test ML API" button below</li>
+            <li>Check the results - you should see ML predictions</li>
+            <li>If you see errors, the fallback JavaScript rules will still work</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h3>🧪 ML API Test</h3>
+        <button onclick="testMLAPI()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Test ML API
+        </button>
+        <div id="ml-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Form Integration Test</h3>
+        <button onclick="testFormIntegration()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Test Form Integration
+        </button>
+        <div id="form-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔧 Troubleshooting</h3>
+        <div id="troubleshoot-results"></div>
+    </div>
+
+    <script>
+        async function testMLAPI() {
+            const results = document.getElementById('ml-results');
+            results.innerHTML = '<p>🔄 Testing ML API...</p>';
+            
+            const testData = {
+                plot_size: 2000,
+                budget: 3000000,
+                num_floors: 2
+            };
+            
+            try {
+                console.log('🧪 Testing ML validation...');
+                const response = await fetch('api/ml_working.php?action=validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                console.log('📊 ML API Result:', result);
+                
+                if (result.success && result.data) {
+                    results.innerHTML = `
+                        <div class="success">
+                            <h4>✅ ML API Working!</h4>
+                            <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h4>⚠️ ML API Response Issue</h4>
+                            <p>Response: ${JSON.stringify(result)}</p>
+                            <p><strong>Don't worry!</strong> The form will use JavaScript fallback rules.</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('❌ ML API Error:', error);
+                results.innerHTML = `
+                    <div class="error">
+                        <h4>❌ ML API Connection Failed</h4>
+                        <p>Error: ${error.message}</p>
+                        <p><strong>Fallback mode:</strong> Form will use JavaScript rules engine.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testFormIntegration() {
+            const results = document.getElementById('form-results');
+            results.innerHTML = '<p>🔄 Testing form integration...</p>';
+            
+            try {
+                // Test if the form page loads
+                const formResponse = await fetch('../frontend/');
+                if (formResponse.ok) {
+                    results.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Form Page Accessible</h4>
+                            <p>Form URL: <a href="../frontend/" target="_blank">http://localhost/buildhub/frontend/</a></p>
+                            <p><strong>Next:</strong> Open the form and test real-time validation!</p>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Form Page Not Accessible</h4>
+                            <p>Make sure XAMPP Apache is running!</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Form Integration Error</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run troubleshooting
+        function runTroubleshooting() {
+            const results = document.getElementById('troubleshoot-results');
+            let html = '<h4>🔧 System Check:</h4><ul>';
+            
+            // Check if we're on localhost
+            if (window.location.hostname === 'localhost') {
+                html += '<li>✅ Running on localhost</li>';
+            } else {
+                html += '<li>⚠️ Not on localhost - may need to adjust API URLs</li>';
+            }
+            
+            // Check browser support
+            if (typeof fetch !== 'undefined') {
+                html += '<li>✅ Browser supports fetch API</li>';
+            } else {
+                html += '<li>❌ Browser does not support fetch API</li>';
+            }
+            
+            // Check console
+            html += '<li>💡 Open browser console (F12) to see detailed logs</li>';
+            html += '<li>💡 Look for "ML API" or "designRulesEngine" messages</li>';
+            
+            html += '</ul>';
+            results.innerHTML = html;
+        }
+        
+        // Run troubleshooting on page load
+        runTroubleshooting();
+    </script>
+</body>
+</html>

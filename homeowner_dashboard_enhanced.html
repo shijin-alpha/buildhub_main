@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeowner Dashboard - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .dashboard-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .section-card {
+            margin: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px 30px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .section-header h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .section-content {
+            padding: 30px;
+        }
+
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .widget-container {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .widget-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .widget-header {
+            background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .widget-content {
+            padding: 25px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .empty-state::before {
+            content: "📊";
+            display: block;
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .project-card {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .project-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .project-location {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .project-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-in-progress {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-created {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .progress-section {
+            margin-bottom: 20px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .current-stage {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .progress-percentage {
+            font-weight: 700;
+            color: #28a745;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            border-radius: 4px;
+            transition: width 0.8s ease;
+        }
+
+        .project-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(108, 117, 125, 0.1);
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .budget-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .budget-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        .budget-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .budget-amount.paid {
+            color: #28a745;
+        }
+
+        .budget-amount.pending {
+            color: #ffc107;
+        }
+
+        .budget-amount.remaining {
+            color: #6c757d;
+        }
+
+        .budget-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .budget-chart {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .chart-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .chart-segment {
+            height: 100%;
+            transition: width 0.8s ease;
+        }
+
+        .chart-paid {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        }
+
+        .chart-pending {
+            background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+        }
+
+        .chart-remaining {
+            background: linear-gradient(90deg, #6c757d 0%, #495057 100%);
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .recent-activity {
+            margin-top: 25px;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: #f8f9fa;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+
+        .activity-subtitle {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .activity-amount {
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .activity-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .widgets-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .project-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .budget-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>🏠 Homeowner Dashboard</h1>
+            <p>Track your construction projects and manage payments</p>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h2>Project Progress</h2>
+                <p>Track the progress of your active projects</p>
+            </div>
+            <div class="section-content">
+                <div class="widgets-grid">
+                    <div class="widget-container">
+                        <div class="widget-header">
+                            <h3 class="widget-title">Progress Overview</h3>
+                            <div class="widget-actions">
+                                <button class="icon-btn" title="Refresh" onclick="loadDashboardData()">↻</button>
+                            </div>
+                        </div>
+                        <div class="widget-content" id="progress-overview">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                    <div class="widget-container">
+                        <div class="widget-header">
+                            <h3 class="widget-title">Budget Tracker</h3>
+                            <div class="widget-actions">
+                                <button class="icon-btn" title="View Details" onclick="showBudgetDetails()">👁️</button>
+                            </div>
+                        </div>
+                        <div class="widget-content" id="budget-tracker">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dashboardData = null;
+
+        async function loadDashboardData() {
+            try {
+                // Show loading spinners
+                document.getElementById('progress-overview').innerHTML = '<div class="loading-spinner"></div>';
+                document.getElementById('budget-tracker').innerHTML = '<div class="loading-spinner"></div>';
+
+                const response = await fetch('backend/api/homeowner/get_dashboard_data.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    dashboardData = result.data;
+                    renderProgressOverview();
+                    renderBudgetTracker();
+                } else {
+                    showError('progress-overview', result.message);
+                    showError('budget-tracker', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('progress-overview', 'Failed to load dashboard data');
+                showError('budget-tracker', 'Failed to load dashboard data');
+            }
+        }
+
+        function renderProgressOverview() {
+            const container = document.getElementById('progress-overview');
+            
+            if (!dashboardData.projects || dashboardData.projects.length === 0) {
+                container.innerHTML = '<div class="empty-state">No active projects found</div>';
+                return;
+            }
+
+            let html = '';
+            
+            dashboardData.projects.forEach(project => {
+                const progressPercentage = project.progress.completion_percentage || 0;
+                const daysRemaining = project.timeline.days_remaining;
+                const statusClass = project.progress.status === 'in_progress' ? 'status-in-progress' : 'status-created';
+                
+                html += `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <div>
+                                <div class="project-title">${project.name}</div>
+                                <div class="project-location">${project.location || 'Location not specified'}</div>
+                            </div>
+                            <div class="project-status ${statusClass}">
+                                ${project.progress.status.replace('_', ' ')}
+                            </div>
+                        </div>
+                        
+                        <div class="progress-section">
+                            <div class="progress-info">
+                                <span class="current-stage">Current Stage: ${project.progress.current_stage}</span>
+                                <span class="progress-percentage">${progressPercentage}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="project-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Contractor</div>
+                                <div class="detail-value">${project.contractor.name || 'Not assigned'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Timeline</div>
+                                <div class="detail-value">${project.timeline.timeline_text || 'Not specified'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Days Remaining</div>
+                                <div class="detail-value">${daysRemaining !== null ? daysRemaining + ' days' : 'N/A'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Total Cost</div>
+                                <div class="detail-value">₹${formatCurrency(project.budget.total_cost)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderBudgetTracker() {
+            const container = document.getElementById('budget-tracker');
+            
+            if (!dashboardData.budget_summary) {
+                container.innerHTML = '<div class="empty-state">No budget data available</div>';
+                return;
+            }
+
+            const budget = dashboardData.budget_summary;
+            const utilizationPercentage = budget.utilization_percentage || 0;
+            const pendingPercentage = budget.pending_percentage || 0;
+            const remainingPercentage = 100 - utilizationPercentage - pendingPercentage;
+
+            let html = `
+                <div class="budget-overview">
+                    <div class="budget-item">
+                        <div class="budget-amount paid">₹${formatCurrency(budget.total_paid)}</div>
+                        <div class="budget-label">Paid</div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="budget-amount pending">₹${formatCurrency(budget.total_pending)}</div>
+                        <div class="budget-label">Pending</div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="budget-amount remaining">₹${formatCurrency(budget.total_remaining)}</div>
+                        <div class="budget-label">Remaining</div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="budget-amount">₹${formatCurrency(budget.total_budget)}</div>
+                        <div class="budget-label">Total Budget</div>
+                    </div>
+                </div>
+
+                <div class="budget-chart">
+                    <div class="chart-bar">
+                        <div class="chart-segment chart-paid" style="width: ${utilizationPercentage}%"></div>
+                        <div class="chart-segment chart-pending" style="width: ${pendingPercentage}%"></div>
+                        <div class="chart-segment chart-remaining" style="width: ${remainingPercentage}%"></div>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color chart-paid"></div>
+                            <span>Paid (${utilizationPercentage.toFixed(1)}%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color chart-pending"></div>
+                            <span>Pending (${pendingPercentage.toFixed(1)}%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color chart-remaining"></div>
+                            <span>Remaining (${remainingPercentage.toFixed(1)}%)</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add recent activity if available
+            if (dashboardData.recent_activity && dashboardData.recent_activity.payments.length > 0) {
+                html += `
+                    <div class="recent-activity">
+                        <h4 style="margin-bottom: 15px; color: #2c3e50;">Recent Payment Activity</h4>
+                `;
+                
+                dashboardData.recent_activity.payments.forEach(payment => {
+                    const statusColor = payment.status === 'paid' ? '#28a745' : 
+                                       payment.status === 'pending' ? '#ffc107' : '#6c757d';
+                    
+                    html += `
+                        <div class="activity-item">
+                            <div class="activity-info">
+                                <div class="activity-title">${payment.stage_name} - ${payment.project_name}</div>
+                                <div class="activity-subtitle">Contractor: ${payment.contractor_name}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="activity-amount">₹${formatCurrency(payment.amount)}</div>
+                                <div class="activity-date" style="color: ${statusColor};">
+                                    ${payment.status.toUpperCase()} • ${payment.days_ago} days ago
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function showError(containerId, message) {
+            document.getElementById(containerId).innerHTML = 
+                `<div class="error-message">Error: ${message}</div>`;
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN').format(amount);
+        }
+
+        function showBudgetDetails() {
+            if (dashboardData) {
+                alert('Budget details:\n\n' + 
+                      `Total Projects: ${dashboardData.overview.total_projects}\n` +
+                      `Total Budget: ₹${formatCurrency(dashboardData.budget_summary.total_budget)}\n` +
+                      `Amount Paid: ₹${formatCurrency(dashboardData.budget_summary.total_paid)}\n` +
+                      `Pending Payments: ₹${formatCurrency(dashboardData.budget_summary.total_pending)}\n` +
+                      `Budget Utilization: ${dashboardData.budget_summary.utilization_percentage}%`);
+            }
+        }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
+</body>
+</html>

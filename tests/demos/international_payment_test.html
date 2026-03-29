@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International Payment Test - BuildHub</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus {
+            border-color: #3399cc;
+            outline: none;
+        }
+        
+        .payment-button {
+            background: linear-gradient(135deg, #3399cc, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-button:hover {
+            background: linear-gradient(135deg, #2980b9, #1f5f8b);
+            transform: translateY(-2px);
+        }
+        
+        .payment-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .country-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid #3399cc;
+        }
+        
+        .supported-methods {
+            margin-top: 10px;
+        }
+        
+        .method-tag {
+            display: inline-block;
+            background: #3399cc;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .amount-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+        
+        .conversion-info {
+            font-size: 14px;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 International Payment Test</h1>
+            <p>Test international payment processing with enhanced error handling</p>
+        </div>
+        
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="paymentType">Payment Type:</label>
+                <select id="paymentType" required>
+                    <option value="technical_details">Technical Details Unlock</option>
+                    <option value="stage_payment">Stage Payment</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">Amount:</label>
+                <input type="number" id="amount" step="0.01" min="1" value="100000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="currency">Currency:</label>
+                <select id="currency" required>
+                    <option value="INR">INR - Indian Rupee</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                    <option value="AUD">AUD - Australian Dollar</option>
+                    <option value="CAD">CAD - Canadian Dollar</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="country">Country:</label>
+                <select id="country" required>
+                    <option value="IN">India</option>
+                    <option value="US">United States</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="SG">Singapore</option>
+                    <option value="AE">United Arab Emirates</option>
+                    <option value="MY">Malaysia</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" id="customerName" value="Test User" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerEmail">Customer Email:</label>
+                <input type="email" id="customerEmail" value="test@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerPhone">Customer Phone:</label>
+                <input type="tel" id="customerPhone" value="+919876543210" required>
+            </div>
+            
+            <div class="country-info" id="countryInfo" style="display: none;">
+                <h4>Payment Information</h4>
+                <div id="countryDetails"></div>
+                <div class="supported-methods">
+                    <strong>Supported Payment Methods:</strong>
+                    <div id="supportedMethods"></div>
+                </div>
+            </div>
+            
+            <div class="amount-display" id="amountDisplay">
+                ₹1,00,000.00
+                <div class="conversion-info" id="conversionInfo"></div>
+            </div>
+            
+            <button type="submit" class="payment-button" id="payButton">
+                🔒 Process International Payment
+            </button>
+        </form>
+        
+        <div class="status" id="status"></div>
+    </div>
+
+    <script src="../../frontend/src/utils/internationalPaymentHandler.js"></script>
+    <script>
+        // Initialize payment handler
+        const paymentHandler = new InternationalPaymentHandler();
+        
+        // Form elements
+        const form = document.getElementById('paymentForm');
+        const amountInput = document.getElementById('amount');
+        const currencySelect = document.getElementById('currency');
+        const countrySelect = document.getElementById('country');
+        const payButton = document.getElementById('payButton');
+        const statusDiv = document.getElementById('status');
+        const amountDisplay = document.getElementById('amountDisplay');
+        const conversionInfo = document.getElementById('conversionInfo');
+        const countryInfo = document.getElementById('countryInfo');
+        const countryDetails = document.getElementById('countryDetails');
+        const supportedMethods = document.getElementById('supportedMethods');
+        
+        // Exchange rates (simplified)
+        const exchangeRates = {
+            'INR': 1.0,
+            'USD': 0.012,
+            'EUR': 0.011,
+            'GBP': 0.0095,
+            'AUD': 0.018,
+            'CAD': 0.016
+        };
+        
+        // Update display when inputs change
+        function updateDisplay() {
+            const amount = parseFloat(amountInput.value) || 0;
+            const currency = currencySelect.value;
+            const country = countrySelect.value;
+            
+            // Update amount display
+            const currencySymbols = {
+                'INR': '₹',
+                'USD': '$',
+                'EUR': '€',
+                'GBP': '£',
+                'AUD': 'A$',
+                'CAD': 'C$'
+            };
+            
+            const symbol = currencySymbols[currency] || currency;
+            amountDisplay.innerHTML = `${symbol}${amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            
+            // Show conversion if not INR
+            if (currency !== 'INR') {
+                const inrAmount = amount / exchangeRates[currency];
+                conversionInfo.innerHTML = `≈ ₹${inrAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})} INR`;
+            } else {
+                conversionInfo.innerHTML = '';
+            }
+            
+            // Update country info
+            const methods = paymentHandler.getPaymentMethodsForCountry(country);
+            countryDetails.innerHTML = `
+                <strong>Country:</strong> ${paymentHandler.supportedCountries[country] || country}<br>
+                <strong>Currency:</strong> ${currency}<br>
+                <strong>International Payment:</strong> ${currency !== 'INR' ? 'Yes' : 'No'}
+            `;
+            
+            supportedMethods.innerHTML = methods.map(method => 
+                `<span class="method-tag">${method.toUpperCase()}</span>`
+            ).join('');
+            
+            countryInfo.style.display = 'block';
+        }
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide after 10 seconds for success/info messages
+            if (type !== 'error') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 10000);
+            }
+        }
+        
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            payButton.disabled = true;
+            payButton.innerHTML = '⏳ Processing...';
+            
+            try {
+                const paymentData = {
+                    payment_request_id: 1, // Test ID
+                    payment_type: document.getElementById('paymentType').value,
+                    amount: parseFloat(amountInput.value),
+                    currency: currencySelect.value,
+                    countryCode: countrySelect.value,
+                    customerName: document.getElementById('customerName').value,
+                    customerEmail: document.getElementById('customerEmail').value,
+                    customerPhone: document.getElementById('customerPhone').value
+                };
+                
+                showStatus('Initiating international payment...', 'info');
+                
+                await paymentHandler.processRazorpayPayment(
+                    paymentData,
+                    // Success callback
+                    (response) => {
+                        console.log('Payment successful:', response);
+                        showStatus(`
+                            ✅ Payment Successful!<br>
+                            <strong>Payment ID:</strong> ${response.razorpay_payment_id}<br>
+                            <strong>Order ID:</strong> ${response.razorpay_order_id}<br>
+                            <strong>Amount:</strong> ${paymentData.currency} ${paymentData.amount}<br>
+                            <strong>Status:</strong> Completed
+                        `, 'success');
+                    },
+                    // Error callback
+                    (error) => {
+                        console.error('Payment failed:', error);
+                        let errorMessage = error.message || 'Payment failed';
+                        
+                        // Handle specific international card error
+                        if (errorMessage.toLowerCase().includes('international')) {
+                            errorMessage = `
+                                ❌ International Card Not Supported<br><br>
+                                <strong>Issue:</strong> ${errorMessage}<br><br>
+                                <strong>Solutions:</strong><br>
+                                • Use an Indian debit/credit card<br>
+                                • Try UPI, Net Banking, or Wallet options<br>
+                                • Contact support for alternative payment methods<br>
+                                • Enable international transactions on your card
+                            `;
+                        }
+                        
+                        showStatus(errorMessage, 'error');
+                    }
+                );
+                
+            } catch (error) {
+                console.error('Payment initiation error:', error);
+                showStatus(`❌ Payment initiation failed: ${error.message}`, 'error');
+            } finally {
+                payButton.disabled = false;
+                payButton.innerHTML = '🔒 Process International Payment';
+            }
+        });
+        
+        // Add event listeners for real-time updates
+        amountInput.addEventListener('input', updateDisplay);
+        currencySelect.addEventListener('change', updateDisplay);
+        countrySelect.addEventListener('change', updateDisplay);
+        
+        // Initial display update
+        updateDisplay();
+        
+        // Show initial info
+        showStatus('Ready to test international payments. Fill in the details and click "Process International Payment".', 'info');
+    </script>
+</body>
+</html>

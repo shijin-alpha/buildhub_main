@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Audit Trail Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .demo-section h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .payment-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .payment-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .payment-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-paid {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .status-pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .payment-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .detail-value {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .blockchain-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .blockchain-section h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.3rem;
+        }
+        
+        .blockchain-records {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .blockchain-record {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .record-icon {
+            font-size: 1.5rem;
+        }
+        
+        .record-details {
+            flex: 1;
+        }
+        
+        .record-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .record-meta {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .trust-score {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .trust-score-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .trust-score-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .integration-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .status-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .next-steps {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .next-steps h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .steps-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Blockchain Trust Layer</h1>
+            <p>Immutable audit trails for construction payments</p>
+        </div>
+        
+        <div class="content">
+            <!-- Integration Status -->
+            <div class="demo-section">
+                <h2>Integration Status</h2>
+                <div class="integration-status">
+                    <div class="status-item">
+                        <div class="status-icon">✅</div>
+                        <div class="status-title">Database Ready</div>
+                        <div class="status-description">Blockchain tables created</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-icon">✅</div>
+                        <div class="status-title">Integration Hooks</div>
+                        <div class="status-description">Payment endpoints enhanced</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-icon">⏳</div>
+                        <div class="status-title">Smart Contract</div>
+                        <div class="status-description">Ready for deployment</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-icon">🔄</div>
+                        <div class="status-title">Local Testing</div>
+                        <div class="status-description">Working with database</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sample Payment with Blockchain Audit -->
+            <div class="demo-section">
+                <h2>Sample Payment with Blockchain Audit Trail</h2>
+                
+                <div class="payment-card">
+                    <div class="payment-header">
+                        <div class="payment-title">Foundation Work - Stage Payment</div>
+                        <div class="payment-status status-paid">Paid</div>
+                    </div>
+                    
+                    <div class="payment-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Amount:</span>
+                            <span class="detail-value">₹2,13,949.00</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Stage:</span>
+                            <span class="detail-value">Foundation</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Payment Method:</span>
+                            <span class="detail-value">Razorpay</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Payment Date:</span>
+                            <span class="detail-value">2026-01-28</span>
+                        </div>
+                    </div>
+                    
+                    <div class="blockchain-section">
+                        <h3>🔗 Blockchain Audit Trail</h3>
+                        
+                        <div class="trust-score">
+                            <div class="trust-score-value">100%</div>
+                            <div class="trust-score-label">Trust Score</div>
+                        </div>
+                        
+                        <div class="blockchain-records">
+                            <div class="blockchain-record">
+                                <div class="record-icon">🚀</div>
+                                <div class="record-details">
+                                    <div class="record-title">Payment Initiated</div>
+                                    <div class="record-meta">Cryptographic proof generated • 2026-01-28 09:45:12</div>
+                                </div>
+                            </div>
+                            
+                            <div class="blockchain-record">
+                                <div class="record-icon">✅</div>
+                                <div class="record-details">
+                                    <div class="record-title">Payment Completed</div>
+                                    <div class="record-meta">Razorpay signature verified • 2026-01-28 09:47:33</div>
+                                </div>
+                            </div>
+                            
+                            <div class="blockchain-record">
+                                <div class="record-icon">🔨</div>
+                                <div class="record-details">
+                                    <div class="record-title">Contractor Verified</div>
+                                    <div class="record-meta">Payment receipt confirmed • 2026-01-28 10:15:22</div>
+                                </div>
+                            </div>
+                            
+                            <div class="blockchain-record">
+                                <div class="record-icon">👨‍💼</div>
+                                <div class="record-details">
+                                    <div class="record-title">Admin Approved</div>
+                                    <div class="record-meta">Final verification completed • 2026-01-28 11:30:45</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- How It Works -->
+            <div class="demo-section">
+                <h2>How Blockchain Integration Works</h2>
+                <div class="payment-details">
+                    <div class="detail-item">
+                        <span class="detail-label">🔒 Privacy First:</span>
+                        <span class="detail-value">Only cryptographic proofs on blockchain</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">⚡ Non-Blocking:</span>
+                        <span class="detail-value">Payments succeed even if blockchain fails</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🛡️ Immutable:</span>
+                        <span class="detail-value">Permanent audit trail for disputes</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🔄 Automatic:</span>
+                        <span class="detail-value">No changes to existing workflows</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="next-steps">
+                <h3>🚀 Next Steps</h3>
+                <ul class="steps-list">
+                    <li>
+                        <div class="step-number">1</div>
+                        <div>Make a payment through your system to see live blockchain integration</div>
+                    </li>
+                    <li>
+                        <div class="step-number">2</div>
+                        <div>Check blockchain records in your database: <code>SELECT * FROM blockchain_trust_records</code></div>
+                    </li>
+                    <li>
+                        <div class="step-number">3</div>
+                        <div>Deploy smart contract to Ethereum testnet for full blockchain functionality</div>
+                    </li>
+                    <li>
+                        <div class="step-number">4</div>
+                        <div>Add blockchain audit trail viewer to your admin dashboard</div>
+                    </li>
+                </ul>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="backend/api/blockchain/get_payment_audit_trail.php?payment_request_id=22" class="btn" target="_blank">
+                        View Live Audit Trail API
+                    </a>
+                    <a href="BLOCKCHAIN_TRUST_LAYER_README.md" class="btn btn-secondary" target="_blank">
+                        Read Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Completed Project Overruns Display</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f3f4f6;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #111827;
+            margin-bottom: 24px;
+        }
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+        .overrun-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        .section-title {
+            color: #92400e;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        .analysis-box {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .analysis-title {
+            color: #374151;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            font-size: 13px;
+        }
+        .metric-label {
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .metric-value {
+            font-weight: bold;
+            color: #111827;
+            font-size: 14px;
+        }
+        .metric-highlight {
+            grid-column: 1 / -1;
+            margin-top: 8px;
+        }
+        .metric-highlight .metric-value {
+            font-size: 18px;
+        }
+        .overrun { color: #dc2626; }
+        .underrun { color: #059669; }
+        .on-target { color: #6b7280; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .badge-overrun { background: #fee2e2; color: #dc2626; }
+        .badge-underrun { background: #d1fae5; color: #059669; }
+        .badge-on-target { background: #e5e7eb; color: #6b7280; }
+        .performance-rating {
+            text-align: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .rating-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .rating-value {
+            font-size: 16px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .rating-excellent { color: #059669; }
+        .rating-good { color: #10b981; }
+        .rating-fair { color: #f59e0b; }
+        .rating-poor { color: #dc2626; }
+        .dates-info {
+            grid-column: 1 / -1;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        .api-test {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        .api-url {
+            font-family: monospace;
+            background: #1e293b;
+            color: #10b981;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .response {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #059669; }
+        .error { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Completed Project Cost & Time Overrun Display</h1>
+        
+        <div class="test-section">
+            <div class="test-title">📊 Example: Project with Both Overruns</div>
+            <p style="color: #6b7280; margin-bottom: 16px;">
+                This shows how cost and time overrun information appears for a completed project.
+            </p>
+            
+            <div class="overrun-card">
+                <div class="section-title">📊 Cost & Time Performance</div>
+                
+                <!-- Cost Analysis -->
+                <div class="analysis-box">
+                    <div class="analysis-title">💰 Cost Analysis</div>
+                    <div class="metric-grid">
+                        <div>
+                            <div class="metric-label">Original Estimate:</div>
+                            <div class="metric-value">₹25,00,000</div>
+                        </div>
+                        <div>
+                            <div class="metric-label">Total Cost:</div>
+                            <div class="metric-value">₹26,50,000</div>
+                        </div>
+                        <div class="metric-highlight">
+                            <div class="metric-label">Cost Difference:</div>
+                            <div class="metric-value overrun">
+                                +₹1,50,000 <span style="font-size: 14px;">(+6.0%)</span>
+                                <span class="badge badge-overrun">🔴 Over Budget</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Time Analysis -->
+                <div class="analysis-box">
+                    <div class="analysis-title">⏱️ Timeline Analysis</div>
+                    <div class="metric-grid">
+                        <div>
+                            <div class="metric-label">Planned Duration:</div>
+                            <div class="metric-value">90 days</div>
+                        </div>
+                        <div>
+                            <div class="metric-label">Actual Duration:</div>
+                            <div class="metric-value">100 days</div>
+                        </div>
+                        <div class="metric-highlight">
+                            <div class="metric-label">Time Difference:</div>
+                            <div class="metric-value overrun">
+                                +10 days <span style="font-size: 14px;">(+11.11%)</span>
+                                <span class="badge badge-overrun">🔴 Delayed</span>
+                            </div>
+                        </div>
+                        <div class="dates-info">
+                            <div>Planned: 2026-02-01 → 2026-05-01</div>
+                            <div>Actual: 2026-02-05 → 2026-05-15</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Rating -->
+                <div class="performance-rating">
+                    <span class="rating-label">Overall Performance:</span>
+                    <span class="rating-value rating-good">GOOD</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">✅ Example: Project Under Budget & On Time</div>
+            
+            <div class="overrun-card">
+                <div class="section-title">📊 Cost & Time Performance</div>
+                
+                <!-- Cost Analysis -->
+                <div class="analysis-box">
+                    <div class="analysis-title">💰 Cost Analysis</div>
+                    <div class="metric-grid">
+                        <div>
+                            <div class="metric-label">Original Estimate:</div>
+                            <div class="metric-value">₹30,00,000</div>
+                        </div>
+                        <div>
+                            <div class="metric-label">Total Cost:</div>
+                            <div class="metric-value">₹28,50,000</div>
+                        </div>
+                        <div class="metric-highlight">
+                            <div class="metric-label">Cost Difference:</div>
+                            <div class="metric-value underrun">
+                                -₹1,50,000 <span style="font-size: 14px;">(-5.0%)</span>
+                                <span class="badge badge-underrun">🟢 Under Budget</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Time Analysis -->
+                <div class="analysis-box">
+                    <div class="analysis-title">⏱️ Timeline Analysis</div>
+                    <div class="metric-grid">
+                        <div>
+                            <div class="metric-label">Planned Duration:</div>
+                            <div class="metric-value">120 days</div>
+                        </div>
+                        <div>
+                            <div class="metric-label">Actual Duration:</div>
+                            <div class="metric-value">118 days</div>
+                        </div>
+                        <div class="metric-highlight">
+                            <div class="metric-label">Time Difference:</div>
+                            <div class="metric-value underrun">
+                                -2 days <span style="font-size: 14px;">(-1.67%)</span>
+                                <span class="badge badge-underrun">🟢 Early</span>
+                            </div>
+                        </div>
+                        <div class="dates-info">
+                            <div>Planned: 2026-01-01 → 2026-05-01</div>
+                            <div>Actual: 2026-01-01 → 2026-04-29</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Rating -->
+                <div class="performance-rating">
+                    <span class="rating-label">Overall Performance:</span>
+                    <span class="rating-value rating-excellent">EXCELLENT 🎯</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🔧 API Testing</div>
+            <p style="color: #6b7280; margin-bottom: 12px;">
+                Test the API endpoint to fetch overrun data for a completed project.
+            </p>
+            
+            <div class="api-test">
+                <div style="margin-bottom: 8px; font-weight: 500;">API Endpoint:</div>
+                <div class="api-url">
+                    GET /buildhub/backend/api/contractor/get_completed_project_overruns.php?contractor_id=45&project_id=3
+                </div>
+                
+                <button onclick="testAPI()">🧪 Test API Call</button>
+                
+                <div id="apiResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">📝 Implementation Notes</div>
+            <ul style="color: #4b5563; line-height: 1.8;">
+                <li><strong>Cost Overrun:</strong> Calculated from original estimate vs (stage payments + custom payments)</li>
+                <li><strong>Time Overrun:</strong> Calculated from planned duration vs actual duration</li>
+                <li><strong>Performance Rating:</strong>
+                    <ul style="margin-top: 8px;">
+                        <li>🟢 <strong>Excellent:</strong> Both overruns ≤ 5%</li>
+                        <li>🟢 <strong>Good:</strong> Both overruns ≤ 10%</li>
+                        <li>🟡 <strong>Fair:</strong> Both overruns ≤ 20%</li>
+                        <li>🔴 <strong>Poor:</strong> Either overrun > 20%</li>
+                    </ul>
+                </li>
+                <li><strong>Display Location:</strong> Contractor Dashboard → Construction Section → Completed Projects → View Details</li>
+                <li><strong>Data Source:</strong> Real-time calculation from database on each request</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        async function testAPI() {
+            const responseDiv = document.getElementById('apiResponse');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '<div style="color: #3b82f6;">⏳ Loading...</div>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_completed_project_overruns.php?contractor_id=45&project_id=3', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    responseDiv.innerHTML = `
+                        <div class="success">✅ Success!</div>
+                        <pre style="margin-top: 12px; white-space: pre-wrap;">${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    responseDiv.innerHTML = `
+                        <div class="error">❌ Error: ${data.message}</div>
+                        <pre style="margin-top: 12px;">${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `
+                    <div class="error">❌ Request Failed</div>
+                    <div style="margin-top: 8px;">${error.message}</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

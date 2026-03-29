@@ -1,0 +1,18 @@
+/* Blue Glass theme utilities */
+
+.blue-glass {
+	/* Subtle translucent background with blue-tinted border glow */
+	backdrop-filter: blur(12px) saturate(140%);
+	-webkit-backdrop-filter: blur(12px) saturate(140%);
+	background: rgba(255, 255, 255, 0.6);
+	border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+/* Optional helper for glass-themed sections */
+.glass-theme {
+	backdrop-filter: blur(12px) saturate(140%);
+	-webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+
+

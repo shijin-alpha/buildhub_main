@@ -1,0 +1,36 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting shap
+  Downloading shap-0.51.0-cp313-cp313-win_amd64.whl.metadata (26 kB)
+Requirement already satisfied: numpy>=2 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from shap) (2.2.6)
+Requirement already satisfied: scipy in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from shap) (1.16.2)
+Requirement already satisfied: scikit-learn in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from shap) (1.7.2)
+Requirement already satisfied: pandas in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from shap) (2.3.3)
+Requirement already satisfied: tqdm>=4.27.0 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from shap) (4.67.1)
+Requirement already satisfied: packaging>20.9 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from shap) (25.0)
+Collecting slicer==0.0.8 (from shap)
+  Downloading slicer-0.0.8-py3-none-any.whl.metadata (4.0 kB)
+Collecting numba (from shap)
+  Downloading numba-0.64.0-cp313-cp313-win_amd64.whl.metadata (3.0 kB)
+Collecting llvmlite (from shap)
+  Downloading llvmlite-0.46.0-cp313-cp313-win_amd64.whl.metadata (5.1 kB)
+Collecting cloudpickle (from shap)
+  Downloading cloudpickle-3.1.2-py3-none-any.whl.metadata (7.1 kB)
+Requirement already satisfied: typing-extensions in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from shap) (4.14.1)
+Requirement already satisfied: colorama in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from tqdm>=4.27.0->shap) (0.4.6)
+Requirement already satisfied: python-dateutil>=2.8.2 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from pandas->shap) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from pandas->shap) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from pandas->shap) (2025.2)
+Requirement already satisfied: six>=1.5 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from python-dateutil>=2.8.2->pandas->shap) (1.17.0)
+Requirement already satisfied: joblib>=1.2.0 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from scikit-learn->shap) (1.5.2)
+Requirement already satisfied: threadpoolctl>=3.1.0 in C:\Users\shiji\AppData\Roaming\Python\Python313\site-packages (from scikit-learn->shap) (3.6.0)
+Downloading shap-0.51.0-cp313-cp313-win_amd64.whl (555 kB)
+   ---------------------------------------- 555.9/555.9 kB 6.5 MB/s  0:00:00
+Downloading slicer-0.0.8-py3-none-any.whl (15 kB)
+Downloading cloudpickle-3.1.2-py3-none-any.whl (22 kB)
+Downloading llvmlite-0.46.0-cp313-cp313-win_amd64.whl (38.1 MB)
+   ---------------------------------------- 38.1/38.1 MB 39.0 MB/s  0:00:00
+Downloading numba-0.64.0-cp313-cp313-win_amd64.whl (2.8 MB)
+   ---------------------------------------- 2.8/2.8 MB 31.7 MB/s  0:00:00
+Installing collected packages: slicer, llvmlite, cloudpickle, numba, shap
+
+Successfully installed cloudpickle-3.1.2 llvmlite-0.46.0 numba-0.64.0 shap-0.51.0 slicer-0.0.8

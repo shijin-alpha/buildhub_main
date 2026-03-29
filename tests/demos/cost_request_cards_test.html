@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Request Cards - Test Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .demo-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .demo-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .demo-header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            margin-bottom: 28px;
+        }
+
+        .section-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .section-header p {
+            font-size: 15px;
+            color: #64748b;
+        }
+
+        /* Cost Request Cards Styles */
+        .cost-requests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            padding: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .cost-requests-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cost-request-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .cost-request-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .cost-request-header {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        .cost-request-image {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .cost-request-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .cost-request-card:hover .cost-request-image img {
+            transform: scale(1.05);
+        }
+
+        .cost-request-image .placeholder-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+        }
+
+        .cost-request-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
+            }
+        }
+
+        .cost-request-body {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .cost-request-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .cost-request-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .info-icon {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .info-text {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .cost-request-desc {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .cost-request-footer {
+            padding: 16px 20px;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-view-details,
+        .btn-submit-estimate {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-view-details {
+            background: white;
+            color: #3b82f6;
+            border: 1.5px solid #3b82f6;
+        }
+
+        .btn-view-details:hover {
+            background: #eff6ff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-submit-estimate {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-submit-estimate:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .cost-request-details {
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            animation: slideDown 0.3s ease;
+            display: none;
+        }
+
+        .cost-request-details.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>💰 Cost Request Cards</h1>
+            <p>Neat UI for displaying recent cost estimation requests</p>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h2>💰 Recent Cost Requests</h2>
+                <p>Latest layout approvals requiring cost estimates</p>
+            </div>
+
+            <div class="cost-requests-grid">
+                <!-- Card 1 -->
+                <div class="cost-request-card">
+                    <div class="cost-request-header">
+                        <div class="cost-request-image">
+                            <div class="placeholder-image">🏠</div>
+                        </div>
+                        <div class="cost-request-badge">
+                            <span class="badge-new">NEW</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-request-body">
+                        <h4 class="cost-request-title">Modern 3BHK Villa Design</h4>
+                        
+                        <div class="cost-request-info">
+                            <div class="info-row">
+                                <span class="info-icon">👤</span>
+                                <span class="info-text">Rajesh Kumar</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">📐</span>
+                                <span class="info-text">2400 sq ft</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">💵</span>
+                                <span class="info-text">₹50-60 lakhs</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">🕒</span>
+                                <span class="info-text">2 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <p class="cost-request-desc">Contemporary villa with open floor plan, large windows, and modern amenities. Includes landscaping and outdoor entertainment area.</p>
+                    </div>
+                    
+                    <div class="cost-request-footer">
+                        <button class="btn-view-details" onclick="toggleDetails(this)">
+                            👁️ View Details
+                        </button>
+                        <button class="btn-submit-estimate">
+                            📝 Submit Estimate
+                        </button>
+                    </div>
+                    
+                    <div class="cost-request-details">
+                        <p><strong>Requirements:</strong> 3 bedrooms, 3 bathrooms, modern kitchen, living room, dining area, balconies, parking for 2 cars.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="cost-request-card">
+                    <div class="cost-request-header">
+                        <div class="cost-request-image">
+                            <div class="placeholder-image">🏡</div>
+                        </div>
+                        <div class="cost-request-badge">
+                            <span class="badge-new">NEW</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-request-body">
+                        <h4 class="cost-request-title">Traditional Kerala Style Home</h4>
+                        
+                        <div class="cost-request-info">
+                            <div class="info-row">
+                                <span class="info-icon">👤</span>
+                                <span class="info-text">Priya Menon</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">📐</span>
+                                <span class="info-text">1800 sq ft</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">💵</span>
+                                <span class="info-text">₹35-45 lakhs</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">🕒</span>
+                                <span class="info-text">5 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <p class="cost-request-desc">Traditional Kerala architecture with sloped roof, wooden elements, and courtyard. Focus on natural ventilation and lighting.</p>
+                    </div>
+                    
+                    <div class="cost-request-footer">
+                        <button class="btn-view-details" onclick="toggleDetails(this)">
+                            👁️ View Details
+                        </button>
+                        <button class="btn-submit-estimate">
+                            📝 Submit Estimate
+                        </button>
+                    </div>
+                    
+                    <div class="cost-request-details">
+                        <p><strong>Requirements:</strong> 2 bedrooms, 2 bathrooms, traditional kitchen, nadumuttam (courtyard), verandah, tiled roof.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="cost-request-card">
+                    <div class="cost-request-header">
+                        <div class="cost-request-image">
+                            <div class="placeholder-image">🏢</div>
+                        </div>
+                        <div class="cost-request-badge">
+                            <span class="badge-new">NEW</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-request-body">
+                        <h4 class="cost-request-title">Duplex House with Terrace Garden</h4>
+                        
+                        <div class="cost-request-info">
+                            <div class="info-row">
+                                <span class="info-icon">👤</span>
+                                <span class="info-text">Amit Sharma</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">📐</span>
+                                <span class="info-text">3200 sq ft</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">💵</span>
+                                <span class="info-text">₹75-90 lakhs</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">🕒</span>
+                                <span class="info-text">1 day ago</span>
+                            </div>
+                        </div>
+                        
+                        <p class="cost-request-desc">Two-story duplex with terrace garden, home office, gym area, and smart home features. Premium finishes throughout.</p>
+                    </div>
+                    
+                    <div class="cost-request-footer">
+                        <button class="btn-view-details" onclick="toggleDetails(this)">
+                            👁️ View Details
+                        </button>
+                        <button class="btn-submit-estimate">
+                            📝 Submit Estimate
+                        </button>
+                    </div>
+                    
+                    <div class="cost-request-details">
+                        <p><strong>Requirements:</strong> 4 bedrooms, 4 bathrooms, home office, gym, terrace garden, smart home automation, solar panels.</p>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="cost-request-card">
+                    <div class="cost-request-header">
+                        <div class="cost-request-image">
+                            <div class="placeholder-image">🏘️</div>
+                        </div>
+                        <div class="cost-request-badge">
+                            <span class="badge-new">NEW</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-request-body">
+                        <h4 class="cost-request-title">Compact 2BHK Apartment Style</h4>
+                        
+                        <div class="cost-request-info">
+                            <div class="info-row">
+                                <span class="info-icon">👤</span>
+                                <span class="info-text">Sneha Patel</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">📐</span>
+                                <span class="info-text">1200 sq ft</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">💵</span>
+                                <span class="info-text">₹25-30 lakhs</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">🕒</span>
+                                <span class="info-text">2 days ago</span>
+                            </div>
+                        </div>
+                        
+                        <p class="cost-request-desc">Space-efficient design with smart storage solutions. Perfect for small families or first-time homeowners.</p>
+                    </div>
+                    
+                    <div class="cost-request-footer">
+                        <button class="btn-view-details" onclick="toggleDetails(this)">
+                            👁️ View Details
+                        </button>
+                        <button class="btn-submit-estimate">
+                            📝 Submit Estimate
+                        </button>
+                    </div>
+                    
+                    <div class="cost-request-details">
+                        <p><strong>Requirements:</strong> 2 bedrooms, 2 bathrooms, modular kitchen, living-dining combo, balcony, parking.</p>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="cost-request-card">
+                    <div class="cost-request-header">
+                        <div class="cost-request-image">
+                            <div class="placeholder-image">🏰</div>
+                        </div>
+                        <div class="cost-request-badge">
+                            <span class="badge-new">NEW</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-request-body">
+                        <h4 class="cost-request-title">Luxury Farmhouse with Pool</h4>
+                        
+                        <div class="cost-request-info">
+                            <div class="info-row">
+                                <span class="info-icon">👤</span>
+                                <span class="info-text">Vikram Singh</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">📐</span>
+                                <span class="info-text">5000 sq ft</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">💵</span>
+                                <span class="info-text">₹1.2-1.5 crores</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">🕒</span>
+                                <span class="info-text">3 days ago</span>
+                            </div>
+                        </div>
+                        
+                        <p class="cost-request-desc">Luxury farmhouse with swimming pool, guest house, landscaped gardens, and outdoor entertainment spaces.</p>
+                    </div>
+                    
+                    <div class="cost-request-footer">
+                        <button class="btn-view-details" onclick="toggleDetails(this)">
+                            👁️ View Details
+                        </button>
+                        <button class="btn-submit-estimate">
+                            📝 Submit Estimate
+                        </button>
+                    </div>
+                    
+                    <div class="cost-request-details">
+                        <p><strong>Requirements:</strong> 5 bedrooms, 6 bathrooms, swimming pool, guest house, home theater, wine cellar, landscaping.</p>
+                    </div>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="cost-request-card">
+                    <div class="cost-request-header">
+                        <div class="cost-request-image">
+                            <div class="placeholder-image">🏠</div>
+                        </div>
+                        <div class="cost-request-badge">
+                            <span class="badge-new">NEW</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-request-body">
+                        <h4 class="cost-request-title">Eco-Friendly Green Home</h4>
+                        
+                        <div class="cost-request-info">
+                            <div class="info-row">
+                                <span class="info-icon">👤</span>
+                                <span class="info-text">Ananya Reddy</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">📐</span>
+                                <span class="info-text">2000 sq ft</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">💵</span>
+                                <span class="info-text">₹40-50 lakhs</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon">🕒</span>
+                                <span class="info-text">1 week ago</span>
+                            </div>
+                        </div>
+                        
+                        <p class="cost-request-desc">Sustainable design with solar panels, rainwater harvesting, natural materials, and energy-efficient systems.</p>
+                    </div>
+                    
+                    <div class="cost-request-footer">
+                        <button class="btn-view-details" onclick="toggleDetails(this)">
+                            👁️ View Details
+                        </button>
+                        <button class="btn-submit-estimate">
+                            📝 Submit Estimate
+                        </button>
+                    </div>
+                    
+                    <div class="cost-request-details">
+                        <p><strong>Requirements:</strong> 3 bedrooms, 3 bathrooms, solar panels, rainwater harvesting, composting, natural ventilation, eco-friendly materials.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDetails(button) {
+            const card = button.closest('.cost-request-card');
+            const details = card.querySelector('.cost-request-details');
+            
+            if (details.classList.contains('show')) {
+                details.classList.remove('show');
+                button.innerHTML = '👁️ View Details';
+            } else {
+                details.classList.add('show');
+                button.innerHTML = '👁️ Hide Details';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History Section Test - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .test-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        
+        .test-info h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        .test-info ul {
+            margin-left: 20px;
+            color: #1565c0;
+        }
+        
+        .test-info li {
+            margin-bottom: 5px;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            background: transparent;
+            color: #007bff;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .filter-btn:hover {
+            background: #e3f2fd;
+            transform: translateY(-2px);
+        }
+        
+        .filter-btn.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .section-content {
+            min-height: 400px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .empty-state p {
+            color: #6c757d;
+            font-size: 16px;
+        }
+        
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 20px;
+        }
+        
+        .payment-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .payment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .card-stripe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .stripe-verified {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .stripe-pending {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+        }
+        
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+        
+        .payment-header h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+        }
+        
+        .payment-header p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .badge-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+        
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid;
+        }
+        
+        .badge-paid {
+            background: #f3e5f5;
+            color: #6f42c1;
+            border-color: #6f42c120;
+        }
+        
+        .badge-verified {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        
+        .badge-verifying {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffeaa7;
+        }
+        
+        .payment-amount {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+        
+        .amount-detail {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .payment-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .payment-details strong {
+            color: #2c3e50;
+        }
+        
+        .verification-notes {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+            border: 1px solid #bbdefb;
+        }
+        
+        .verification-notes strong {
+            color: #1976d2;
+        }
+        
+        .verification-notes span {
+            color: #1565c0;
+        }
+        
+        .payment-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #007bff;
+            color: #007bff;
+        }
+        
+        .btn-outline:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            border: none;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .status-alert {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Payment History Section Test</h1>
+        <p class="subtitle">Testing the new Payment History filter in Construction Progress section</p>
+        
+        <div class="test-info">
+            <h3>✅ Test Objectives</h3>
+            <ul>
+                <li><strong>Payment Requests Tab:</strong> Shows only pending and approved payment requests (unpaid)</li>
+                <li><strong>Payment History Tab:</strong> Shows only paid payments and payments awaiting verification</li>
+                <li><strong>Visual Distinction:</strong> Different colors and badges for verification status</li>
+                <li><strong>Receipt Access:</strong> Quick access to view payment receipts</li>
+            </ul>
+        </div>
+        
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-btn" onclick="showSection('all')">📋 All Reports</button>
+            <button class="filter-btn" onclick="showSection('daily')">📅 Daily Reports</button>
+            <button class="filter-btn" onclick="showSection('weekly')">📊 Weekly Reports</button>
+            <button class="filter-btn" onclick="showSection('monthly')">📈 Monthly Reports</button>
+            <button class="filter-btn active" onclick="showSection('payment_requests')">💰 Payment Requests</button>
+            <button class="filter-btn" onclick="showSection('payment_history')">📜 Payment History</button>
+        </div>
+        
+        <!-- Section Content -->
+        <div class="section-content">
+            <!-- Payment Requests Section -->
+            <div id="payment_requests" class="section-view">
+                <div class="empty-state">
+                    <div class="icon">💰</div>
+                    <h3>No Pending Payment Requests</h3>
+                    <p>All payment requests have been processed. Check Payment History for completed payments.</p>
+                </div>
+            </div>
+            
+            <!-- Payment History Section -->
+            <div id="payment_history" class="section-view" style="display: none;">
+                <div class="payment-grid">
+                    <!-- Verified Payment Card -->
+                    <div class="payment-card">
+                        <div class="card-stripe stripe-verified"></div>
+                        
+                        <div class="payment-header">
+                            <div>
+                                <h3>🏗️ Foundation Stage</h3>
+                                <p>Rajesh Kumar</p>
+                            </div>
+                            <div class="badge-group">
+                                <span class="badge badge-paid">💰 Paid</span>
+                                <span class="badge badge-verified">✅ Verified</span>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-amount">
+                            <div class="amount">₹2,50,000</div>
+                            <div class="amount-detail">30% of Foundation stage completed</div>
+                        </div>
+                        
+                        <div class="payment-details">
+                            <div><strong>Paid On:</strong> Jan 10, 2026</div>
+                            <div><strong>Method:</strong> 🏦 Bank</div>
+                            <div style="grid-column: 1 / -1;"><strong>Ref:</strong> TXN123456789</div>
+                            <div style="grid-column: 1 / -1;"><strong>Verified:</strong> Jan 11, 2026 10:30 AM</div>
+                        </div>
+                        
+                        <div class="verification-notes">
+                            <strong>Verification Notes:</strong><br>
+                            <span>Payment verified successfully. Bank transfer confirmed and amount received in full.</span>
+                        </div>
+                        
+                        <div class="payment-actions">
+                            <button class="btn btn-outline">👁️ View Details</button>
+                            <button class="btn btn-success">📄 View Receipt</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Verification Card -->
+                    <div class="payment-card">
+                        <div class="card-stripe stripe-pending"></div>
+                        
+                        <div class="payment-header">
+                            <div>
+                                <h3>🏗️ Plumbing Stage</h3>
+                                <p>Amit Sharma</p>
+                            </div>
+                            <div class="badge-group">
+                                <span class="badge badge-paid">💰 Paid</span>
+                                <span class="badge badge-verifying">⏳ Verifying</span>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-amount">
+                            <div class="amount">₹1,80,000</div>
+                            <div class="amount-detail">25% of Plumbing stage completed</div>
+                        </div>
+                        
+                        <div class="payment-details">
+                            <div><strong>Paid On:</strong> Jan 13, 2026</div>
+                            <div><strong>Method:</strong> 📱 UPI</div>
+                            <div style="grid-column: 1 / -1;"><strong>Ref:</strong> UPI987654321</div>
+                        </div>
+                        
+                        <div class="payment-actions">
+                            <button class="btn btn-outline">👁️ View Details</button>
+                            <button class="btn btn-success">📄 View Receipt</button>
+                        </div>
+                        
+                        <div class="status-alert">
+                            ⏳ Payment receipt is being verified by the contractor
+                        </div>
+                    </div>
+                    
+                    <!-- Another Verified Payment -->
+                    <div class="payment-card">
+                        <div class="card-stripe stripe-verified"></div>
+                        
+                        <div class="payment-header">
+                            <div>
+                                <h3>🏗️ Electrical Stage</h3>
+                                <p>Suresh Patel</p>
+                            </div>
+                            <div class="badge-group">
+                                <span class="badge badge-paid">💰 Paid</span>
+                                <span class="badge badge-verified">✅ Verified</span>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-amount">
+                            <div class="amount">₹3,20,000</div>
+                            <div class="amount-detail">40% of Electrical stage completed</div>
+                        </div>
+                        
+                        <div class="payment-details">
+                            <div><strong>Paid On:</strong> Jan 8, 2026</div>
+                            <div><strong>Method:</strong> 💳 Razorpay</div>
+                            <div style="grid-column: 1 / -1;"><strong>Ref:</strong> pay_RZP456789123</div>
+                            <div style="grid-column: 1 / -1;"><strong>Verified:</strong> Jan 8, 2026 3:45 PM</div>
+                        </div>
+                        
+                        <div class="verification-notes">
+                            <strong>Verification Notes:</strong><br>
+                            <span>Online payment received and verified automatically through Razorpay gateway.</span>
+                        </div>
+                        
+                        <div class="payment-actions">
+                            <button class="btn btn-outline">👁️ View Details</button>
+                            <button class="btn btn-success">📄 View Receipt</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Other Sections (Empty States) -->
+            <div id="all" class="section-view" style="display: none;">
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <h3>All Reports View</h3>
+                    <p>This would show all progress reports and payment information combined.</p>
+                </div>
+            </div>
+            
+            <div id="daily" class="section-view" style="display: none;">
+                <div class="empty-state">
+                    <div class="icon">📅</div>
+                    <h3>Daily Reports</h3>
+                    <p>Daily progress reports would appear here.</p>
+                </div>
+            </div>
+            
+            <div id="weekly" class="section-view" style="display: none;">
+                <div class="empty-state">
+                    <div class="icon">📊</div>
+                    <h3>Weekly Reports</h3>
+                    <p>Weekly progress reports would appear here.</p>
+                </div>
+            </div>
+            
+            <div id="monthly" class="section-view" style="display: none;">
+                <div class="empty-state">
+                    <div class="icon">📈</div>
+                    <h3>Monthly Reports</h3>
+                    <p>Monthly progress reports would appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section-view').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

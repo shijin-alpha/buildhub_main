@@ -1,0 +1,497 @@
+.ra-floating-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 1000;
+  font-size: 26px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.ra-floating-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.ra-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 24px;
+  width: 520px;
+  max-width: 95vw;
+  max-height: 88vh;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  animation: slideUp 0.2s ease;
+}
+
+.ra-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f3f4f6;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.ra-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ra-clear {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.ra-clear:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+.ra-title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.ra-subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.ra-close {
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.ra-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.ra-consent {
+  padding: 12px 16px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 14px;
+}
+
+.ra-consent-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+}
+
+.ra-consent-actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #c7d2fe;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.ra-consent-actions button.secondary {
+  background: #f9fafb;
+}
+
+.ra-modes {
+  display: flex;
+  padding: 10px 16px 8px 16px;
+  gap: 10px;
+}
+
+.ra-modes button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ra-modes button.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.ra-search {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px 20px 24px;
+}
+
+.ra-search input {
+  flex: 1;
+  padding: 16px 18px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.ra-search input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.ra-search button {
+  padding: 16px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.ra-search button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.ra-guide {
+  padding: 0 24px 16px 24px;
+}
+
+.ra-guide-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.ra-guide ul {
+  padding-left: 20px;
+  margin: 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ra-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 320px;
+}
+
+.ra-message {
+  max-width: 85%;
+  padding: 18px 22px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  background: #f9fafb;
+  word-wrap: break-word;
+}
+
+.ra-message.user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+.ra-message.bot {
+  align-self: flex-start;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-bottom-left-radius: 6px;
+}
+
+.ra-text {
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+
+.ra-quick-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.ra-quick-options button {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: #374151;
+}
+
+.ra-quick-options button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  background: #f8fafc;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.ra-feedback {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.ra-feedback span {
+  font-weight: 500;
+}
+
+.ra-feedback button {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+}
+
+.ra-feedback button:hover {
+  background: #f9fafb;
+  transform: scale(1.15);
+}
+
+.ra-feedback button.active {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  transform: scale(1.15);
+}
+
+.ra-feedback button.active:hover {
+  background: #bfdbfe;
+}
+
+.ra-footer {
+  border-top: 1px solid #f3f4f6;
+  padding: 12px 16px;
+  text-align: right;
+}
+
+.ra-footer .link {
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ra-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.ra-modal {
+  background: #fff;
+  padding: 24px;
+  border-radius: 16px;
+  width: 400px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  max-width: 90vw;
+}
+
+.ra-modal-title {
+  font-weight: 700;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.ra-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.ra-modal-actions button {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.ra-modal-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.ra-modal-actions .primary {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+@media (max-width: 640px) {
+  .ra-panel {
+    right: 16px;
+    bottom: 80px;
+    max-height: 85vh;
+    width: calc(100vw - 32px);
+  }
+
+  .ra-floating-button {
+    right: 16px;
+    bottom: 16px;
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+  }
+
+  .ra-header {
+    padding: 18px 20px;
+  }
+
+  .ra-title {
+    font-size: 17px;
+  }
+
+  .ra-subtitle {
+    font-size: 14px;
+  }
+
+  .ra-search {
+    padding: 0 20px 16px 20px;
+  }
+
+  .ra-messages {
+    padding: 16px 20px;
+    min-height: 280px;
+    gap: 18px;
+  }
+
+  .ra-message {
+    max-width: 90%;
+    padding: 16px 18px;
+  }
+
+  .ra-quick-options button {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Suggestions Section */
+.ra-suggestions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.ra-suggestions-label {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* Enhanced spacing for better readability */
+.ra-message .ra-text {
+  line-height: 1.6;
+}
+
+.ra-message.bot .ra-text {
+  color: #374151;
+}
+
+/* Better scrollbar styling */
+.ra-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ra-messages::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.ra-messages::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.ra-messages::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Confidence indicator */
+.ra-confidence {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+  cursor: help;
+}
+
+.ra-message {
+  position: relative;
+}

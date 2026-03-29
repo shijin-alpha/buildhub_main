@@ -1,0 +1,117 @@
+/* Full-page upload form: clean, simple, responsive */
+.fpu-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f6f7fb 0%, #ffffff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.fpu-container {
+  width: 100%;
+  max-width: 920px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  padding: 28px;
+}
+
+.fpu-header {
+  margin-bottom: 16px;
+}
+
+.fpu-header h1 {
+  margin: 0 0 6px;
+  font-size: 1.75rem;
+}
+
+.fpu-subtitle {
+  margin: 0;
+  color: #6b7280;
+}
+
+.fpu-form {
+  margin-top: 12px;
+}
+
+.fpu-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .fpu-row { grid-template-columns: 1fr; }
+}
+
+.fpu-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.fpu-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.fpu-input,
+.fpu-textarea,
+.fpu-input-file,
+.fpu-select {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.fpu-input:focus,
+.fpu-textarea:focus,
+.fpu-input-file:focus,
+.fpu-select:focus {
+  border-color: #7450ff;
+  box-shadow: 0 0 0 3px rgba(116, 80, 255, 0.08);
+}
+
+.fpu-textarea {
+  resize: vertical;
+}
+
+.fpu-hint {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.fpu-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.fpu-btn {
+  border: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.fpu-btn-primary {
+  background: #7450ff;
+  color: #fff;
+}
+
+.fpu-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.fpu-btn-secondary {
+  background: #eef2ff;
+  color: #4f46e5;
+}

@@ -1,0 +1,4 @@
+model,P_Low,R_Low,F1_Low,P_Medium,R_Medium,F1_Medium,P_High,R_High,F1_High,Weighted_F1,Accuracy
+LogisticRegression,0.6087,1.0,0.7568,0.8529,0.8494,0.8512,0.9651,0.9343,0.9495,0.9134,0.9113
+RandomForest,0.8889,0.5714,0.6957,0.8247,0.8661,0.8449,0.9435,0.94,0.9417,0.9042,0.905
+GradientBoosting,0.7222,0.4643,0.5652,0.8517,0.841,0.8463,0.9396,0.9625,0.9509,0.9061,0.9087

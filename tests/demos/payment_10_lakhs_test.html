@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 Lakhs Payment Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .payment-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #fafafa;
+        }
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+            margin: 10px 0;
+        }
+        .button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background: #1565c0;
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .success {
+            color: #2e7d32;
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            color: #d32f2f;
+            background: #ffeaea;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #1976d2;
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .debug {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .status.approved {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ 10 Lakhs Payment Test</h1>
+        <p>Testing payment initiation for 10 lakhs (₹10,00,000) project payment</p>
+        
+        <div class="payment-card">
+            <h3>Payment Request Details</h3>
+            <div id="paymentDetails">Loading payment details...</div>
+        </div>
+        
+        <div class="payment-card">
+            <h3>Payment Limits Configuration</h3>
+            <div id="limitsInfo">Loading limits info...</div>
+        </div>
+        
+        <div class="payment-card">
+            <h3>Payment Initiation Test</h3>
+            <button class="button" onclick="testPaymentInitiation()">Test Payment Initiation</button>
+            <div id="paymentResult"></div>
+        </div>
+        
+        <div class="payment-card">
+            <h3>Debug Information</h3>
+            <div id="debugInfo" class="debug"></div>
+        </div>
+    </div>
+
+    <script>
+        let paymentRequestData = null;
+        
+        // Load payment request details
+        async function loadPaymentDetails() {
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_payment_requests.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    paymentRequestData = data.data[0]; // Get first payment request
+                    
+                    document.getElementById('paymentDetails').innerHTML = `
+                        <p><strong>Request ID:</strong> ${paymentRequestData.id}</p>
+                        <p><strong>Stage:</strong> ${paymentRequestData.stage_name}</p>
+                        <div class="amount">Amount: ₹${parseFloat(paymentRequestData.requested_amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                        <p><strong>Contractor:</strong> ${paymentRequestData.contractor_first_name} ${paymentRequestData.contractor_last_name}</p>
+                        <p><strong>Status:</strong> <span class="status ${paymentRequestData.status}">${paymentRequestData.status}</span></p>
+                        <p><strong>Created:</strong> ${new Date(paymentRequestData.created_at).toLocaleString()}</p>
+                    `;
+                } else {
+                    document.getElementById('paymentDetails').innerHTML = '<div class="error">No payment requests found</div>';
+                }
+                
+                updateDebugInfo('Payment Details Loaded', data);
+                
+            } catch (error) {
+                document.getElementById('paymentDetails').innerHTML = '<div class="error">Error loading payment details: ' + error.message + '</div>';
+                updateDebugInfo('Payment Details Error', error);
+            }
+        }
+        
+        // Load payment limits info
+        async function loadLimitsInfo() {
+            try {
+                // Create a simple PHP endpoint to get limits info
+                const response = await fetch('/buildhub/backend/check_payment_request_data.php');
+                const text = await response.text();
+                
+                // Parse the text output to extract limits info
+                const lines = text.split('\n');
+                let limitsSection = false;
+                let limitsHtml = '';
+                
+                for (const line of lines) {
+                    if (line.includes('Payment Limits Configuration')) {
+                        limitsSection = true;
+                        continue;
+                    }
+                    if (limitsSection && line.trim()) {
+                        limitsHtml += `<p>${line}</p>`;
+                    }
+                }
+                
+                document.getElementById('limitsInfo').innerHTML = limitsHtml || '<div class="info">Limits configuration loaded</div>';
+                
+            } catch (error) {
+                document.getElementById('limitsInfo').innerHTML = '<div class="error">Error loading limits info: ' + error.message + '</div>';
+            }
+        }
+        
+        // Test payment initiation
+        async function testPaymentInitiation() {
+            if (!paymentRequestData) {
+                document.getElementById('paymentResult').innerHTML = '<div class="error">No payment request data available</div>';
+                return;
+            }
+            
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            
+            try {
+                const paymentData = {
+                    payment_request_id: paymentRequestData.id,
+                    amount: parseFloat(paymentRequestData.requested_amount)
+                };
+                
+                updateDebugInfo('Payment Initiation Request', paymentData);
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/initiate_stage_payment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(paymentData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('paymentResult').innerHTML = `
+                        <div class="success">
+                            <h4>✅ Payment Initiation Successful!</h4>
+                            <p><strong>Message:</strong> ${result.message}</p>
+                            <p><strong>Transaction ID:</strong> ${result.data.transaction_id}</p>
+                            <p><strong>Razorpay Order ID:</strong> ${result.data.razorpay_order_id}</p>
+                            <p><strong>Amount:</strong> ₹${(result.data.amount / 100).toLocaleString('en-IN', {minimumFractionDigits: 2})}</p>
+                            <p><strong>Stage:</strong> ${result.data.stage_name}</p>
+                            <p><strong>Contractor:</strong> ${result.data.contractor_name}</p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('paymentResult').innerHTML = `
+                        <div class="error">
+                            <h4>❌ Payment Initiation Failed</h4>
+                            <p><strong>Error:</strong> ${result.message}</p>
+                        </div>
+                    `;
+                }
+                
+                updateDebugInfo('Payment Initiation Response', result);
+                
+            } catch (error) {
+                document.getElementById('paymentResult').innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+                updateDebugInfo('Payment Initiation Error', error);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test Payment Initiation';
+            }
+        }
+        
+        // Update debug information
+        function updateDebugInfo(title, data) {
+            const debugDiv = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.textContent += `[${timestamp}] ${title}:\n${JSON.stringify(data, null, 2)}\n\n`;
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPaymentDetails();
+            loadLimitsInfo();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Integrated Document Management</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .step {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            margin-right: 8px;
+        }
+        .navigation-demo {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .toggle-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .toggle-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .toggle-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .toggle-btn:hover {
+            background: #e9ecef;
+        }
+        .toggle-btn.active:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Integrated Document Management System</h1>
+            <p>Document management is now integrated into the Progress Updates section</p>
+        </div>
+
+        <div class="success">
+            <h3>✅ Implementation Complete!</h3>
+            <p>The Stage Documents Manager has been successfully integrated into the contractor's Progress Updates section as requested.</p>
+        </div>
+
+        <div class="step">
+            <h3>📍 Location in Interface</h3>
+            <p>The document management system is now accessible through:</p>
+            <div class="info">
+                <strong>Contractor Dashboard → Progress Updates → 📁 Stage Documents</strong>
+            </div>
+            
+            <div class="navigation-demo">
+                <h4>Progress View Toggle Buttons:</h4>
+                <div class="toggle-buttons">
+                    <div class="toggle-btn">📝 Submit Update</div>
+                    <div class="toggle-btn">📊 View Timeline</div>
+                    <div class="toggle-btn">💰 Stage Payment</div>
+                    <div class="toggle-btn">💳 Custom Payment</div>
+                    <div class="toggle-btn">📋 Payment History</div>
+                    <div class="toggle-btn active">📁 Stage Documents</div>
+                    <div class="toggle-btn">📊 Generate Reports</div>
+                </div>
+                <p><em>The "📁 Stage Documents" button has been added to the existing toggle section</em></p>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🎯 Key Features</h3>
+            <ul class="feature-list">
+                <li>Project-specific document isolation</li>
+                <li>Stage-based document organization (Foundation, Structure, Brickwork, etc.)</li>
+                <li>Multiple document types (Receipts, Bills, Invoices, Certificates)</li>
+                <li>Drag-and-drop file upload interface</li>
+                <li>Document verification workflow</li>
+                <li>Progress tracking and completion statistics</li>
+                <li>Integrated with existing payment system</li>
+                <li>Comprehensive audit trail</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>🔧 Technical Implementation</h3>
+            <div class="info">
+                <h4>Changes Made:</h4>
+                <ul>
+                    <li><strong>ContractorDashboard.jsx</strong>: Added "📁 Stage Documents" button to progress view toggle</li>
+                    <li><strong>StageDocumentManager.jsx</strong>: Self-contained component with project selection</li>
+                    <li><strong>Database Schema</strong>: New tables for document management and audit trails</li>
+                    <li><strong>API Endpoints</strong>: Upload, retrieve, and verify document APIs</li>
+                    <li><strong>CSS Styling</strong>: Responsive design matching existing UI theme</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🚀 How to Use</h3>
+            <ol>
+                <li><strong>Login as Contractor</strong> and navigate to Progress Updates</li>
+                <li><strong>Click "📁 Stage Documents"</strong> in the toggle buttons</li>
+                <li><strong>Select a Project</strong> from the dropdown (auto-selects first project)</li>
+                <li><strong>Upload Documents</strong>:
+                    <ul>
+                        <li>Choose construction stage (Foundation, Structure, etc.)</li>
+                        <li>Select document type (Receipt, Bill, Invoice, etc.)</li>
+                        <li>Add description</li>
+                        <li>Drag-and-drop or browse files</li>
+                        <li>Click upload</li>
+                    </ul>
+                </li>
+                <li><strong>View Documents</strong>: Browse uploaded documents by stage and type</li>
+                <li><strong>Track Progress</strong>: Monitor completion statistics and verification status</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>📋 Testing</h3>
+            <p>To test the integrated system:</p>
+            <div class="info">
+                <ol>
+                    <li>Apply database schema: <code>php apply_document_management_schema.php</code></li>
+                    <li>Ensure uploads directory exists and is writable</li>
+                    <li>Login as a contractor in the main application</li>
+                    <li>Navigate to Progress Updates → Stage Documents</li>
+                    <li>Test upload, view, and summary functionality</li>
+                </ol>
+            </div>
+            
+            <a href="test_document_management_system.html" class="btn btn-success">
+                Open Standalone Test Interface
+            </a>
+        </div>
+
+        <div class="step">
+            <h3>🎨 User Experience</h3>
+            <div class="info">
+                <h4>Benefits of Integration:</h4>
+                <ul>
+                    <li><strong>Unified Workflow</strong>: All progress-related activities in one place</li>
+                    <li><strong>Context Awareness</strong>: Documents linked to progress updates and payments</li>
+                    <li><strong>Reduced Navigation</strong>: No need for separate sidebar tabs</li>
+                    <li><strong>Logical Grouping</strong>: Documents naturally belong with progress tracking</li>
+                    <li><strong>Consistent Interface</strong>: Matches existing toggle button pattern</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="success">
+            <h3>✨ Ready to Use!</h3>
+            <p>The document management system is now fully integrated into the Progress Updates section. Contractors can seamlessly manage their stage documents alongside progress tracking, payments, and reporting.</p>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactivity to the demo buttons
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

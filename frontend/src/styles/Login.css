@@ -1,0 +1,152 @@
+.login-container {
+  background: rgba(255 255 255 / 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(37 99 235 / 0.3);
+  padding: 2.8rem 3.5rem;
+  width: 400px;
+  max-width: 90vw;
+  color: #1e40af;
+  user-select: text;
+  margin: 3rem auto;
+  font-family: 'Inter', sans-serif;
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 900;
+  font-size: 2.5rem;
+  letter-spacing: 0.08em;
+  color: #2563eb;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+label {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #1e3a8a;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+input[type='email'],
+input[type='password'] {
+  width: 100%;
+  padding: 0.95rem 1.1rem;
+  border-radius: 14px;
+  border: 2px solid #cbd5e1;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e40af;
+  transition: border-color 0.3s ease;
+}
+
+input[type='email']:focus,
+input[type='password']:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 8px #3b82f6aa;
+  background-color: #f0f5ff;
+}
+
+.btn-submit {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border: none;
+  color: white;
+  font-weight: 900;
+  font-size: 1.3rem;
+  padding: 1.2rem 0;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(37 99 235 / 0.5);
+  transition: background 0.3s ease, transform 0.3s ease;
+  user-select: none;
+}
+
+.btn-submit:hover,
+.btn-submit:focus {
+  background: linear-gradient(90deg, #1e40af, #1e3a8a);
+  transform: translateY(-4px);
+  outline: none;
+}
+
+/* Google Sign-in block inside card */
+.google-signin-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.82));
+  border: 1px solid rgba(205, 220, 255, 0.8);
+  margin-top: 12px;
+}
+
+.google-btn-container {
+  display: grid;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+  border-radius: 8px;
+}
+
+/* Align Google custom button style with Register "Create account" button */
+.register-form-section .google-custom {
+  width: 100%;
+  padding: 0.85rem;
+  border: none;
+  background: linear-gradient(135deg, #0b5ed7, #0846a8);
+  color: white;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.9rem;
+  transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.2s ease;
+  box-shadow: 0 8px 22px rgba(11, 94, 215, 0.35);
+}
+
+.register-form-section .google-custom:hover,
+.register-form-section .google-custom:focus {
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+  box-shadow: 0 12px 28px rgba(11, 94, 215, 0.45);
+  outline: none;
+}
+
+/* Google button container styles */
+
+.google-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.extra-links {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  text-align: center;
+  color: #1e3a8a;
+}
+
+.extra-links a {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+  margin: 0 0.5rem;
+  transition: color 0.3s ease;
+  user-select: none;
+}
+
+.extra-links a:hover,
+.extra-links a:focus {
+  color: #1e40af;
+  outline: none;
+}

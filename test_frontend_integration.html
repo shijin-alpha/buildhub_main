@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dynamic Update Counts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .project-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .info-card strong {
+            display: block;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-card div {
+            margin: 5px 0;
+            color: #212529;
+        }
+        .info-card small {
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .test-section {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dynamic Update Counts Test</h1>
+    
+    <div class="test-section">
+        <h2>API Test</h2>
+        <button onclick="testAPI()">Test API Response</button>
+        <button onclick="loadProjectInfo()">Load Project Info</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Project Info Grid (Simulated Frontend)</h2>
+        <div id="project-info-container">
+            <p>Click "Load Project Info" to see the dynamic update counts</p>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing API...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=32');
+                const data = await response.json();
+                
+                if (data.success && data.data.projects.length > 0) {
+                    const project = data.data.projects[0]; // Get first project
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ API Test Successful</div>
+                        <p><strong>Project:</strong> ${project.project_name}</p>
+                        <p><strong>Daily Updates:</strong> ${project.daily_updates_count}</p>
+                        <p><strong>Weekly Summaries:</strong> ${project.weekly_summaries_count}</p>
+                        <p><strong>Monthly Reports:</strong> ${project.monthly_reports_count}</p>
+                        <p><strong>Latest Update:</strong> ${project.latest_update_timestamp || 'N/A'}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ No projects found or API error</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ API Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function loadProjectInfo() {
+            const container = document.getElementById('project-info-container');
+            container.innerHTML = '<p>Loading project information...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=32');
+                const data = await response.json();
+                
+                if (data.success && data.data.projects.length > 0) {
+                    const project = data.data.projects[0]; // Get first project
+                    
+                    // Simulate the frontend project info grid
+                    container.innerHTML = `
+                        <div class="project-info-grid">
+                            <div class="info-card">
+                                <strong>Plot Details</strong>
+                                <div>Plot Size: ${project.plot_size || 'N/A'}</div>
+                                <div>Built-up Area: ${project.built_up_area || 'N/A'}</div>
+                                <div>Floors: ${project.floors || 'N/A'}</div>
+                                <small>Style: ${project.preferred_style || 'Not specified'}</small>
+                            </div>
+                            
+                            <div class="info-card">
+                                <strong>Location</strong>
+                                <div>${project.location || 'Not specified'}</div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <strong>Budget & Cost</strong>
+                                <div>Budget: ${project.budget_range || 'N/A'}</div>
+                                <div>Estimate: ${project.estimate_cost ? '₹' + project.estimate_cost.toLocaleString('en-IN') : 'N/A'}</div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <strong>Timeline</strong>
+                                <div>Requested: ${project.requested_timeline || 'Not specified'}</div>
+                                <div>Estimate: ${project.timeline || 'N/A'}</div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <strong>Progress Status</strong>
+                                <div>${project.completion_percentage || 0}% complete</div>
+                                <div>Completed Stages: ${project.completed_stages || 0}</div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <strong>Update History</strong>
+                                <div>Daily: <span class="success">${project.daily_updates_count || 0}</span> updates</div>
+                                <div>Weekly: <span class="success">${project.weekly_summaries_count || 0}</span> summaries</div>
+                                <div>Monthly: <span class="success">${project.monthly_reports_count || 0}</span> reports</div>
+                                <small>Last: ${project.latest_update_timestamp || project.updated_at || 'N/A'}</small>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px;">
+                            <strong>✓ Dynamic Update Counts Working!</strong><br>
+                            The values above are being fetched dynamically from the database and will update automatically as new progress reports are added.
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<div class="error">No projects found for contractor 32</div>';
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading project info: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

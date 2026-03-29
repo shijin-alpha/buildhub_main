@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Reports API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #fff3cd; border-color: #ffeaa7; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Inspection Reports API Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Admin Inspection Reports API</h3>
+        <button onclick="testAdminAPI()">Test Admin API</button>
+        <div id="admin-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Homeowner Inspection Reports API</h3>
+        <button onclick="testHomeownerAPI()">Test Homeowner API</button>
+        <div id="homeowner-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Inspector Project Details API (Fixed)</h3>
+        <button onclick="testInspectorAPI()">Test Inspector API</button>
+        <div id="inspector-result"></div>
+    </div>
+
+    <script>
+        async function testAdminAPI() {
+            const resultDiv = document.getElementById('admin-result');
+            resultDiv.innerHTML = '<div class="loading">Testing Admin API...</div>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/admin/get_inspection_reports.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Admin API Success</h4>
+                            <p><strong>Total Reports:</strong> ${result.statistics.total_reports}</p>
+                            <p><strong>Approved:</strong> ${result.statistics.approved_count}</p>
+                            <p><strong>Rejected:</strong> ${result.statistics.rejected_count}</p>
+                            <p><strong>Need Attention:</strong> ${result.statistics.needs_attention_count}</p>
+                            <p><strong>Reports Found:</strong> ${result.reports.length}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Admin API Failed</h4>
+                            <p><strong>Error:</strong> ${result.message}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Admin API Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testHomeownerAPI() {
+            const resultDiv = document.getElementById('homeowner-result');
+            resultDiv.innerHTML = '<div class="loading">Testing Homeowner API...</div>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_inspection_reports.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Homeowner API Success</h4>
+                            <p><strong>Total Reports:</strong> ${result.statistics.total_reports}</p>
+                            <p><strong>Projects with Reports:</strong> ${result.statistics.projects_with_reports}</p>
+                            <p><strong>Reports Found:</strong> ${result.reports.length}</p>
+                            <p><strong>Projects Found:</strong> ${result.projects.length}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Homeowner API Failed</h4>
+                            <p><strong>Error:</strong> ${result.message}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Homeowner API Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testInspectorAPI() {
+            const resultDiv = document.getElementById('inspector-result');
+            resultDiv.innerHTML = '<div class="loading">Testing Inspector API...</div>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/inspector/get_project_details.php?project_id=2', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Inspector API Success</h4>
+                            <p><strong>Project:</strong> ${result.project.project_name}</p>
+                            <p><strong>Inspection Reports:</strong> ${result.inspection_reports.length}</p>
+                            <p><strong>Site Notes:</strong> ${result.site_notes.length}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Inspector API Failed</h4>
+                            <p><strong>Error:</strong> ${result.message}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Inspector API Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bills & Receipts Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-header {
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .api-test {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .loading {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .receipt-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .verification-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .verified {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .rejected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .file-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin: 5px 0;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #007bff;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧾 Bills & Receipts Integration Test</h1>
+            <p>Testing the homeowner bills and receipts functionality with contractor verification</p>
+        </div>
+
+        <div class="api-test">
+            <h3>📡 API Connection Test</h3>
+            <div id="api-status" class="loading">⏳ Testing API connection...</div>
+            <button onclick="testAPI()" class="btn btn-primary">🔄 Test API</button>
+        </div>
+
+        <div class="api-test">
+            <h3>📊 Statistics Summary</h3>
+            <div id="statistics-display">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 15px 0;">
+                    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div id="total-receipts" style="font-size: 24px; font-weight: bold; color: #0369a1;">-</div>
+                        <div style="color: #64748b; font-size: 14px;">Total Receipts</div>
+                    </div>
+                    <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div id="verified-count" style="font-size: 24px; font-weight: bold; color: #16a34a;">-</div>
+                        <div style="color: #64748b; font-size: 14px;">Verified</div>
+                    </div>
+                    <div style="background: #fef3c7; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div id="pending-count" style="font-size: 24px; font-weight: bold; color: #d97706;">-</div>
+                        <div style="color: #64748b; font-size: 14px;">Pending</div>
+                    </div>
+                    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div id="total-amount" style="font-size: 20px; font-weight: bold; color: #0369a1;">-</div>
+                        <div style="color: #64748b; font-size: 14px;">Total Amount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-test">
+            <h3>🧾 Bills & Receipts Display</h3>
+            <div id="receipts-container">
+                <div class="loading">⏳ Loading receipts...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.innerHTML = '<span class="loading">⏳ Testing API connection...</span>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_bills_receipts.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.innerHTML = `<span class="success">✅ API Connected Successfully</span><br>
+                        <small>Found ${result.data.receipts.length} receipt(s) with ${result.data.statistics.verified_count} verified</small>`;
+                    
+                    // Update statistics
+                    updateStatistics(result.data.statistics);
+                    
+                    // Display receipts
+                    displayReceipts(result.data.receipts);
+                } else {
+                    statusDiv.innerHTML = `<span class="error">❌ API Error: ${result.message}</span>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="error">❌ Connection Error: ${error.message}</span>`;
+            }
+        }
+
+        function updateStatistics(stats) {
+            document.getElementById('total-receipts').textContent = stats.total_receipts || 0;
+            document.getElementById('verified-count').textContent = stats.verified_count || 0;
+            document.getElementById('pending-count').textContent = stats.pending_count || 0;
+            document.getElementById('total-amount').textContent = `₹${(stats.total_amount || 0).toLocaleString()}`;
+        }
+
+        function displayReceipts(receipts) {
+            const container = document.getElementById('receipts-container');
+            
+            if (receipts.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🧾</div>
+                        <h3>No Bills & Receipts</h3>
+                        <p>No payment receipts or bills have been uploaded yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            receipts.forEach(receipt => {
+                const verificationClass = receipt.verification_status === 'verified' ? 'verified' : 
+                                        receipt.verification_status === 'pending' ? 'pending' : 'rejected';
+                
+                html += `
+                    <div class="receipt-card">
+                        <div class="receipt-header">
+                            <div>
+                                <h4>🧾 ${receipt.request_title || receipt.stage_name || 'Payment'}</h4>
+                                <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                                    Paid to: ${receipt.contractor_first_name} ${receipt.contractor_last_name}
+                                    ${receipt.payment_method ? `<span style="margin-left: 8px; padding: 2px 6px; background: #e3f2fd; color: #1976d2; border-radius: 8px; font-size: 11px;">${receipt.payment_method_icon} ${receipt.payment_method.replace('_', ' ').toUpperCase()}</span>` : ''}
+                                </p>
+                            </div>
+                            <span class="verification-badge ${verificationClass}">
+                                ${receipt.verification_badge.icon} ${receipt.verification_badge.text}
+                            </span>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700; color: #28a745;">
+                                ₹${parseFloat(receipt.requested_amount).toLocaleString()}
+                            </div>
+                            ${receipt.transaction_reference ? `<div style="font-size: 12px; color: #6c757d;">Transaction Ref: ${receipt.transaction_reference}</div>` : ''}
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; color: #6c757d; margin: 15px 0;">
+                            ${receipt.payment_date ? `<div><strong>Payment Date:</strong> ${receipt.payment_date_formatted}</div>` : ''}
+                            ${receipt.verified_at ? `<div><strong>Verified On:</strong> ${receipt.verified_at_formatted}</div>` : ''}
+                            <div><strong>Receipt Files:</strong> ${receipt.receipt_files_count} file${receipt.receipt_files_count > 1 ? 's' : ''}</div>
+                            <div><strong>Upload Date:</strong> ${receipt.created_at_formatted}</div>
+                        </div>
+                        
+                        <div class="file-list">
+                            <h5 style="margin: 0 0 12px 0;">📄 Receipt Files (${receipt.total_file_size_mb} MB)</h5>
+                            ${receipt.receipt_files.slice(0, 3).map(file => `
+                                <div class="file-item">
+                                    <span style="font-size: 16px;">${file.file_type && file.file_type.startsWith('image/') ? '🖼️' : '📄'}</span>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 500; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            ${file.original_name}
+                                        </div>
+                                        ${file.file_size ? `<div style="font-size: 10px; color: #6c757d;">${(file.file_size / 1024 / 1024).toFixed(2)} MB</div>` : ''}
+                                    </div>
+                                    <a href="/buildhub/backend/${file.file_path}" target="_blank" class="btn btn-primary" style="font-size: 10px; padding: 4px 8px;">View</a>
+                                </div>
+                            `).join('')}
+                            ${receipt.receipt_files.length > 3 ? `<div style="text-align: center; font-size: 12px; color: #6c757d; padding: 8px;">+${receipt.receipt_files.length - 3} more file${receipt.receipt_files.length - 3 > 1 ? 's' : ''}</div>` : ''}
+                        </div>
+                        
+                        ${receipt.verification_notes ? `
+                            <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; margin: 15px 0; border: 1px solid #bbdefb;">
+                                <strong style="color: #1976d2;">Contractor Verification Notes:</strong><br>
+                                <span style="color: #1565c0;">${receipt.verification_notes}</span>
+                                ${receipt.verified_by_full_name ? `<div style="font-size: 12px; color: #6c757d; margin-top: 8px;">Verified by: ${receipt.verified_by_full_name}</div>` : ''}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                            <button class="btn btn-outline" onclick="alert('View Details functionality')">👁️ View Details</button>
+                            <button class="btn btn-success" onclick="window.open('/buildhub/backend/${receipt.receipt_files[0].file_path}', '_blank')">📄 Open Receipt</button>
+                            ${receipt.receipt_files.length > 1 ? `<button class="btn" style="background: #6f42c1; color: white;" onclick="downloadAllReceipts(${JSON.stringify(receipt.receipt_files).replace(/"/g, '&quot;')})">📥 Download All</button>` : ''}
+                        </div>
+                        
+                        ${getStatusMessage(receipt.verification_status)}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function getStatusMessage(status) {
+            if (status === 'pending') {
+                return `<div style="margin-top: 10px; padding: 8px 12px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; font-size: 12px; color: #856404;">⏳ Your contractor is reviewing and verifying the uploaded receipt</div>`;
+            } else if (status === 'verified') {
+                return `<div style="margin-top: 10px; padding: 8px 12px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; font-size: 12px; color: #155724;">✅ Receipt verified by contractor - Payment confirmed and recorded</div>`;
+            } else if (status === 'rejected') {
+                return `<div style="margin-top: 10px; padding: 8px 12px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; font-size: 12px; color: #721c24;">❌ Receipt verification rejected - Please contact your contractor for clarification</div>`;
+            }
+            return '';
+        }
+
+        function downloadAllReceipts(files) {
+            files.forEach((file, index) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = `/buildhub/backend/${file.file_path}`;
+                    link.download = file.original_name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }, index * 500);
+            });
+        }
+
+        // Auto-test on page load
+        window.onload = function() {
+            testAPI();
+        };
+    </script>
+</body>
+</html>

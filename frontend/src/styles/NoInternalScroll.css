@@ -1,0 +1,40 @@
+/* Global overrides to remove internal scrollbars (keep page/body scroll) */
+
+/* Sections, lists, cards, and modal content should not scroll internally */
+.section-card,
+.section-content,
+.item-list,
+.list-item,
+.details-card,
+.details-grid,
+.project-details,
+.request-details,
+.accordion-content,
+.library-modal,
+.library-content,
+.modal-content,
+.user-modal,
+.form-content,
+.dropdown-options,
+.comment-list,
+.file-group-list,
+.widget-panel,
+.widget-list,
+.notification-panel,
+.search-results,
+.results-list {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: visible !important;
+  max-height: none !important;
+}
+
+/* Navigation rows/steppers: wrap instead of horizontal scrolling */
+.dashboard-nav,
+.wizard-stepper {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  flex-wrap: wrap !important;
+}
+
+/* Do NOT touch overlay containers (e.g., .form-modal) so content remains reachable */

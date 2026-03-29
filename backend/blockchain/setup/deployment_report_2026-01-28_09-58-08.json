@@ -1,0 +1,37 @@
+{
+    "deployment_timestamp": "2026-01-28 09:58:08",
+    "success_count": 12,
+    "warning_count": 5,
+    "error_count": 4,
+    "success_items": [
+        "Database schema created successfully",
+        "PHP extension available: curl",
+        "PHP extension available: json",
+        "PHP extension available: openssl",
+        "PHP extension available: mbstring",
+        "Smart contract function available: recordPaymentInitiation",
+        "Smart contract function available: recordPaymentCompletion",
+        "Smart contract function available: recordVerification",
+        "Smart contract function available: getPaymentRecord",
+        "Smart contract function available: getPaymentStatus",
+        "Blockchain trust layer is enabled and configured",
+        "Payment proof generation test successful"
+    ],
+    "warnings": [
+        "Web3 PHP library not found. Run 'composer install' to install dependencies.",
+        "SQL execution warning: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'DELIMITER \/\/\r\nCREATE PROCEDURE GetPaymentBlockchainAudit(IN payment_request_i...' at line 2",
+        "SQL execution warning: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'END \/\/\r\nDELIMITER' at line 1",
+        "SQL execution warning: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'DELIMITER \/\/\r\nCREATE PROCEDURE UpdateBlockchainIntegrationStatus(\r\n    IN p_p...' at line 2",
+        "SQL execution warning: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'END \/\/\r\nDELIMITER' at line 1"
+    ],
+    "errors": [
+        "Configuration error: ETHEREUM_RPC_URL must be configured with valid Infura or Alchemy endpoint",
+        "Configuration error: TRUST_CONTRACT_ADDRESS must be set after smart contract deployment",
+        "Configuration error: ETHEREUM_PRIVATE_KEY must be configured (use environment variable)",
+        "Configuration error: ETHEREUM_PUBLIC_ADDRESS must be configured"
+    ],
+    "next_steps": [
+        "1. Fix configuration errors listed above",
+        "2. Re-run deployment script after fixing errors"
+    ]
+}

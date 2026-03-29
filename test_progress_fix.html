@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Reports Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Progress Reports Fix Test</h1>
+    
+    <div class="section info">
+        <h2>Test Progress</h2>
+        <p>This page tests the progress reports fix for both homeowner and contractor dashboards.</p>
+    </div>
+
+    <div class="section">
+        <h3>1. Test Homeowner Session & Progress Data</h3>
+        <button onclick="testHomeownerSession()">Test Homeowner Session</button>
+        <button onclick="testHomeownerProgress()">Test Homeowner Progress</button>
+        <div id="homeowner-results"></div>
+    </div>
+
+    <div class="section">
+        <h3>2. Test Contractor Session & Progress Data</h3>
+        <button onclick="testContractorSession()">Test Contractor Session</button>
+        <button onclick="testContractorProgress()">Test Contractor Progress</button>
+        <div id="contractor-results"></div>
+    </div>
+
+    <div class="section">
+        <h3>3. Database Progress Data Check</h3>
+        <button onclick="checkProgressData()">Check Progress Data</button>
+        <div id="database-results"></div>
+    </div>
+
+    <script>
+        async function testHomeownerSession() {
+            const resultsDiv = document.getElementById('homeowner-results');
+            resultsDiv.innerHTML = '<p>Testing homeowner session...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/session_bridge.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Homeowner Session Success</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Homeowner Session Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Homeowner Session Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testHomeownerProgress() {
+            const resultsDiv = document.getElementById('homeowner-results');
+            resultsDiv.innerHTML += '<p>Testing homeowner progress data...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_progress_updates.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultsDiv.innerHTML += `
+                        <div class="success">
+                            <h4>✅ Homeowner Progress Success</h4>
+                            <p>Found ${data.data?.progress_updates?.length || 0} progress updates</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="error">
+                            <h4>❌ Homeowner Progress Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="error">
+                        <h4>❌ Homeowner Progress Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testContractorSession() {
+            const resultsDiv = document.getElementById('contractor-results');
+            resultsDiv.innerHTML = '<p>Testing contractor session...</p>';
+            
+            try {
+                // First establish contractor session for user 29 (Shijin Thomas - contractor)
+                const loginResponse = await fetch('/buildhub/backend/api/contractor/login_contractor_session.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ contractor_id: 29 })
+                });
+                const loginData = await loginResponse.json();
+                
+                if (loginData.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Contractor Session Success</h4>
+                            <pre>${JSON.stringify(loginData, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Contractor Session Failed</h4>
+                            <pre>${JSON.stringify(loginData, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Contractor Session Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testContractorProgress() {
+            const resultsDiv = document.getElementById('contractor-results');
+            resultsDiv.innerHTML += '<p>Testing contractor progress data...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_progress_updates.php?contractor_id=29', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultsDiv.innerHTML += `
+                        <div class="success">
+                            <h4>✅ Contractor Progress Success</h4>
+                            <p>Found ${data.data?.progress_updates?.length || 0} progress updates</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="error">
+                            <h4>❌ Contractor Progress Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="error">
+                        <h4>❌ Contractor Progress Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function checkProgressData() {
+            const resultsDiv = document.getElementById('database-results');
+            resultsDiv.innerHTML = '<p>Checking database progress data...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/check_progress_data_simple.php');
+                const text = await response.text();
+                
+                resultsDiv.innerHTML = `
+                    <div class="info">
+                        <h4>📊 Database Progress Data</h4>
+                        <pre>${text}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Database Check Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

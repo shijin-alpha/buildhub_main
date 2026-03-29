@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Assessment Blocking Validation Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .test-case {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-case h3 {
+            margin-top: 0;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .risk-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .risk-low { background: #d1fae5; color: #065f46; }
+        .risk-medium { background: #fef3c7; color: #92400e; }
+        .risk-high { background: #fee2e2; color: #991b1b; }
+        .blocked {
+            background: #fef2f2;
+            border: 3px solid #ef4444;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .blocked-title {
+            color: #dc2626;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .allowed {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .allowed-title {
+            color: #16a34a;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .test-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+        .btn-proceed {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-proceed:hover {
+            background: #2563eb;
+        }
+        .btn-revise {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-revise:hover {
+            background: #dc2626;
+        }
+        .btn-disabled {
+            background: #9ca3af;
+            color: white;
+            cursor: not-allowed;
+        }
+        .logic-explanation {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 16px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .logic-explanation h4 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 Risk Assessment Blocking Validation</h1>
+        <p class="subtitle">Testing the new validation logic that prevents submission of extremely high-risk projects</p>
+
+        <div class="logic-explanation">
+            <h4>🤖 Blocking Logic</h4>
+            <p><strong>Rule:</strong> A project is blocked from submission if BOTH cost overrun risk AND time delay risk are HIGH.</p>
+            <p><strong>Rationale:</strong> When both risks are high, it indicates the project requirements are unrealistic or impossible to build as specified.</p>
+            <div class="code-block">
+const isProjectTooRisky = () => {
+    const costRisk = riskAssessment.cost_overrun_risk?.risk_level?.toLowerCase();
+    const timeRisk = riskAssessment.time_delay_risk?.risk_level?.toLowerCase();
+    
+    // Block submission if BOTH risks are high
+    return costRisk === 'high' && timeRisk === 'high';
+};
+            </div>
+        </div>
+
+        <!-- Test Case 1: BLOCKED -->
+        <div class="test-case">
+            <h3>
+                <span>🚫</span>
+                Test Case 1: Both Risks HIGH
+                <span class="risk-badge risk-high">BLOCKED</span>
+            </h3>
+            <p><strong>Scenario:</strong> Complex 4-floor building with basement, low budget, tight timeline</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;">
+                <div>
+                    <strong>💰 Cost Overrun Risk:</strong>
+                    <span class="risk-badge risk-high">HIGH</span>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+                        Budget too low for complexity level
+                    </p>
+                </div>
+                <div>
+                    <strong>⏰ Time Delay Risk:</strong>
+                    <span class="risk-badge risk-high">HIGH</span>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+                        Timeline unrealistic for scope
+                    </p>
+                </div>
+            </div>
+
+            <div class="blocked">
+                <div class="blocked-title">⚠️ Project Cannot Be Submitted</div>
+                <p style="margin: 8px 0; color: #7f1d1d; font-size: 14px;">
+                    Based on our AI analysis, this project has extremely high risks in both budget and timeline. 
+                    This suggests the project requirements may be unrealistic or need significant revision.
+                </p>
+                <p style="margin: 8px 0; color: #7f1d1d; font-size: 14px; font-weight: 600;">
+                    Please revise your project by:
+                </p>
+                <ul style="color: #7f1d1d; font-size: 13px; margin: 8px 0;">
+                    <li>Reduce the design complexity or special features</li>
+                    <li>Increase your budget to match the project scope</li>
+                    <li>Extend the planned construction timeline</li>
+                    <li>Simplify the architectural requirements</li>
+                </ul>
+            </div>
+
+            <button class="test-button btn-revise" onclick="alert('User must revise project details')">
+                ⚠️ Revise Project Details (Required)
+            </button>
+            <button class="test-button btn-disabled" disabled>
+                Continue with My Request → (DISABLED)
+            </button>
+        </div>
+
+        <!-- Test Case 2: ALLOWED -->
+        <div class="test-case">
+            <h3>
+                <span>✅</span>
+                Test Case 2: High Cost, Low Time
+                <span class="risk-badge risk-medium">ALLOWED</span>
+            </h3>
+            <p><strong>Scenario:</strong> Standard 2-floor house with moderate budget, reasonable timeline</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;">
+                <div>
+                    <strong>💰 Cost Overrun Risk:</strong>
+                    <span class="risk-badge risk-high">HIGH</span>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+                        Budget slightly tight but manageable
+                    </p>
+                </div>
+                <div>
+                    <strong>⏰ Time Delay Risk:</strong>
+                    <span class="risk-badge risk-low">LOW</span>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+                        Timeline is realistic
+                    </p>
+                </div>
+            </div>
+
+            <div class="allowed">
+                <div class="allowed-title">✅ Submission Allowed</div>
+                <p style="margin: 8px 0; color: #166534; font-size: 14px;">
+                    While there is some cost risk, the project is feasible. Consider adding 15-20% buffer to your budget.
+                </p>
+            </div>
+
+            <button class="test-button btn-proceed" onclick="alert('Proceeding with submission...')">
+                Continue with My Request →
+            </button>
+        </div>
+
+        <!-- Test Case 3: ALLOWED -->
+        <div class="test-case">
+            <h3>
+                <span>✅</span>
+                Test Case 3: Low Cost, High Time
+                <span class="risk-badge risk-medium">ALLOWED</span>
+            </h3>
+            <p><strong>Scenario:</strong> Simple design with adequate budget but complex site conditions</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;">
+                <div>
+                    <strong>💰 Cost Overrun Risk:</strong>
+                    <span class="risk-badge risk-low">LOW</span>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+                        Budget is adequate
+                    </p>
+                </div>
+                <div>
+                    <strong>⏰ Time Delay Risk:</strong>
+                    <span class="risk-badge risk-high">HIGH</span>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+                        Site challenges may cause delays
+                    </p>
+                </div>
+            </div>
+
+            <div class="allowed">
+                <div class="allowed-title">✅ Submission Allowed</div>
+                <p style="margin: 8px 0; color: #166534; font-size: 14px;">
+                    Budget is good, but expect timeline delays. Plan for 3-6 months extra time.
+                </p>
+            </div>
+
+            <button class="test-button btn-proceed" onclick="alert('Proceeding with submission...')">
+                Continue with My Request →
+            </button>
+        </div>
+
+        <!-- Test Case 4: ALLOWED -->
+        <div class="test-case">
+            <h3>
+                <span>✅</span>
+                Test Case 4: Both Risks LOW/MEDIUM
+                <span class="risk-badge risk-low">ALLOWED</span>
+            </h3>
+            <p><strong>Scenario:</strong> Well-planned project with realistic budget and timeline</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;">
+                <div>
+                    <strong>💰 Cost Overrun Risk:</strong>
+                    <span class="risk-badge risk-medium">MEDIUM</span>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+                        Budget is reasonable
+                    </p>
+                </div>
+                <div>
+                    <strong>⏰ Time Delay Risk:</strong>
+                    <span class="risk-badge risk-low">LOW</span>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+                        Timeline is achievable
+                    </p>
+                </div>
+            </div>
+
+            <div class="allowed">
+                <div class="allowed-title">✅ Submission Allowed - Great Project!</div>
+                <p style="margin: 8px 0; color: #166534; font-size: 14px;">
+                    Your project looks well-planned. Keep 10-15% buffer funds for minor unexpected costs.
+                </p>
+            </div>
+
+            <button class="test-button btn-proceed" onclick="alert('Proceeding with submission...')">
+                Continue with My Request →
+            </button>
+        </div>
+
+        <div class="logic-explanation">
+            <h4>📊 Summary of Blocking Logic</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+                <thead>
+                    <tr style="background: #f3f4f6;">
+                        <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb;">Cost Risk</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb;">Time Risk</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb;">Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-high">HIGH</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-high">HIGH</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb; color: #dc2626; font-weight: 600;">🚫 BLOCKED</td>
+                    </tr>
+                    <tr style="background: #f9fafb;">
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-high">HIGH</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-medium">MEDIUM</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb; color: #16a34a; font-weight: 600;">✅ ALLOWED</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-high">HIGH</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-low">LOW</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb; color: #16a34a; font-weight: 600;">✅ ALLOWED</td>
+                    </tr>
+                    <tr style="background: #f9fafb;">
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-medium">MEDIUM</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-high">HIGH</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb; color: #16a34a; font-weight: 600;">✅ ALLOWED</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-low">LOW</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-high">HIGH</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb; color: #16a34a; font-weight: 600;">✅ ALLOWED</td>
+                    </tr>
+                    <tr style="background: #f9fafb;">
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-low">LOW</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-medium">MEDIUM</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb; color: #16a34a; font-weight: 600;">✅ ALLOWED</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-low">LOW</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb;"><span class="risk-badge risk-low">LOW</span></td>
+                        <td style="padding: 12px; border: 1px solid #e5e7eb; color: #16a34a; font-weight: 600;">✅ ALLOWED</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>🎯 Implementation Details</h2>
+        
+        <h3>Changes Made:</h3>
+        <ol style="line-height: 1.8;">
+            <li><strong>Added Blocking Logic:</strong> New function <code>isProjectTooRisky()</code> checks if both risks are HIGH</li>
+            <li><strong>Blocking Warning UI:</strong> Red warning box appears when project is blocked</li>
+            <li><strong>Button State Management:</strong> "Continue" button is hidden when blocked, "Revise" button becomes prominent</li>
+            <li><strong>User Guidance:</strong> Clear suggestions provided on how to revise the project</li>
+            <li><strong>Conditional Rendering:</strong> Success tips only show for allowed projects</li>
+        </ol>
+
+        <h3>User Experience Flow:</h3>
+        <ol style="line-height: 1.8;">
+            <li>User fills out construction request form</li>
+            <li>AI analyzes project and predicts cost/time risks</li>
+            <li><strong>If BOTH risks are HIGH:</strong>
+                <ul>
+                    <li>Show blocking warning with red border</li>
+                    <li>Hide "Continue" button</li>
+                    <li>Make "Revise" button prominent (red)</li>
+                    <li>Provide specific suggestions for revision</li>
+                </ul>
+            </li>
+            <li><strong>If risks are acceptable:</strong>
+                <ul>
+                    <li>Show risk assessment with recommendations</li>
+                    <li>Allow user to proceed or revise</li>
+                    <li>Provide helpful tips for managing risks</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Benefits:</h3>
+        <ul style="line-height: 1.8;">
+            <li>✅ Prevents unrealistic projects from being submitted</li>
+            <li>✅ Saves time for homeowners, architects, and contractors</li>
+            <li>✅ Encourages realistic planning and budgeting</li>
+            <li>✅ Reduces project failures and disputes</li>
+            <li>✅ Provides clear guidance on how to improve the project</li>
+        </ul>
+    </div>
+</body>
+</html>

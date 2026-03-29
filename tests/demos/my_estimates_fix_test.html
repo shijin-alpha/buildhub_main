@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Estimates Fix Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        .btn-warning:hover {
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        }
+        .result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+        }
+        .success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border-left: 4px solid #27ae60;
+        }
+        .error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border-left: 4px solid #e74c3c;
+        }
+        .info {
+            background: #ebf3fd;
+            color: #3498db;
+            border-left: 4px solid #3498db;
+        }
+        .warning {
+            background: #fef9e7;
+            color: #f39c12;
+            border-left: 4px solid #f39c12;
+        }
+        .estimate-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .estimate-card h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .estimate-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .estimate-meta div {
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .estimate-meta strong {
+            color: #2c3e50;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 My Estimates Fix Test</h1>
+            <p>Testing the updated API to ensure submitted estimates appear in the My Estimates section</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-section">
+                <h3>🎯 Test Overview</h3>
+                <p>This test verifies that:</p>
+                <ul>
+                    <li>The updated <code>get_my_estimates.php</code> API reads from both database tables</li>
+                    <li>Estimates submitted through the new EstimationForm appear in My Estimates</li>
+                    <li>Legacy estimates from the old system still work</li>
+                    <li>The contractor dashboard properly refreshes after estimate submission</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <h3>🔌 Step 1: Test API Endpoint</h3>
+                <p>Test the updated get_my_estimates.php API with a sample contractor ID</p>
+                <button class="btn" onclick="testAPI()">Test API</button>
+                <div id="apiResult"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>📊 Step 2: Create Test Estimate</h3>
+                <p>Submit a test estimate to verify it appears in the results</p>
+                <button class="btn btn-success" onclick="createTestEstimate()">Create Test Estimate</button>
+                <div id="createResult"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔄 Step 3: Verify Integration</h3>
+                <p>Test the complete flow from submission to display</p>
+                <button class="btn btn-warning" onclick="testCompleteFlow()">Test Complete Flow</button>
+                <div id="flowResult"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>📋 Step 4: Display Results</h3>
+                <div id="estimatesDisplay"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/buildhub/backend';
+        const TEST_CONTRACTOR_ID = 1;
+
+        function showLoading(elementId) {
+            document.getElementById(elementId).innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+        }
+
+        function showResult(elementId, type, message) {
+            document.getElementById(elementId).innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testAPI() {
+            showLoading('apiResult');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/contractor/get_my_estimates.php?contractor_id=${TEST_CONTRACTOR_ID}`, {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const message = `
+                        <strong>✅ API Test Successful!</strong><br>
+                        Total estimates: ${result.estimates.length}<br>
+                        New estimates: ${result.new_estimates_count || 0}<br>
+                        Legacy estimates: ${result.legacy_estimates_count || 0}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                    showResult('apiResult', 'success', message);
+                    displayEstimates(result.estimates);
+                } else {
+                    showResult('apiResult', 'error', `❌ API Error: ${result.message}`);
+                }
+            } catch (error) {
+                showResult('apiResult', 'error', `❌ Network Error: ${error.message}`);
+            }
+        }
+
+        async function createTestEstimate() {
+            showLoading('createResult');
+            
+            const testEstimate = {
+                contractor_id: TEST_CONTRACTOR_ID,
+                homeowner_id: 1,
+                inbox_item_id: 1,
+                project_name: 'Test Project - My Estimates Fix',
+                location: '123 Test Street, Fix City',
+                client_name: 'Test Client',
+                project_type: 'Residential',
+                timeline: '90 days',
+                notes: 'Test estimate created to verify My Estimates fix',
+                terms: 'Standard terms and conditions',
+                materials: {
+                    cement: { name: 'Cement', qty: '60', rate: '450', amount: '27000' },
+                    sand: { name: 'Sand', qty: '6', rate: '2500', amount: '15000' },
+                    bricks: { name: 'Bricks', qty: '3000', rate: '10', amount: '30000' }
+                },
+                labor: {
+                    masonry: { name: 'Masonry Work', qty: '1', rate: '35000', amount: '35000' },
+                    plumbing: { name: 'Plumbing', qty: '1', rate: '15000', amount: '15000' },
+                    electrical: { name: 'Electrical', qty: '1', rate: '10000', amount: '10000' }
+                },
+                utilities: {},
+                misc: {},
+                totals: {
+                    materials: 72000,
+                    labor: 60000,
+                    utilities: 0,
+                    misc: 0,
+                    grand: 132000
+                }
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/contractor/submit_estimate.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(testEstimate)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showResult('createResult', 'success', `✅ Test estimate created successfully! ID: ${result.estimate_id}`);
+                } else {
+                    showResult('createResult', 'error', `❌ Failed to create estimate: ${result.message}`);
+                }
+            } catch (error) {
+                showResult('createResult', 'error', `❌ Error creating estimate: ${error.message}`);
+            }
+        }
+
+        async function testCompleteFlow() {
+            showLoading('flowResult');
+            
+            try {
+                // Step 1: Create estimate
+                await createTestEstimate();
+                
+                // Step 2: Wait a moment
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 3: Fetch estimates
+                const response = await fetch(`${API_BASE}/api/contractor/get_my_estimates.php?contractor_id=${TEST_CONTRACTOR_ID}`, {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.estimates.length > 0) {
+                    showResult('flowResult', 'success', `✅ Complete flow test successful! Found ${result.estimates.length} estimates.`);
+                    displayEstimates(result.estimates);
+                } else {
+                    showResult('flowResult', 'warning', `⚠️ Flow test completed but no estimates found. This might indicate an issue.`);
+                }
+            } catch (error) {
+                showResult('flowResult', 'error', `❌ Flow test failed: ${error.message}`);
+            }
+        }
+
+        function displayEstimates(estimates) {
+            const container = document.getElementById('estimatesDisplay');
+            
+            if (!estimates || estimates.length === 0) {
+                container.innerHTML = '<div class="result info">ℹ️ No estimates to display</div>';
+                return;
+            }
+
+            let html = '<h4>📋 Found Estimates:</h4>';
+            
+            estimates.forEach((est, index) => {
+                const totalCost = est.total_cost || 0;
+                const projectName = est.project_name || 'Untitled Project';
+                const clientName = est.homeowner_name || est.client_name || 'Unknown Client';
+                const status = est.status || 'submitted';
+                const createdAt = new Date(est.created_at).toLocaleString();
+                const sourceTable = est.source_table || 'unknown';
+                
+                html += `
+                    <div class="estimate-card">
+                        <h4>Estimate #${est.id} (${sourceTable})</h4>
+                        <div class="estimate-meta">
+                            <div><strong>Project:</strong> ${projectName}</div>
+                            <div><strong>Client:</strong> ${clientName}</div>
+                            <div><strong>Total:</strong> ₹${totalCost.toLocaleString('en-IN')}</div>
+                            <div><strong>Status:</strong> ${status}</div>
+                            <div><strong>Timeline:</strong> ${est.timeline || 'N/A'}</div>
+                            <div><strong>Created:</strong> ${createdAt}</div>
+                        </div>
+                        ${est.notes ? `<div><strong>Notes:</strong> ${est.notes}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Auto-run API test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testAPI, 1000);
+        });
+    </script>
+</body>
+</html>

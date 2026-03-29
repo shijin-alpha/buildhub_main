@@ -1,0 +1,694 @@
+/* Unified Payment Request Form Styles - Matching Other Sections */
+
+/* Main Section Card */
+.payment-request-section-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+/* Section Header - Matching HomeownerProgressReports style */
+.payment-section-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.payment-header-content h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.payment-header-content p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+/* Section Content */
+.payment-section-content {
+  padding: 30px;
+}
+
+/* Form Group Unified Style */
+.form-group-unified {
+  margin-bottom: 24px;
+}
+
+.form-label-unified {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2c3e50;
+}
+
+.label-icon {
+  font-size: 1.1rem;
+}
+
+.form-select-unified,
+.form-input-unified {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: white;
+  color: #2c3e50;
+}
+
+.form-select-unified:focus,
+.form-input-unified:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-input-unified:disabled {
+  background: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Empty State Inline */
+.empty-state-inline {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #ffc107;
+  margin-top: 16px;
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.empty-content h4 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.empty-content p {
+  margin: 0;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+/* Project Info Card Unified */
+.project-info-card-unified {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.project-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e9ecef;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.project-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.project-icon {
+  font-size: 1.5rem;
+}
+
+.project-title h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.status-active {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+/* Project Card Details */
+.project-card-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.detail-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.detail-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* Project Notice */
+.project-notice {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.notice-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.notice-content p {
+  margin: 0 0 6px 0;
+  color: #856404;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.notice-content p:last-child {
+  margin-bottom: 0;
+}
+
+.notice-content strong {
+  font-weight: 600;
+}
+
+/* Stage Selection Section - Unified */
+.stage-selection-unified {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #e9ecef;
+}
+
+.stage-selection-unified h4 {
+  color: #2c3e50;
+  margin: 0 0 24px 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stages-grid-unified {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.stage-card-unified {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stage-card-unified::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stage-card-unified:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+}
+
+.stage-card-unified:hover::before {
+  opacity: 1;
+}
+
+.stage-card-unified.selected {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.stage-card-unified.selected::before {
+  opacity: 1;
+}
+
+.stage-card-header-unified {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.stage-card-header-unified h5 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.stage-percentage-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.stage-description-unified {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.stage-amount-unified {
+  color: #28a745;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.stage-deliverables-unified {
+  font-size: 0.85rem;
+  color: #6c757d;
+  padding-top: 12px;
+  border-top: 1px solid #e9ecef;
+}
+
+.stage-deliverables-unified strong {
+  color: #2c3e50;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.stage-deliverables-unified ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.stage-deliverables-unified li {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+/* Payment Form Section - Unified */
+.payment-form-unified {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #e9ecef;
+}
+
+.payment-form-title-unified {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.payment-form-title-unified h4 {
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.payment-form-title-unified p {
+  color: #6c757d;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.form-section-unified {
+  background: #f8f9fa;
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.form-section-unified h5 {
+  margin: 0 0 20px 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-row-unified {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.form-group-unified textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group-unified textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group-unified small {
+  display: block;
+  margin-top: 6px;
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.form-group-unified.error .form-input-unified,
+.form-group-unified.error .form-select-unified,
+.form-group-unified.error textarea {
+  border-color: #dc3545;
+}
+
+.error-text {
+  display: block;
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* Checkbox Group Unified */
+.checkbox-group-unified {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checkbox-item-unified {
+  position: relative;
+}
+
+.checkbox-label-unified {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  line-height: 1.5;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.checkbox-label-unified:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.checkbox-label-unified input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  opacity: 0;
+  position: absolute;
+}
+
+.checkmark-unified {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background: white;
+}
+
+.checkbox-label-unified input[type="checkbox"]:checked + .checkmark-unified {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.checkbox-label-unified input[type="checkbox"]:checked + .checkmark-unified:after {
+  content: "✓";
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.checkbox-item-unified.error .checkbox-label-unified {
+  border-color: #dc3545;
+}
+
+/* Form Actions Unified */
+.form-actions-unified {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding-top: 30px;
+  border-top: 2px solid #e9ecef;
+  margin-top: 30px;
+}
+
+.btn-cancel-unified,
+.btn-submit-unified {
+  padding: 14px 32px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  min-width: 160px;
+}
+
+.btn-cancel-unified {
+  background: #f8f9fa;
+  color: #2c3e50;
+  border: 2px solid #e9ecef;
+}
+
+.btn-cancel-unified:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-submit-unified {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-submit-unified:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(40, 167, 69, 0.4);
+}
+
+.btn-submit-unified:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* No Selection States */
+.no-selection-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-top: 30px;
+}
+
+.no-selection-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-selection-state h4 {
+  color: #2c3e50;
+  margin: 0 0 12px 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.no-selection-state p {
+  color: #6c757d;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Loading State */
+.loading-state-unified {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-state-unified .loading-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-state-unified h3 {
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-size: 1.3rem;
+}
+
+.loading-state-unified p {
+  color: #6c757d;
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .payment-section-content {
+    padding: 20px;
+  }
+  
+  .payment-section-header {
+    padding: 20px;
+  }
+  
+  .payment-header-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .project-card-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .stages-grid-unified {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row-unified {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions-unified {
+    flex-direction: column;
+  }
+  
+  .btn-cancel-unified,
+  .btn-submit-unified {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-section-header {
+    padding: 16px;
+  }
+  
+  .payment-section-content {
+    padding: 16px;
+  }
+  
+  .payment-header-content h2 {
+    font-size: 1.3rem;
+  }
+  
+  .project-info-card-unified {
+    padding: 16px;
+  }
+  
+  .form-section-unified {
+    padding: 16px;
+  }
+}

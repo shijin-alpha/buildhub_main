@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corrected Daily Progress System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .correction-notice {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .correction-notice h3 {
+            color: #065f46;
+            margin-top: 0;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+        .project-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            background: #f9f9f9;
+        }
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .project-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .progress-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .progress-item {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .daily-progress {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+        }
+        .stored-progress {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+        .stage-progress {
+            background: #e0f2fe;
+            border: 2px solid #0284c7;
+        }
+        .progress-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .daily-info {
+            background: #f0fdf4;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .stage-info {
+            background: #e0f2fe;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Corrected Daily Progress System</h1>
+            <p>Now showing REAL daily progress values from actual construction updates</p>
+        </div>
+
+        <div class="correction-notice">
+            <h3>🎯 Progress Correction Applied</h3>
+            <p><strong>Issue Fixed:</strong> The system was showing incorrect progress values from stage payments instead of actual daily construction progress.</p>
+            <p><strong>Solution:</strong> Updated to use daily progress updates as the primary source, with stage payments as fallback.</p>
+            <div style="margin-top: 15px;">
+                <strong>Corrected Values:</strong>
+                <ul>
+                    <li>Project 1: 7% (was showing 0%) - From daily progress updates</li>
+                    <li>Project 2: 5% (was showing 0%) - From daily progress updates</li>
+                    <li>Project 3: 20% (correct) - From stage payments (no daily updates)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 System Tests</h3>
+            <p>Test the corrected daily progress system:</p>
+            
+            <button class="test-button" onclick="testCorrectedProgress()">
+                📊 Test Corrected Progress API
+            </button>
+            
+            <button class="test-button" onclick="testProgressComparison()">
+                🔍 Test Progress Comparison
+            </button>
+            
+            <button class="test-button" onclick="testDailyProgressDetails()">
+                📅 Test Daily Progress Details
+            </button>
+            
+            <button class="test-button" onclick="clearResults()">
+                🗑️ Clear Results
+            </button>
+
+            <div id="results" class="results" style="display: none;">
+                <h4>Test Results:</h4>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🏗️ Real Construction Projects with Corrected Progress</h3>
+            <div id="projectsDisplay">
+                <p>Click "Test Corrected Progress API" to load corrected project data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let projectsData = [];
+
+        async function testCorrectedProgress() {
+            showResults();
+            addResult('🔍 Testing Corrected Progress API...', 'info');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/inspector/get_all_real_projects.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    addResult(`❌ HTTP Error: ${response.status}`, 'error');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('✅ Corrected Progress API successful!', 'success');
+                    projectsData = data.projects;
+                    
+                    addResult(`🏗️ Found ${data.projects.length} projects with corrected progress`, 'info');
+                    addResult(`📊 Average corrected progress: ${data.statistics.avg_real_completion}%`, 'success');
+                    
+                    // Display corrected projects
+                    displayCorrectedProjects(data.projects);
+                    
+                    // Show correction details
+                    data.projects.forEach((project) => {
+                        const progressDiff = project.real_completion_percentage - project.stored_completion_percentage;
+                        const source = project.progress_calculation.data_source;
+                        
+                        addResult(`🏗️ Project ${project.id}: ${project.real_completion_percentage}% (${source})`, 'success');
+                        if (progressDiff !== 0) {
+                            addResult(`   ✅ Corrected from ${project.stored_completion_percentage}% (difference: +${progressDiff}%)`, 'warning');
+                        } else {
+                            addResult(`   ✅ Progress values already correct`, 'info');
+                        }
+                    });
+                    
+                } else {
+                    addResult(`❌ API Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProgressComparison() {
+            showResults();
+            addResult('🔍 Testing Progress Comparison...', 'info');
+            
+            if (projectsData.length === 0) {
+                addResult('❌ No projects loaded. Run Corrected Progress API test first.', 'error');
+                return;
+            }
+            
+            addResult('📊 Progress Source Analysis:', 'info');
+            
+            projectsData.forEach(project => {
+                const calc = project.progress_calculation;
+                const source = calc.data_source;
+                
+                addResult(`🏗️ Project ${project.id}:`, 'info');
+                addResult(`   Data Source: ${source}`, source === 'daily_progress_updates' ? 'success' : 'warning');
+                addResult(`   Method: ${calc.method}`, 'info');
+                addResult(`   Real Progress: ${project.real_completion_percentage}%`, 'success');
+                addResult(`   Stored Progress: ${project.stored_completion_percentage}%`, 'info');
+                addResult(`   Difference: ${calc.progress_difference}%`, calc.progress_difference === 0 ? 'success' : 'warning');
+                
+                if (project.latest_daily_progress) {
+                    const daily = project.latest_daily_progress;
+                    addResult(`   Latest Daily Update: ${daily.update_date} - ${daily.construction_stage}`, 'success');
+                    addResult(`   Work Done: ${daily.work_done_today.substring(0, 50)}...`, 'info');
+                }
+            });
+        }
+
+        async function testDailyProgressDetails() {
+            showResults();
+            addResult('📅 Testing Daily Progress Details...', 'info');
+            
+            if (projectsData.length === 0) {
+                addResult('❌ No projects loaded. Run Corrected Progress API test first.', 'error');
+                return;
+            }
+            
+            addResult('📅 Daily Progress Analysis:', 'info');
+            
+            projectsData.forEach(project => {
+                addResult(`🏗️ Project ${project.id}: ${project.project_name}`, 'info');
+                
+                if (project.latest_daily_progress) {
+                    const daily = project.latest_daily_progress;
+                    addResult(`   ✅ Has daily progress data`, 'success');
+                    addResult(`   Date: ${daily.update_date}`, 'info');
+                    addResult(`   Stage: ${daily.construction_stage}`, 'info');
+                    addResult(`   Cumulative Progress: ${daily.cumulative_completion_percentage}%`, 'success');
+                    addResult(`   Incremental: ${daily.incremental_completion_percentage}%`, 'info');
+                    addResult(`   Working Hours: ${daily.working_hours}`, 'info');
+                    addResult(`   Weather: ${daily.weather_condition}`, 'info');
+                    addResult(`   Work Done: ${daily.work_done_today.substring(0, 100)}...`, 'info');
+                } else {
+                    addResult(`   ⚠️ No daily progress data available`, 'warning');
+                    if (project.latest_stage_payment) {
+                        addResult(`   Using stage payment data instead`, 'warning');
+                        addResult(`   Stage: ${project.latest_stage_payment.stage_name} - ${project.latest_stage_payment.status}`, 'info');
+                    }
+                }
+            });
+        }
+
+        function displayCorrectedProjects(projects) {
+            const container = document.getElementById('projectsDisplay');
+            
+            let html = '<h4>🏗️ Projects with Corrected Daily Progress</h4>';
+            
+            projects.forEach(project => {
+                const progressDiff = project.real_completion_percentage - project.stored_completion_percentage;
+                const source = project.progress_calculation.data_source;
+                
+                html += `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <div class="project-title">Project ${project.id}: ${project.project_name}</div>
+                            <div style="font-size: 12px; color: #666;">Data Source: ${source}</div>
+                        </div>
+                        
+                        <div class="progress-comparison">
+                            <div class="progress-item daily-progress">
+                                <div><strong>Real Progress</strong></div>
+                                <div class="progress-value" style="color: #10b981;">${project.real_completion_percentage}%</div>
+                                <div style="font-size: 12px;">From ${source}</div>
+                            </div>
+                            <div class="progress-item stored-progress">
+                                <div><strong>Stored Progress</strong></div>
+                                <div class="progress-value" style="color: #f59e0b;">${project.stored_completion_percentage}%</div>
+                                <div style="font-size: 12px;">Database stored</div>
+                            </div>
+                            <div class="progress-item stage-progress">
+                                <div><strong>Difference</strong></div>
+                                <div class="progress-value" style="color: ${progressDiff === 0 ? '#10b981' : '#f59e0b'};">${progressDiff > 0 ? '+' : ''}${progressDiff}%</div>
+                                <div style="font-size: 12px;">${progressDiff === 0 ? 'Correct' : 'Corrected'}</div>
+                            </div>
+                        </div>
+                        
+                        ${project.latest_daily_progress ? `
+                            <div class="daily-info">
+                                <h4>📅 Latest Daily Progress Update</h4>
+                                <p><strong>Date:</strong> ${project.latest_daily_progress.update_date}</p>
+                                <p><strong>Stage:</strong> ${project.latest_daily_progress.construction_stage}</p>
+                                <p><strong>Cumulative Progress:</strong> ${project.latest_daily_progress.cumulative_completion_percentage}%</p>
+                                <p><strong>Incremental:</strong> ${project.latest_daily_progress.incremental_completion_percentage}%</p>
+                                <p><strong>Working Hours:</strong> ${project.latest_daily_progress.working_hours}</p>
+                                <p><strong>Weather:</strong> ${project.latest_daily_progress.weather_condition}</p>
+                                <p><strong>Work Done:</strong> ${project.latest_daily_progress.work_done_today.substring(0, 150)}...</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${project.latest_stage_payment ? `
+                            <div class="stage-info">
+                                <h4>💰 Latest Stage Payment</h4>
+                                <p><strong>Stage:</strong> ${project.latest_stage_payment.stage_name}</p>
+                                <p><strong>Amount:</strong> ₹${project.latest_stage_payment.amount.toLocaleString()}</p>
+                                <p><strong>Status:</strong> ${project.latest_stage_payment.status}</p>
+                                <p><strong>Date:</strong> ${project.latest_stage_payment.request_date}</p>
+                                ${project.latest_stage_payment.payment_date ? `<p><strong>Paid:</strong> ${project.latest_stage_payment.payment_date}</p>` : ''}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: #f0f9ff; border-radius: 6px;">
+                            <strong>Progress Calculation:</strong> ${project.progress_calculation.method}<br>
+                            <strong>Data Priority:</strong> Daily Progress > Stage Payments > Stored Values<br>
+                            <strong>Current Source:</strong> ${source}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function showResults() {
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function addResult(message, type = 'info') {
+            const content = document.getElementById('resultContent');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            content.appendChild(div);
+            content.scrollTop = content.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('resultContent').innerHTML = '';
+            document.getElementById('results').style.display = 'none';
+        }
+
+        // Auto-test on page load
+        window.onload = function() {
+            setTimeout(() => {
+                testCorrectedProgress();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Positioning Fix Test - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+        }
+
+        /* Simulate header that might interfere */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Simulate footer that might interfere */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #343a40;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        /* Main content area */
+        .main-content {
+            margin: 80px 20px 70px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .test-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        /* Modal styles - BEFORE fix */
+        .modal-broken {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* Lower z-index - will be behind header */
+            padding: 20px;
+        }
+
+        /* Modal styles - AFTER fix */
+        .modal-fixed {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            background: rgba(0, 0, 0, 0.8) !important;
+            display: none;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 999999 !important; /* Much higher z-index */
+            padding: 20px !important;
+            overflow-y: auto !important;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .modal-actions {
+            padding: 20px 24px;
+            border-top: 1px solid #e9ecef;
+            background: white;
+            border-radius: 0 0 16px 16px;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .payment-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            background: #d4edda;
+            color: #28a745;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(40, 167, 69, 0.19);
+        }
+
+        .work-details {
+            margin-bottom: 24px;
+        }
+
+        .work-details h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .description-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .description-box h4 {
+            margin: 0 0 10px;
+            color: #2c3e50;
+        }
+
+        .description-box p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden !important;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Simulated Header -->
+    <div class="header">
+        <h1>🏗️ BuildHub - Header (z-index: 1000)</h1>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Modal Positioning Fix Test</h1>
+        <p>This test demonstrates how to fix modal positioning issues when modals get hidden behind headers and footers.</p>
+
+        <div class="test-section">
+            <h3>🐛 Problem Demonstration</h3>
+            <p>The broken modal has a lower z-index (1000) and will appear behind the header and footer.</p>
+            <button class="btn danger" onclick="showBrokenModal()">
+                Show Broken Modal (Behind Header)
+            </button>
+            <div id="brokenResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Fixed Modal</h3>
+            <p>The fixed modal has a much higher z-index (999999) and proper positioning to appear above everything.</p>
+            <button class="btn" onclick="showFixedModal()">
+                Show Fixed Modal (Above Everything)
+            </button>
+            <div id="fixedResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Auto-Fix Utility</h3>
+            <p>Use the modal utility to automatically fix any existing modal positioning issues.</p>
+            <button class="btn secondary" onclick="autoFixModals()">
+                Auto-Fix All Modals
+            </button>
+            <button class="btn secondary" onclick="testModalUtils()">
+                Test Modal Utils
+            </button>
+            <div id="utilsResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 Responsive Test</h3>
+            <p>Test modal behavior on different screen sizes and with long content.</p>
+            <button class="btn secondary" onclick="showLongContentModal()">
+                Show Long Content Modal
+            </button>
+            <div id="responsiveResult"></div>
+        </div>
+    </div>
+
+    <!-- Simulated Footer -->
+    <div class="footer">
+        <p>Footer (z-index: 1000) - Should not interfere with fixed modals</p>
+    </div>
+
+    <!-- Broken Modal -->
+    <div id="brokenModal" class="modal-broken">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>🐛 Broken Modal</h2>
+                    <p style="margin: 0; opacity: 0.9;">This modal appears behind the header</p>
+                </div>
+                <button class="close-btn" onclick="closeBrokenModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-summary">
+                    <div class="amount">₹50,000</div>
+                    <div style="font-size: 16px; color: #6c757d; margin-bottom: 12px;">
+                        Payment Request - Foundation Stage
+                    </div>
+                    <span class="status-badge">❌ Behind Header</span>
+                </div>
+                <div class="work-details">
+                    <h3>🚫 Problem</h3>
+                    <p>This modal has z-index: 1000, which is the same as the header. The header appears on top, making the modal partially or completely hidden.</p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn danger" onclick="closeBrokenModal()">Close Broken Modal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Modal -->
+    <div id="fixedModal" class="modal-fixed">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>✅ Fixed Modal</h2>
+                    <p style="margin: 0; opacity: 0.9;">This modal appears above everything</p>
+                </div>
+                <button class="close-btn" onclick="closeFixedModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-summary">
+                    <div class="amount">₹50,000</div>
+                    <div style="font-size: 16px; color: #6c757d; margin-bottom: 12px;">
+                        Payment Request - Foundation Stage
+                    </div>
+                    <span class="status-badge">✅ Above Everything</span>
+                </div>
+                
+                <div class="work-details">
+                    <h3>🏗️ Work Details</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">10</div>
+                            <div class="stat-label">Workers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">12/1/2026</div>
+                            <div class="stat-label">Start Date</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">14/1/2026</div>
+                            <div class="stat-label">End Date</div>
+                        </div>
+                    </div>
+                    
+                    <div class="description-box">
+                        <h4>Work Description</h4>
+                        <p>Foundation work including excavation, concrete pouring, and structural setup. Quality checks completed and safety compliance verified.</p>
+                    </div>
+                </div>
+
+                <div class="work-details">
+                    <h3>✅ Solution Applied</h3>
+                    <ul style="padding-left: 20px; line-height: 1.6;">
+                        <li><strong>z-index: 999999 !important</strong> - Much higher than header/footer</li>
+                        <li><strong>position: fixed !important</strong> - Ensures proper positioning</li>
+                        <li><strong>Sticky header/footer</strong> - Modal content scrolls properly</li>
+                        <li><strong>Body scroll prevention</strong> - Background doesn't scroll</li>
+                        <li><strong>Responsive design</strong> - Works on all screen sizes</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeFixedModal()">💳 Pay ₹50,000</button>
+                <button class="btn secondary" onclick="closeFixedModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Long Content Modal -->
+    <div id="longContentModal" class="modal-fixed">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>📱 Responsive Modal</h2>
+                    <p style="margin: 0; opacity: 0.9;">Testing with long scrollable content</p>
+                </div>
+                <button class="close-btn" onclick="closeLongContentModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-summary">
+                    <div class="amount">₹15,00,000</div>
+                    <div style="font-size: 16px; color: #6c757d; margin-bottom: 12px;">
+                        Large Payment - Multiple Stages
+                    </div>
+                    <span class="status-badge">📱 Responsive</span>
+                </div>
+                
+                <div class="work-details">
+                    <h3>📋 Detailed Work Breakdown</h3>
+                    
+                    <div class="description-box">
+                        <h4>Stage 1: Foundation</h4>
+                        <p>Complete foundation work including site preparation, excavation, concrete work, and waterproofing. This stage involves multiple quality checks and safety inspections.</p>
+                    </div>
+                    
+                    <div class="description-box">
+                        <h4>Stage 2: Structure</h4>
+                        <p>Structural framework including columns, beams, and load-bearing walls. All work follows engineering specifications and building codes.</p>
+                    </div>
+                    
+                    <div class="description-box">
+                        <h4>Stage 3: Roofing</h4>
+                        <p>Complete roofing system including trusses, decking, waterproofing, and finishing materials. Weather protection and insulation included.</p>
+                    </div>
+                    
+                    <div class="description-box">
+                        <h4>Stage 4: Walls & Partitions</h4>
+                        <p>Interior and exterior walls, partitions, and openings. Includes electrical and plumbing rough-in work coordination.</p>
+                    </div>
+                    
+                    <div class="description-box">
+                        <h4>Stage 5: Electrical & Plumbing</h4>
+                        <p>Complete electrical and plumbing systems installation, testing, and certification. All work by licensed professionals.</p>
+                    </div>
+                    
+                    <div class="description-box">
+                        <h4>Stage 6: Finishing</h4>
+                        <p>Interior finishing including flooring, painting, fixtures, and final inspections. Quality assurance and cleanup included.</p>
+                    </div>
+                </div>
+
+                <div class="work-details">
+                    <h3>📊 Payment Schedule</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">₹3,00,000</div>
+                            <div class="stat-label">Foundation</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₹4,00,000</div>
+                            <div class="stat-label">Structure</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₹2,50,000</div>
+                            <div class="stat-label">Roofing</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₹2,00,000</div>
+                            <div class="stat-label">Walls</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₹2,00,000</div>
+                            <div class="stat-label">MEP</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">₹1,50,000</div>
+                            <div class="stat-label">Finishing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeLongContentModal()">💳 Proceed with Payment</button>
+                <button class="btn secondary" onclick="closeLongContentModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal management functions
+        function showBrokenModal() {
+            document.getElementById('brokenModal').style.display = 'flex';
+            document.getElementById('brokenResult').innerHTML = 
+                '<div class="test-result error">❌ Modal shown with z-index: 1000 - appears behind header!</div>';
+        }
+
+        function closeBrokenModal() {
+            document.getElementById('brokenModal').style.display = 'none';
+            document.getElementById('brokenResult').innerHTML = 
+                '<div class="test-result info">ℹ️ Broken modal closed</div>';
+        }
+
+        function showFixedModal() {
+            const modal = document.getElementById('fixedModal');
+            modal.style.display = 'flex';
+            document.body.classList.add('modal-open');
+            document.getElementById('fixedResult').innerHTML = 
+                '<div class="test-result success">✅ Modal shown with z-index: 999999 - appears above everything!</div>';
+        }
+
+        function closeFixedModal() {
+            const modal = document.getElementById('fixedModal');
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            document.getElementById('fixedResult').innerHTML = 
+                '<div class="test-result info">ℹ️ Fixed modal closed</div>';
+        }
+
+        function showLongContentModal() {
+            const modal = document.getElementById('longContentModal');
+            modal.style.display = 'flex';
+            document.body.classList.add('modal-open');
+            document.getElementById('responsiveResult').innerHTML = 
+                '<div class="test-result success">✅ Long content modal shown - test scrolling behavior!</div>';
+        }
+
+        function closeLongContentModal() {
+            const modal = document.getElementById('longContentModal');
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            document.getElementById('responsiveResult').innerHTML = 
+                '<div class="test-result info">ℹ️ Long content modal closed</div>';
+        }
+
+        // Auto-fix utility functions
+        function autoFixModals() {
+            // Fix all visible modals
+            const modals = document.querySelectorAll('[id*="Modal"], .modal-broken, .modal-fixed');
+            let fixedCount = 0;
+            
+            modals.forEach(modal => {
+                if (modal.style.display !== 'none') {
+                    // Apply fixes
+                    modal.style.position = 'fixed';
+                    modal.style.top = '0';
+                    modal.style.left = '0';
+                    modal.style.right = '0';
+                    modal.style.bottom = '0';
+                    modal.style.zIndex = '999999';
+                    modal.style.display = 'flex';
+                    modal.style.alignItems = 'center';
+                    modal.style.justifyContent = 'center';
+                    modal.style.background = 'rgba(0, 0, 0, 0.8)';
+                    modal.style.padding = '20px';
+                    modal.style.overflowY = 'auto';
+                    
+                    // Fix modal content
+                    const modalContent = modal.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.style.maxHeight = 'calc(100vh - 40px)';
+                        modalContent.style.overflowY = 'auto';
+                    }
+                    
+                    fixedCount++;
+                }
+            });
+            
+            document.getElementById('utilsResult').innerHTML = 
+                `<div class="test-result success">✅ Auto-fixed ${fixedCount} modal(s) with proper z-index and positioning!</div>`;
+        }
+
+        function testModalUtils() {
+            // Simulate creating a modal with utility
+            const modalContent = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>🔧 Utility-Created Modal</h2>
+                        <button class="close-btn" onclick="closeUtilityModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="payment-summary">
+                            <div class="amount">₹75,000</div>
+                            <div style="font-size: 16px; color: #6c757d; margin-bottom: 12px;">
+                                Created with Modal Utility
+                            </div>
+                            <span class="status-badge">🔧 Utility Generated</span>
+                        </div>
+                        <p>This modal was created using the modal utility functions with proper positioning and z-index management.</p>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn" onclick="closeUtilityModal()">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'utilityModal';
+            overlay.className = 'modal-fixed';
+            overlay.innerHTML = modalContent;
+            overlay.style.display = 'flex';
+            
+            document.body.appendChild(overlay);
+            document.body.classList.add('modal-open');
+            
+            document.getElementById('utilsResult').innerHTML = 
+                '<div class="test-result success">✅ Modal created using utility functions!</div>';
+        }
+
+        function closeUtilityModal() {
+            const modal = document.getElementById('utilityModal');
+            if (modal) {
+                modal.remove();
+                document.body.classList.remove('modal-open');
+                document.getElementById('utilsResult').innerHTML = 
+                    '<div class="test-result info">ℹ️ Utility modal closed and removed</div>';
+            }
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const modals = document.querySelectorAll('.modal-broken, .modal-fixed');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                }
+            });
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const visibleModals = document.querySelectorAll('.modal-broken, .modal-fixed');
+                visibleModals.forEach(modal => {
+                    if (modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                        document.body.classList.remove('modal-open');
+                    }
+                });
+            }
+        });
+
+        // Auto-fix any existing modals on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Modal positioning fix utilities loaded');
+            
+            // Watch for new modals being added to the DOM
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1 && (node.classList.contains('modal-overlay') || node.id.includes('Modal'))) {
+                            // Auto-fix new modals
+                            node.style.zIndex = '999999';
+                            node.style.position = 'fixed';
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+</body>
+</html>

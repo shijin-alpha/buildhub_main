@@ -1,0 +1,448 @@
+/* Modern Family Needs Section - Floor-based Room Planning */
+
+.family-needs-container {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+}
+
+.family-needs-header {
+  margin-bottom: 32px;
+}
+
+.family-needs-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.family-needs-subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 0;
+}
+
+/* Floor Selection Buttons */
+.floor-selection {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.floor-btn {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.floor-btn:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+.floor-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.floor-btn .floor-icon {
+  font-size: 18px;
+}
+
+/* Room Planning Grid */
+.room-planning-container {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.room-planning-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.room-type-label {
+  font-size: 16px;
+}
+
+.quantity-label {
+  font-size: 16px;
+  text-align: center;
+}
+
+.images-label {
+  font-size: 16px;
+  text-align: center;
+}
+
+.room-planning-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.room-planning-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.room-planning-item:hover {
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.room-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.room-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+.room-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.room-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.room-limit {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Quantity Selector */
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.quantity-btn {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+  transform: scale(1.05);
+}
+
+.quantity-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 60px;
+}
+
+.quantity-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.quantity-text {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Room Image Upload */
+.room-image-upload {
+  display: flex;
+  justify-content: center;
+}
+
+.room-image-btn {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.room-image-btn:hover {
+  background: #e2e8f0;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.room-image-icon {
+  font-size: 16px;
+}
+
+.room-image-text {
+  font-size: 14px;
+}
+
+/* Family Needs Options */
+.family-needs-options {
+  margin-bottom: 32px;
+}
+
+.family-needs-options .field {
+  margin-bottom: 0;
+}
+
+.interactive-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.option-btn {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.option-btn:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.option-btn.selected {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.option-btn .option-icon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}
+
+.option-btn .option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .family-needs-container {
+    padding: 16px;
+  }
+  
+  .family-needs-title {
+    font-size: 20px;
+  }
+  
+  .floor-selection {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .floor-btn {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .room-planning-header {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  .room-planning-item {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .room-info {
+    justify-content: center;
+  }
+  
+  .interactive-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .family-needs-container {
+    padding: 12px;
+  }
+  
+  .room-planning-container {
+    padding: 16px;
+  }
+  
+  .room-planning-item {
+    padding: 12px 16px;
+  }
+  
+  .quantity-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .room-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+}
+
+/* Animation for floor transitions */
+.floor-content {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading state */
+.room-planning-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.room-planning-loading::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

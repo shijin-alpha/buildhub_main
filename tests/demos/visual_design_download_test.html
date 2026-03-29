@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Design Download Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .download-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        .download-btn:hover {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            transform: translateY(-1px);
+        }
+        .download-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .preview-canvas {
+            border: 2px solid #333;
+            background: white;
+            margin: 20px 0;
+            display: block;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .plan-data {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🏗️ Visual Design Download Test</h1>
+        <p>This page tests the visual design generation and download functionality for house plans.</p>
+        
+        <div class="test-section">
+            <h3>🖼️ Visual Design Generation Test</h3>
+            <p>Tests the canvas-based visual design generation from plan data.</p>
+            
+            <div class="plan-data">
+                <strong>Sample Plan Data:</strong><br>
+                Plot: 40' × 30'<br>
+                Rooms: Living Room (20'×16'), Kitchen (16'×16'), Master Bedroom (20'×12'), Bedroom 2 (16'×12'), Bathroom (12'×12')
+            </div>
+            
+            <button class="download-btn" onclick="generateAndShowDesign()">🎨 Generate Visual Design</button>
+            <button class="download-btn" onclick="downloadDesignAsImage()" id="downloadImageBtn" disabled>🖼️ Download as PNG</button>
+            <button class="download-btn" onclick="downloadDesignAsPDF()" id="downloadPDFBtn" disabled>📄 Download as PDF</button>
+            
+            <div id="design-status"></div>
+            <canvas id="design-canvas" class="preview-canvas" style="display: none;"></canvas>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Test Results</h3>
+            <div id="overall-status">
+                <div class="info">Click "Generate Visual Design" to test the functionality.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        let generatedDesign = null;
+        
+        // Sample plan data matching your actual structure
+        const samplePlan = {
+            plan_name: "SHIJIN THOMAS MCA2024-2026 House Plan",
+            plot_width: 52,
+            plot_height: 62,
+            total_area: 2453.76,
+            plan_data: {
+                rooms: [
+                    {
+                        id: 1,
+                        name: "Living Room",
+                        x: 50,
+                        y: 50,
+                        layout_width: 20,
+                        layout_height: 16,
+                        color: "#ffe0b2"
+                    },
+                    {
+                        id: 2,
+                        name: "Kitchen",
+                        x: 280,
+                        y: 50,
+                        layout_width: 16,
+                        layout_height: 16,
+                        color: "#ffcdd2"
+                    },
+                    {
+                        id: 3,
+                        name: "Master Bedroom",
+                        x: 50,
+                        y: 300,
+                        layout_width: 20,
+                        layout_height: 12,
+                        color: "#c8e6c9"
+                    },
+                    {
+                        id: 4,
+                        name: "Bedroom 2",
+                        x: 320,
+                        y: 300,
+                        layout_width: 16,
+                        layout_height: 12,
+                        color: "#dcedc8"
+                    },
+                    {
+                        id: 5,
+                        name: "Bathroom",
+                        x: 500,
+                        y: 300,
+                        layout_width: 12,
+                        layout_height: 12,
+                        color: "#b3e5fc"
+                    },
+                    {
+                        id: 6,
+                        name: "Dining Room",
+                        x: 50,
+                        y: 200,
+                        layout_width: 18,
+                        layout_height: 14,
+                        color: "#e1bee7"
+                    },
+                    {
+                        id: 7,
+                        name: "Study Room",
+                        x: 400,
+                        y: 50,
+                        layout_width: 12,
+                        layout_height: 10,
+                        color: "#e8eaf6"
+                    },
+                    {
+                        id: 8,
+                        name: "Corridor",
+                        x: 200,
+                        y: 150,
+                        layout_width: 20,
+                        layout_height: 4,
+                        color: "#fff9c4"
+                    }
+                ]
+            },
+            status: "submitted",
+            notes: "Modern family home with open concept living area"
+        };
+
+        function generatePlanVisualization(plan) {
+            return new Promise((resolve) => {
+                try {
+                    if (!plan.plan_data?.rooms || plan.plan_data.rooms.length === 0) {
+                        resolve(null);
+                        return;
+                    }
+
+                    // Get the canvas element
+                    const canvas = document.getElementById('design-canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Set canvas size based on plot dimensions
+                    const PIXELS_PER_FOOT = 12; // Scale for visualization
+                    const MARGIN = 40;
+                    const canvasWidth = (plan.plot_width * PIXELS_PER_FOOT) + (MARGIN * 2);
+                    const canvasHeight = (plan.plot_height * PIXELS_PER_FOOT) + (MARGIN * 2);
+                    
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
+                    canvas.style.display = 'block';
+                    
+                    // Clear canvas with white background
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                    
+                    // Draw plot boundary
+                    ctx.strokeStyle = '#2c3e50';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(MARGIN, MARGIN, plan.plot_width * PIXELS_PER_FOOT, plan.plot_height * PIXELS_PER_FOOT);
+                    
+                    // Add plot dimensions
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    
+                    // Top dimension
+                    ctx.fillText(`${plan.plot_width}'`, MARGIN + (plan.plot_width * PIXELS_PER_FOOT) / 2, MARGIN - 10);
+                    
+                    // Left dimension
+                    ctx.save();
+                    ctx.translate(MARGIN - 15, MARGIN + (plan.plot_height * PIXELS_PER_FOOT) / 2);
+                    ctx.rotate(-Math.PI / 2);
+                    ctx.fillText(`${plan.plot_height}'`, 0, 0);
+                    ctx.restore();
+                    
+                    // Draw rooms
+                    plan.plan_data.rooms.forEach((room) => {
+                        const x = (room.x || 0) + MARGIN;
+                        const y = (room.y || 0) + MARGIN;
+                        const width = (room.layout_width || 10) * PIXELS_PER_FOOT;
+                        const height = (room.layout_height || 10) * PIXELS_PER_FOOT;
+                        
+                        // Room background
+                        ctx.fillStyle = room.color || '#e3f2fd';
+                        ctx.fillRect(x, y, width, height);
+                        
+                        // Room border
+                        ctx.strokeStyle = '#666';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, width, height);
+                        
+                        // Room label
+                        ctx.fillStyle = '#333';
+                        ctx.font = 'bold 11px Arial';
+                        ctx.textAlign = 'center';
+                        
+                        const centerX = x + width / 2;
+                        const centerY = y + height / 2;
+                        
+                        // Room name
+                        ctx.fillText(room.name, centerX, centerY - 6);
+                        
+                        // Room dimensions
+                        ctx.font = '9px Arial';
+                        ctx.fillStyle = '#666';
+                        ctx.fillText(`${room.layout_width}' × ${room.layout_height}'`, centerX, centerY + 8);
+                    });
+                    
+                    // Convert canvas to data URL
+                    const dataURL = canvas.toDataURL('image/png', 1.0);
+                    resolve(dataURL);
+                    
+                } catch (error) {
+                    console.error('Error generating visualization:', error);
+                    resolve(null);
+                }
+            });
+        }
+
+        async function generateAndShowDesign() {
+            const statusDiv = document.getElementById('design-status');
+            statusDiv.innerHTML = '<div class="info">Generating visual design...</div>';
+            
+            try {
+                generatedDesign = await generatePlanVisualization(samplePlan);
+                
+                if (generatedDesign) {
+                    statusDiv.innerHTML = '<div class="success">✅ Visual design generated successfully!</div>';
+                    document.getElementById('downloadImageBtn').disabled = false;
+                    document.getElementById('downloadPDFBtn').disabled = false;
+                    updateOverallStatus('Visual design generation: SUCCESS');
+                } else {
+                    statusDiv.innerHTML = '<div class="error">❌ Failed to generate visual design</div>';
+                    updateOverallStatus('Visual design generation: FAILED');
+                }
+            } catch (error) {
+                console.error('Design generation error:', error);
+                statusDiv.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
+                updateOverallStatus('Visual design generation: ERROR - ' + error.message);
+            }
+        }
+
+        function downloadDesignAsImage() {
+            if (!generatedDesign) {
+                alert('Please generate the design first');
+                return;
+            }
+            
+            try {
+                const link = document.createElement('a');
+                link.download = `${samplePlan.plan_name.replace(/[^a-z0-9]/gi, '_')}_layout.png`;
+                link.href = generatedDesign;
+                link.click();
+                
+                updateOverallStatus('Image download: SUCCESS');
+            } catch (error) {
+                console.error('Image download error:', error);
+                updateOverallStatus('Image download: ERROR - ' + error.message);
+            }
+        }
+
+        async function downloadDesignAsPDF() {
+            if (!generatedDesign) {
+                alert('Please generate the design first');
+                return;
+            }
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                
+                // Add title
+                pdf.setFontSize(20);
+                pdf.text(samplePlan.plan_name, 20, 20);
+                
+                // Add basic info
+                pdf.setFontSize(12);
+                pdf.text(`Plot Size: ${samplePlan.plot_width}' × ${samplePlan.plot_height}'`, 20, 40);
+                pdf.text(`Total Area: ${samplePlan.total_area} sq ft`, 20, 50);
+                pdf.text(`Number of Rooms: ${samplePlan.plan_data.rooms.length}`, 20, 60);
+                
+                // Add visual design
+                pdf.addPage();
+                pdf.setFontSize(14);
+                pdf.text('Plan Layout:', 20, 20);
+                
+                // Calculate dimensions to fit the page
+                const imgWidth = 250;
+                const imgHeight = 150;
+                
+                pdf.addImage(generatedDesign, 'PNG', 20, 30, imgWidth, imgHeight);
+                
+                // Save the PDF
+                pdf.save(`${samplePlan.plan_name.replace(/[^a-z0-9]/gi, '_')}_with_design.pdf`);
+                
+                updateOverallStatus('PDF download with visual design: SUCCESS');
+            } catch (error) {
+                console.error('PDF download error:', error);
+                updateOverallStatus('PDF download: ERROR - ' + error.message);
+            }
+        }
+
+        function updateOverallStatus(message) {
+            const overallDiv = document.getElementById('overall-status');
+            overallDiv.innerHTML = `<div class="info">📊 Test Status: ${message}</div>`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Homeowner Payment Filtering</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .payment-card { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 6px; border-left: 4px solid #007bff; }
+        .paid { border-left-color: #28a745; }
+        .pending { border-left-color: #ffc107; }
+        .approved { border-left-color: #17a2b8; }
+        .filter-btn { padding: 8px 16px; margin: 5px; border: 2px solid #007bff; background: transparent; color: #007bff; border-radius: 6px; cursor: pointer; }
+        .filter-btn.active { background: #007bff; color: white; }
+        .stats { background: #e9ecef; padding: 10px; border-radius: 6px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🏠 Homeowner Payment Filtering Test</h1>
+    <p>Testing the payment filtering logic to ensure paid payments show in Payment History and not in Payment Requests.</p>
+
+    <div class="stats" id="stats">
+        <strong>Loading payment data...</strong>
+    </div>
+
+    <div class="section">
+        <h2>Filter Tabs</h2>
+        <button class="filter-btn active" onclick="showFilter('payment_requests')">💰 Payment Requests</button>
+        <button class="filter-btn" onclick="showFilter('payment_history')">📜 Payment History</button>
+    </div>
+
+    <div class="section" id="payment_requests_section">
+        <h2>💰 Payment Requests (Unpaid/Unverified)</h2>
+        <div id="payment_requests_content">Loading...</div>
+    </div>
+
+    <div class="section" id="payment_history_section" style="display: none;">
+        <h2>📜 Payment History (Paid/Verified)</h2>
+        <div id="payment_history_content">Loading...</div>
+    </div>
+
+    <script>
+        let allPayments = [];
+        let currentFilter = 'payment_requests';
+
+        // Simulate the same filtering logic as the React component
+        function filterPayments(filter) {
+            if (filter === 'payment_requests') {
+                // Only show unpaid and unverified payments in Payment Requests tab
+                return allPayments.filter(req => {
+                    return req.status !== 'paid' && req.verification_status !== 'verified';
+                });
+            } else if (filter === 'payment_history') {
+                // Show paid payments OR verified payments in Payment History tab
+                return allPayments.filter(req => {
+                    return req.status === 'paid' || req.verification_status === 'verified';
+                });
+            }
+            return [];
+        }
+
+        function showFilter(filter) {
+            currentFilter = filter;
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide sections
+            document.getElementById('payment_requests_section').style.display = 
+                filter === 'payment_requests' ? 'block' : 'none';
+            document.getElementById('payment_history_section').style.display = 
+                filter === 'payment_history' ? 'block' : 'none';
+            
+            renderPayments();
+        }
+
+        function renderPayments() {
+            const filteredPayments = filterPayments(currentFilter);
+            const contentId = currentFilter + '_content';
+            const contentDiv = document.getElementById(contentId);
+            
+            if (filteredPayments.length === 0) {
+                contentDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #6c757d;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">
+                            ${currentFilter === 'payment_requests' ? '💰' : '📜'}
+                        </div>
+                        <h3>${currentFilter === 'payment_requests' ? 'No Pending Payment Requests' : 'No Payment History'}</h3>
+                        <p>${currentFilter === 'payment_requests' ? 
+                            'All payment requests have been processed. Check Payment History for completed payments.' :
+                            'No payments have been completed yet.'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            filteredPayments.forEach(payment => {
+                const statusClass = payment.status === 'paid' ? 'paid' : 
+                                  payment.status === 'approved' ? 'approved' : 'pending';
+                
+                html += `
+                    <div class="payment-card ${statusClass}">
+                        <strong>ID ${payment.id}: ${payment.request_title}</strong><br>
+                        Amount: ₹${payment.requested_amount.toLocaleString()}<br>
+                        Status: <strong>${payment.status}</strong><br>
+                        Verification: <strong>${payment.verification_status || 'Not verified'}</strong><br>
+                        ${payment.payment_date ? `Payment Date: ${payment.payment_date}<br>` : ''}
+                        Request Date: ${payment.request_date}
+                    </div>
+                `;
+            });
+            
+            contentDiv.innerHTML = html;
+        }
+
+        // Fetch payment data from API
+        async function loadPayments() {
+            try {
+                // Simulate API call - using test data based on our database check
+                const testData = [
+                    {
+                        id: 22,
+                        request_title: 'Foundation',
+                        requested_amount: 213949,
+                        status: 'paid',
+                        verification_status: 'verified',
+                        payment_date: '2026-01-22',
+                        request_date: '2026-01-20'
+                    },
+                    {
+                        id: 21,
+                        request_title: 'Structure',
+                        requested_amount: 267436,
+                        status: 'approved',
+                        verification_status: null,
+                        payment_date: null,
+                        request_date: '2026-01-19'
+                    },
+                    {
+                        id: 20,
+                        request_title: 'Structure',
+                        requested_amount: 75000,
+                        status: 'pending',
+                        verification_status: null,
+                        payment_date: null,
+                        request_date: '2026-01-18'
+                    },
+                    {
+                        id: 15,
+                        request_title: 'Foundation',
+                        requested_amount: 213949,
+                        status: 'paid',
+                        verification_status: 'verified',
+                        payment_date: '2026-01-20',
+                        request_date: '2026-01-15'
+                    }
+                ];
+                
+                allPayments = testData;
+                
+                // Update stats
+                const paymentRequests = filterPayments('payment_requests');
+                const paymentHistory = filterPayments('payment_history');
+                
+                document.getElementById('stats').innerHTML = `
+                    <strong>Payment Statistics:</strong><br>
+                    Total Payments: ${allPayments.length}<br>
+                    Payment Requests (Unpaid/Unverified): ${paymentRequests.length}<br>
+                    Payment History (Paid/Verified): ${paymentHistory.length}<br>
+                    <br>
+                    <strong>Status Breakdown:</strong><br>
+                    Paid: ${allPayments.filter(p => p.status === 'paid').length}<br>
+                    Approved: ${allPayments.filter(p => p.status === 'approved').length}<br>
+                    Pending: ${allPayments.filter(p => p.status === 'pending').length}<br>
+                    Verified: ${allPayments.filter(p => p.verification_status === 'verified').length}
+                `;
+                
+                renderPayments();
+                
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                document.getElementById('stats').innerHTML = '<strong style="color: red;">Error loading payment data</strong>';
+            }
+        }
+
+        // Load payments on page load
+        loadPayments();
+    </script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Razorpay Payment Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 16px;
+            margin: 8px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #229954;
+        }
+        .test-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .api-response {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            margin: 8px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💳 Real Razorpay Payment Test</h1>
+            <p>Testing with your actual Razorpay keys</p>
+        </div>
+
+        <div class="status success">
+            <h3>✅ Configuration Status</h3>
+            <p><strong>Razorpay Key ID:</strong> rzp_test_RP6aD2gNdAuoRE</p>
+            <p><strong>Mode:</strong> Real Razorpay (Demo mode disabled)</p>
+            <p><strong>Status:</strong> Ready for testing with real payment gateway</p>
+        </div>
+
+        <div class="status info">
+            <h3>🧪 Test Instructions</h3>
+            <p>1. Click "Test Payment" to initiate a ₹8,000 payment</p>
+            <p>2. Real Razorpay checkout will open (no more 401 errors!)</p>
+            <p>3. Use the test card details below for safe testing</p>
+            <p>4. Complete the payment to test the full flow</p>
+        </div>
+
+        <div class="test-card">
+            <h4>🎯 Test Card Details (Safe for Testing)</h4>
+            <strong>Card Number:</strong> 4111 1111 1111 1111<br>
+            <strong>Expiry Date:</strong> 12/25 (any future date)<br>
+            <strong>CVV:</strong> 123 (any 3 digits)<br>
+            <strong>Cardholder Name:</strong> Test User<br><br>
+            <em>Note: These are Razorpay test cards - no real money will be charged</em>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="btn btn-primary" onclick="testPayment()">
+                💳 Test Payment - Pay ₹8,000
+            </button>
+            <button class="btn btn-success" onclick="checkStatus()">
+                🔍 Check Payment Status
+            </button>
+        </div>
+
+        <div id="results">
+            <h3>📊 Test Results</h3>
+            <div id="api-logs">
+                <p>Click "Test Payment" to start testing...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        let currentPaymentId = null;
+
+        function addLog(title, data) {
+            const logsContainer = document.getElementById('api-logs');
+            const logDiv = document.createElement('div');
+            logDiv.innerHTML = `
+                <h4>${title}</h4>
+                <div class="api-response">${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}</div>
+            `;
+            logsContainer.appendChild(logDiv);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        async function testPayment() {
+            try {
+                addLog('🔄 Initiating Payment...', 'Starting payment with real Razorpay keys');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/initiate_technical_details_payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ house_plan_id: 7 })
+                });
+                
+                const data = await response.json();
+                addLog('💳 Payment Initiation Response', data);
+                
+                if (data.success) {
+                    currentPaymentId = data.payment_id;
+                    
+                    // Verify we're using real keys
+                    if (data.razorpay_key_id === 'rzp_test_RP6aD2gNdAuoRE') {
+                        addLog('✅ Verification', 'Using correct Razorpay Key ID - Real payment gateway will open');
+                    } else {
+                        addLog('❌ Warning', `Unexpected Key ID: ${data.razorpay_key_id}`);
+                    }
+                    
+                    // Open real Razorpay checkout
+                    const options = {
+                        key: data.razorpay_key_id,
+                        amount: data.amount,
+                        currency: data.currency || 'INR',
+                        name: 'BuildHub',
+                        description: data.description,
+                        order_id: data.razorpay_order_id,
+                        handler: async function (rzpResponse) {
+                            addLog('✅ Payment Successful', rzpResponse);
+                            
+                            try {
+                                const verifyResponse = await fetch('/buildhub/backend/api/homeowner/verify_technical_details_payment.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    credentials: 'include',
+                                    body: JSON.stringify({
+                                        razorpay_payment_id: rzpResponse.razorpay_payment_id,
+                                        razorpay_order_id: rzpResponse.razorpay_order_id,
+                                        razorpay_signature: rzpResponse.razorpay_signature,
+                                        payment_id: data.payment_id
+                                    })
+                                });
+                                
+                                const verifyData = await verifyResponse.json();
+                                addLog('🔐 Payment Verification', verifyData);
+                                
+                                if (verifyData.success) {
+                                    addLog('🎉 Success!', 'Payment completed successfully! Technical details are now unlocked.');
+                                } else {
+                                    addLog('❌ Verification Failed', verifyData.message);
+                                }
+                            } catch (error) {
+                                addLog('❌ Verification Error', error.message);
+                            }
+                        },
+                        prefill: {
+                            name: 'Test User',
+                            email: 'test@example.com'
+                        },
+                        theme: {
+                            color: '#3498db'
+                        }
+                    };
+                    
+                    addLog('🚀 Opening Razorpay Checkout', 'Real payment gateway should open now...');
+                    
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                    
+                } else {
+                    addLog('❌ Payment Initiation Failed', data.message);
+                }
+            } catch (error) {
+                addLog('❌ Network Error', error.message);
+            }
+        }
+
+        async function checkStatus() {
+            if (!currentPaymentId) {
+                addLog('ℹ️ Info', 'No payment initiated yet. Click "Test Payment" first.');
+                return;
+            }
+
+            try {
+                addLog('🔍 Checking Status...', `Checking payment ID: ${currentPaymentId}`);
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const housePlans = data.designs.filter(d => d.source_type === 'house_plan');
+                    if (housePlans.length > 0) {
+                        const plan = housePlans[0];
+                        addLog('📋 Current Status', {
+                            plan_name: plan.design_title,
+                            unlock_price: `₹${plan.unlock_price}`,
+                            is_unlocked: plan.is_technical_details_unlocked,
+                            payment_status: plan.payment_status || 'No payment',
+                            paid_amount: plan.paid_amount ? `₹${plan.paid_amount}` : 'Not paid'
+                        });
+                    } else {
+                        addLog('ℹ️ Info', 'No house plans found');
+                    }
+                } else {
+                    addLog('❌ Status Check Failed', data.message);
+                }
+            } catch (error) {
+                addLog('❌ Status Check Error', error.message);
+            }
+        }
+
+        // Auto-check status on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addLog('🎯 Ready for Testing', 'Real Razorpay integration is active. Click "Test Payment" to start.');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

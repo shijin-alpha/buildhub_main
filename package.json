@@ -1,0 +1,42 @@
+{
+  "name": "buildhub",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project=mobile-chrome",
+    "test:simple": "playwright test tests/e2e/simple-login-test.spec.js --headed --project=chromium",
+    "test:progress": "playwright test tests/e2e/construction-progress.spec.js --headed --project=chromium",
+    "test:progress-detailed": "playwright test tests/e2e/construction-progress-detailed.spec.js --headed --project=chromium",
+    "test:progress-nav": "playwright test tests/e2e/construction-progress-navigation.spec.js --headed --project=chromium",
+    "test:progress-all": "playwright test tests/e2e/construction-progress*.spec.js --headed --project=chromium",
+    "serve": "node server.js",
+    "php-serve": "php -S localhost:8000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shijin-alpha/buildhub...git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shijin-alpha/buildhub../issues"
+  },
+  "homepage": "https://github.com/shijin-alpha/buildhub..#readme",
+  "dependencies": {
+    "jspdf": "^2.5.1",
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.41.0"
+  }
+}

@@ -1,0 +1,95 @@
+/* Shared filled color variants for stat cards and widget rectangles */
+
+/* Base: ensure inner text/icons inherit white on filled blocks */
+.stat-card[class*="w-"],
+.float-rect[class*="w-"] {
+  color: #ffffff;
+}
+
+/* BLUE */
+.stat-card.w-blue,
+.float-rect.w-blue {
+  background: #5682B1;          /* base fill (updated) */
+  border-left: 4px solid #446b99;/* darker accent edge */
+}
+.stat-card.w-blue:hover,
+.float-rect.w-blue:hover {
+  background: #446b99;          /* hover darken */
+}
+/* Icons inside filled blocks */
+.stat-card.w-blue .stat-icon,
+.float-rect.w-blue .fr-icon {
+  background: #6d96c2; /* solid light-blue tint for icon bg */
+  color: #ffffff;
+}
+
+/* PURPLE (unified to #5682B1) */
+.stat-card.w-purple,
+.float-rect.w-purple {
+  background: #5682B1;
+  border-left: 4px solid #446b99;
+}
+.stat-card.w-purple:hover,
+.float-rect.w-purple:hover {
+  background: #446b99;
+}
+.stat-card.w-purple .stat-icon,
+.float-rect.w-purple .fr-icon {
+  background: #6d96c2; /* solid tint */
+  color: #ffffff;
+}
+
+/* GREEN (unified to #5682B1) */
+.stat-card.w-green,
+.float-rect.w-green {
+  background: #5682B1;
+  border-left: 4px solid #446b99;
+}
+.stat-card.w-green:hover,
+.float-rect.w-green:hover {
+  background: #446b99;
+}
+.stat-card.w-green .stat-icon,
+.float-rect.w-green .fr-icon {
+  background: #6d96c2;
+  color: #ffffff;
+}
+
+/* ORANGE (unified to #5682B1) */
+.stat-card.w-orange,
+.float-rect.w-orange {
+  background: #5682B1;
+  border-left: 4px solid #446b99;
+}
+.stat-card.w-orange:hover,
+.float-rect.w-orange:hover {
+  background: #446b99;
+}
+.stat-card.w-orange .stat-icon,
+.float-rect.w-orange .fr-icon {
+  background: #6d96c2;
+  color: #ffffff;
+}
+
+/* Ensure headings/paragraphs/buttons inside filled blocks stay readable */
+.stat-card[class*="w-"] h1,
+.stat-card[class*="w-"] h2,
+.stat-card[class*="w-"] h3,
+.stat-card[class*="w-"] h4,
+.stat-card[class*="w-"] p,
+.float-rect[class*="w-"] h1,
+.float-rect[class*="w-"] h2,
+.float-rect[class*="w-"] h3,
+.float-rect[class*="w-"] h4,
+.float-rect[class*="w-"] p {
+  color: #ffffff;
+}
+
+/* Links inside filled areas */
+.stat-card[class*="w-"] a,
+.float-rect[class*="w-"] a {
+  color: #ffffff;
+  text-decoration-color: rgba(255,255,255,0.6);
+}
+
+/* Remove old soft-hover tints from previous version (now using strong fills) */

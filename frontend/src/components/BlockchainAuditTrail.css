@@ -1,0 +1,449 @@
+/* Blockchain Audit Trail Component Styles */
+
+.blockchain-audit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.blockchain-audit-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.audit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.audit-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error Message */
+.error-message {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.error-message p {
+    color: #f44336;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.retry-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.retry-btn:hover {
+    background: #5a67d8;
+}
+
+/* Blockchain Disabled */
+.blockchain-disabled {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.blockchain-disabled p {
+    margin: 10px 0;
+    font-size: 1.1rem;
+}
+
+/* Payment Summary */
+.payment-summary {
+    padding: 24px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.payment-summary h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.payment-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.detail-item .label {
+    font-weight: 500;
+    color: #666;
+}
+
+.detail-item .value {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Trust Score */
+.trust-score-section {
+    padding: 24px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.trust-score-section h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.trust-score {
+    position: relative;
+    background: #e0e0e0;
+    height: 24px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.trust-score-bar {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.5s ease;
+}
+
+.trust-score-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 600;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    font-size: 0.9rem;
+}
+
+.trust-indicators {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.indicator {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.indicator.completed {
+    background: #e8f5e8;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.indicator.pending {
+    background: #fff3e0;
+    color: #f57c00;
+    border: 1px solid #ffcc02;
+}
+
+/* Blockchain Records */
+.blockchain-records {
+    padding: 24px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.blockchain-records h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.records-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.record-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #fafafa;
+}
+
+.record-icon {
+    font-size: 1.5rem;
+    margin-right: 12px;
+    margin-top: 2px;
+}
+
+.record-details {
+    flex: 1;
+}
+
+.record-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.record-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #666;
+    flex-wrap: wrap;
+}
+
+.timestamp {
+    color: #666;
+}
+
+.tx-hash {
+    font-family: monospace;
+    background: #e3f2fd;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #1976d2;
+}
+
+.status {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status.pending {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status.confirmed {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status.failed {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.no-records {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.no-records p {
+    margin: 8px 0;
+}
+
+/* Sync Status */
+.sync-status {
+    padding: 24px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.sync-status h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.sync-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sync-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.sync-item .label {
+    font-weight: 500;
+    color: #666;
+}
+
+.sync-item .value {
+    font-weight: 600;
+    color: #333;
+}
+
+.sync-error {
+    padding: 12px;
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    border-radius: 6px;
+}
+
+.sync-error .label {
+    font-weight: 500;
+    color: #c62828;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.error-text {
+    color: #d32f2f;
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+/* Footer */
+.audit-footer {
+    padding: 24px;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.disclaimer {
+    flex: 1;
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+.refresh-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.refresh-btn:hover {
+    background: #5a67d8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .blockchain-audit-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .audit-header {
+        padding: 16px 20px;
+    }
+    
+    .audit-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .payment-details,
+    .trust-indicators {
+        grid-template-columns: 1fr;
+    }
+    
+    .record-meta {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .audit-footer {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .disclaimer {
+        margin-bottom: 12px;
+    }
+}

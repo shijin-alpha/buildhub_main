@@ -1,0 +1,4 @@
+model,CV_F1_mean,CV_F1_std,CV_Acc_mean,CV_Acc_std
+RandomForest,0.9115,0.0085,0.9132,0.0078
+GradientBoosting,0.9329,0.008,0.9352,0.0069
+LogisticRegression,0.8821,0.0091,0.8785,0.0095

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Form ML Integration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Form ML Integration</h1>
+    
+    <div class="test-section">
+        <h3>Test ML API Directly</h3>
+        <button onclick="testMLDirect()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Test ML API Direct
+        </button>
+        <div id="ml-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Form Rules Engine</h3>
+        <button onclick="testFormRules()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Test Form Rules
+        </button>
+        <div id="form-results"></div>
+    </div>
+
+    <script>
+        async function testMLDirect() {
+            const results = document.getElementById('ml-results');
+            results.innerHTML = '<p>🔄 Testing ML API directly...</p>';
+            
+            const testData = {
+                plot_size: 2000,
+                budget: 3000000,
+                num_floors: 2
+            };
+            
+            try {
+                console.log('🧪 Testing ML API directly...');
+                
+                const response = await fetch('http://localhost/buildhub/backend/api/ml_working.php?action=validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                console.log('ML API Result:', result);
+                
+                if (result.success && result.data) {
+                    results.innerHTML = `
+                        <div class="success">
+                            <h4>✅ ML API Working!</h4>
+                            <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h4>⚠️ ML API Response Issue</h4>
+                            <p>Response: ${JSON.stringify(result)}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('❌ ML API Error:', error);
+                results.innerHTML = `
+                    <div class="error">
+                        <h4>❌ ML API Connection Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testFormRules() {
+            const results = document.getElementById('form-results');
+            results.innerHTML = '<p>🔄 Testing form rules engine...</p>';
+            
+            try {
+                // Import the rules engine (this will only work if the module is available)
+                console.log('🧪 Testing form rules engine...');
+                
+                // Test if we can access the rules engine
+                if (typeof window.designRulesEngine !== 'undefined') {
+                    const testData = {
+                        plot_size: 2000,
+                        budget: 3000000,
+                        num_floors: 2
+                    };
+                    
+                    const result = await window.designRulesEngine.validateForm(testData);
+                    console.log('Form Rules Result:', result);
+                    
+                    results.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Form Rules Engine Working!</h4>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h4>⚠️ Form Rules Engine Not Available</h4>
+                            <p>Rules engine module not loaded. This is normal if not in the main app.</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('❌ Form Rules Error:', error);
+                results.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Form Rules Engine Error</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run tests
+        testMLDirect();
+        testFormRules();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

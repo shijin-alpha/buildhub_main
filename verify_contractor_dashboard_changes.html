@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Contractor Dashboard Changes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .warning {
+            color: #d97706;
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0369a1;
+            background: #f0f9ff;
+            border: 1px solid #7dd3fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .code {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Verify Contractor Dashboard Changes</h1>
+    
+    <div class="success">
+        <h3>✅ React Development Server Restarted</h3>
+        <p>The frontend development server has been restarted and should now include the site details changes.</p>
+    </div>
+    
+    <div class="step">
+        <h2>Step 1: Check if Changes Are Applied</h2>
+        
+        <div class="info">
+            <h3>🎯 What to Look For:</h3>
+            <p>Go to the contractor dashboard and look for these specific changes in the "Create Estimate" section:</p>
+            <ul>
+                <li><strong>Green Site Details Preview Section:</strong> Should appear before the form with title "🏗️ Site Details Available"</li>
+                <li><strong>Auto-populated Plot Size:</strong> Field should be pre-filled with "2000 sq ft" and have green highlighting</li>
+                <li><strong>Auto-populated Built-up Area:</strong> Field should be pre-filled with "1800 sq ft" and have green highlighting</li>
+                <li><strong>Auto-populated Number of Floors:</strong> Should be pre-selected as "2" with green highlighting</li>
+            </ul>
+        </div>
+        
+        <div class="warning">
+            <h3>📋 Testing Steps:</h3>
+            <ol>
+                <li><strong>Open Browser:</strong> Go to <code>http://localhost:3000</code></li>
+                <li><strong>Login as Contractor:</strong> Use contractor ID 37</li>
+                <li><strong>Go to Inbox:</strong> Look for layout requests</li>
+                <li><strong>Find Test Item:</strong> Look for the item from "SHIJIN THOMAS" with site details</li>
+                <li><strong>Expand "Create Estimate":</strong> Click the dropdown arrow</li>
+                <li><strong>Check for Green Section:</strong> Look for "🏗️ Site Details Available" section</li>
+                <li><strong>Check Form Fields:</strong> Verify Plot Size and Built-up Area are pre-filled</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="step">
+        <h2>Step 2: Test API Response</h2>
+        
+        <button class="btn" onclick="testContractorInboxAPI()">Test Contractor Inbox API</button>
+        
+        <div id="api-test-result"></div>
+    </div>
+
+    <div class="step">
+        <h2>Step 3: Manual Verification</h2>
+        
+        <div class="info">
+            <h3>🔧 If Changes Don't Appear:</h3>
+            <ol>
+                <li><strong>Hard Refresh:</strong> Press Ctrl+F5 to clear browser cache</li>
+                <li><strong>Check Browser Console:</strong> Press F12 and look for any JavaScript errors</li>
+                <li><strong>Verify File Changes:</strong> Check if ContractorDashboard.jsx was actually modified</li>
+                <li><strong>Check Network Tab:</strong> Verify the API is returning site details</li>
+            </ol>
+        </div>
+        
+        <div class="warning">
+            <h3>🚨 Expected Behavior:</h3>
+            <p>When you expand the "Create Estimate" section, you should see:</p>
+            <div class="code">
+🏗️ Site Details Available                    ✅ Auto-populated
+
+📐 Plot Size: 2000 sq ft        🏠 Building Size: 1800 sq ft
+💰 Budget Range: 10-15 lakhs    ⏱️ Timeline: 6-12 months
+🏢 Floors: 2                    📍 Location: Mumbai, Maharashtra
+            </div>
+            <p>And in the Basic Project Information form:</p>
+            <div class="code">
+Plot Size (sq.ft / sq.m): [2000 sq ft] ← Green highlighted
+Built-up Area (sq.ft / sq.m): [1800 sq ft] ← Green highlighted
+Number of Floors: [2] ← Green highlighted, pre-selected
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testContractorInboxAPI() {
+            const resultsDiv = document.getElementById('api-test-result');
+            resultsDiv.innerHTML = '<p>Testing contractor inbox API...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_inbox.php?contractor_id=37', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.items && result.items.length > 0) {
+                    const itemWithSiteDetails = result.items.find(item => 
+                        item.layout_request_details && 
+                        (item.plot_size || item.layout_request_details.plot_size)
+                    );
+                    
+                    if (itemWithSiteDetails) {
+                        resultsDiv.innerHTML = `
+                            <div class="success">
+                                <h3>✅ API Test Successful</h3>
+                                <p><strong>Found inbox item with site details:</strong></p>
+                                <ul>
+                                    <li><strong>Item ID:</strong> ${itemWithSiteDetails.id}</li>
+                                    <li><strong>Homeowner:</strong> ${itemWithSiteDetails.homeowner_name}</li>
+                                    <li><strong>Plot Size:</strong> ${itemWithSiteDetails.plot_size || itemWithSiteDetails.layout_request_details?.plot_size || 'Not set'}</li>
+                                    <li><strong>Building Size:</strong> ${itemWithSiteDetails.building_size || itemWithSiteDetails.layout_request_details?.building_size || 'Not set'}</li>
+                                    <li><strong>Budget Range:</strong> ${itemWithSiteDetails.budget_range || itemWithSiteDetails.layout_request_details?.budget_range || 'Not set'}</li>
+                                </ul>
+                                <p><strong>✅ The API is returning site details correctly!</strong></p>
+                                <p>If the contractor dashboard doesn't show these details, the issue is in the frontend React component.</p>
+                            </div>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = `
+                            <div class="warning">
+                                <h3>⚠️ No Site Details Found</h3>
+                                <p>Found ${result.items.length} inbox items, but none have site details.</p>
+                                <p>You may need to run the test data creation script first:</p>
+                                <div class="code">php create_test_data_simple.php</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="warning">
+                            <h3>⚠️ API Issue</h3>
+                            <p>API response: ${JSON.stringify(result, null, 2)}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="warning">
+                        <h3>❌ API Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run API test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                testContractorInboxAPI();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

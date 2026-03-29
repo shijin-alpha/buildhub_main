@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeowner Receipt Display Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .receipt-card { 
+            background: white; 
+            border: 1px solid #e9ecef; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        .receipt-grid { 
+            display: grid; 
+            gap: 20px; 
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:hover { background: #0056b3; }
+        .file-icon { 
+            width: 48px; 
+            height: 48px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Homeowner Receipt Display Fix Test</h1>
+        <p>This test verifies that uploaded receipts are now properly displayed in the homeowner dashboard.</p>
+        
+        <div class="test-section info">
+            <h3>📋 Test Status</h3>
+            <div id="testStatus">Ready to test...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 Step 1: Check Session & Authentication</h3>
+            <button onclick="checkSession()">Check Session</button>
+            <div id="sessionResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📄 Step 2: Fetch Bills & Receipts (Fixed API)</h3>
+            <button onclick="fetchBillsReceipts()">Fetch Bills & Receipts</button>
+            <div id="billsReceiptsResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Step 3: Display Receipts (Fixed Frontend)</h3>
+            <div id="receiptsDisplay"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔄 Step 4: Compare with Payment Requests (Old Method)</h3>
+            <button onclick="fetchPaymentRequests()">Fetch Payment Requests (Old)</button>
+            <div id="paymentRequestsResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let billsReceiptsData = [];
+        let paymentRequestsData = [];
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('testStatus');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        async function checkSession() {
+            try {
+                updateStatus('Checking session...', 'info');
+                
+                // First establish session for homeowner 32 (test user)
+                const sessionResponse = await fetch('/buildhub/backend/api/homeowner/establish_session.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ homeowner_id: 32 })
+                });
+                
+                const sessionResult = await sessionResponse.json();
+                
+                document.getElementById('sessionResult').innerHTML = `
+                    <div class="${sessionResult.success ? 'success' : 'error'}">
+                        <strong>Session Status:</strong> ${sessionResult.success ? 'Established' : 'Failed'}<br>
+                        <strong>Message:</strong> ${sessionResult.message}<br>
+                        <strong>User ID:</strong> ${sessionResult.user_id || 'N/A'}<br>
+                        <strong>User Name:</strong> ${sessionResult.user_name || 'N/A'}
+                    </div>
+                `;
+                
+                if (sessionResult.success) {
+                    updateStatus('✅ Session established successfully', 'success');
+                } else {
+                    updateStatus('❌ Session establishment failed', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Session check error:', error);
+                document.getElementById('sessionResult').innerHTML = `
+                    <div class="error">Error: ${error.message}</div>
+                `;
+                updateStatus('❌ Session check failed', 'error');
+            }
+        }
+        
+        async function fetchBillsReceipts() {
+            try {
+                updateStatus('Fetching bills & receipts...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_bills_receipts.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                billsReceiptsData = result.data?.receipts || [];
+                
+                document.getElementById('billsReceiptsResult').innerHTML = `
+                    <div class="${result.success ? 'success' : 'error'}">
+                        <strong>API Status:</strong> ${result.success ? 'Success' : 'Failed'}<br>
+                        <strong>Message:</strong> ${result.message}<br>
+                        <strong>Total Receipts:</strong> ${billsReceiptsData.length}<br>
+                        <strong>Statistics:</strong> ${JSON.stringify(result.data?.statistics || {}, null, 2)}
+                    </div>
+                `;
+                
+                if (result.success && billsReceiptsData.length > 0) {
+                    displayReceipts();
+                    updateStatus(`✅ Found ${billsReceiptsData.length} receipt(s) - Fix working!`, 'success');
+                } else if (result.success && billsReceiptsData.length === 0) {
+                    updateStatus('⚠️ No receipts found - upload some receipts first', 'info');
+                } else {
+                    updateStatus('❌ Failed to fetch receipts', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Bills & receipts fetch error:', error);
+                document.getElementById('billsReceiptsResult').innerHTML = `
+                    <div class="error">Error: ${error.message}</div>
+                `;
+                updateStatus('❌ Bills & receipts fetch failed', 'error');
+            }
+        }
+        
+        function displayReceipts() {
+            const receiptsWithFiles = billsReceiptsData.filter(req => 
+                req.receipt_files && req.receipt_files.length > 0
+            );
+            
+            if (receiptsWithFiles.length === 0) {
+                document.getElementById('receiptsDisplay').innerHTML = `
+                    <div class="info">
+                        <h4>📋 No Documents & Files</h4>
+                        <p>No documents or files have been uploaded yet.</p>
+                        <p><strong>Total receipts in data:</strong> ${billsReceiptsData.length}</p>
+                        <p><strong>Receipts with files:</strong> ${receiptsWithFiles.length}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="success">
+                    <h4>✅ Receipts Display (FIXED)</h4>
+                    <p><strong>Total receipts:</strong> ${billsReceiptsData.length}</p>
+                    <p><strong>Receipts with files:</strong> ${receiptsWithFiles.length}</p>
+                </div>
+                <div class="receipt-grid">
+            `;
+            
+            receiptsWithFiles.forEach(request => {
+                request.receipt_files.forEach((file, fileIndex) => {
+                    const fileIcon = file.original_name.toLowerCase().includes('.pdf') ? '📄' : 
+                                   file.original_name.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/) ? '🖼️' : '📋';
+                    
+                    html += `
+                        <div class="receipt-card">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                                <div class="file-icon">${fileIcon}</div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0; font-size: 16px;">${file.original_name}</h4>
+                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                                        ${request.request_title || 'Payment Receipt'}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <p><strong>Amount:</strong> ₹${parseFloat(request.requested_amount).toLocaleString()}</p>
+                                <p><strong>Payment Method:</strong> ${request.payment_method_icon} ${request.payment_method}</p>
+                                <p><strong>Status:</strong> 
+                                    <span style="color: ${request.verification_badge.color};">
+                                        ${request.verification_badge.icon} ${request.verification_badge.text}
+                                    </span>
+                                </p>
+                                <p><strong>File Size:</strong> ${(file.file_size / 1024).toFixed(1)} KB</p>
+                            </div>
+                            
+                            <button onclick="window.open('/buildhub/backend/${file.file_path}', '_blank')" 
+                                    style="width: 100%;">
+                                📥 View Receipt
+                            </button>
+                        </div>
+                    `;
+                });
+            });
+            
+            html += '</div>';
+            document.getElementById('receiptsDisplay').innerHTML = html;
+        }
+        
+        async function fetchPaymentRequests() {
+            try {
+                updateStatus('Fetching payment requests (old method)...', 'info');
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_all_payment_requests.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                paymentRequestsData = result.data?.payment_requests || [];
+                
+                const receiptsWithFiles = paymentRequestsData.filter(req => 
+                    req.receipt_files && req.receipt_files.length > 0
+                );
+                
+                document.getElementById('paymentRequestsResult').innerHTML = `
+                    <div class="${result.success ? 'success' : 'error'}">
+                        <strong>API Status:</strong> ${result.success ? 'Success' : 'Failed'}<br>
+                        <strong>Total Payment Requests:</strong> ${paymentRequestsData.length}<br>
+                        <strong>Payment Requests with Files:</strong> ${receiptsWithFiles.length}<br>
+                        <strong>Comparison:</strong><br>
+                        - Bills & Receipts API: ${billsReceiptsData.length} receipts<br>
+                        - Payment Requests API: ${receiptsWithFiles.length} receipts with files<br>
+                        <br>
+                        <strong>Issue:</strong> The old frontend was using Payment Requests API instead of Bills & Receipts API!
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Payment requests fetch error:', error);
+                document.getElementById('paymentRequestsResult').innerHTML = `
+                    <div class="error">Error: ${error.message}</div>
+                `;
+            }
+        }
+        
+        // Auto-start the test
+        window.onload = function() {
+            updateStatus('🚀 Starting receipt display fix test...', 'info');
+            setTimeout(() => {
+                checkSession();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

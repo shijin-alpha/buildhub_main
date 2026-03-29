@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expanded Contractor Modal - Maximum Space for Selection</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.5;
+        }
+        
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 48px;
+            padding-bottom: 32px;
+            border-bottom: 3px solid #e5e7eb;
+        }
+        
+        .demo-header h1 {
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .demo-header p {
+            color: #6b7280;
+            font-size: 20px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        
+        .demo-button {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            margin: 32px auto 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #059669;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-left: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid #86efac;
+        }
+        
+        .improvements-section {
+            margin-top: 48px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .improvements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin-top: 32px;
+        }
+        
+        .improvement-card {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .improvement-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+        
+        .improvement-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+            border-color: #10b981;
+        }
+        
+        .improvement-card h3 {
+            color: #1f2937;
+            margin: 0 0 16px 0;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .improvement-card p {
+            color: #6b7280;
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+        
+        .space-comparison {
+            margin-top: 48px;
+            padding: 40px;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 3px solid #93c5fd;
+            border-radius: 20px;
+        }
+        
+        .space-comparison h3 {
+            color: #1e40af;
+            margin: 0 0 32px 0;
+            font-size: 28px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+        
+        .comparison-item {
+            padding: 24px;
+            border-radius: 16px;
+            border: 3px solid;
+        }
+        
+        .before {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-color: #f87171;
+        }
+        
+        .after {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-color: #4ade80;
+        }
+        
+        .comparison-item h4 {
+            margin: 0 0 16px 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .before h4 {
+            color: #dc2626;
+        }
+        
+        .after h4 {
+            color: #059669;
+        }
+        
+        .comparison-item ul {
+            margin: 0;
+            padding-left: 24px;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+        
+        .before ul {
+            color: #991b1b;
+        }
+        
+        .after ul {
+            color: #065f46;
+        }
+        
+        .metrics-section {
+            margin-top: 48px;
+            padding: 32px;
+            background: white;
+            border: 3px solid #10b981;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+        }
+        
+        .metrics-section h3 {
+            color: #059669;
+            margin: 0 0 24px 0;
+            font-size: 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+        
+        .metric-item {
+            text-align: center;
+            padding: 20px;
+            background: #f0fdf4;
+            border-radius: 12px;
+            border: 2px solid #bbf7d0;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #065f46;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🚀 Expanded Contractor Interface <span class="status-badge">MAXIMIZED</span></h1>
+            <p>Removed message section and expanded contractor list for maximum selection space and better user experience</p>
+            <button class="demo-button" onclick="showDemo()">
+                View Space Optimization
+            </button>
+        </div>
+        
+        <div class="improvements-section">
+            <h2 class="section-title">🎯 Key Space Optimizations</h2>
+            
+            <div class="improvements-grid">
+                <div class="improvement-card">
+                    <h3>📏 Expanded List Height</h3>
+                    <p>Increased contractor list height from 400px to 500px, providing 25% more space for viewing and selecting contractors without scrolling.</p>
+                </div>
+                
+                <div class="improvement-card">
+                    <h3>🗑️ Removed Message Section</h3>
+                    <p>Eliminated the optional message textarea to dedicate more screen real estate to the contractor selection interface.</p>
+                </div>
+                
+                <div class="improvement-card">
+                    <h3>📦 Larger Contractor Cards</h3>
+                    <p>Increased padding from 20px to 24px and margins from 8px to 10px for more comfortable interaction and better visual separation.</p>
+                </div>
+                
+                <div class="improvement-card">
+                    <h3>☑️ Bigger Checkboxes</h3>
+                    <p>Enlarged checkboxes from 20x20px to 22x22px for easier clicking and better accessibility on all devices.</p>
+                </div>
+                
+                <div class="improvement-card">
+                    <h3>📝 Enhanced Typography</h3>
+                    <p>Increased contractor name font size to 19px and detail text to 15px for better readability and professional appearance.</p>
+                </div>
+                
+                <div class="improvement-card">
+                    <h3>⭐ Improved Ratings</h3>
+                    <p>Larger star icons (17px) with better spacing (3px gaps) for clearer visual rating assessment at a glance.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="space-comparison">
+            <h3>📊 Space Utilization Comparison</h3>
+            
+            <div class="comparison-grid">
+                <div class="comparison-item before">
+                    <h4>❌ Before (Cramped)</h4>
+                    <ul>
+                        <li>400px max height for contractor list</li>
+                        <li>Message section taking up 120px</li>
+                        <li>20px padding on contractor cards</li>
+                        <li>18px contractor name font size</li>
+                        <li>16px star rating icons</li>
+                        <li>Limited scrolling area</li>
+                        <li>Crowded interface feeling</li>
+                    </ul>
+                </div>
+                
+                <div class="comparison-item after">
+                    <h4>✅ After (Spacious)</h4>
+                    <ul>
+                        <li>500px max height for contractor list</li>
+                        <li>No message section - pure selection focus</li>
+                        <li>24px padding on contractor cards</li>
+                        <li>19px contractor name font size</li>
+                        <li>17px star rating icons</li>
+                        <li>Generous scrolling and viewing area</li>
+                        <li>Clean, focused interface</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="metrics-section">
+            <h3>📈 Interface Metrics</h3>
+            
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <div class="metric-value">+25%</div>
+                    <div class="metric-label">More List Space</div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-value">500px</div>
+                    <div class="metric-label">Max List Height</div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-value">24px</div>
+                    <div class="metric-label">Card Padding</div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-value">22px</div>
+                    <div class="metric-label">Checkbox Size</div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-value">19px</div>
+                    <div class="metric-label">Name Font Size</div>
+                </div>
+                
+                <div class="metric-item">
+                    <div class="metric-value">0px</div>
+                    <div class="metric-label">Message Section</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showDemo() {
+            alert('✅ Expanded Contractor Interface Complete!\n\n' +
+                  'Space Optimizations:\n\n' +
+                  '📏 +25% more contractor list space (500px height)\n' +
+                  '🗑️ Removed message section for focus\n' +
+                  '📦 Larger contractor cards (24px padding)\n' +
+                  '☑️ Bigger checkboxes (22x22px)\n' +
+                  '📝 Enhanced typography (19px names)\n' +
+                  '⭐ Improved star ratings (17px icons)\n' +
+                  '🎯 Clean, focused selection interface\n' +
+                  '📱 Better mobile experience\n\n' +
+                  'The interface now maximizes space for contractor ' +
+                  'selection while maintaining professional appearance ' +
+                  'and smooth user interactions!');
+        }
+    </script>
+</body>
+</html>

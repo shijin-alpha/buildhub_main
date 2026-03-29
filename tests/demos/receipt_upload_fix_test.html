@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Upload Fix Test - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .payment-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .upload-form {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .form-modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+        }
+
+        .file-upload {
+            border: 2px dashed #ced4da;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .file-upload.dragover {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .selected-files {
+            margin-top: 15px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Receipt Upload Fix Test</h1>
+            <p>Testing the FIXED receipt upload functionality for stage payment requests</p>
+        </div>
+
+        <div class="content">
+            <div class="test-section">
+                <h3>✅ FIXED: Receipt Upload System</h3>
+                <p><strong>Issues Fixed:</strong></p>
+                <ul style="padding-left: 20px; margin: 10px 0;">
+                    <li>✅ Updated API to use stage_payment_requests table instead of alternative_payments</li>
+                    <li>✅ Added receipt-related columns to stage_payment_requests table</li>
+                    <li>✅ Created verification logs and notifications tables</li>
+                    <li>✅ Added payment method selector to upload form</li>
+                    <li>✅ Fixed modal positioning with buttons in header</li>
+                    <li>✅ Proper error handling and validation</li>
+                </ul>
+                <button class="btn" onclick="loadPaymentRequests()">Load Payment Requests</button>
+                <div id="paymentsList"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔧 Technical Details</h3>
+                <ul style="padding-left: 20px; line-height: 1.8;">
+                    <li><strong>Database Fix:</strong> Added receipt columns to stage_payment_requests table</li>
+                    <li><strong>API Update:</strong> Modified upload_payment_receipt.php to use correct table</li>
+                    <li><strong>Frontend Fix:</strong> Updated PaymentReceiptUpload component with header buttons</li>
+                    <li><strong>Validation:</strong> Added proper form validation and file type checking</li>
+                    <li><strong>Notifications:</strong> Created notification system for contractors</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Form Modal -->
+    <div id="uploadForm" class="upload-form">
+        <div class="form-modal">
+            <div class="form-header">
+                <div>
+                    <h2>🏦 Upload Payment Receipt</h2>
+                    <p>Payment ID: <span id="modalPaymentId"></span></p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn-secondary" onclick="closeUploadForm()">Cancel</button>
+                    <button class="btn" onclick="submitReceipt()" id="submitBtn">Upload Receipt</button>
+                    <button class="close-btn" onclick="closeUploadForm()">×</button>
+                </div>
+            </div>
+
+            <div class="form-body">
+                <div class="form-group">
+                    <label for="transactionRef">Transaction Reference Number *</label>
+                    <input type="text" id="transactionRef" placeholder="Enter NEFT/RTGS/UPI reference number" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="paymentDate">Payment Date *</label>
+                    <input type="date" id="paymentDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method *</label>
+                    <select id="paymentMethod" required>
+                        <option value="bank_transfer">🏦 Bank Transfer</option>
+                        <option value="upi">📱 UPI Payment</option>
+                        <option value="cash">💵 Cash Payment</option>
+                        <option value="cheque">📝 Cheque Payment</option>
+                        <option value="other">💳 Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Additional Notes</label>
+                    <textarea id="notes" placeholder="Any additional information about the payment" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Receipt Files *</label>
+                    <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                        <div style="font-size: 48px; margin-bottom: 10px;">📁</div>
+                        <h3>Drop files here or click to browse</h3>
+                        <p>Supported: JPG, PNG, PDF (Max 10MB each)</p>
+                        <input type="file" id="fileInput" style="display: none;" accept=".jpg,.jpeg,.png,.pdf" multiple onchange="handleFileSelect(event)">
+                    </div>
+                    <div id="selectedFiles" class="selected-files"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let currentPaymentId = null;
+
+        async function loadPaymentRequests() {
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_payment_requests.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    displayPaymentRequests(data.data.requests);
+                } else {
+                    document.getElementById('paymentsList').innerHTML = 
+                        '<div class="test-result error">❌ Failed to load payment requests: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('paymentsList').innerHTML = 
+                    '<div class="test-result error">❌ Error loading payment requests: ' + error.message + '</div>';
+            }
+        }
+
+        function displayPaymentRequests(requests) {
+            const container = document.getElementById('paymentsList');
+            
+            if (requests.length === 0) {
+                container.innerHTML = '<div class="test-result info">ℹ️ No payment requests found</div>';
+                return;
+            }
+
+            let html = '<h4>Available Payment Requests:</h4>';
+            requests.forEach(request => {
+                html += `
+                    <div class="payment-card">
+                        <div class="payment-header">
+                            <div>
+                                <h4>${request.stage_name} Stage</h4>
+                                <p>Contractor: ${request.contractor_first_name} ${request.contractor_last_name}</p>
+                            </div>
+                            <div class="amount">₹${parseFloat(request.requested_amount).toLocaleString()}</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="status-badge status-${request.status}">${request.status.toUpperCase()}</span>
+                            ${request.status === 'approved' ? 
+                                `<button class="btn" onclick="openUploadForm(${request.id})">📤 Upload Receipt</button>` : 
+                                '<span style="color: #6c757d;">Receipt upload available after approval</span>'
+                            }
+                        </div>
+                        ${request.verification_status ? 
+                            `<div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 4px; font-size: 12px;">
+                                Verification Status: ${request.verification_status}
+                            </div>` : ''
+                        }
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function openUploadForm(paymentId) {
+            currentPaymentId = paymentId;
+            document.getElementById('modalPaymentId').textContent = paymentId;
+            document.getElementById('uploadForm').style.display = 'flex';
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentDate').value = today;
+            
+            // Clear form
+            document.getElementById('transactionRef').value = '';
+            document.getElementById('paymentMethod').value = 'bank_transfer';
+            document.getElementById('notes').value = '';
+            selectedFiles = [];
+            displaySelectedFiles();
+        }
+
+        function closeUploadForm() {
+            document.getElementById('uploadForm').style.display = 'none';
+            currentPaymentId = null;
+            selectedFiles = [];
+        }
+
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            selectedFiles = [...selectedFiles, ...files];
+            displaySelectedFiles();
+        }
+
+        function displaySelectedFiles() {
+            const container = document.getElementById('selectedFiles');
+            
+            if (selectedFiles.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<h5>Selected Files:</h5>';
+            selectedFiles.forEach((file, index) => {
+                html += `
+                    <div class="file-item">
+                        <div>
+                            <span style="font-size: 18px;">${file.type.startsWith('image/') ? '🖼️' : '📄'}</span>
+                            <strong>${file.name}</strong> (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </div>
+                        <button class="remove-btn" onclick="removeFile(${index})">×</button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displaySelectedFiles();
+        }
+
+        async function submitReceipt() {
+            const transactionRef = document.getElementById('transactionRef').value;
+            const paymentDate = document.getElementById('paymentDate').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const notes = document.getElementById('notes').value;
+
+            if (!transactionRef || !paymentDate || selectedFiles.length === 0) {
+                alert('Please fill in all required fields and select at least one file.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.textContent = 'Uploading...';
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('payment_id', currentPaymentId);
+                formData.append('transaction_reference', transactionRef);
+                formData.append('payment_date', paymentDate);
+                formData.append('payment_method', paymentMethod);
+                formData.append('notes', notes);
+
+                selectedFiles.forEach((file, index) => {
+                    formData.append('receipt_files[]', file);
+                });
+
+                const response = await fetch('/buildhub/backend/api/homeowner/upload_payment_receipt.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Receipt uploaded successfully!\n\nFiles: ' + selectedFiles.map(f => f.name).join(', ') + 
+                          '\nReference: ' + transactionRef + 
+                          '\nMethod: ' + paymentMethod);
+                    closeUploadForm();
+                    loadPaymentRequests(); // Reload to show updated status
+                } else {
+                    alert('❌ Upload failed: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Error uploading receipt: ' + error.message);
+            } finally {
+                submitBtn.textContent = 'Upload Receipt';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Drag and drop functionality
+        const fileUpload = document.querySelector('.file-upload');
+        
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            selectedFiles = [...selectedFiles, ...files];
+            displaySelectedFiles();
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('uploadForm').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUploadForm();
+            }
+        });
+
+        // Load payment requests on page load
+        window.onload = function() {
+            console.log('Receipt Upload Fix Test loaded - ready to test!');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Receipt Upload - Payment ID 16</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Receipt Upload - Payment ID 16</h1>
+        <p>This page tests the receipt upload functionality for payment ID 16 (homeowner 32).</p>
+        
+        <form id="receiptForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="payment_id">Payment ID:</label>
+                <input type="number" id="payment_id" name="payment_id" value="16" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="transaction_reference">Transaction Reference:</label>
+                <input type="text" id="transaction_reference" name="transaction_reference" 
+                       placeholder="Enter transaction reference" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="payment_date">Payment Date:</label>
+                <input type="date" id="payment_date" name="payment_date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="payment_method">Payment Method:</label>
+                <select id="payment_method" name="payment_method">
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="upi">UPI Payment</option>
+                    <option value="cash">Cash Payment</option>
+                    <option value="cheque">Cheque Payment</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="notes">Notes:</label>
+                <textarea id="notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="receipt_files">Receipt Files:</label>
+                <input type="file" id="receipt_files" name="receipt_files[]" multiple 
+                       accept="image/*,.pdf" required>
+            </div>
+            
+            <button type="submit">Upload Receipt</button>
+        </form>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Set today's date as default
+        document.getElementById('payment_date').value = new Date().toISOString().split('T')[0];
+        
+        document.getElementById('receiptForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Uploading receipt...</div>';
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/upload_payment_receipt.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Success!</h3>
+                            <p>${data.message}</p>
+                            <p><strong>Payment ID:</strong> ${data.data.payment_id}</p>
+                            <p><strong>Transaction Reference:</strong> ${data.data.transaction_reference}</p>
+                            <p><strong>Files Uploaded:</strong> ${data.data.uploaded_files.length}</p>
+                            <p><strong>Verification Status:</strong> ${data.data.verification_status}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Upload Failed</h3>
+                            <p>${data.message}</p>
+                            ${data.debug ? `<pre>${JSON.stringify(data.debug, null, 2)}</pre>` : ''}
+                            ${data.suggestion ? `<p><em>${data.suggestion}</em></p>` : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error</h3>
+                        <p>Network error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

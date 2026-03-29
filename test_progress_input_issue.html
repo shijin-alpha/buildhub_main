@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Input Issue Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        input { padding: 8px; margin: 10px; width: 200px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Progress Input Issue Test</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Input with step="0.1" and dynamic max</h3>
+        <label>Enter 5 in this field:</label>
+        <input type="number" id="test1" step="0.1" min="0" max="4.8" placeholder="Enter 5">
+        <div class="result" id="result1"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 2: Input with step="1" and dynamic max</h3>
+        <label>Enter 5 in this field:</label>
+        <input type="number" id="test2" step="1" min="0" max="4.8" placeholder="Enter 5">
+        <div class="result" id="result2"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 3: Input with step="0.01" and dynamic max</h3>
+        <label>Enter 5 in this field:</label>
+        <input type="number" id="test3" step="0.01" min="0" max="4.8" placeholder="Enter 5">
+        <div class="result" id="result3"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 4: Input with no step and dynamic max</h3>
+        <label>Enter 5 in this field:</label>
+        <input type="number" id="test4" min="0" max="4.8" placeholder="Enter 5">
+        <div class="result" id="result4"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 5: Input with step="0.1" and max="100"</h3>
+        <label>Enter 5 in this field:</label>
+        <input type="number" id="test5" step="0.1" min="0" max="100" placeholder="Enter 5">
+        <div class="result" id="result5"></div>
+    </div>
+
+    <script>
+        function setupTest(inputId, resultId) {
+            const input = document.getElementById(inputId);
+            const result = document.getElementById(resultId);
+            
+            input.addEventListener('input', function() {
+                result.innerHTML = `
+                    <strong>Value:</strong> ${this.value}<br>
+                    <strong>Max:</strong> ${this.max}<br>
+                    <strong>Step:</strong> ${this.step}<br>
+                    <strong>Valid:</strong> ${this.checkValidity()}
+                `;
+            });
+            
+            input.addEventListener('change', function() {
+                result.innerHTML += `<br><strong>After change event:</strong> ${this.value}`;
+            });
+        }
+        
+        // Setup all tests
+        for (let i = 1; i <= 5; i++) {
+            setupTest(`test${i}`, `result${i}`);
+        }
+        
+        // Show initial max values
+        document.addEventListener('DOMContentLoaded', function() {
+            for (let i = 1; i <= 5; i++) {
+                const input = document.getElementById(`test${i}`);
+                const result = document.getElementById(`result${i}`);
+                result.innerHTML = `<strong>Initial Max:</strong> ${input.max}, <strong>Step:</strong> ${input.step || 'default'}`;
+            }
+        });
+    </script>
+</body>
+</html>

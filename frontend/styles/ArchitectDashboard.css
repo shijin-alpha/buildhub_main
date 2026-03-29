@@ -1,0 +1,130 @@
+/* Architect Dashboard profile spacing tweaks */
+
+/* Drawer overlay base (kept minimal change) */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  z-index: 1000;
+}
+
+/* Wider drawer for more comfortable editing space */
+.drawer {
+  width: 760px;           /* increased from typical 480-600 */
+  max-width: 92vw;        /* responsive cap */
+  background: #ffffff;
+  height: 100%;
+  overflow: auto;
+  box-shadow: -12px 0 30px rgba(0,0,0,0.15);
+  padding: 24px 28px;     /* increased inner padding */
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;    /* more spacing */
+}
+
+.drawer-user { display:flex; align-items:center; gap:14px; }
+.drawer-avatar { width:48px; height:48px; border-radius:50%; background:#eef2ff; display:flex; align-items:center; justify-content:center; font-weight:700; }
+.drawer-close { background:#f1f5f9; border:1px solid #e2e8f0; width:36px; height:36px; border-radius:10px; font-size:18px; line-height:1; }
+
+/* Section spacing and visual grouping */
+.drawer-section {
+  margin-top: 18px;       /* more separation between blocks */
+  padding: 16px;          /* add inner space */
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.drawer-section h4 { margin: 0 0 8px; }
+.drawer-section .muted { color:#6b7280; }
+
+/* Form layout: more width + bigger gaps */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;              /* increased gap */
+  margin-bottom: 14px;    /* more vertical rhythm */
+}
+
+.form-group { display:flex; flex-direction:column; gap:8px; }
+.form-group label { color:#475569; font-weight:600; font-size:0.95rem; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 12px;     /* slightly larger controls */
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 0.98rem;
+}
+
+.rating-row { display:flex; align-items:center; gap:10px; margin: 12px 0 2px; }
+.rating-stars .star { color:#ddd; font-size: 1.15rem; }
+.rating-stars .star.filled { color:#f5a623; }
+.rating-count { color:#64748b; }
+
+/* Actions spacing */
+.drawer-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top: 16px; }
+
+/* Section cards on profile page (outside drawer) */
+.section-card { padding: 22px; }
+.section-header h2 { margin: 0 0 6px; }
+.section-content { margin-top: 10px; }
+
+/* Buttons */
+.btn { padding: 10px 14px; border-radius: 10px; }
+.btn-primary { background:#2563eb; color:#fff; border:none; }
+.btn-secondary { background:#f1f5f9; border:1px solid #e2e8f0; }
+
+/* Generic modal used for preview and forms */
+.form-modal{
+  position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; background: rgba(15, 23, 42, 0.55); z-index: 1001;
+}
+.form-content{
+  background:#fff; border-radius: 12px; width: 92vw; max-width: 720px; max-height: 90vh; overflow:auto; box-shadow: 0 20px 50px rgba(0,0,0,.25); padding: 18px 20px;
+}
+.form-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 12px; }
+
+@media (max-width: 900px) {
+  .drawer { width: 96vw; padding: 20px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
+/* List items UI */
+.item-list { display:grid; gap:12px; }
+.list-item { display:flex; align-items:flex-start; gap:14px; background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:14px; box-shadow:0 8px 18px rgba(0,0,0,0.04); transition: all .15s ease; }
+.list-item:hover { box-shadow:0 12px 24px rgba(0,0,0,0.06); transform: translateY(-1px); }
+
+.item-icon { width:42px; height:42px; border-radius:12px; background:#eef8ff; display:grid; place-items:center; font-size:20px; }
+.item-content { flex:1; display:flex; flex-direction:column; gap:6px; }
+.item-title { margin:0; font-size:16px; font-weight:700; color:#111827; }
+.item-subtitle { margin:0; color:#374151; }
+.item-meta { margin:0; color:#6b7280; font-size:12px; }
+.item-description { margin:0; color:#374151; }
+
+.item-actions { display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+@media (max-width: 720px) {
+  .list-item { flex-direction:column; }
+  .item-actions { flex-direction:row; justify-content:flex-end; }
+}
+
+/* Details card */
+.details-card { margin-top:8px; border:1px solid #e5e7eb; border-radius:12px; background:#fafafa; }
+.details-header { padding:8px 12px; border-bottom:1px dashed #e5e7eb; }
+.details-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:12px; }
+.details-grid .span-2 { grid-column: span 2; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+
+/* Status badge (used elsewhere too) */
+.status-badge { padding:6px 10px; border-radius:999px; font-size:12px; text-transform:capitalize; border:1px solid #e5e7eb; background:#fff; }
+.status-badge.sent { background:#fff7ed; border-color:#fed7aa; color:#b45309; }
+.status-badge.accepted { background:#ecfdf5; border-color:#a7f3d0; color:#065f46; }
+.status-badge.rejected { background:#fef2f2; border-color:#fecaca; color:#991b1b; }

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Dropdown Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .project-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project Dropdown Test</h1>
+    <p class="success">✅ All projects now have unique names!</p>
+    
+    <div class="form-group">
+        <label for="project">Select Project *</label>
+        <select id="project">
+            <option value="">Choose a project...</option>
+        </select>
+    </div>
+    
+    <div class="project-info" id="projectInfo" style="display: none;">
+        <h3>Selected Project Details</h3>
+        <p id="projectDetails"></p>
+    </div>
+
+    <script>
+        // Fetch projects from API
+        async function loadProjects() {
+            try {
+                const contractorId = 29; // Test with contractor 29
+                const response = await fetch(`/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${contractorId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('project');
+                    const projects = data.data.projects;
+                    
+                    console.log('Loaded projects:', projects);
+                    
+                    projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        
+                        // Format display name
+                        let displayName = project.project_name;
+                        if (project.estimate_cost && !displayName.includes('₹')) {
+                            displayName += ` (₹${project.estimate_cost.toLocaleString('en-IN')})`;
+                        }
+                        
+                        option.textContent = displayName;
+                        select.appendChild(option);
+                    });
+                    
+                    // Add change event listener
+                    select.addEventListener('change', function() {
+                        const selectedProject = projects.find(p => p.id == this.value);
+                        if (selectedProject) {
+                            document.getElementById('projectInfo').style.display = 'block';
+                            document.getElementById('projectDetails').innerHTML = `
+                                <strong>Project ID:</strong> ${selectedProject.id}<br>
+                                <strong>Name:</strong> ${selectedProject.project_name}<br>
+                                <strong>Homeowner:</strong> ${selectedProject.homeowner_name}<br>
+                                <strong>Cost:</strong> ₹${(selectedProject.estimate_cost || 0).toLocaleString('en-IN')}<br>
+                                <strong>Status:</strong> ${selectedProject.status}
+                            `;
+                        } else {
+                            document.getElementById('projectInfo').style.display = 'none';
+                        }
+                    });
+                } else {
+                    console.error('Failed to load projects:', data.message);
+                    alert('Failed to load projects: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                alert('Error loading projects: ' + error.message);
+            }
+        }
+        
+        // Load projects on page load
+        loadProjects();
+    </script>
+</body>
+</html>

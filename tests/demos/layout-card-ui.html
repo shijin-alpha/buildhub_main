@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout Card Content - Neat UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Layout Card Content */
+        .layout-card-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: visible;
+        }
+
+        /* Header Section */
+        .layout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .layout-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.pending {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+        }
+
+        /* Homeowner Details */
+        .homeowner-details {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .homeowner-details h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .homeowner-details h4::before {
+            content: "👤";
+            font-size: 1.2rem;
+        }
+
+        .homeowner-details p {
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .homeowner-details strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        /* Request Details */
+        .request-details {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .request-details h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #059669;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .request-details h4::before {
+            content: "📋";
+            font-size: 1.2rem;
+        }
+
+        .request-details p {
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .request-details strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        /* Requirements Section */
+        .requirements-section {
+            margin-top: 12px;
+        }
+
+        .requirements-section strong {
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* JSON Card Styling */
+        .json-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            margin-top: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .json-card__header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(248, 250, 252, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .json-card__header:hover {
+            background: rgba(241, 245, 249, 0.9);
+        }
+
+        .json-card__icon {
+            font-size: 1.1rem;
+            margin-right: 10px;
+        }
+
+        .json-card__title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #374151;
+            margin: 0;
+            flex: 1;
+        }
+
+        .json-card__expand-icon {
+            font-size: 0.8rem;
+            color: #6b7280;
+            transition: transform 0.3s ease;
+        }
+
+        /* Technical Details Section */
+        .technical-details-section {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .technical-details-display {
+            width: 100%;
+        }
+
+        .technical-header {
+            margin-bottom: 20px;
+        }
+
+        .technical-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #7c3aed;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .technical-header h3::before {
+            content: "🏗️";
+            font-size: 1.4rem;
+        }
+
+        .technical-header p {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .technical-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .technical-sidebar {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .section-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .section-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            color: #374151;
+            text-align: left;
+            width: 100%;
+        }
+
+        .section-nav-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.2);
+            transform: translateX(4px);
+        }
+
+        .section-icon {
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-weight: 500;
+        }
+
+        .technical-content {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .technical-section-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .detail-item {
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .detail-item h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .detail-item p {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .dimensions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dimension-item {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            color: #374151;
+        }
+
+        .dimension-item strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        /* File Links */
+        .file-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn::before {
+            content: "📄";
+            font-size: 0.9rem;
+        }
+
+        /* Review Section */
+        .review-section {
+            background: rgba(107, 114, 128, 0.05);
+            border: 1px solid rgba(107, 114, 128, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .review-section h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .review-section h4::before {
+            content: "⭐";
+            font-size: 1.2rem;
+        }
+
+        .muted {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        /* Hide Details Button */
+        .btn-secondary {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(107, 114, 128, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary::before {
+            content: "👁️";
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .layout-card-content {
+                padding: 16px;
+            }
+
+            .layout-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .technical-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .technical-sidebar {
+                order: 2;
+            }
+
+            .technical-content {
+                order: 1;
+            }
+
+            .section-nav-item {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+            }
+
+            .file-links {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .layout-card-content {
+                padding: 12px;
+            }
+
+            .homeowner-details,
+            .request-details,
+            .technical-details-section,
+            .review-section {
+                padding: 12px;
+            }
+
+            .technical-layout {
+                gap: 12px;
+            }
+
+            .technical-content {
+                padding: 16px;
+            }
+        }
+
+        /* Smooth animations */
+        .layout-card-content {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hover effects */
+        .homeowner-details:hover,
+        .request-details:hover,
+        .technical-details-section:hover,
+        .review-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="layout-card-content">
+            <!-- Header Section -->
+            <div class="layout-header">
+                <h4 class="layout-title">fg</h4>
+                <span class="badge pending">Proposed</span>
+            </div>
+
+            <!-- Homeowner Details -->
+            <div class="homeowner-details">
+                <h4>Homeowner Details:</h4>
+                <p><strong>Name:</strong> SHIJIN THOMAS MCA2024-2026</p>
+                <p><strong>Email:</strong> shijinthomas2026@mca.ajce.in</p>
+            </div>
+
+            <!-- Request Details -->
+            <div class="request-details">
+                <h4>Request Details:</h4>
+                <p><strong>Plot Size:</strong> 3000</p>
+                <p><strong>Budget:</strong> 75 Lakhs - 1 Crore</p>
+                <div class="requirements-section">
+                    <strong>Requirements:</strong>
+                    <div class="json-card">
+                        <div class="json-card__header json-card__header--clickable">
+                            <div class="json-card__icon">🗂️</div>
+                            <h4 class="json-card__title">Requirements</h4>
+                            <div class="json-card__expand-icon">▶</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Details Section -->
+            <div class="technical-details-section">
+                <div class="technical-details-display">
+                    <div class="technical-header">
+                        <h3>Technical Design Details</h3>
+                        <p>Comprehensive architectural specifications and construction details</p>
+                        <div style="margin-top: 8px;">
+                            <button type="button" class="btn btn-secondary">Hide details</button>
+                        </div>
+                    </div>
+                    <div class="technical-layout">
+                        <div class="technical-sidebar">
+                            <div class="section-nav">
+                                <button class="section-nav-item">
+                                    <span class="section-icon">🏗️</span>
+                                    <span class="section-title">Structural Elements</span>
+                                </button>
+                                <button class="section-nav-item">
+                                    <span class="section-icon">📐</span>
+                                    <span class="section-title">Key Elevations & Sections</span>
+                                </button>
+                                <button class="section-nav-item">
+                                    <span class="section-icon">📋</span>
+                                    <span class="section-title">Construction Notes</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="technical-content">
+                            <div class="technical-section-content">
+                                <div class="detail-item">
+                                    <h4>Floor Plan Layout</h4>
+                                    <p>jhg</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>Room Dimensions</h4>
+                                    <div class="dimensions-list">
+                                        <div class="dimension-item">
+                                            <strong>Living Room:</strong> 20 × 15 ft
+                                        </div>
+                                        <div class="dimension-item">
+                                            <strong>Master Bedroom:</strong> 16 × 12 ft
+                                        </div>
+                                        <div class="dimension-item">
+                                            <strong>Kitchen:</strong> 12 × 10 ft
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Links -->
+            <div class="file-links">
+                <a class="btn" href="/buildhub/backend/uploads/designs/68f5d54b1f0da6.48700673_1760941387.png" target="_blank" rel="noreferrer">View File 1</a>
+            </div>
+
+            <!-- Review Section -->
+            <div class="review-section">
+                <h4>Review</h4>
+                <div class="muted">No review yet</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // JSON card expand functionality
+            const jsonCardHeader = document.querySelector('.json-card__header');
+            const jsonCardExpandIcon = document.querySelector('.json-card__expand-icon');
+            
+            if (jsonCardHeader && jsonCardExpandIcon) {
+                jsonCardHeader.addEventListener('click', function() {
+                    const isExpanded = jsonCardExpandIcon.style.transform === 'rotate(90deg)';
+                    jsonCardExpandIcon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(90deg)';
+                    // Add expand/collapse functionality here
+                });
+            }
+
+            // Section navigation
+            const sectionNavItems = document.querySelectorAll('.section-nav-item');
+            sectionNavItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all items
+                    sectionNavItems.forEach(navItem => navItem.classList.remove('active'));
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                });
+            });
+
+            // Hide details button
+            const hideDetailsBtn = document.querySelector('.btn-secondary');
+            if (hideDetailsBtn) {
+                hideDetailsBtn.addEventListener('click', function() {
+                    const technicalLayout = document.querySelector('.technical-layout');
+                    if (technicalLayout) {
+                        technicalLayout.style.display = technicalLayout.style.display === 'none' ? 'grid' : 'none';
+                        this.textContent = technicalLayout.style.display === 'none' ? 'Show details' : 'Hide details';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

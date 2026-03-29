@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Tracking Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .test-box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #333; }
+        button { padding: 10px 20px; margin: 5px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2980b9; }
+        .response { background: #f8f9fa; padding: 15px; margin-top: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Schedule Tracking System Test</h1>
+        
+        <div class="test-box">
+            <h2>Test 1: Get Schedule</h2>
+            <input type="number" id="pid1" value="1" placeholder="Project ID">
+            <button onclick="testGet()">Get Schedule</button>
+            <div id="result1" class="response"></div>
+        </div>
+
+        <div class="test-box">
+            <h2>Test 2: Update Planned (Contractor)</h2>
+            <input type="number" id="pid2" value="1" placeholder="Project ID">
+            <input type="date" id="pstart" value="2026-03-01">
+            <input type="date" id="pend" value="2026-09-01">
+            <button onclick="testPlanned()">Update Planned</button>
+            <div id="result2" class="response"></div>
+        </div>
+
+        <div class="test-box">
+            <h2>Test 3: Update Actual (Contractor)</h2>
+            <input type="number" id="pid3" value="1" placeholder="Project ID">
+            <input type="date" id="astart" value="2026-03-05">
+            <input type="date" id="aend" placeholder="End (optional)">
+            <button onclick="testActual()">Update Actual</button>
+            <div id="result3" class="response"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testGet() {
+            const pid = document.getElementById('pid1').value;
+            const res = await fetch(`/buildhub/backend/api/project/get_schedule_summary.php?project_id=${pid}`, {credentials: 'include'});
+            document.getElementById('result1').textContent = JSON.stringify(await res.json(), null, 2);
+        }
+
+        async function testPlanned() {
+            const res = await fetch('/buildhub/backend/api/contractor/update_planned_schedule.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    project_id: parseInt(document.getElementById('pid2').value),
+                    planned_start_date: document.getElementById('pstart').value,
+                    planned_end_date: document.getElementById('pend').value
+                })
+            });
+            document.getElementById('result2').textContent = JSON.stringify(await res.json(), null, 2);
+        }
+
+        async function testActual() {
+            const body = {project_id: parseInt(document.getElementById('pid3').value)};
+            const astart = document.getElementById('astart').value;
+            const aend = document.getElementById('aend').value;
+            if (astart) body.actual_start_date = astart;
+            if (aend) body.actual_end_date = aend;
+            
+            const res = await fetch('/buildhub/backend/api/contractor/update_actual_dates.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            document.getElementById('result3').textContent = JSON.stringify(await res.json(), null, 2);
+        }
+    </script>
+</body>
+</html>

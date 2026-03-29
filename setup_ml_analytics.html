@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Analytics Setup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .step {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .step h2 {
+            color: #1e293b;
+            margin-top: 0;
+            font-size: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .result.error {
+            border-left-color: #ef4444;
+            background: #fee2e2;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .success-icon {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        ul {
+            line-height: 1.8;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #10b981;
+            color: white;
+        }
+        .status.pending {
+            background: #f59e0b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 ML Analytics Dashboard Setup</h1>
+        <p class="subtitle">Set up the required database tables for the ML Analytics Dashboard</p>
+
+        <div class="info-box">
+            <h3 style="margin-top: 0;">📋 What This Does</h3>
+            <p>This setup will:</p>
+            <ul>
+                <li>Create <code>ai_predictions</code> table for storing ML predictions</li>
+                <li>Create <code>ai_evaluation_metrics</code> table for model performance</li>
+                <li>Insert sample predictions for your existing projects</li>
+                <li>Insert model performance metrics (94.7% and 98.9% accuracy)</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h2>Step 1: Run Database Setup</h2>
+            <p>Click the button below to create the required tables and insert sample data.</p>
+            <button onclick="runSetup()" id="setupBtn">🚀 Run Setup</button>
+            <div id="setupResult"></div>
+        </div>
+
+        <div class="step">
+            <h2>Step 2: Test the API</h2>
+            <p>After setup, test if the API is working correctly.</p>
+            <button onclick="testAPI()" id="testBtn" disabled>🧪 Test API</button>
+            <div id="testResult"></div>
+        </div>
+
+        <div class="step">
+            <h2>Step 3: View Dashboard</h2>
+            <p>Once everything is set up, you can access the ML Analytics Dashboard.</p>
+            <button onclick="openDemo()" id="demoBtn" disabled>🎨 View Demo</button>
+            <button onclick="openDashboard()" id="dashboardBtn" disabled>📊 Open Dashboard</button>
+        </div>
+
+        <div class="warning-box" id="errorHelp" style="display: none;">
+            <h3 style="margin-top: 0;">⚠️ Troubleshooting</h3>
+            <p>If you see errors:</p>
+            <ul>
+                <li>Make sure your database is running (MySQL/MariaDB)</li>
+                <li>Check database connection in <code>backend/config/database.php</code></li>
+                <li>Ensure your database user has CREATE TABLE permissions</li>
+                <li>If tables already exist, that's OK - the setup is idempotent</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function runSetup() {
+            const btn = document.getElementById('setupBtn');
+            const resultDiv = document.getElementById('setupResult');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Running setup...';
+            resultDiv.innerHTML = '<p style="color: #667eea;">Setting up database tables...</p>';
+            
+            try {
+                const response = await fetch('create_ml_analytics_tables.php');
+                const text = await response.text();
+                
+                if (text.includes('✅') || text.includes('Setup Complete')) {
+                    resultDiv.className = 'result';
+                    resultDiv.innerHTML = `
+                        <div class="success-icon">✅</div>
+                        <h3 style="color: #10b981; text-align: center;">Setup Successful!</h3>
+                        <pre>${text}</pre>
+                    `;
+                    
+                    // Enable next steps
+                    document.getElementById('testBtn').disabled = false;
+                    document.getElementById('demoBtn').disabled = false;
+                    document.getElementById('dashboardBtn').disabled = false;
+                    
+                    btn.textContent = '✅ Setup Complete';
+                } else {
+                    throw new Error('Setup may have failed');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3 style="color: #ef4444;">❌ Setup Error</h3>
+                    <p>${error.message}</p>
+                    <p>Please check the console for more details.</p>
+                `;
+                
+                document.getElementById('errorHelp').style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '🔄 Retry Setup';
+            }
+        }
+
+        async function testAPI() {
+            const btn = document.getElementById('testBtn');
+            const resultDiv = document.getElementById('testResult');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Testing...';
+            resultDiv.innerHTML = '<p style="color: #667eea;">Testing API endpoint...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/ml/get_project_analytics.php?project_id=1');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result';
+                    resultDiv.innerHTML = `
+                        <h3 style="color: #10b981;">✅ API Test Successful!</h3>
+                        <p>The ML Analytics API is working correctly.</p>
+                        <details>
+                            <summary style="cursor: pointer; font-weight: 600; margin: 10px 0;">View Response</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3 style="color: #f59e0b;">⚠️ API Returned Error</h3>
+                        <p>${data.message || 'Unknown error'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3 style="color: #ef4444;">❌ API Test Failed</h3>
+                    <p>${error.message}</p>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🧪 Test API';
+            }
+        }
+
+        function openDemo() {
+            window.open('ml_analytics_dashboard_demo.html', '_blank');
+        }
+
+        function openDashboard() {
+            window.open('/buildhub/frontend/dist/index.html', '_blank');
+        }
+    </script>
+</body>
+</html>

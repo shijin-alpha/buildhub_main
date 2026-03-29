@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Document Management System</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .upload-area {
+            border: 2px dashed #ced4da;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background: rgba(0, 123, 255, 0.05);
+        }
+        .file-list {
+            margin-top: 10px;
+            text-align: left;
+        }
+        .file-item {
+            padding: 5px 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Document Management System Test</h1>
+            <p>Test the contractor stage document management functionality</p>
+        </div>
+
+        <!-- Login Section -->
+        <div class="test-section">
+            <h3>1. Login as Contractor</h3>
+            <p>First, establish a contractor session for testing</p>
+            <div class="form-group">
+                <label>Contractor ID:</label>
+                <input type="number" id="contractorId" value="32" placeholder="Enter contractor ID">
+            </div>
+            <button class="btn" onclick="loginContractor()">Login as Contractor</button>
+            <div id="loginResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Project Selection -->
+        <div class="test-section">
+            <h3>2. Select Project</h3>
+            <p>Choose a project to manage documents for</p>
+            <div class="form-group">
+                <label>Project:</label>
+                <select id="projectSelect">
+                    <option value="">Loading projects...</option>
+                </select>
+            </div>
+            <button class="btn" onclick="loadProjects()">Load Projects</button>
+            <div id="projectResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Document Upload Test -->
+        <div class="test-section">
+            <h3>3. Upload Documents</h3>
+            <p>Test document upload functionality</p>
+            
+            <div class="form-group">
+                <label>Stage:</label>
+                <select id="stageSelect">
+                    <option value="">Select Stage</option>
+                    <option value="Foundation">Foundation</option>
+                    <option value="Structure">Structure</option>
+                    <option value="Brickwork">Brickwork</option>
+                    <option value="Roofing">Roofing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Finishing">Finishing</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Document Type:</label>
+                <select id="documentTypeSelect">
+                    <option value="">Select Type</option>
+                    <option value="receipt">Receipt</option>
+                    <option value="bill">Bill</option>
+                    <option value="invoice">Invoice</option>
+                    <option value="material_certificate">Material Certificate</option>
+                    <option value="quality_report">Quality Report</option>
+                    <option value="safety_certificate">Safety Certificate</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea id="documentDescription" placeholder="Brief description of the documents..." rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Files:</label>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;" onchange="handleFileSelect(event)">
+                    <p>📁 Click to select files or drag and drop</p>
+                    <p style="font-size: 12px; color: #6c757d;">Supported: PDF, JPG, PNG, DOC, DOCX (Max 10MB each)</p>
+                </div>
+                <div id="fileList" class="file-list"></div>
+            </div>
+
+            <button class="btn btn-success" onclick="uploadDocuments()">Upload Documents</button>
+            <div id="uploadResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- View Documents Test -->
+        <div class="test-section">
+            <h3>4. View Documents</h3>
+            <p>Test document retrieval and display</p>
+            
+            <div class="form-group">
+                <label>Filter by Stage:</label>
+                <select id="filterStage">
+                    <option value="">All Stages</option>
+                    <option value="Foundation">Foundation</option>
+                    <option value="Structure">Structure</option>
+                    <option value="Brickwork">Brickwork</option>
+                    <option value="Roofing">Roofing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Finishing">Finishing</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="loadDocuments()">Load Documents</button>
+            <button class="btn btn-warning" onclick="loadDocumentSummary()">Load Summary</button>
+            <div id="documentsResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Document Verification Test -->
+        <div class="test-section">
+            <h3>5. Document Verification</h3>
+            <p>Test document verification functionality (Admin/Inspector)</p>
+            
+            <div class="form-group">
+                <label>Document ID:</label>
+                <input type="number" id="documentId" placeholder="Enter document ID to verify">
+            </div>
+
+            <div class="form-group">
+                <label>Verification Status:</label>
+                <select id="verificationStatus">
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Verification Notes:</label>
+                <textarea id="verificationNotes" placeholder="Verification notes or rejection reason..." rows="3"></textarea>
+            </div>
+
+            <button class="btn btn-success" onclick="verifyDocument()">Verify Document</button>
+            <div id="verificationResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let currentProjectId = '';
+
+        // Login as contractor
+        async function loginContractor() {
+            const contractorId = document.getElementById('contractorId').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            if (!contractorId) {
+                showResult(resultDiv, 'Please enter contractor ID', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/login_contractor_session.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ contractor_id: contractorId })
+                });
+
+                const data = await response.json();
+                showResult(resultDiv, JSON.stringify(data, null, 2), data.success ? 'success' : 'error');
+                
+                if (data.success) {
+                    loadProjects();
+                }
+            } catch (error) {
+                showResult(resultDiv, 'Error: ' + error.message, 'error');
+            }
+        }
+
+        // Load contractor projects
+        async function loadProjects() {
+            const contractorId = document.getElementById('contractorId').value;
+            const resultDiv = document.getElementById('projectResult');
+            const selectElement = document.getElementById('projectSelect');
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${contractorId}`, {
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                showResult(resultDiv, JSON.stringify(data, null, 2), data.success ? 'success' : 'error');
+                
+                if (data.success && data.data.projects) {
+                    selectElement.innerHTML = '<option value="">Select a project...</option>';
+                    data.data.projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = `${project.project_name} - ${project.homeowner_name}`;
+                        selectElement.appendChild(option);
+                    });
+                    
+                    // Auto-select first project
+                    if (data.data.projects.length > 0) {
+                        selectElement.value = data.data.projects[0].id;
+                        currentProjectId = data.data.projects[0].id;
+                    }
+                }
+            } catch (error) {
+                showResult(resultDiv, 'Error: ' + error.message, 'error');
+            }
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            selectedFiles = Array.from(event.target.files);
+            const fileList = document.getElementById('fileList');
+            
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        // Upload documents
+        async function uploadDocuments() {
+            const projectId = document.getElementById('projectSelect').value || currentProjectId;
+            const stage = document.getElementById('stageSelect').value;
+            const documentType = document.getElementById('documentTypeSelect').value;
+            const description = document.getElementById('documentDescription').value;
+            const resultDiv = document.getElementById('uploadResult');
+            
+            if (!projectId || !stage || !documentType || selectedFiles.length === 0) {
+                showResult(resultDiv, 'Please fill all required fields and select files', 'error');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('project_id', projectId);
+                formData.append('stage_name', stage);
+                formData.append('document_type', documentType);
+                formData.append('description', description);
+                
+                selectedFiles.forEach((file, index) => {
+                    formData.append('documents[]', file);
+                });
+
+                const response = await fetch('/buildhub/backend/api/contractor/upload_stage_documents.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                const data = await response.json();
+                showResult(resultDiv, JSON.stringify(data, null, 2), data.success ? 'success' : 'error');
+                
+                if (data.success) {
+                    // Clear form
+                    document.getElementById('stageSelect').value = '';
+                    document.getElementById('documentTypeSelect').value = '';
+                    document.getElementById('documentDescription').value = '';
+                    document.getElementById('fileInput').value = '';
+                    document.getElementById('fileList').innerHTML = '';
+                    selectedFiles = [];
+                }
+            } catch (error) {
+                showResult(resultDiv, 'Error: ' + error.message, 'error');
+            }
+        }
+
+        // Load documents
+        async function loadDocuments() {
+            const projectId = document.getElementById('projectSelect').value || currentProjectId;
+            const filterStage = document.getElementById('filterStage').value;
+            const resultDiv = document.getElementById('documentsResult');
+            
+            if (!projectId) {
+                showResult(resultDiv, 'Please select a project first', 'error');
+                return;
+            }
+
+            try {
+                let url = `/buildhub/backend/api/contractor/get_stage_documents.php?project_id=${projectId}`;
+                if (filterStage) {
+                    url += `&stage_name=${encodeURIComponent(filterStage)}`;
+                }
+
+                const response = await fetch(url, {
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                showResult(resultDiv, JSON.stringify(data, null, 2), data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult(resultDiv, 'Error: ' + error.message, 'error');
+            }
+        }
+
+        // Load document summary
+        async function loadDocumentSummary() {
+            const projectId = document.getElementById('projectSelect').value || currentProjectId;
+            const resultDiv = document.getElementById('documentsResult');
+            
+            if (!projectId) {
+                showResult(resultDiv, 'Please select a project first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/buildhub/backend/api/contractor/get_stage_documents.php?project_id=${projectId}`, {
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show only summary data
+                    const summary = {
+                        total_documents: data.data.total_documents,
+                        summary: data.data.summary,
+                        stage_completion: data.data.stage_completion
+                    };
+                    showResult(resultDiv, JSON.stringify(summary, null, 2), 'success');
+                } else {
+                    showResult(resultDiv, JSON.stringify(data, null, 2), 'error');
+                }
+            } catch (error) {
+                showResult(resultDiv, 'Error: ' + error.message, 'error');
+            }
+        }
+
+        // Verify document
+        async function verifyDocument() {
+            const documentId = document.getElementById('documentId').value;
+            const verificationStatus = document.getElementById('verificationStatus').value;
+            const verificationNotes = document.getElementById('verificationNotes').value;
+            const resultDiv = document.getElementById('verificationResult');
+            
+            if (!documentId) {
+                showResult(resultDiv, 'Please enter document ID', 'error');
+                return;
+            }
+
+            if (verificationStatus === 'rejected' && !verificationNotes) {
+                showResult(resultDiv, 'Rejection reason is required', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/verify_stage_documents.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        document_id: documentId,
+                        verification_status: verificationStatus,
+                        verification_notes: verificationNotes
+                    })
+                });
+
+                const data = await response.json();
+                showResult(resultDiv, JSON.stringify(data, null, 2), data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult(resultDiv, 'Error: ' + error.message, 'error');
+            }
+        }
+
+        // Helper function to show results
+        function showResult(element, text, type) {
+            element.textContent = text;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        // Update project selection
+        document.getElementById('projectSelect').addEventListener('change', function() {
+            currentProjectId = this.value;
+        });
+
+        // Auto-load projects on page load
+        window.addEventListener('load', function() {
+            // Try to load projects if contractor ID is set
+            const contractorId = document.getElementById('contractorId').value;
+            if (contractorId) {
+                loadProjects();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #005a87; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .debug { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; margin-top: 10px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>Receipt Upload Test</h1>
+    <p>Use this page to test receipt upload functionality directly.</p>
+    
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="payment_id">Payment ID:</label>
+            <input type="number" id="payment_id" name="payment_id" value="24" required>
+            <small>Use Payment ID 24 (belongs to homeowner 32)</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="transaction_reference">Transaction Reference:</label>
+            <input type="text" id="transaction_reference" name="transaction_reference" value="TEST123456" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="payment_date">Payment Date:</label>
+            <input type="date" id="payment_date" name="payment_date" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="payment_method">Payment Method:</label>
+            <select id="payment_method" name="payment_method">
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="upi">UPI</option>
+                <option value="cash">Cash</option>
+                <option value="cheque">Cheque</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">Notes:</label>
+            <textarea id="notes" name="notes" rows="3">Test receipt upload</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="receipt_files">Receipt Files:</label>
+            <input type="file" id="receipt_files" name="receipt_files[]" multiple accept="image/*,.pdf" required>
+            <small>Select one or more image/PDF files (max 10MB each)</small>
+        </div>
+        
+        <button type="submit">Upload Receipt</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        // Set default date to today
+        document.getElementById("payment_date").value = new Date().toISOString().split("T")[0];
+        
+        document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "<p>Uploading...</p>";
+            
+            const formData = new FormData(this);
+            
+            // Log form data for debugging
+            console.log("Form data:");
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+            
+            try {
+                const response = await fetch("/buildhub/backend/api/homeowner/upload_payment_receipt_enhanced.php", {
+                    method: "POST",
+                    credentials: "include",
+                    body: formData
+                });
+                
+                console.log("Response status:", response.status);
+                console.log("Response headers:", response.headers);
+                
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    console.log("Response data:", data);
+                    
+                    if (data.success) {
+                        resultDiv.innerHTML = `
+                            <div class="result success">
+                                <h3>✅ Upload Successful!</h3>
+                                <p>${data.message}</p>
+                                <p><strong>Files uploaded:</strong> ${data.data.uploaded_files.length}</p>
+                                <ul>
+                                    ${data.data.uploaded_files.map(f => `<li>${f.original_name} (${f.file_size} bytes)</li>`).join("")}
+                                </ul>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="result error">
+                                <h3>❌ Upload Failed</h3>
+                                <p>${data.message}</p>
+                                ${data.errors ? `<ul>${data.errors.map(e => `<li>${e}</li>`).join("")}</ul>` : ""}
+                                ${data.debug ? `<div class="debug"><strong>Debug Info:</strong><pre>${JSON.stringify(data.debug, null, 2)}</pre></div>` : ""}
+                            </div>
+                        `;
+                    }
+                } else {
+                    const text = await response.text();
+                    console.error("Non-JSON response:", text);
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Server Error</h3>
+                            <p>Server returned non-JSON response</p>
+                            <div class="debug"><pre>${text}</pre></div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("Upload error:", error);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Network Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

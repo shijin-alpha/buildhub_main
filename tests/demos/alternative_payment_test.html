@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alternative Payment Methods - BuildHub</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .bypass-notice {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .bypass-notice h3 {
+            margin-top: 0;
+        }
+        
+        .payment-methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .method-card {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .method-card:hover {
+            border-color: #007bff;
+            background: #e3f2fd;
+            transform: translateY(-3px);
+        }
+        
+        .method-card.selected {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .method-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .method-name {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .method-details {
+            font-size: 14px;
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .method-limits {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .method-limits .limit-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .recommended-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ffc107;
+            color: #212529;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .amount-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 25px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+            border-radius: 10px;
+            border-left: 5px solid #3399cc;
+        }
+        
+        .payment-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 18px 35px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-button:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-2px);
+        }
+        
+        .payment-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .instructions-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .instructions-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+        
+        .instructions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 15px;
+        }
+        
+        .close-instructions {
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .instruction-steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding: 0;
+        }
+        
+        .instruction-steps li {
+            counter-increment: step-counter;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            position: relative;
+            padding-left: 50px;
+        }
+        
+        .instruction-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            background: #007bff;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .bank-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .detail-item {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .detail-item label {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .copyable {
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+        }
+        
+        .copyable:hover {
+            background: #fff3cd;
+        }
+        
+        .copyable.copied {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .upi-qr-code {
+            max-width: 200px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Alternative Payment Methods</h1>
+            <p>Bypass Razorpay limits with multiple payment options</p>
+        </div>
+        
+        <div class="bypass-notice">
+            <h3>✅ No More Razorpay Limits!</h3>
+            <p>Pay any amount using bank transfer, UPI, cash, or cheque - completely bypassing online payment gateway restrictions.</p>
+        </div>
+        
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="paymentType">Payment Type:</label>
+                <select id="paymentType" required>
+                    <option value="stage_payment">Stage Payment to Contractor</option>
+                    <option value="technical_details">Technical Details Unlock</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">Payment Amount (₹):</label>
+                <input type="number" id="amount" step="0.01" min="1" value="1000000" required>
+                <small>Try any amount - no Razorpay limits!</small>
+            </div>
+            
+            <div class="amount-display" id="amountDisplay">
+                ₹10,00,000.00
+            </div>
+            
+            <h3>💳 Available Payment Methods</h3>
+            <div class="payment-methods-grid" id="methodsGrid">
+                <!-- Payment methods will be populated here -->
+            </div>
+            
+            <div class="form-group">
+                <label for="notes">Additional Notes (Optional):</label>
+                <textarea id="notes" rows="3" placeholder="Any special instructions or notes for the contractor..."></textarea>
+            </div>
+            
+            <button type="submit" class="payment-button" id="payButton">
+                🚀 Proceed with Selected Payment Method
+            </button>
+        </form>
+        
+        <div class="status" id="status"></div>
+    </div>
+    
+    <!-- Instructions Modal -->
+    <div class="instructions-modal" id="instructionsModal">
+        <div class="instructions-content">
+            <div class="instructions-header">
+                <h2>Payment Instructions</h2>
+                <span class="close-instructions" id="closeInstructions">&times;</span>
+            </div>
+            <div id="instructionsBody">
+                <!-- Instructions will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../../frontend/src/utils/alternativePaymentHandler.js"></script>
+    <script>
+        // Initialize alternative payment handler
+        const paymentHandler = new AlternativePaymentHandler();
+        
+        // Form elements
+        const form = document.getElementById('paymentForm');
+        const amountInput = document.getElementById('amount');
+        const payButton = document.getElementById('payButton');
+        const statusDiv = document.getElementById('status');
+        const amountDisplay = document.getElementById('amountDisplay');
+        const methodsGrid = document.getElementById('methodsGrid');
+        const instructionsModal = document.getElementById('instructionsModal');
+        const instructionsBody = document.getElementById('instructionsBody');
+        
+        let selectedMethod = null;
+        let availableMethods = {};
+        
+        // Format amount for display
+        function formatAmount(amount) {
+            return '₹' + amount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // Update display when amount changes
+        async function updateDisplay() {
+            const amount = parseFloat(amountInput.value) || 0;
+            
+            // Update amount display
+            amountDisplay.textContent = formatAmount(amount);
+            
+            if (amount > 0) {
+                try {
+                    // Get available payment methods
+                    const response = await fetch('/backend/api/homeowner/get_payment_methods.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ amount: amount })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        availableMethods = result.data.available_methods;
+                        displayPaymentMethods(result.data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching payment methods:', error);
+                }
+            }
+        }
+        
+        // Display payment methods
+        function displayPaymentMethods(data) {
+            methodsGrid.innerHTML = '';
+            
+            Object.entries(data.available_methods).forEach(([key, method]) => {
+                const methodCard = document.createElement('div');
+                methodCard.className = `method-card ${key === data.recommended_method ? 'recommended' : ''}`;
+                methodCard.dataset.method = key;
+                
+                let statusBadge = '';
+                if (method.status === 'unavailable') {
+                    statusBadge = '<div style="color: #dc3545; font-weight: bold;">❌ Unavailable</div>';
+                    methodCard.style.opacity = '0.5';
+                    methodCard.style.cursor = 'not-allowed';
+                } else if (method.status === 'limited') {
+                    statusBadge = '<div style="color: #ffc107; font-weight: bold;">⚠️ Limited</div>';
+                }
+                
+                methodCard.innerHTML = `
+                    ${key === data.recommended_method ? '<div class="recommended-badge">⭐ Recommended</div>' : ''}
+                    <div class="method-icon">${method.icon}</div>
+                    <div class="method-name">${method.name}</div>
+                    <div class="method-details">${method.description}</div>
+                    ${statusBadge}
+                    <div class="method-limits">
+                        <div class="limit-item">
+                            <span>Max Amount:</span>
+                            <span>${formatAmount(method.max_amount)}</span>
+                        </div>
+                        <div class="limit-item">
+                            <span>Processing:</span>
+                            <span>${method.processing_time}</span>
+                        </div>
+                        <div class="limit-item">
+                            <span>Fees:</span>
+                            <span>${method.fees}</span>
+                        </div>
+                    </div>
+                `;
+                
+                if (method.status !== 'unavailable') {
+                    methodCard.addEventListener('click', () => {
+                        // Remove previous selection
+                        document.querySelectorAll('.method-card').forEach(card => {
+                            card.classList.remove('selected');
+                        });
+                        
+                        // Select this method
+                        methodCard.classList.add('selected');
+                        selectedMethod = key;
+                        
+                        // Update button text
+                        payButton.innerHTML = `🚀 Pay ${formatAmount(parseFloat(amountInput.value))} via ${method.name}`;
+                    });
+                }
+                
+                methodsGrid.appendChild(methodCard);
+            });
+        }
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 15000);
+            }
+        }
+        
+        // Show payment instructions
+        function showInstructions(instructions, bankDetails, amount) {
+            let html = `
+                <div class="instructions-section">
+                    <h3>${instructions.title}</h3>
+                    <div class="processing-time-badge" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin: 15px 0;">
+                        <strong>⏱️ Processing Time:</strong> ${instructions.processing_time}
+                    </div>
+                    
+                    <h4>📋 Step-by-Step Instructions:</h4>
+                    <ol class="instruction-steps">
+            `;
+            
+            instructions.steps.forEach(step => {
+                html += `<li>${step}</li>`;
+            });
+            
+            html += '</ol>';
+            
+            // Add bank details if available
+            if (bankDetails) {
+                html += `
+                    <h4>🏦 Payment Details:</h4>
+                    <div class="bank-details-grid">
+                        <div class="detail-item">
+                            <label>Account Name:</label>
+                            <div class="copyable" data-copy="${bankDetails.account_name}">${bankDetails.account_name} 📋</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Account Number:</label>
+                            <div class="copyable" data-copy="${bankDetails.account_number}">${bankDetails.account_number} 📋</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>IFSC Code:</label>
+                            <div class="copyable" data-copy="${bankDetails.ifsc_code}">${bankDetails.ifsc_code} 📋</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Bank Name:</label>
+                            <div>${bankDetails.bank_name}</div>
+                        </div>
+                        ${bankDetails.upi_id ? `
+                        <div class="detail-item">
+                            <label>UPI ID:</label>
+                            <div class="copyable" data-copy="${bankDetails.upi_id}">${bankDetails.upi_id} 📋</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Add UPI QR code if UPI payment
+                if (bankDetails.upi_id && instructions.title.includes('UPI')) {
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${bankDetails.upi_id}&am=${amount}&tn=BuildHub Payment`)}`;
+                    html += `
+                        <div style="text-align: center; margin: 20px 0;">
+                            <h4>📱 UPI QR Code:</h4>
+                            <img src="${qrUrl}" alt="UPI QR Code" class="upi-qr-code">
+                            <p>Scan this QR code with any UPI app</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Add safety note if present
+            if (instructions.safety_note) {
+                html += `
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107;">
+                        <h4>⚠️ Safety Note:</h4>
+                        <p>${instructions.safety_note}</p>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;">
+                    <h4>✅ Next Steps:</h4>
+                    <p>After completing the payment, upload your receipt/proof for verification. 
+                    The payment will be marked as completed once verified.</p>
+                </div>
+            </div>
+            `;
+            
+            instructionsBody.innerHTML = html;
+            
+            // Add copy functionality
+            instructionsBody.querySelectorAll('.copyable').forEach(element => {
+                element.addEventListener('click', () => {
+                    const textToCopy = element.dataset.copy;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        element.classList.add('copied');
+                        element.innerHTML = element.innerHTML.replace('📋', '✅ Copied!');
+                        setTimeout(() => {
+                            element.classList.remove('copied');
+                            element.innerHTML = element.innerHTML.replace('✅ Copied!', '📋');
+                        }, 2000);
+                    });
+                });
+            });
+            
+            instructionsModal.style.display = 'block';
+        }
+        
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!selectedMethod) {
+                showStatus('Please select a payment method first', 'error');
+                return;
+            }
+            
+            payButton.disabled = true;
+            payButton.innerHTML = '⏳ Setting up payment...';
+            
+            const paymentData = {
+                payment_type: document.getElementById('paymentType').value,
+                reference_id: 1, // Test reference ID
+                amount: parseFloat(amountInput.value),
+                payment_method: selectedMethod,
+                notes: document.getElementById('notes').value
+            };
+            
+            try {
+                const response = await fetch('/backend/api/homeowner/initiate_alternative_payment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Payment initiation failed');
+                }
+                
+                const data = result.data;
+                
+                showStatus(`
+                    ✅ <strong>Payment Setup Complete!</strong><br><br>
+                    <strong>Method:</strong> ${data.method_details.name}<br>
+                    <strong>Amount:</strong> ${formatAmount(data.amount)}<br>
+                    <strong>Payment ID:</strong> ${data.payment_id}<br><br>
+                    Follow the instructions shown below to complete your payment.
+                `, 'success');
+                
+                // Show payment instructions
+                showInstructions(data.instructions, data.bank_details, data.amount);
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                showStatus(`
+                    ❌ <strong>Payment Setup Failed</strong><br><br>
+                    <strong>Error:</strong> ${error.message}<br><br>
+                    Please try again or contact support.
+                `, 'error');
+            } finally {
+                payButton.disabled = false;
+                payButton.innerHTML = '🚀 Proceed with Selected Payment Method';
+            }
+        });
+        
+        // Close instructions modal
+        document.getElementById('closeInstructions').addEventListener('click', () => {
+            instructionsModal.style.display = 'none';
+        });
+        
+        instructionsModal.addEventListener('click', (e) => {
+            if (e.target === instructionsModal) {
+                instructionsModal.style.display = 'none';
+            }
+        });
+        
+        // Add event listener for real-time updates
+        amountInput.addEventListener('input', updateDisplay);
+        
+        // Initial display update
+        updateDisplay();
+        
+        // Show initial info
+        showStatus(`
+            🎉 <strong>Alternative Payment System Ready!</strong><br><br>
+            No more Razorpay limits! Choose from multiple payment methods:<br>
+            • 🏦 Bank Transfer - Up to ₹1 crore<br>
+            • 📱 UPI Payment - Up to ₹10 lakhs<br>
+            • 💵 Cash Payment - Up to ₹2 lakhs<br>
+            • 📝 Cheque Payment - Up to ₹5 crores<br><br>
+            Enter your amount and select a payment method to get started.
+        `, 'success');
+    </script>
+</body>
+</html>

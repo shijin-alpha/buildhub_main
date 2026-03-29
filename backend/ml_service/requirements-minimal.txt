@@ -1,0 +1,5 @@
+# Minimal requirements - only FastAPI and web framework
+# Assumes ML packages (numpy, pandas, scikit-learn) are already installed
+fastapi
+uvicorn[standard]
+pydantic

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Input Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .test-section h3 { margin-top: 0; color: #333; }
+        input { padding: 8px; margin: 10px; width: 150px; font-size: 16px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 8px 16px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Progress Input Fix Test</h1>
+        <p>Testing the fix for the issue where entering "5" changes to "4.9" or other values.</p>
+        
+        <div class="test-section">
+            <h3>Test 1: Original Problem (step="0.01")</h3>
+            <label>Enter 5:</label>
+            <input type="number" id="original" step="0.01" min="0" placeholder="Enter 5">
+            <div class="result" id="result-original"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test 2: Fixed Version (step="any")</h3>
+            <label>Enter 5:</label>
+            <input type="number" id="fixed" step="any" min="0" placeholder="Enter 5">
+            <div class="result" id="result-fixed"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test 3: No Step Attribute</h3>
+            <label>Enter 5:</label>
+            <input type="number" id="nostep" min="0" placeholder="Enter 5">
+            <div class="result" id="result-nostep"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test 4: Text Input (Control)</h3>
+            <label>Enter 5:</label>
+            <input type="text" id="text" placeholder="Enter 5">
+            <div class="result" id="result-text"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Comprehensive Test</h3>
+            <p>Test multiple values to see which ones get changed:</p>
+            <button onclick="runComprehensiveTest()">Run Test</button>
+            <div id="comprehensive-results"></div>
+        </div>
+    </div>
+
+    <script>
+        function setupTest(inputId, resultId) {
+            const input = document.getElementById(inputId);
+            const result = document.getElementById(resultId);
+            
+            function updateResult() {
+                const isCorrect = input.value === '5' || input.value === '';
+                result.innerHTML = `
+                    <strong>Value:</strong> "${input.value}"<br>
+                    <strong>Length:</strong> ${input.value.length}<br>
+                    <strong>Type:</strong> ${input.type}<br>
+                    <strong>Step:</strong> ${input.step || 'none'}<br>
+                    <strong>Status:</strong> ${input.value === '' ? 'Empty' : (input.value === '5' ? '✅ Correct' : '❌ Changed')}
+                `;
+                
+                result.className = 'result ' + (input.value === '' ? '' : (input.value === '5' ? 'success' : 'error'));
+            }
+            
+            input.addEventListener('input', updateResult);
+            input.addEventListener('change', updateResult);
+            input.addEventListener('blur', updateResult);
+            
+            updateResult();
+        }
+        
+        function runComprehensiveTest() {
+            const testValues = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '5.0', '5.00', '4.9', '5.1'];
+            const resultsDiv = document.getElementById('comprehensive-results');
+            
+            let results = '<h4>Test Results:</h4><table border="1" style="width:100%; border-collapse: collapse;"><tr><th>Input</th><th>step="0.01"</th><th>step="any"</th><th>no step</th></tr>';
+            
+            testValues.forEach(value => {
+                // Test with step="0.01"
+                const input1 = document.createElement('input');
+                input1.type = 'number';
+                input1.step = '0.01';
+                input1.min = '0';
+                input1.value = value;
+                
+                // Test with step="any"
+                const input2 = document.createElement('input');
+                input2.type = 'number';
+                input2.step = 'any';
+                input2.min = '0';
+                input2.value = value;
+                
+                // Test with no step
+                const input3 = document.createElement('input');
+                input3.type = 'number';
+                input3.min = '0';
+                input3.value = value;
+                
+                // Simulate blur event to trigger validation
+                input1.dispatchEvent(new Event('blur'));
+                input2.dispatchEvent(new Event('blur'));
+                input3.dispatchEvent(new Event('blur'));
+                
+                const changed1 = input1.value !== value;
+                const changed2 = input2.value !== value;
+                const changed3 = input3.value !== value;
+                
+                results += `<tr>
+                    <td>${value}</td>
+                    <td style="background: ${changed1 ? '#f8d7da' : '#d4edda'}">${input1.value} ${changed1 ? '❌' : '✅'}</td>
+                    <td style="background: ${changed2 ? '#f8d7da' : '#d4edda'}">${input2.value} ${changed2 ? '❌' : '✅'}</td>
+                    <td style="background: ${changed3 ? '#f8d7da' : '#d4edda'}">${input3.value} ${changed3 ? '❌' : '✅'}</td>
+                </tr>`;
+            });
+            
+            results += '</table>';
+            resultsDiv.innerHTML = results;
+        }
+        
+        // Setup all tests
+        setupTest('original', 'result-original');
+        setupTest('fixed', 'result-fixed');
+        setupTest('nostep', 'result-nostep');
+        setupTest('text', 'result-text');
+    </script>
+</body>
+</html>

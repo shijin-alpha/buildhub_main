@@ -1,0 +1,649 @@
+/* 🎨 Minimal Architect Selection UI */
+
+.architect-selection-container {
+  background: transparent;
+  border-radius: 0;
+  padding: 16px;
+  box-shadow: none;
+  border: none;
+  margin: 0;
+  position: relative;
+  overflow: visible;
+}
+
+.architect-selection-container::before {
+  display: none;
+}
+
+/* 📋 Simple Header Section */
+.architect-selection-header {
+  margin-bottom: 20px;
+  text-align: left;
+  position: relative;
+}
+
+.architect-selection-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.architect-selection-title::before {
+  display: none;
+}
+
+.architect-selection-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 0;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.ai-recommendation-badge {
+  display: none;
+}
+
+/* 🔍 Simple Search Section */
+.architect-search-section {
+  margin-bottom: 20px;
+}
+
+.search-bar-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.search-input-group {
+  position: relative;
+  flex: 1;
+}
+
+.search-input-group .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 14px;
+  z-index: 2;
+  transition: none;
+}
+
+.search-input-group input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #ffffff;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 400;
+}
+
+.search-input-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: none;
+  transform: none;
+}
+
+.search-input-group input:focus + .search-icon {
+  color: #3b82f6;
+  transform: translateY(-50%);
+}
+
+.search-input-group input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.filter-toggle-btn {
+  background: #f9fafb;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  position: relative;
+}
+
+.filter-toggle-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  transform: none;
+  box-shadow: none;
+}
+
+.filter-indicator {
+  display: none;
+}
+
+/* 🎯 Simple Architect Grid */
+.architect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* 💼 Simple Architect Cards */
+.architect-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.architect-card::before {
+  display: none;
+}
+
+.architect-card:hover {
+  border-color: #3b82f6;
+  transform: none;
+  box-shadow: none;
+}
+
+.architect-card.selected {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.architect-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.architect-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.architect-card.disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: #e5e7eb;
+}
+
+/* 👤 Simple Card Header */
+.architect-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.architect-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.architect-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: none;
+  border: none;
+  transition: none;
+}
+
+.architect-card:hover .architect-avatar {
+  transform: none;
+  box-shadow: none;
+}
+
+.architect-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.architect-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1f2937;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.architect-email {
+  color: #6b7280;
+  font-size: 13px;
+  word-break: break-all;
+  font-weight: 400;
+}
+
+.architect-company {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* ⭐ Simple Rating Section */
+.architect-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.rating-stars {
+  color: #f59e0b;
+  font-size: 14px;
+  letter-spacing: 1px;
+  transition: none;
+}
+
+.architect-card:hover .rating-stars {
+  transform: none;
+}
+
+.rating-text {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.rating-count {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* 🏷️ Simple Tags Section */
+.architect-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.architect-tag {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  transition: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.architect-tag:hover {
+  background: #e5e7eb;
+  transform: none;
+  box-shadow: none;
+}
+
+.architect-tag.specialization {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.architect-tag.experience {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+/* 🎯 Simple Action Button */
+.architect-action-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: none;
+}
+
+.architect-action-btn:hover {
+  background: #2563eb;
+  transform: none;
+  box-shadow: none;
+}
+
+.architect-action-btn:active {
+  transform: none;
+}
+
+/* 🏷️ Status Badges */
+.status-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #ef4444;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-badge.assigned {
+  background: #f59e0b;
+}
+
+.status-badge.unavailable {
+  background: #6b7280;
+}
+
+/* Selection Indicator */
+.selection-indicator {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  background: white;
+  transition: none;
+}
+
+.architect-card.selected .selection-indicator {
+  border-color: #10b981;
+  background: #10b981;
+}
+
+.architect-card.selected .selection-indicator::after {
+  content: '✓';
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Advanced Filters */
+.advanced-filters {
+  display: none;
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.advanced-filters.active {
+  display: block;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.filter-actions button {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filter-actions .btn-clear {
+  background: white;
+  color: #6b7280;
+}
+
+.filter-actions .btn-clear:hover {
+  background: #f9fafb;
+}
+
+.filter-actions .btn-apply {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.filter-actions .btn-apply:hover {
+  background: #2563eb;
+}
+
+/* Empty State */
+.architect-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.architect-empty-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.architect-empty-state p {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.architect-empty-state button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Loading State */
+.architect-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .architect-selection-container {
+    padding: 12px;
+  }
+  
+  .architect-selection-title {
+    font-size: 18px;
+  }
+  
+  .architect-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .search-bar-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .filter-toggle-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .architect-selection-container {
+    padding: 8px;
+  }
+  
+  .architect-card {
+    padding: 12px;
+  }
+  
+  .architect-info {
+    gap: 8px;
+  }
+  
+  .architect-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+}
+
+/* Modal-specific styling */
+.form-modal .architect-selection-container {
+  margin: 0;
+  border-radius: 0;
+  padding: 12px;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.form-modal .architect-selection-container .architect-selection-title {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.form-modal .architect-selection-container .architect-selection-subtitle {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.form-modal .architect-selection-container .architect-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.form-modal .architect-selection-container .architect-card {
+  padding: 12px;
+}
+
+@media (max-width: 768px) {
+  .form-modal .architect-selection-container {
+    padding: 8px;
+  }
+}
+
+/* Overlap Prevention */
+.architect-selection-container {
+  isolation: isolate;
+}
+
+.architect-selection-container * {
+  position: relative;
+  z-index: auto;
+}
+
+/* Ensure no sticky positioning conflicts */
+.architect-selection-container .search-bar-container,
+.architect-selection-container .advanced-filters,
+.architect-selection-container .architect-grid {
+  position: static;
+  z-index: auto;
+}

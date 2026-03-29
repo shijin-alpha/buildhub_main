@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Receipt Upload - Direct</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Receipt Upload</h1>
+    <p>This will test the receipt upload functionality directly.</p>
+    
+    <form id="uploadForm">
+        <div class="form-group">
+            <label>Payment ID:</label>
+            <input type="number" name="payment_id" value="13" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Transaction Reference:</label>
+            <input type="text" name="transaction_reference" value="TEST123456789" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Payment Date:</label>
+            <input type="date" name="payment_date" value="2026-02-01" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Payment Method:</label>
+            <select name="payment_method" required>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="upi">UPI Payment</option>
+                <option value="cash">Cash Payment</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Notes:</label>
+            <textarea name="notes" rows="3">Test receipt upload from direct form</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Receipt File:</label>
+            <input type="file" name="receipt_files[]" accept="image/*,.pdf" multiple required>
+        </div>
+        
+        <button type="submit">📤 Upload Receipt</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">Uploading...</div>';
+            
+            try {
+                const formData = new FormData(this);
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/upload_payment_receipt.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Success!</h3>
+                            <p>${data.message}</p>
+                            <p><strong>Payment ID:</strong> ${data.data.payment_id}</p>
+                            <p><strong>Transaction Reference:</strong> ${data.data.transaction_reference}</p>
+                            <p><strong>Files Uploaded:</strong> ${data.data.uploaded_files.length}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error</h3>
+                            <p>${data.message}</p>
+                            ${data.debug ? '<pre>' + JSON.stringify(data.debug, null, 2) + '</pre>' : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Network Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

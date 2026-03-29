@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Estimate to Project Workflow Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .workflow-step {
+            background: white;
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .workflow-step h4 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .step-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .step-pending {
+            background: #ffc107;
+            color: #212529;
+        }
+        .step-success {
+            background: #28a745;
+            color: white;
+        }
+        .step-error {
+            background: #dc3545;
+            color: white;
+        }
+        .project-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .project-card h5 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .project-details {
+            font-size: 14px;
+            color: #666;
+        }
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #28a745;
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏗️ Complete Estimate to Project Workflow Test</h1>
+        <p>Test the complete flow: Homeowner accepts estimate → Email sent → Project created → Progress updates</p>
+    </div>
+
+    <div class="container">
+        <div class="workflow-step">
+            <h4>Step 1: Homeowner Accepts Estimate <span id="step1-status" class="step-status step-pending">Pending</span></h4>
+            <div class="form-group">
+                <label>Homeowner ID:</label>
+                <input type="number" id="homeowner_id" value="1" placeholder="Enter homeowner ID">
+            </div>
+            <div class="form-group">
+                <label>Estimate ID:</label>
+                <input type="number" id="estimate_id" value="1" placeholder="Enter estimate ID">
+            </div>
+            <div class="form-group">
+                <label>Action:</label>
+                <select id="action">
+                    <option value="accept">Accept Estimate</option>
+                    <option value="changes">Request Changes</option>
+                    <option value="reject">Reject Estimate</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Message (Optional):</label>
+                <textarea id="message" placeholder="Optional message from homeowner" rows="3"></textarea>
+            </div>
+            <button class="btn" onclick="respondToEstimate()">Submit Response</button>
+            <div id="step1-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="workflow-step">
+            <h4>Step 2: Verify Project Creation <span id="step2-status" class="step-status step-pending">Pending</span></h4>
+            <div class="form-group">
+                <label>Contractor ID:</label>
+                <input type="number" id="contractor_id" value="1" placeholder="Enter contractor ID">
+            </div>
+            <button class="btn" onclick="checkProjects()">Check Created Projects</button>
+            <div id="step2-result" class="result" style="display: none;"></div>
+            <div id="projects-list"></div>
+        </div>
+
+        <div class="workflow-step">
+            <h4>Step 3: Verify Project in Progress Update Selection <span id="step3-status" class="step-status step-pending">Pending</span></h4>
+            <button class="btn" onclick="checkAssignedProjects()">Check Available Projects for Progress Updates</button>
+            <div id="step3-result" class="result" style="display: none;"></div>
+            <div id="assigned-projects-list"></div>
+        </div>
+
+        <div class="workflow-step">
+            <h4>Step 4: Submit Progress Update <span id="step4-status" class="step-status step-pending">Pending</span></h4>
+            <div class="form-group">
+                <label>Project ID (from step 2 or 3):</label>
+                <input type="number" id="progress_project_id" placeholder="Enter project ID">
+            </div>
+            <div class="form-group">
+                <label>Stage Name:</label>
+                <select id="stage_name">
+                    <option value="Foundation">Foundation</option>
+                    <option value="Structure">Structure</option>
+                    <option value="Brickwork">Brickwork</option>
+                    <option value="Roofing">Roofing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Finishing">Finishing</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Stage Status:</label>
+                <select id="stage_status">
+                    <option value="Not Started">Not Started</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Completion Percentage:</label>
+                <input type="number" id="completion_percentage" min="0" max="100" value="25" placeholder="0-100">
+            </div>
+            <div class="form-group">
+                <label>Remarks:</label>
+                <textarea id="remarks" placeholder="Progress update remarks" rows="3"></textarea>
+            </div>
+            <button class="btn" onclick="submitProgressUpdate()">Submit Progress Update</button>
+            <div id="step4-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="workflow-step">
+            <h4>Step 5: Verify Project Status Update <span id="step5-status" class="step-status step-pending">Pending</span></h4>
+            <button class="btn" onclick="verifyProjectStatus()">Check Project Status After Update</button>
+            <div id="step5-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Complete Workflow Test</h3>
+            <p>Run all steps automatically to test the complete workflow:</p>
+            <button class="btn btn-success" onclick="runCompleteWorkflow()">🚀 Run Complete Workflow Test</button>
+            <div id="workflow-progress" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let workflowData = {};
+
+        async function respondToEstimate() {
+            const homeownerId = document.getElementById('homeowner_id').value;
+            const estimateId = document.getElementById('estimate_id').value;
+            const action = document.getElementById('action').value;
+            const message = document.getElementById('message').value;
+
+            if (!homeownerId || !estimateId) {
+                showResult('step1-result', 'Please enter homeowner ID and estimate ID', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/respond_to_estimate.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        homeowner_id: parseInt(homeownerId),
+                        estimate_id: parseInt(estimateId),
+                        action: action,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('step1-result', `✅ Estimate response submitted successfully!\nAction: ${action}\nEmails sent to contractor and homeowner.`, 'success');
+                    updateStepStatus('step1-status', 'success');
+                    workflowData.estimateId = estimateId;
+                    workflowData.homeownerId = homeownerId;
+                } else {
+                    showResult('step1-result', `❌ Error: ${data.message}`, 'error');
+                    updateStepStatus('step1-status', 'error');
+                }
+            } catch (error) {
+                showResult('step1-result', `❌ Network error: ${error.message}`, 'error');
+                updateStepStatus('step1-status', 'error');
+            }
+        }
+
+        async function checkProjects() {
+            const contractorId = document.getElementById('contractor_id').value;
+
+            if (!contractorId) {
+                showResult('step2-result', 'Please enter contractor ID', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/buildhub/backend/api/contractor/get_projects.php?contractor_id=${contractorId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.projects) {
+                    const projects = data.data.projects;
+                    showResult('step2-result', `✅ Found ${projects.length} projects for contractor`, 'success');
+                    updateStepStatus('step2-status', 'success');
+                    workflowData.contractorId = contractorId;
+                    
+                    // Display projects
+                    displayProjects(projects, 'projects-list');
+                    
+                    // Auto-fill project ID for progress update
+                    if (projects.length > 0) {
+                        document.getElementById('progress_project_id').value = projects[0].id || projects[0].project_id;
+                    }
+                } else {
+                    showResult('step2-result', `❌ Error: ${data.message || 'No projects found'}`, 'error');
+                    updateStepStatus('step2-status', 'error');
+                }
+            } catch (error) {
+                showResult('step2-result', `❌ Network error: ${error.message}`, 'error');
+                updateStepStatus('step2-status', 'error');
+            }
+        }
+
+        async function checkAssignedProjects() {
+            const contractorId = document.getElementById('contractor_id').value || workflowData.contractorId;
+
+            if (!contractorId) {
+                showResult('step3-result', 'Please enter contractor ID or run step 2 first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/buildhub/backend/api/contractor/get_assigned_projects.php?contractor_id=${contractorId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.projects) {
+                    const projects = data.data.projects;
+                    showResult('step3-result', `✅ Found ${projects.length} assigned projects available for progress updates`, 'success');
+                    updateStepStatus('step3-status', 'success');
+                    
+                    // Display assigned projects
+                    displayAssignedProjects(projects, 'assigned-projects-list');
+                    
+                    // Auto-fill project ID for progress update if not already set
+                    if (projects.length > 0 && !document.getElementById('progress_project_id').value) {
+                        document.getElementById('progress_project_id').value = projects[0].project_id;
+                    }
+                } else {
+                    showResult('step3-result', `❌ Error: ${data.message || 'No assigned projects found'}`, 'error');
+                    updateStepStatus('step3-status', 'error');
+                }
+            } catch (error) {
+                showResult('step3-result', `❌ Network error: ${error.message}`, 'error');
+                updateStepStatus('step3-status', 'error');
+            }
+        }
+
+        async function submitProgressUpdate() {
+            const contractorId = document.getElementById('contractor_id').value || workflowData.contractorId;
+            const projectId = document.getElementById('progress_project_id').value;
+            const stageName = document.getElementById('stage_name').value;
+            const stageStatus = document.getElementById('stage_status').value;
+            const completionPercentage = document.getElementById('completion_percentage').value;
+            const remarks = document.getElementById('remarks').value;
+
+            if (!contractorId || !projectId) {
+                showResult('step4-result', 'Please enter contractor ID and project ID', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/submit_progress_update.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        contractor_id: parseInt(contractorId),
+                        project_id: parseInt(projectId),
+                        stage_name: stageName,
+                        stage_status: stageStatus,
+                        completion_percentage: parseFloat(completionPercentage),
+                        remarks: remarks
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('step4-result', `✅ Progress update submitted successfully!\nStage: ${stageName}\nStatus: ${stageStatus}\nProgress: ${completionPercentage}%\nUpdate ID: ${data.data?.progress_update_id}`, 'success');
+                    updateStepStatus('step4-status', 'success');
+                    workflowData.progressUpdateId = data.data?.progress_update_id;
+                    workflowData.projectId = projectId;
+                } else {
+                    showResult('step4-result', `❌ Error: ${data.message}`, 'error');
+                    updateStepStatus('step4-status', 'error');
+                }
+            } catch (error) {
+                showResult('step4-result', `❌ Network error: ${error.message}`, 'error');
+                updateStepStatus('step4-status', 'error');
+            }
+        }
+
+        async function verifyProjectStatus() {
+            const contractorId = document.getElementById('contractor_id').value || workflowData.contractorId;
+            const projectId = document.getElementById('progress_project_id').value || workflowData.projectId;
+
+            if (!contractorId) {
+                showResult('step5-result', 'Please enter contractor ID or run previous steps', 'error');
+                return;
+            }
+
+            try {
+                // Check both project APIs to see status updates
+                const [projectsResponse, assignedResponse] = await Promise.all([
+                    fetch(`/buildhub/backend/api/contractor/get_projects.php?contractor_id=${contractorId}`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    }),
+                    fetch(`/buildhub/backend/api/contractor/get_assigned_projects.php?contractor_id=${contractorId}`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    })
+                ]);
+
+                const projectsData = await projectsResponse.json();
+                const assignedData = await assignedResponse.json();
+                
+                let statusInfo = '✅ Project Status Verification:\n\n';
+                
+                if (projectsData.success && projectsData.data?.projects) {
+                    const project = projectsData.data.projects.find(p => p.id == projectId || p.project_id == projectId);
+                    if (project) {
+                        statusInfo += `📋 Construction Projects Table:\n`;
+                        statusInfo += `- Status: ${project.status || 'N/A'}\n`;
+                        statusInfo += `- Completion: ${project.completion_percentage || 0}%\n`;
+                        statusInfo += `- Current Stage: ${project.current_stage || 'N/A'}\n`;
+                        statusInfo += `- Last Update: ${project.last_update_date || 'N/A'}\n\n`;
+                    }
+                }
+                
+                if (assignedData.success && assignedData.data?.projects) {
+                    const assignedProject = assignedData.data.projects.find(p => p.project_id == projectId);
+                    if (assignedProject) {
+                        statusInfo += `📊 Assigned Projects (Progress Updates):\n`;
+                        statusInfo += `- Status: ${assignedProject.effective_status || 'N/A'}\n`;
+                        statusInfo += `- Progress: ${assignedProject.latest_progress || 0}%\n`;
+                        statusInfo += `- Completed Stages: ${assignedProject.completed_stages || 0}\n`;
+                        statusInfo += `- In Progress Stages: ${assignedProject.in_progress_stages || 0}\n`;
+                        statusInfo += `- Total Updates: ${assignedProject.total_updates || 0}\n`;
+                    }
+                }
+                
+                showResult('step5-result', statusInfo, 'success');
+                updateStepStatus('step5-status', 'success');
+                
+            } catch (error) {
+                showResult('step5-result', `❌ Network error: ${error.message}`, 'error');
+                updateStepStatus('step5-status', 'error');
+            }
+        }
+
+        async function runCompleteWorkflow() {
+            const progressDiv = document.getElementById('workflow-progress');
+            progressDiv.innerHTML = '<h4>🚀 Running Complete Workflow...</h4>';
+            
+            // Reset all step statuses
+            ['step1-status', 'step2-status', 'step3-status', 'step4-status', 'step5-status'].forEach(id => {
+                updateStepStatus(id, 'pending');
+            });
+            
+            try {
+                // Step 1: Accept estimate
+                progressDiv.innerHTML += '<p>Step 1: Accepting estimate...</p>';
+                await respondToEstimate();
+                await sleep(2000);
+                
+                // Step 2: Check projects
+                progressDiv.innerHTML += '<p>Step 2: Checking created projects...</p>';
+                await checkProjects();
+                await sleep(2000);
+                
+                // Step 3: Check assigned projects
+                progressDiv.innerHTML += '<p>Step 3: Checking assigned projects for progress updates...</p>';
+                await checkAssignedProjects();
+                await sleep(2000);
+                
+                // Step 4: Submit progress update
+                progressDiv.innerHTML += '<p>Step 4: Submitting progress update...</p>';
+                document.getElementById('remarks').value = 'Automated workflow test - Foundation work started';
+                await submitProgressUpdate();
+                await sleep(2000);
+                
+                // Step 5: Verify status
+                progressDiv.innerHTML += '<p>Step 5: Verifying project status updates...</p>';
+                await verifyProjectStatus();
+                
+                progressDiv.innerHTML += '<h4 style="color: green;">✅ Complete Workflow Test Finished!</h4>';
+                progressDiv.innerHTML += '<p>Check each step above for detailed results.</p>';
+                
+            } catch (error) {
+                progressDiv.innerHTML += `<h4 style="color: red;">❌ Workflow Test Failed: ${error.message}</h4>`;
+            }
+        }
+
+        function displayProjects(projects, containerId) {
+            const container = document.getElementById(containerId);
+            if (!projects || projects.length === 0) {
+                container.innerHTML = '<p>No projects found.</p>';
+                return;
+            }
+            
+            let html = '<h4>📋 Created Projects:</h4>';
+            projects.forEach(project => {
+                html += `
+                    <div class="project-card">
+                        <h5>${project.project_name || 'Project #' + (project.id || project.project_id)}</h5>
+                        <div class="project-details">
+                            <p><strong>ID:</strong> ${project.id || project.project_id}</p>
+                            <p><strong>Homeowner:</strong> ${project.homeowner_name || 'N/A'}</p>
+                            <p><strong>Cost:</strong> ₹${project.total_cost ? Number(project.total_cost).toLocaleString() : 'N/A'}</p>
+                            <p><strong>Status:</strong> ${project.status || 'N/A'}</p>
+                            <p><strong>Timeline:</strong> ${project.timeline || 'N/A'}</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${project.completion_percentage || 0}%">
+                                    ${project.completion_percentage || 0}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function displayAssignedProjects(projects, containerId) {
+            const container = document.getElementById(containerId);
+            if (!projects || projects.length === 0) {
+                container.innerHTML = '<p>No assigned projects found.</p>';
+                return;
+            }
+            
+            let html = '<h4>🎯 Available for Progress Updates:</h4>';
+            projects.forEach(project => {
+                html += `
+                    <div class="project-card">
+                        <h5>${project.project_display_name || 'Project #' + project.project_id}</h5>
+                        <div class="project-details">
+                            <p><strong>ID:</strong> ${project.project_id}</p>
+                            <p><strong>Source:</strong> ${project.source_type || 'estimate'}</p>
+                            <p><strong>Status:</strong> ${project.effective_status || 'N/A'}</p>
+                            <p><strong>Progress:</strong> ${project.latest_progress || 0}%</p>
+                            <p><strong>Updates:</strong> ${project.total_updates || 0}</p>
+                            <p><strong>Ready for Construction:</strong> ${project.project_summary?.ready_for_construction ? '✅ Yes' : '❌ No'}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        function updateStepStatus(elementId, status) {
+            const element = document.getElementById(elementId);
+            element.className = `step-status step-${status}`;
+            element.textContent = status === 'success' ? 'Success' : status === 'error' ? 'Error' : 'Pending';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Auto-fill some test data
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('message').value = 'Great! Looking forward to starting this project. Please proceed with construction.';
+            document.getElementById('remarks').value = 'Foundation excavation completed. Ready to start concrete work.';
+        });
+    </script>
+</body>
+</html>

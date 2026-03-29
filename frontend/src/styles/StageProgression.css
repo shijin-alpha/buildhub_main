@@ -1,0 +1,422 @@
+/* Stage Progression Styles */
+
+/* Project Progress Overview */
+.project-progress-overview {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.progress-overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.progress-overview-header h5 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.overall-progress-badge {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.overall-progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.overall-progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+/* Stages Grid */
+.stages-overview {
+  margin-top: 1rem;
+}
+
+.stages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.stage-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.stage-card.completed {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.stage-card.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.stage-card.pending {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.stage-icon {
+  font-size: 1.25rem;
+}
+
+.stage-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  flex: 1;
+  margin: 0 0.25rem;
+}
+
+.stage-status {
+  font-size: 0.875rem;
+}
+
+.stage-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.stage-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.stage-progress-text {
+  font-size: 0.625rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.days-worked {
+  color: #9ca3af;
+}
+
+/* Progress Summary Stats */
+.progress-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Stage Selection Enhancements */
+.stage-progress-info {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: normal;
+  margin-left: 0.5rem;
+}
+
+.stage-limit-info {
+  font-size: 0.75rem;
+  color: #dc2626;
+  font-weight: normal;
+  margin-left: 0.5rem;
+}
+
+.stage-progression-info {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.current-stage-info {
+  margin-bottom: 0.5rem;
+}
+
+.current-stage {
+  color: #3b82f6;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.no-active-stage {
+  color: #6b7280;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+.next-stage-info {
+  margin-top: 0.25rem;
+}
+
+.next-stage {
+  color: #059669;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* Stage Warnings */
+.stage-warnings {
+  margin-top: 0.5rem;
+}
+
+.warning-message {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  color: #92400e;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Stage Progress Details */
+.stage-progress-details {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.stage-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.mini-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.stage-progress-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.remaining-progress {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.stage-complete {
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* Project Title with Budget */
+.project-title-with-budget {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.budget-info {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #059669;
+  margin-top: 0.25rem;
+}
+
+.progress-percentage {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.project-budget-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.timeline-info {
+  font-weight: 500;
+  color: #7c3aed;
+}
+
+.original-budget {
+  font-weight: 500;
+  color: #dc2626;
+}
+
+/* Database Progress Info */
+.database-progress-info {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+}
+
+.progress-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.progress-source {
+  font-weight: 600;
+  color: #0369a1;
+  font-size: 0.875rem;
+}
+
+.latest-stage {
+  font-weight: 500;
+  color: #1e40af;
+  font-size: 0.75rem;
+}
+
+.last-update-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.update-date {
+  font-weight: 500;
+}
+
+.total-updates {
+  font-weight: 500;
+}
+
+/* Stage Progress Indicator */
+.stage-progress-indicator {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.stage-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.completed-stages {
+  font-weight: 600;
+  color: #374151;
+}
+
+.current-stage-name {
+  font-weight: 500;
+  color: #3b82f6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stage-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+  .stages-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .progress-summary-stats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .progress-overview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .stage-name {
+    font-size: 0.625rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stages-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .project-progress-overview {
+    padding: 1rem;
+  }
+}

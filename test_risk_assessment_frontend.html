@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Assessment Frontend Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .risk-card {
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .risk-low { border-color: #28a745; }
+        .risk-medium { border-color: #ffc107; }
+        .risk-high { border-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Risk Assessment Frontend Test</h1>
+    
+    <form id="riskForm">
+        <div class="form-group">
+            <label for="plot_size_sqft">Plot Size (sq ft):</label>
+            <input type="number" id="plot_size_sqft" name="plot_size_sqft" value="2000" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="building_size_sqft">Building Size (sq ft):</label>
+            <input type="number" id="building_size_sqft" name="building_size_sqft" value="1500" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="num_floors">Number of Floors:</label>
+            <input type="number" id="num_floors" name="num_floors" value="2" min="1" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="budget_amount">Budget Amount (₹):</label>
+            <input type="number" id="budget_amount" name="budget_amount" value="2500000" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="num_bedrooms">Number of Bedrooms:</label>
+            <input type="number" id="num_bedrooms" name="num_bedrooms" value="3" min="1" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="num_bathrooms">Number of Bathrooms:</label>
+            <input type="number" id="num_bathrooms" name="num_bathrooms" value="2" min="1" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="plot_shape">Plot Shape:</label>
+            <select id="plot_shape" name="plot_shape">
+                <option value="rectangular">Rectangular</option>
+                <option value="square">Square</option>
+                <option value="irregular">Irregular</option>
+                <option value="l_shaped">L-Shaped</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="topography">Topography:</label>
+            <select id="topography" name="topography">
+                <option value="flat">Flat</option>
+                <option value="gentle_slope">Gentle Slope</option>
+                <option value="steep_slope">Steep Slope</option>
+                <option value="hilly">Hilly</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="design_style">Design Style:</label>
+            <select id="design_style" name="design_style">
+                <option value="modern">Modern</option>
+                <option value="traditional">Traditional</option>
+                <option value="contemporary">Contemporary</option>
+                <option value="colonial">Colonial</option>
+            </select>
+        </div>
+        
+        <button type="submit">🔍 Assess Risk</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('riskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">🔄 Analyzing risks...</div>';
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                // Convert numeric fields
+                if (['plot_size_sqft', 'building_size_sqft', 'num_floors', 'budget_amount', 'num_bedrooms', 'num_bathrooms'].includes(key)) {
+                    data[key] = parseFloat(value);
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/ml/predict_construction_risks.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const riskData = result.data;
+                    
+                    const costRisk = riskData.cost_overrun_risk;
+                    const timeRisk = riskData.time_delay_risk;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Risk Assessment Complete</h3>
+                            
+                            <div class="risk-card risk-${costRisk.risk_level.toLowerCase()}">
+                                <h4>💰 Cost Overrun Risk: ${costRisk.risk_level}</h4>
+                                <p><strong>Probability:</strong> ${(costRisk.probabilities.High * 100).toFixed(1)}%</p>
+                                <p><strong>Key Factors:</strong></p>
+                                <ul>
+                                    ${costRisk.explanation.map(factor => `<li>${factor}</li>`).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div class="risk-card risk-${timeRisk.risk_level.toLowerCase()}">
+                                <h4>⏰ Time Delay Risk: ${timeRisk.risk_level}</h4>
+                                <p><strong>Probability:</strong> ${(timeRisk.probabilities.High * 100).toFixed(1)}%</p>
+                                <p><strong>Key Factors:</strong></p>
+                                <ul>
+                                    ${timeRisk.explanation.map(factor => `<li>${factor}</li>`).join('')}
+                                </ul>
+                            </div>
+                            
+                            <p><small>🤖 Analysis completed using AI models with 94.7% and 98.9% accuracy</small></p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Risk Assessment Failed</h3>
+                            <p>${result.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Network Error</h3>
+                        <p>Failed to connect to risk assessment service: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

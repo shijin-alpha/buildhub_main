@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History with Receipts - FIXED - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            margin: 80px 20px 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-1px);
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Payment History Styles */
+        .payment-history {
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .payment-history-header h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .project-selection {
+            margin: 20px 0;
+        }
+
+        .project-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .payment-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .status-summary {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-count {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .status-count.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-count.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-count.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .history-items {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .history-item {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stage-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0 0 8px 0;
+        }
+
+        .completion-percentage {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-badge.approved {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-badge.rejected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-badge.paid {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .payment-amounts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .amount-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .amount-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .amount-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .amount-value.requested {
+            color: #ffc107;
+        }
+
+        .amount-value.approved {
+            color: #28a745;
+        }
+
+        .amount-value.paid {
+            color: #17a2b8;
+        }
+
+        .work-description {
+            margin-bottom: 20px;
+        }
+
+        .work-description h6 {
+            color: #495057;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .work-description p {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        .homeowner-response {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            margin-bottom: 20px;
+        }
+
+        .homeowner-response h6 {
+            color: #495057;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .response-details {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .response-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .response-date {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .homeowner-notes-text {
+            margin: 0;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* Receipt Information Styles */
+        .receipt-information {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #1976d2;
+            margin-bottom: 20px;
+        }
+
+        .receipt-information h6 {
+            color: #1976d2;
+            margin-bottom: 16px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .receipt-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .receipt-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .receipt-item strong {
+            font-size: 12px;
+            color: #1565c0;
+            font-weight: 600;
+        }
+
+        .receipt-item span {
+            font-size: 14px;
+            color: #0d47a1;
+            font-weight: 500;
+        }
+
+        .verification-status.pending {
+            color: #f57c00;
+        }
+
+        .verification-status.verified {
+            color: #388e3c;
+        }
+
+        .verification-status.rejected {
+            color: #d32f2f;
+        }
+
+        .receipt-files {
+            margin-top: 16px;
+        }
+
+        .receipt-files strong {
+            display: block;
+            margin-bottom: 12px;
+            color: #1565c0;
+            font-weight: 600;
+        }
+
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #bbdefb;
+        }
+
+        .file-icon {
+            font-size: 24px;
+        }
+
+        .file-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #1976d2;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .view-file-btn {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .view-file-btn:hover {
+            background: #1565c0;
+        }
+
+        .verification-notes {
+            margin-top: 16px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #bbdefb;
+        }
+
+        .verification-notes strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #1565c0;
+        }
+
+        .verification-notes-text {
+            color: #0d47a1;
+            font-style: italic;
+            margin: 0;
+        }
+
+        .verification-timestamp {
+            margin-top: 12px;
+            text-align: right;
+        }
+
+        .verification-timestamp small {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .receipt-pending {
+            background: #fff3cd;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+        }
+
+        .receipt-pending-message {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pending-icon {
+            font-size: 24px;
+        }
+
+        .pending-text strong {
+            display: block;
+            color: #856404;
+            margin-bottom: 4px;
+        }
+
+        .pending-text p {
+            margin: 0;
+            color: #856404;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            font-size: 32px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .no-data-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .history-item-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .payment-amounts {
+                grid-template-columns: 1fr;
+            }
+
+            .receipt-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .status-summary {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏗️ BuildHub - Payment History with Receipts (FIXED)</h1>
+    </div>
+
+    <div class="main-content">
+        <h1>Payment History with Receipts - FIXED ✅</h1>
+        <p>This test demonstrates the FIXED payment history system with proper receipt display and neat formatting.</p>
+
+        <div class="test-section">
+            <h3>✅ FIXED Issues</h3>
+            <ul style="padding-left: 20px; margin: 10px 0; line-height: 1.8;">
+                <li>✅ <strong>Receipt Display:</strong> Receipts now show properly with file details, payment method, and verification status</li>
+                <li>✅ <strong>Clean JSON Format:</strong> No more debug JSON format - data displays in neat, user-friendly format</li>
+                <li>✅ <strong>Database Schema:</strong> Added missing receipt columns to stage_payment_requests table</li>
+                <li>✅ <strong>Sample Data:</strong> Created comprehensive sample data with various payment statuses and receipt types</li>
+                <li>✅ <strong>Verification Status:</strong> Shows pending/verified/rejected status for uploaded receipts</li>
+                <li>✅ <strong>File Display:</strong> Proper file icons, names, sizes, and view links for receipt files</li>
+                <li>✅ <strong>Payment Methods:</strong> Shows payment method icons (Bank Transfer, UPI, Cheque, etc.)</li>
+                <li>✅ <strong>Transaction Details:</strong> Displays transaction reference, payment date, and verification notes</li>
+            </ul>
+            
+            <button class="btn" onclick="loadPaymentHistory()">
+                🔄 Load Payment History (FIXED)
+            </button>
+            <div id="testResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Test Features</h3>
+            <ul style="padding-left: 20px; line-height: 1.8;">
+                <li><strong>Multiple Payment Statuses:</strong> Pending, Approved, Rejected, Paid</li>
+                <li><strong>Receipt Types:</strong> Bank Transfer, UPI, Cheque with actual file data</li>
+                <li><strong>Verification Workflow:</strong> Pending verification, verified, and rejected receipts</li>
+                <li><strong>File Management:</strong> Multiple file types (JPG, PNG, PDF) with proper metadata</li>
+                <li><strong>Responsive Design:</strong> Works on desktop, tablet, and mobile devices</li>
+            </ul>
+        </div>
+
+        <!-- Payment History Container -->
+        <div id="paymentHistoryContainer"></div>
+    </div>
+
+    <script>
+        let currentContractorId = 29; // From our sample data
+        let currentProjectId = 109;   // From our sample data
+
+        async function loadPaymentHistory() {
+            const container = document.getElementById('paymentHistoryContainer');
+            const testResult = document.getElementById('testResult');
+            
+            // Show loading state
+            container.innerHTML = `
+                <div class="payment-history">
+                    <div class="loading">
+                        <div class="loading-spinner">🔄</div>
+                        <p>Loading payment history with receipts...</p>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                // Load contractor projects first
+                const projectsResponse = await fetch(
+                    `/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${currentContractorId}`,
+                    { credentials: 'include' }
+                );
+                
+                const projectsData = await projectsResponse.json();
+                console.log('Projects Response:', projectsData);
+                
+                if (!projectsData.success) {
+                    throw new Error('Failed to load projects: ' + projectsData.message);
+                }
+                
+                // Load payment history
+                const historyResponse = await fetch(
+                    `/buildhub/backend/api/contractor/get_payment_history.php?project_id=${currentProjectId}`,
+                    { credentials: 'include' }
+                );
+                
+                const historyData = await historyResponse.json();
+                console.log('Payment History Response:', historyData);
+                
+                if (!historyData.success) {
+                    throw new Error('Failed to load payment history: ' + historyData.message);
+                }
+                
+                // Display the payment history
+                displayPaymentHistory(historyData.data);
+                
+                testResult.innerHTML = `
+                    <div class="test-result success">
+                        ✅ Payment history loaded successfully! Found ${historyData.data.payment_requests.length} payment requests with proper receipt display.
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading payment history:', error);
+                container.innerHTML = `
+                    <div class="payment-history">
+                        <div class="no-data">
+                            <div class="no-data-icon">❌</div>
+                            <h4>Error Loading Payment History</h4>
+                            <p>${error.message}</p>
+                        </div>
+                    </div>
+                `;
+                
+                testResult.innerHTML = `
+                    <div class="test-result error">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function displayPaymentHistory(data) {
+            const container = document.getElementById('paymentHistoryContainer');
+            const { payment_requests, summary } = data;
+            
+            if (!payment_requests || payment_requests.length === 0) {
+                container.innerHTML = `
+                    <div class="payment-history">
+                        <div class="no-data">
+                            <div class="no-data-icon">📝</div>
+                            <h4>No Payment Requests</h4>
+                            <p>No payment requests found for this project.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const historyHTML = `
+                <div class="payment-history">
+                    <div class="payment-history-header">
+                        <h3>💰 Payment Request History</h3>
+                        <p>Track all payment requests and homeowner responses with receipt verification</p>
+                    </div>
+                    
+                    ${summary ? `
+                        <div class="payment-summary">
+                            <h4>📊 Payment Summary</h4>
+                            <div class="summary-grid">
+                                <div class="summary-card">
+                                    <div class="summary-value">${summary.total_requests || 0}</div>
+                                    <div class="summary-label">Total Requests</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="summary-value">₹${(summary.total_requested || 0).toLocaleString('en-IN')}</div>
+                                    <div class="summary-label">Total Requested</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="summary-value">₹${(summary.total_approved || 0).toLocaleString('en-IN')}</div>
+                                    <div class="summary-label">Total Approved</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="summary-value">₹${(summary.total_paid || 0).toLocaleString('en-IN')}</div>
+                                    <div class="summary-label">Total Paid</div>
+                                </div>
+                            </div>
+                            
+                            <div class="status-summary">
+                                <div class="status-item">
+                                    <span class="status-count pending">${summary.pending_count || 0}</span>
+                                    <span class="status-text">Pending</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-count approved">${summary.approved_count || 0}</span>
+                                    <span class="status-text">Approved</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-count rejected">${summary.rejected_count || 0}</span>
+                                    <span class="status-text">Rejected</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="history-items">
+                        ${payment_requests.map(request => generatePaymentRequestHTML(request)).join('')}
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = historyHTML;
+        }
+
+        function generatePaymentRequestHTML(request) {
+            const statusBadge = getStatusBadge(request.status);
+            const formatCurrency = (amount) => `₹${(amount || 0).toLocaleString('en-IN')}`;
+            const formatDate = (dateString) => {
+                if (!dateString) return 'N/A';
+                return new Date(dateString).toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            };
+            
+            return `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <div class="stage-info">
+                            <h5 class="stage-name">🏗️ ${request.stage_name} Stage</h5>
+                            <span class="completion-percentage">
+                                ${request.completion_percentage}% Complete
+                            </span>
+                        </div>
+                        <div class="status-info">
+                            ${statusBadge}
+                            <span class="request-date">
+                                Requested: ${formatDate(request.request_date)}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="payment-amounts">
+                        <div class="amount-item">
+                            <span class="amount-label">Requested:</span>
+                            <span class="amount-value requested">
+                                ${formatCurrency(request.requested_amount)}
+                            </span>
+                        </div>
+                        ${request.approved_amount ? `
+                            <div class="amount-item">
+                                <span class="amount-label">Approved:</span>
+                                <span class="amount-value approved">
+                                    ${formatCurrency(request.approved_amount)}
+                                </span>
+                            </div>
+                        ` : ''}
+                        ${request.status === 'paid' ? `
+                            <div class="amount-item">
+                                <span class="amount-label">Paid:</span>
+                                <span class="amount-value paid">
+                                    ${formatCurrency(request.approved_amount || request.requested_amount)}
+                                </span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="work-description">
+                        <h6>Work Description:</h6>
+                        <p>${request.work_description}</p>
+                    </div>
+
+                    ${request.status !== 'pending' ? `
+                        <div class="homeowner-response">
+                            <h6>🏠 Homeowner Response:</h6>
+                            <div class="response-details">
+                                <div class="response-status">
+                                    <strong>Decision:</strong> ${statusBadge}
+                                    ${request.response_date ? `
+                                        <span class="response-date">
+                                            on ${formatDate(request.response_date)}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                                
+                                ${request.homeowner_notes ? `
+                                    <div class="response-notes">
+                                        <strong>Homeowner Notes:</strong>
+                                        <p class="homeowner-notes-text">${request.homeowner_notes}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${generateReceiptHTML(request)}
+                </div>
+            `;
+        }
+
+        function generateReceiptHTML(request) {
+            // Show receipt information for approved or paid requests with receipt data
+            if ((request.status === 'approved' || request.status === 'paid') && request.receipt_file_path) {
+                const paymentMethodIcon = {
+                    'bank_transfer': '🏦 Bank Transfer',
+                    'upi': '📱 UPI Payment',
+                    'cash': '💵 Cash Payment',
+                    'cheque': '📝 Cheque Payment',
+                    'other': '💳 Other'
+                };
+                
+                const verificationStatusText = {
+                    'pending': '⏳ Pending Verification',
+                    'verified': '✅ Verified',
+                    'rejected': '❌ Rejected'
+                };
+                
+                return `
+                    <div class="receipt-information">
+                        <h6>📄 Payment Receipt Information:</h6>
+                        <div class="receipt-details">
+                            <div class="receipt-summary">
+                                <div class="receipt-item">
+                                    <strong>Payment Method:</strong>
+                                    <span class="payment-method">
+                                        ${paymentMethodIcon[request.payment_method] || '💳 Not specified'}
+                                    </span>
+                                </div>
+                                
+                                ${request.transaction_reference ? `
+                                    <div class="receipt-item">
+                                        <strong>Transaction Reference:</strong>
+                                        <span class="transaction-ref">${request.transaction_reference}</span>
+                                    </div>
+                                ` : ''}
+                                
+                                ${request.payment_date ? `
+                                    <div class="receipt-item">
+                                        <strong>Payment Date:</strong>
+                                        <span class="payment-date">
+                                            ${new Date(request.payment_date).toLocaleDateString('en-IN')}
+                                        </span>
+                                    </div>
+                                ` : ''}
+                                
+                                ${request.verification_status ? `
+                                    <div class="receipt-item">
+                                        <strong>Verification Status:</strong>
+                                        <span class="verification-status ${request.verification_status}">
+                                            ${verificationStatusText[request.verification_status] || request.verification_status}
+                                        </span>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            ${request.receipt_file_path && request.receipt_file_path.length > 0 ? `
+                                <div class="receipt-files">
+                                    <strong>Uploaded Files:</strong>
+                                    <div class="files-list">
+                                        ${request.receipt_file_path.map((file, fileIndex) => `
+                                            <div class="file-item">
+                                                <span class="file-icon">
+                                                    ${file.file_type && file.file_type.startsWith('image/') ? '🖼️' : '📄'}
+                                                </span>
+                                                <div class="file-details">
+                                                    <span class="file-name">${file.original_name}</span>
+                                                    <span class="file-size">
+                                                        ${file.file_size ? `${(file.file_size / 1024 / 1024).toFixed(2)} MB` : ''}
+                                                    </span>
+                                                </div>
+                                                <a 
+                                                    href="/buildhub/backend/${file.file_path}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="view-file-btn"
+                                                    title="View file"
+                                                >
+                                                    👁️ View
+                                                </a>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            ${request.verification_notes ? `
+                                <div class="verification-notes">
+                                    <strong>Verification Notes:</strong>
+                                    <p class="verification-notes-text">${request.verification_notes}</p>
+                                </div>
+                            ` : ''}
+
+                            ${request.verified_at ? `
+                                <div class="verification-timestamp">
+                                    <small>
+                                        Verified on ${new Date(request.verified_at).toLocaleDateString('en-IN', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </small>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Show pending receipt message for approved payments without receipts
+            if (request.status === 'approved' && !request.receipt_file_path) {
+                return `
+                    <div class="receipt-pending">
+                        <div class="receipt-pending-message">
+                            <span class="pending-icon">⏳</span>
+                            <div class="pending-text">
+                                <strong>Awaiting Payment Receipt</strong>
+                                <p>Homeowner needs to upload payment receipt for verification</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return '';
+        }
+
+        function getStatusBadge(status) {
+            const statusConfig = {
+                pending: { text: '⏳ Pending Review', class: 'pending' },
+                approved: { text: '✅ Approved', class: 'approved' },
+                rejected: { text: '❌ Rejected', class: 'rejected' },
+                paid: { text: '💰 Paid', class: 'paid' }
+            };
+            
+            const config = statusConfig[status] || statusConfig.pending;
+            
+            return `<span class="status-badge ${config.class}">${config.text}</span>`;
+        }
+
+        // Auto-load payment history on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Payment History with Receipts - FIXED test loaded!');
+            
+            // Show initial message
+            document.getElementById('testResult').innerHTML = `
+                <div class="test-result info">
+                    ℹ️ Ready to test payment history with receipts. Click the button above to load data.
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Stage Validation Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 8px 16px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .test-btn { background: #007bff; color: white; }
+        .test-btn:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Stage Validation Fix Test</h1>
+    <p>This page tests the 12.5% stage completion submission fix.</p>
+
+    <div class="test-section info">
+        <h3>📋 Test Scenarios</h3>
+        <p>We'll test various scenarios that previously caused submission failures:</p>
+        <ul>
+            <li>✅ Fresh stage with 12.5% completion</li>
+            <li>⚠️ Stage with existing progress + 12.5% (should auto-cap)</li>
+            <li>🔄 Stage with small remaining percentage</li>
+            <li>🚫 Completed stage (should show error)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 Interactive Test</h3>
+        <p>Select a project and test the validation:</p>
+        
+        <div>
+            <label>Project ID: </label>
+            <input type="number" id="projectId" value="1" min="1">
+            
+            <label>Contractor ID: </label>
+            <input type="number" id="contractorId" value="29" min="1">
+            
+            <button class="test-btn" onclick="loadProjectProgress()">Load Project Progress</button>
+        </div>
+
+        <div id="projectInfo" style="margin-top: 15px;"></div>
+
+        <div style="margin-top: 15px;">
+            <label>Construction Stage: </label>
+            <select id="stageSelect">
+                <option value="Foundation">Foundation</option>
+                <option value="Structure">Structure</option>
+                <option value="Brickwork">Brickwork</option>
+                <option value="Roofing">Roofing</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="Finishing">Finishing</option>
+                <option value="Final">Final</option>
+            </select>
+            
+            <label>Incremental %: </label>
+            <input type="number" id="incrementalPercent" value="12.5" step="0.1" min="0" max="100">
+            
+            <button class="test-btn" onclick="testValidation()">Test Validation</button>
+        </div>
+
+        <div id="validationResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔄 Test Submission</h3>
+        <p>Test actual API submission (requires valid session):</p>
+        
+        <div>
+            <label>Work Done Today: </label>
+            <input type="text" id="workDone" value="Testing stage validation fix" style="width: 300px;">
+            
+            <label>Weather: </label>
+            <select id="weather">
+                <option value="Sunny">Sunny</option>
+                <option value="Cloudy">Cloudy</option>
+                <option value="Rainy">Rainy</option>
+            </select>
+            
+            <button class="test-btn" onclick="testSubmission()">Submit Test Progress</button>
+        </div>
+
+        <div id="submissionResult"></div>
+    </div>
+
+    <script>
+        let currentProjectProgress = {};
+
+        async function loadProjectProgress() {
+            const projectId = document.getElementById('projectId').value;
+            const contractorId = document.getElementById('contractorId').value;
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/contractor/get_project_progress.php?project_id=${projectId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentProjectProgress = {};
+                    
+                    // Calculate stage progress
+                    data.progress_updates.forEach(update => {
+                        const stage = update.construction_stage;
+                        if (!currentProjectProgress[stage]) {
+                            currentProjectProgress[stage] = 0;
+                        }
+                        currentProjectProgress[stage] += parseFloat(update.incremental_completion_percentage || 0);
+                    });
+                    
+                    displayProjectInfo();
+                } else {
+                    document.getElementById('projectInfo').innerHTML = 
+                        `<div class="result error">Failed to load project: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('projectInfo').innerHTML = 
+                    `<div class="result error">Error loading project: ${error.message}</div>`;
+            }
+        }
+
+        function displayProjectInfo() {
+            const stages = ['Foundation', 'Structure', 'Brickwork', 'Roofing', 'Electrical', 'Plumbing', 'Finishing', 'Final'];
+            
+            let html = '<div class="result info"><h4>📊 Current Stage Progress:</h4><table border="1" style="border-collapse: collapse; width: 100%;">';
+            html += '<tr><th>Stage</th><th>Current Progress</th><th>Remaining (out of 12.5%)</th><th>Status</th></tr>';
+            
+            stages.forEach(stage => {
+                const current = currentProjectProgress[stage] || 0;
+                const remaining = 12.5 - current;
+                const status = current >= 12.5 ? '✅ COMPLETED' : current > 0 ? '🔄 IN PROGRESS' : '⏳ NOT STARTED';
+                
+                html += `<tr>
+                    <td>${stage}</td>
+                    <td>${current.toFixed(2)}%</td>
+                    <td>${remaining.toFixed(2)}%</td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+            
+            html += '</table></div>';
+            document.getElementById('projectInfo').innerHTML = html;
+        }
+
+        function testValidation() {
+            const stage = document.getElementById('stageSelect').value;
+            const increment = parseFloat(document.getElementById('incrementalPercent').value);
+            
+            const currentProgress = currentProjectProgress[stage] || 0;
+            const remaining = 12.5 - currentProgress;
+            const newTotal = currentProgress + increment;
+            
+            let resultHtml = `<div class="result">
+                <h4>🔍 Validation Test Results:</h4>
+                <p><strong>Stage:</strong> ${stage}</p>
+                <p><strong>Current Progress:</strong> ${currentProgress.toFixed(2)}%</p>
+                <p><strong>Requested Increment:</strong> ${increment}%</p>
+                <p><strong>New Total:</strong> ${newTotal.toFixed(2)}%</p>
+                <p><strong>Remaining in Stage:</strong> ${remaining.toFixed(2)}%</p>
+            `;
+            
+            if (newTotal > 12.5) {
+                if (remaining <= 0) {
+                    resultHtml += `<p style="color: red;"><strong>❌ VALIDATION FAILED:</strong> Stage is already completed</p>`;
+                } else {
+                    resultHtml += `<p style="color: orange;"><strong>⚠️ AUTO-CAPPED:</strong> Will be reduced to ${remaining.toFixed(1)}%</p>`;
+                }
+            } else {
+                resultHtml += `<p style="color: green;"><strong>✅ VALIDATION PASSED:</strong> Increment is within stage limit</p>`;
+            }
+            
+            resultHtml += '</div>';
+            document.getElementById('validationResult').innerHTML = resultHtml;
+        }
+
+        async function testSubmission() {
+            const projectId = document.getElementById('projectId').value;
+            const contractorId = document.getElementById('contractorId').value;
+            const stage = document.getElementById('stageSelect').value;
+            const increment = document.getElementById('incrementalPercent').value;
+            const workDone = document.getElementById('workDone').value;
+            const weather = document.getElementById('weather').value;
+            
+            const formData = new FormData();
+            formData.append('project_id', projectId);
+            formData.append('contractor_id', contractorId);
+            formData.append('update_date', new Date().toISOString().split('T')[0]);
+            formData.append('construction_stage', stage);
+            formData.append('work_done_today', workDone);
+            formData.append('incremental_completion_percentage', increment);
+            formData.append('working_hours', '8');
+            formData.append('weather_condition', weather);
+            formData.append('site_issues', '');
+            formData.append('labour_data', JSON.stringify([]));
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/submit_daily_progress.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                let resultClass = data.success ? 'success' : 'error';
+                let resultHtml = `<div class="result ${resultClass}">
+                    <h4>${data.success ? '✅ Submission Successful!' : '❌ Submission Failed'}</h4>
+                    <p><strong>Message:</strong> ${data.message}</p>
+                `;
+                
+                if (data.success && data.data) {
+                    resultHtml += `
+                        <p><strong>Incremental Progress:</strong> ${data.data.incremental_progress}%</p>
+                        <p><strong>Cumulative Progress:</strong> ${data.data.cumulative_progress}%</p>
+                        <p><strong>Photos Uploaded:</strong> ${data.data.photos_uploaded}</p>
+                    `;
+                }
+                
+                resultHtml += '</div>';
+                document.getElementById('submissionResult').innerHTML = resultHtml;
+                
+                // Reload project progress to see the update
+                if (data.success) {
+                    setTimeout(loadProjectProgress, 1000);
+                }
+                
+            } catch (error) {
+                document.getElementById('submissionResult').innerHTML = 
+                    `<div class="result error">
+                        <h4>❌ Submission Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>`;
+            }
+        }
+
+        // Load initial project data
+        window.onload = function() {
+            loadProjectProgress();
+        };
+    </script>
+</body>
+</html>

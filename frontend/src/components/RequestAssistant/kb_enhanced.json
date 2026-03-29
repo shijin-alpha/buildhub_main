@@ -1,0 +1,858 @@
+[
+  {
+    "id": "plot_size_basic",
+    "question_variants": [
+      "what is plot size", "how to measure plot size", "plot size meaning", "what to write in plot size", 
+      "plot dimensions help", "wht is plot size", "plot size kya hai", "plot size means what",
+      "how measure plot", "plot size how to", "plot dimention", "plot size help me",
+      "i dont know plot size", "plot size nahi pata", "plot size kaise measure kare",
+      "plot size batao", "plot size explain", "plot size samjhao",
+      "plot size enthaanu", "plot size engane measure cheyyam", "plot size parayamo",
+      "plot size ariyilla", "plot size enthanu parayendathu", "plot size help tharo",
+      "land size", "site size", "plot area", "land area", "site area measurement",
+      "plot measurement help", "land measurement", "how big is my plot", "plot size calculation",
+      "plot size kaise nikale", "plot size calculate kaise kare", "plot size formula"
+    ],
+    "answer": "Plot size is the width × depth of your land in feet or meters. Example: 30×40 feet or 10×12 meters. If you only know the total area, just tell me like '1200 sqft' or '100 sqm' and I'll help you."
+  },
+  {
+    "id": "building_size_basic", 
+    "question_variants": [
+      "building size", "house size", "construction area", "built up area", "building area",
+      "bilding size", "house area", "construction size", "built area", "building sqft",
+      "house sqft", "building size kya hai", "ghar ka size", "construction area kya hai",
+      "building size batao", "house size kitna", "building area explain",
+      "building size enthaanu", "veedu size", "construction area enthanu",
+      "building area parayamo", "house size engane", "construction size ariyilla",
+      "total construction area", "built up area meaning", "carpet area vs built up",
+      "house construction size", "building footprint", "construction area calculation"
+    ],
+    "answer": "Building size is the total floor area you want to build in square feet. Example: 1500 sqft for a 3BHK house. This includes all rooms, kitchen, bathrooms, and corridors inside the house."
+  },
+  {
+    "id": "budget_help",
+    "question_variants": [
+      "budget", "cost", "price", "money needed", "construction cost", "building cost",
+      "budjet", "buget", "total cost", "kitna paisa", "kitna kharcha", "cost kitna",
+      "budget kya hai", "budget batao", "paisa kitna lagega", "construction budget",
+      "building budget", "house budget", "ghar banane ka budget", "construction ka paisa",
+      "budget enthaanu", "paisa ethrayanu", "construction cost enthanu", "budget parayamo",
+      "veedu paniyan paisa", "construction budget ariyilla", "ethra paisa venam",
+      "how much money", "total expense", "construction expense", "building expense",
+      "budget planning", "cost estimation", "price estimate", "construction charges",
+      "builder charges", "architect fees", "total project cost", "house building cost"
+    ],
+    "answer": "Budget is the total money you want to spend on construction. You can choose from ranges like ₹5-10 Lakhs, ₹20-30 Lakhs, etc. Or enter a custom amount like ₹25,00,000. This should include construction, materials, and labor costs."
+  }
+,
+  {
+    "id": "rooms_bedrooms",
+    "question_variants": [
+      "how many bedrooms", "bedroom count", "beds needed", "3bhk meaning", "bhk means",
+      "bedrom", "bed room", "kitne bedroom", "bedroom kitne", "3bhk kya hai",
+      "2bhk 3bhk", "bedroom chahiye kitne", "rooms kitne", "kamre kitne",
+      "bedroom batao", "rooms explain", "bhk explain", "bedroom help",
+      "bedroom entha", "room ethrayanu", "bedroom count enthanu", "bhk meaning malayalam",
+      "room kitne chahiye", "bedroom planning", "room planning", "bedroom requirements",
+      "how many rooms needed", "room count", "bedroom selection", "room selection",
+      "family size bedroom", "bedroom for family", "room distribution", "bedroom layout"
+    ],
+    "answer": "Choose how many bedrooms you need: 1BHK (1 bedroom), 2BHK (2 bedrooms), 3BHK (3 bedrooms), etc. BHK means Bedroom-Hall-Kitchen. Most families choose 2BHK or 3BHK. You can also add master bedroom, guest room, parents room separately."
+  },
+  {
+    "id": "bathrooms_toilets",
+    "question_variants": [
+      "bathroom", "toilet", "washroom", "how many bathrooms", "bathroom count",
+      "bathrom", "bath room", "toilet kitne", "bathroom kitne", "washroom kitne",
+      "attached bathroom", "common bathroom", "toilet chahiye kitne", "bathroom help",
+      "toilet help", "washroom help", "bathroom batao", "toilet batao",
+      "bathroom entha", "toilet ethrayanu", "washroom count", "bathroom planning",
+      "toilet planning", "bathroom requirements", "washroom requirements", "bathroom design",
+      "toilet design", "bathroom layout", "attached vs common bathroom", "powder room"
+    ],
+    "answer": "Plan bathrooms based on bedrooms: 1BHK needs 1 bathroom, 2BHK needs 2 bathrooms, 3BHK needs 2-3 bathrooms. Consider attached bathrooms for master bedrooms and common bathrooms for guests. Always plan at least 1 bathroom on ground floor."
+  },
+  {
+    "id": "kitchen_types",
+    "question_variants": [
+      "kitchen", "kitchen type", "open kitchen", "closed kitchen", "modular kitchen",
+      "kitchn", "kitchen kya", "kitchen chahiye", "kitchen help", "kitchen batao",
+      "open or closed kitchen", "kitchen design", "kitchen size", "rasoi",
+      "rasoi ghar", "kitchen explain", "kitchen options"
+    ],
+    "answer": "Kitchen is where you cook food. You can choose: Open Kitchen (connected to living room), Closed Kitchen (separate room), or Semi-Open Kitchen. Most people prefer closed kitchen to avoid cooking smells in the house. You can also add a utility area for washing dishes."
+  },
+  {
+    "id": "living_dining",
+    "question_variants": [
+      "living room", "hall", "drawing room", "dining room", "dining area",
+      "living", "hall room", "drawing", "dining", "baithak", "hall chahiye",
+      "living room help", "dining help", "hall batao", "living room size",
+      "dining room size", "hall size", "drawing room help"
+    ],
+    "answer": "Living Room (Hall) is where family sits together and meets guests. Dining Room is where you eat meals. You can have them separate or combined as 'Living-Dining'. Most homes have one large living-dining area to save space."
+  },
+  {
+    "id": "special_rooms",
+    "question_variants": [
+      "pooja room", "study room", "guest room", "store room", "utility room",
+      "puja room", "prayer room", "study", "guest", "store", "utility",
+      "pooja ghar", "study chahiye", "guest room chahiye", "store room help",
+      "pooja room help", "study room help", "prayer room help", "mandir"
+    ],
+    "answer": "Special rooms you can add: Pooja Room (for prayers), Study Room (for work/study), Guest Room (for visitors), Store Room (for storage), Utility Room (for washing). Choose what your family needs. Pooja room is very common in Indian homes."
+  },
+  {
+    "id": "floors_levels",
+    "question_variants": [
+      "floors", "how many floors", "storeys", "levels", "ground floor", "first floor",
+      "floor", "kitne floor", "floor kitne", "manzil", "talla", "floors help",
+      "ground plus one", "g+1", "g+2", "floors batao", "levels help",
+      "storey help", "floors explain", "how many levels"
+    ],
+    "answer": "Choose number of floors: 1 Floor (Ground floor only), 2 Floors (Ground + First floor), 3 Floors (Ground + First + Second). Most homes are 1-2 floors. More floors need more budget and stronger foundation. Check local building rules for maximum allowed floors."
+  }
+,
+  {
+    "id": "location_city",
+    "question_variants": [
+      "location", "city", "where", "place", "area", "address", "location help",
+      "city help", "location batao", "city batao", "kaha hai", "location kya",
+      "city kya", "area kya", "jagah", "location explain", "city explain",
+      "address help", "place help", "location chahiye", "city chahiye"
+    ],
+    "answer": "Enter your city name where you want to build the house. This helps us find local architects and contractors. Also helps estimate material costs and building rules for your area. Just type your city name like 'Mumbai', 'Delhi', 'Bangalore', etc."
+  },
+  {
+    "id": "timeline_duration",
+    "question_variants": [
+      "timeline", "time", "duration", "how long", "when complete", "completion time",
+      "time kitna", "kitna time", "timeline help", "duration help", "time lagega",
+      "kab complete", "kab ready", "timeline batao", "time batao", "duration batao",
+      "construction time", "building time", "house banane ka time", "completion help"
+    ],
+    "answer": "Timeline is how long you want the construction to take. Options: 1-3 months (very fast), 3-6 months (normal), 6-12 months (detailed work), 1-2 years (luxury), 2+ years (no hurry), Flexible (any time). Most houses take 6-12 months to complete."
+  },
+  {
+    "id": "plot_shape_types",
+    "question_variants": [
+      "plot shape", "land shape", "plot type", "shape of plot", "plot ka shape",
+      "plot shape help", "shape batao", "plot shape kya", "land shape help",
+      "rectangular", "square", "irregular", "corner plot", "l shaped",
+      "plot shape explain", "shape options", "plot geometry"
+    ],
+    "answer": "Plot shape describes your land: Rectangular (most common), Square (equal sides), L-shaped (like letter L), Irregular (odd shape), Corner (at road corner). Most plots are rectangular. If your plot has unusual shape, choose 'Irregular' and upload photos."
+  },
+  {
+    "id": "topography_land",
+    "question_variants": [
+      "topography", "land level", "slope", "flat land", "sloping land", "land type",
+      "topography help", "land level help", "slope help", "flat or slope",
+      "topography kya", "land level kya", "zameen flat hai", "zameen slope hai",
+      "topography batao", "land condition", "ground level", "terrain"
+    ],
+    "answer": "Topography means your land condition: Flat (level ground - easiest to build), Sloping (land goes up/down - needs extra work), Hilly (steep slope - more expensive). Flat land is cheapest to build on. Sloping land may need retaining walls and extra foundation work."
+  },
+  {
+    "id": "budget_ranges_explained",
+    "question_variants": [
+      "budget range", "cost range", "price range", "budget options", "budget help",
+      "5 lakh", "10 lakh", "20 lakh", "30 lakh", "50 lakh", "1 crore", "2 crore",
+      "budget range help", "cost options", "price options", "budget batao",
+      "kitna budget", "budget kitna", "cost kitna", "paisa kitna"
+    ],
+    "answer": "Budget ranges available: ₹5-10 Lakhs (basic house), ₹10-20 Lakhs (good quality), ₹20-30 Lakhs (premium), ₹30-50 Lakhs (luxury), ₹50-75 Lakhs (high-end), ₹75L-1Cr (premium luxury), ₹1-2 Crores (ultra luxury), ₹2-5 Crores (mansion), ₹5+ Crores (estate). Choose based on your budget capacity."
+  },
+  {
+    "id": "house_styles_aesthetic",
+    "question_variants": [
+      "house style", "design style", "aesthetic", "house design", "architecture style",
+      "style help", "design help", "house style help", "aesthetic help",
+      "modern", "traditional", "contemporary", "kerala style", "rajasthani style",
+      "style batao", "design batao", "house style kya", "design kya",
+      "architecture help", "style options", "design options"
+    ],
+    "answer": "House styles available: Modern (clean lines, glass), Traditional (classic Indian), Contemporary (mix of modern+traditional), Kerala Style (sloped roof, wood), Rajasthani (arches, courtyards), Minimalist (simple, less decoration), Colonial (British style), Mediterranean (European style). Choose what you like most."
+  }
+,
+  {
+    "id": "family_needs_requirements",
+    "question_variants": [
+      "family needs", "family requirements", "family size", "family members",
+      "family help", "family needs help", "family requirements help",
+      "family kya chahiye", "family needs batao", "family size help",
+      "elderly", "kids", "children", "parents", "joint family", "nuclear family",
+      "family type", "family structure", "family composition"
+    ],
+    "answer": "Family needs help us design better: Elderly Members (need ground floor room, ramp), Small Children (need safe spaces, play area), Joint Family (need more rooms, common areas), Nuclear Family (compact design), Working from Home (need study/office), Guests (need guest room). Tell us about your family so we can plan accordingly."
+  },
+  {
+    "id": "parking_garage",
+    "question_variants": [
+      "parking", "garage", "car parking", "vehicle parking", "car space",
+      "parking help", "garage help", "car parking help", "parking space",
+      "parking kitni", "garage chahiye", "car park", "vehicle space",
+      "parking batao", "garage batao", "car parking batao", "parking area"
+    ],
+    "answer": "Parking options: No Parking (save space), 1 Car Parking (12×20 feet), 2 Car Parking (20×20 feet), Covered Garage (protected from rain), Open Parking (cheaper option). Most families need 1-2 car parking. Garage protects car but costs more."
+  },
+  {
+    "id": "vastu_compliance",
+    "question_variants": [
+      "vastu", "vastu shastra", "vastu compliant", "vastu rules", "vastu help",
+      "vastu chahiye", "vastu follow", "vastu according", "vastu batao",
+      "vastu shastra help", "vastu rules help", "vastu compliance",
+      "direction", "facing", "east facing", "north facing", "vastu tips"
+    ],
+    "answer": "Vastu Shastra is traditional Indian architecture science about directions and energy. We can design according to Vastu rules: Main door facing East/North, Kitchen in South-East, Master bedroom in South-West, Pooja room in North-East. Tell us if you want Vastu-compliant design or you're flexible."
+  },
+  {
+    "id": "materials_construction",
+    "question_variants": [
+      "materials", "construction materials", "building materials", "brick", "cement",
+      "materials help", "construction materials help", "building materials help",
+      "materials kya", "materials batao", "construction material kya",
+      "brick or block", "aac block", "red brick", "materials options",
+      "quality materials", "best materials", "materials choice"
+    ],
+    "answer": "Construction materials options: Red Brick (traditional, strong), AAC Blocks (lightweight, insulated), Concrete Blocks (strong, fast), Steel Structure (modern, earthquake resistant), RCC (reinforced concrete). We use quality materials based on your budget and local availability. Standard materials work well for most homes."
+  },
+  {
+    "id": "electrical_plumbing",
+    "question_variants": [
+      "electrical", "plumbing", "wiring", "pipes", "electrical work", "plumbing work",
+      "electrical help", "plumbing help", "wiring help", "electrical batao",
+      "plumbing batao", "wiring batao", "electrical kya", "plumbing kya",
+      "power", "water supply", "drainage", "electrical points", "switches"
+    ],
+    "answer": "Electrical & Plumbing included in construction: Electrical (wiring, switches, lights, fans, AC points), Plumbing (water supply, drainage, bathroom fittings, kitchen sink). We plan power points for all appliances and proper water supply/drainage for all rooms. Tell us if you need special electrical needs like EV charging, generator, solar."
+  },
+  {
+    "id": "approvals_permissions",
+    "question_variants": [
+      "approvals", "permissions", "building permission", "plan approval", "noc",
+      "approvals help", "permissions help", "building permission help",
+      "approvals kya", "permissions kya", "approval chahiye", "permission chahiye",
+      "plan approval help", "building approval", "construction approval",
+      "legal approvals", "government approval", "municipal approval"
+    ],
+    "answer": "Building approvals needed: Building Plan Approval (from local authority), NOC (No Objection Certificate), Structural Approval (for safety), Electrical Approval (for power connection). Your architect will help get all required approvals. This takes 2-4 weeks usually and has government fees."
+  }
+,
+  {
+    "id": "photo_upload_help",
+    "question_variants": [
+      "photo upload", "upload photos", "site photos", "plot photos", "pictures",
+      "photo help", "upload help", "photo upload help", "pictures help",
+      "photo kaise upload", "photo upload kaise", "photos chahiye",
+      "site photos help", "plot photos help", "photo batao", "upload batao",
+      "how to upload", "photo requirements", "picture requirements"
+    ],
+    "answer": "Upload 3-5 clear photos of your plot: 1) Front view from road, 2) Inside the plot, 3) Left side boundary, 4) Right side boundary, 5) Back side. Take photos in good daylight, avoid blurry images. This helps architects understand your site better and design accordingly."
+  },
+  {
+    "id": "architect_selection",
+    "question_variants": [
+      "architect", "architect selection", "choose architect", "select architect",
+      "architect help", "architect selection help", "architect batao",
+      "architect kaise choose", "architect kaise select", "architect chahiye",
+      "good architect", "best architect", "architect find", "architect search"
+    ],
+    "answer": "After submitting your request, multiple architects will send you proposals with designs and quotes. You can see their portfolio, ratings, experience, and prices. Compare all proposals and choose the architect you like best. You can also message architects to ask questions before selecting."
+  },
+  {
+    "id": "contractor_vs_architect",
+    "question_variants": [
+      "contractor vs architect", "difference contractor architect", "contractor or architect",
+      "contractor help", "architect help", "contractor kya", "architect kya",
+      "contractor vs architect help", "difference help", "contractor batao",
+      "architect batao", "who to choose", "contractor or architect better"
+    ],
+    "answer": "Architect designs your house (plans, drawings, structure) and Contractor builds it (construction work, labor, materials). Many professionals do both - they design AND build your house. When you submit request, you'll get proposals from architects who can also handle construction, so you get complete service from one person."
+  },
+  {
+    "id": "payment_process",
+    "question_variants": [
+      "payment", "payment process", "how to pay", "payment method", "payment help",
+      "payment kaise", "payment batao", "paisa kaise de", "payment process help",
+      "payment schedule", "payment plan", "advance payment", "final payment",
+      "payment terms", "payment security", "safe payment"
+    ],
+    "answer": "Payment is done in stages for your safety: 1) Advance (10-20% to start), 2) Foundation completion (20-30%), 3) Structure completion (30-40%), 4) Finishing work (20-30%), 5) Final completion (5-10%). Never pay full amount in advance. Pay only after seeing completed work at each stage."
+  },
+  {
+    "id": "project_timeline_stages",
+    "question_variants": [
+      "project stages", "construction stages", "building stages", "project timeline",
+      "construction process", "building process", "project stages help",
+      "construction stages help", "building stages help", "project process",
+      "construction timeline", "building timeline", "stages batao", "process batao"
+    ],
+    "answer": "Construction stages: 1) Design & Approvals (1-2 months), 2) Foundation work (1 month), 3) Structure (walls, roof) (2-3 months), 4) Electrical & Plumbing (1 month), 5) Finishing (flooring, painting, fittings) (2-3 months), 6) Final touches (15 days). Total: 6-12 months depending on house size and complexity."
+  },
+  {
+    "id": "common_mistakes_avoid",
+    "question_variants": [
+      "mistakes to avoid", "common mistakes", "what not to do", "avoid mistakes",
+      "mistakes help", "common mistakes help", "mistakes batao", "galti kya",
+      "galti se bache", "mistakes in construction", "building mistakes",
+      "construction mistakes", "avoid problems", "problems to avoid"
+    ],
+    "answer": "Common mistakes to avoid: 1) Paying full advance (pay in stages), 2) Not checking architect credentials, 3) Skipping soil test, 4) Not getting proper approvals, 5) Changing design frequently (increases cost), 6) Not planning electrical points properly, 7) Ignoring ventilation, 8) Not keeping buffer budget (keep 10-15% extra)."
+  }
+,
+  {
+    "id": "grammar_variations_help",
+    "question_variants": [
+      "i dont no", "i dont know", "i not know", "dont no", "not no",
+      "help me", "help pls", "pls help", "plz help", "halp", "hlp",
+      "wat is", "wht is", "what iz", "whats", "wat", "wht",
+      "how 2", "how to", "how do", "how can", "kaise", "kese",
+      "tell me", "tel me", "batao", "bata do", "samjhao", "explain",
+      "i need", "i want", "i require", "chahiye", "chaiye", "chaye"
+    ],
+    "answer": "I understand! I'm here to help you with your house construction request. Don't worry about spelling or grammar - just tell me what you need help with. I can explain any part of the form in simple words. What specific question do you have?"
+  },
+  {
+    "id": "form_navigation_help",
+    "question_variants": [
+      "how to fill form", "form help", "form filling help", "form batao",
+      "form kaise bhare", "form kaise fill", "form help me", "form guide",
+      "step by step", "form steps", "form process", "form explain",
+      "form samjhao", "form tutorial", "form instructions"
+    ],
+    "answer": "Form filling is easy! Follow these steps: 1) Plot Details (size, shape, location), 2) Budget (how much money you want to spend), 3) Rooms (bedrooms, bathrooms, kitchen, etc.), 4) House Style (modern, traditional, etc.), 5) Upload Photos (of your plot), 6) Submit. I can help you with any step. Which part do you need help with?"
+  },
+  {
+    "id": "technical_terms_simple",
+    "question_variants": [
+      "technical words", "difficult words", "hard words", "terms meaning",
+      "technical terms", "construction terms", "building terms",
+      "words samjhao", "terms batao", "meaning batao", "explain words",
+      "simple words", "easy words", "simple language", "hindi me batao"
+    ],
+    "answer": "I'll explain everything in simple words! Here are common terms: Plot = Your land, Building = Your house, Budget = Money needed, BHK = Bedroom-Hall-Kitchen, Sqft = Square feet (area measurement), Architect = Person who designs house, Contractor = Person who builds house, Approval = Government permission. Ask me about any word you don't understand!"
+  },
+  {
+    "id": "urgent_help_support",
+    "question_variants": [
+      "urgent", "emergency", "urgent help", "immediate help", "fast help",
+      "urgent hai", "jaldi help", "turant help", "emergency help",
+      "urgent support", "immediate support", "quick help", "fast support",
+      "call me", "phone call", "talk to someone", "human help"
+    ],
+    "answer": "For urgent help, I can: 1) Answer your questions immediately, 2) Help you fill the form quickly, 3) Connect you to our support team for a phone call, 4) Mark your request as urgent for faster architect responses. What urgent help do you need right now? If you need to talk to someone, I can arrange a callback."
+  },
+  {
+    "id": "cost_estimation_help",
+    "question_variants": [
+      "cost estimate", "price estimate", "cost calculation", "price calculation",
+      "kitna kharcha", "kitna cost", "kitna price", "estimate help",
+      "cost batao", "price batao", "estimate batao", "calculation help",
+      "rough cost", "approximate cost", "ballpark cost", "cost idea"
+    ],
+    "answer": "Cost estimation depends on: 1) House size (bigger = more cost), 2) Location (city affects material prices), 3) Quality level (basic/premium/luxury), 4) Number of floors. Rough estimate: ₹1,500-₹3,000 per sqft. For 1500 sqft house: ₹22-45 Lakhs. For accurate estimate, submit your request and architects will give detailed quotes based on your exact requirements."
+  },
+  {
+    "id": "local_rules_bylaws",
+    "question_variants": [
+      "local rules", "building rules", "bylaws", "regulations", "permissions",
+      "local rules help", "building rules help", "bylaws help", "rules batao",
+      "permission rules", "construction rules", "building laws", "local laws",
+      "what rules", "rules kya hai", "permission kya chahiye", "rules follow"
+    ],
+    "answer": "Local building rules vary by city/area: 1) Setbacks (space from boundary), 2) Maximum floors allowed, 3) Building height limits, 4) Parking requirements, 5) Fire safety rules. Your architect knows local rules and will design accordingly. They'll also help get required approvals from local authorities. Don't worry - we handle all legal compliance."
+  },
+  {
+    "id": "dashboard_main_navigation",
+    "question_variants": [
+      "how to use dashboard", "dashboard help", "where to click", "dashboard navigation",
+      "dashboard kaise use kare", "dashboard help me", "dashboard batao", "dashboard guide",
+      "where is dashboard", "dashboard kaha hai", "main dashboard", "home dashboard",
+      "dashboard features", "dashboard options", "dashboard menu", "dashboard sections"
+    ],
+    "answer": "Your dashboard is your main control center! Here's what you'll see: 1) 'Create New Request' button (big blue button) - click to start a new project, 2) 'My Requests' - see all your submitted requests, 3) 'Active Projects' - ongoing construction work, 4) 'Messages' - chat with architects, 5) 'Profile' - update your details. Everything is clearly labeled with icons!"
+  },
+  {
+    "id": "create_request_button",
+    "question_variants": [
+      "where to create request", "create new request", "start new project", "submit request",
+      "request kaise banaye", "new request kaha hai", "request button kaha", "project start kaise",
+      "create request button", "new request button", "submit new request", "request form kaha",
+      "how to create request", "request banane ka button", "new project button"
+    ],
+    "answer": "Look for the big blue 'Create New Request' button on your dashboard - it's usually at the top! Click it to start your construction project. This opens the request form where you'll fill plot size, budget, rooms needed, etc. Can't miss it - it's the most prominent button!"
+  },
+  {
+    "id": "my_requests_section",
+    "question_variants": [
+      "my requests", "where are my requests", "submitted requests", "request status",
+      "mere requests kaha", "request status kaha", "submitted request kaha", "my request section",
+      "requests list", "all requests", "request history", "previous requests",
+      "request tracking", "request progress", "check request status"
+    ],
+    "answer": "Click 'My Requests' in the sidebar or main menu. Here you'll see: 1) All your submitted requests, 2) Status of each (Open/In Progress/Completed), 3) Number of proposals received, 4) Click any request to see details, proposals, and messages. It's like your project inbox!"
+  },
+  {
+    "id": "view_proposals_help",
+    "question_variants": [
+      "where are proposals", "see proposals", "architect proposals", "proposal kaha hai",
+      "proposals kaise dekhe", "architect ka proposal", "proposal check kaise", "proposal list",
+      "received proposals", "proposal status", "proposal section", "architect quotes",
+      "how to see proposals", "proposal viewing", "check architect proposals"
+    ],
+    "answer": "To see proposals: 1) Go to 'My Requests', 2) Click on your specific request, 3) Look for 'Proposals' tab or section, 4) You'll see all architect proposals with photos, prices, timelines. Each proposal shows architect profile, ratings, and portfolio. Click 'View Details' on any proposal to see full information!"
+  },
+  {
+    "id": "messages_section",
+    "question_variants": [
+      "where are messages", "chat with architect", "message section", "inbox",
+      "messages kaha hai", "architect se chat", "message kaise kare", "chat section",
+      "communication", "talk to architect", "architect contact", "messaging",
+      "chat kaha hai", "message box", "architect message", "conversation"
+    ],
+    "answer": "Click 'Messages' in your dashboard menu. Here you can: 1) See all conversations with architects, 2) Start new chats, 3) Reply to architect questions, 4) Share additional requirements. You can also message directly from any proposal by clicking 'Message Architect' button. All your chats are saved here!"
+  },
+  {
+    "id": "profile_settings",
+    "question_variants": [
+      "profile settings", "update profile", "edit profile", "my profile",
+      "profile kaha hai", "profile edit kaise", "profile update", "account settings",
+      "personal details", "profile information", "account details", "user profile",
+      "profile section", "my account", "profile page"
+    ],
+    "answer": "Click 'Profile' or your name/photo in the dashboard. Here you can: 1) Update personal details (name, phone, email), 2) Change password, 3) Add profile photo, 4) Update address, 5) Manage notification preferences. Keep your profile updated so architects can contact you easily!"
+  },
+  {
+    "id": "upload_documents_help",
+    "question_variants": [
+      "how to upload documents", "upload photos", "add documents", "document upload",
+      "photo upload kaise", "documents kaise upload", "file upload", "image upload",
+      "site photos upload", "property documents", "upload button kaha", "file attach",
+      "document attach", "photo attach", "upload kaise kare"
+    ],
+    "answer": "To upload documents: 1) In request form, look for 'Upload Documents' or 'Add Photos' section, 2) Click 'Choose Files' or drag & drop, 3) Select site photos, property papers, reference images, 4) Supported: JPG, PNG, PDF (max 10MB each). You can upload multiple files. Good photos help architects give better proposals!"
+  },
+  {
+    "id": "select_architect_help",
+    "question_variants": [
+      "how to select architect", "choose architect", "accept proposal", "hire architect",
+      "architect kaise choose kare", "proposal accept kaise", "architect select", "contractor choose",
+      "architect hire kaise", "proposal selection", "architect booking", "architect confirm",
+      "best architect kaise choose", "architect decision", "proposal accept button"
+    ],
+    "answer": "To select an architect: 1) Compare all proposals carefully, 2) Check architect ratings & portfolio, 3) Compare prices & timelines, 4) Read reviews from previous clients, 5) Message architects with questions, 6) Click 'Accept Proposal' on your preferred choice. Take your time - this is an important decision!"
+  },
+  {
+    "id": "project_tracking",
+    "question_variants": [
+      "track project", "project status", "construction progress", "project updates",
+      "project tracking kaise", "progress kaise dekhe", "project status check", "construction status",
+      "project progress", "work progress", "project monitoring", "construction tracking",
+      "project ka status", "kaam ka progress", "project update kaha"
+    ],
+    "answer": "Track your project in 'Active Projects' section: 1) See current construction phase, 2) View progress photos from architect, 3) Check timeline milestones, 4) Payment schedule status, 5) Upcoming tasks. Your architect will regularly update progress with photos and reports. You'll get notifications for major updates!"
+  },
+  {
+    "id": "payment_section",
+    "question_variants": [
+      "payment", "pay architect", "payment section", "billing", "invoice",
+      "payment kaise kare", "paisa kaise de", "payment method", "pay online",
+      "payment status", "payment history", "invoice kaha", "bill payment",
+      "architect ko payment", "construction payment", "payment tracking"
+    ],
+    "answer": "For payments: 1) Go to 'Active Projects' → Your project → 'Payments' tab, 2) See payment schedule & due amounts, 3) Click 'Pay Now' for secure online payment, 4) View payment history & receipts, 5) Set up auto-pay if available. All payments are secure and you get instant receipts!"
+  },
+  {
+    "id": "help_support",
+    "question_variants": [
+      "help", "support", "customer care", "contact support", "need help",
+      "help kaha hai", "support team", "customer service", "help center",
+      "problem hai", "issue hai", "complaint", "support contact", "help desk",
+      "technical support", "customer support", "help section"
+    ],
+    "answer": "Need help? 1) Use this chatbot for instant answers, 2) Click 'Help' or '?' icon in dashboard, 3) Email support@buildhub.com, 4) Call customer care (number in dashboard), 5) Live chat available 9 AM - 9 PM. We're here to help with any questions about using the platform, projects, or payments!"
+  },
+  {
+    "id": "notifications_alerts",
+    "question_variants": [
+      "notifications", "alerts", "updates", "notification settings", "alerts kaha",
+      "notification kaise dekhe", "alerts check", "update notifications", "message alerts",
+      "notification bell", "alert section", "notification center", "updates kaha",
+      "notification settings", "alert preferences"
+    ],
+    "answer": "Check notifications: 1) Click bell icon (🔔) in dashboard header, 2) See new proposals, messages, project updates, 3) Mark as read/unread, 4) Go to 'Settings' to manage notification preferences (email, SMS, push). You'll get alerts for: new proposals, architect messages, project milestones, payment reminders."
+  },
+  {
+    "id": "mobile_app_dashboard",
+    "question_variants": [
+      "mobile app", "phone app", "mobile dashboard", "app download", "mobile version",
+      "mobile app kaha", "phone me dashboard", "app download kaise", "mobile site",
+      "smartphone app", "android app", "ios app", "mobile browser", "phone browser"
+    ],
+    "answer": "Access dashboard on mobile: 1) Open browser on phone, 2) Go to buildhub.com, 3) Login with your account, 4) Mobile-friendly dashboard works perfectly, 5) All features available (create requests, view proposals, chat, payments). No separate app needed - the website works great on phones!"
+  },
+  {
+    "id": "dashboard_first_time",
+    "question_variants": [
+      "first time user", "new user help", "getting started", "dashboard tour", "beginner guide",
+      "pehli baar use kar raha", "new user", "dashboard guide", "start kaise kare",
+      "first time dashboard", "beginner help", "new to platform", "getting started guide",
+      "dashboard tutorial", "first steps", "how to begin"
+    ],
+    "answer": "Welcome to BuildHub! Here's your quick start guide: 1) Complete your profile first (click Profile), 2) Click big blue 'Create New Request' button, 3) Fill the form with your plot details & budget, 4) Upload site photos, 5) Submit and wait for architect proposals, 6) Check 'My Requests' to see proposals, 7) Message architects with questions, 8) Select your favorite proposal. That's it - you're all set!"
+  },
+  {
+    "id": "dashboard_troubleshooting",
+    "question_variants": [
+      "dashboard not working", "page not loading", "button not clicking", "error on dashboard",
+      "dashboard problem", "site not working", "login problem", "dashboard issue",
+      "page loading slow", "dashboard error", "technical problem", "website issue",
+      "dashboard nahi khul raha", "problem hai dashboard me", "error aa raha"
+    ],
+    "answer": "Dashboard issues? Try these: 1) Refresh the page (F5 or reload button), 2) Clear browser cache & cookies, 3) Try different browser (Chrome, Firefox), 4) Check internet connection, 5) Disable ad-blockers temporarily, 6) Try incognito/private mode. Still not working? Contact support - we'll fix it quickly!"
+  },
+  {
+    "id": "form_fields_overview",
+    "question_variants": [
+      "which fields to fill", "form fields help", "what to fill in form", "form filling guide",
+      "fields kya bharna hai", "form me kya dale", "fields help", "form guide",
+      "what information needed", "form requirements", "mandatory fields", "required fields",
+      "form fields batao", "kya kya bharna padega", "form me kya kya chahiye"
+    ],
+    "answer": "Here are the main fields you need to fill:\n\n**Essential Fields:**\n• Plot Size (length × width or total area)\n• Budget Range (your spending limit)\n• Number of Bedrooms (1BHK, 2BHK, 3BHK, etc.)\n• Number of Bathrooms\n• Number of Floors\n• Location/City\n\n**Optional but Helpful:**\n• Parking requirements\n• Special rooms (study, pooja room)\n• Preferred house style\n• Timeline for construction\n• Site photos\n\nDon't worry - I can help you with each field individually!"
+  },
+  {
+    "id": "plot_size_field_help",
+    "question_variants": [
+      "plot size field", "how to fill plot size", "plot size kya dale", "plot dimension field",
+      "plot size me kya likhe", "plot field help", "land size field", "plot area field",
+      "plot size best option", "plot size kaise bhare", "plot measurement field",
+      "site area field", "land area kya dale", "plot size form field"
+    ],
+    "answer": "**Plot Size Field - Best Practices:**\n\n**✅ DO:**\n• Enter as Length × Width (e.g., 30×40 feet)\n• Or total area (e.g., 1200 sqft)\n• Use consistent units (all feet or all meters)\n• Measure accurately or get survey done\n\n**❌ DON'T:**\n• Mix units (30 feet × 12 meters)\n• Guess measurements\n• Include built-up area\n• Forget to mention unit\n\n**Best Options:**\n• 30×40 feet (1200 sqft) - Good for 2-3BHK\n• 40×60 feet (2400 sqft) - Perfect for 3-4BHK\n• 50×80 feet (4000 sqft) - Spacious 4-5BHK\n\n**Pro Tip:** If irregular plot, mention total area + note 'irregular shape'"
+  },
+  {
+    "id": "budget_field_help",
+    "question_variants": [
+      "budget field help", "budget kya dale", "budget range field", "cost field help",
+      "budget me kya likhe", "budget best option", "budget field kaise bhare", "paisa field",
+      "budget range kya choose kare", "budget selection help", "cost range field",
+      "budget amount field", "construction budget field", "budget dropdown help"
+    ],
+    "answer": "**Budget Field - Smart Selection:**\n\n**✅ DO:**\n• Choose realistic range based on plot size\n• Include 10-20% buffer for extras\n• Consider location (metro cities cost more)\n• Think about quality level you want\n\n**❌ DON'T:**\n• Set unrealistic low budget\n• Forget about extra costs (approvals, furniture)\n• Choose too wide range\n• Include land cost in construction budget\n\n**Best Budget Ranges:**\n• **₹10-20 Lakhs:** Basic 1-2BHK (1000-1500 sqft)\n• **₹20-35 Lakhs:** Good quality 2-3BHK (1500-2000 sqft)\n• **₹35-50 Lakhs:** Premium 3BHK (2000-2500 sqft)\n• **₹50+ Lakhs:** Luxury 4BHK+ (2500+ sqft)\n\n**Pro Tip:** Budget = Plot area × ₹1500-3000 per sqft (depending on quality)"
+  },
+  {
+    "id": "bedroom_field_help",
+    "question_variants": [
+      "bedroom field help", "bedrooms kya choose kare", "bhk field help", "bedroom count field",
+      "kitne bedroom dale", "bedroom selection help", "bhk kya select kare", "rooms field",
+      "bedroom number field", "bedroom best option", "bhk field kaise bhare",
+      "bedroom count kya dale", "rooms kya choose kare", "bedroom dropdown help"
+    ],
+    "answer": "**Bedroom Field - Family-wise Selection:**\n\n**✅ DO:**\n• Consider current + future family size\n• Think about guests and parents\n• Plan for kids' growth\n• Consider work-from-home needs\n\n**❌ DON'T:**\n• Choose too few (you'll regret later)\n• Go overboard (maintenance issues)\n• Forget about master bedroom size\n• Ignore natural light in all rooms\n\n**Best Options by Family:**\n• **1BHK:** Single person/couple, no kids\n• **2BHK:** Couple + 1 child, small family\n• **3BHK:** Family of 4-5, most popular choice\n• **4BHK:** Large family, frequent guests\n• **5BHK+:** Joint family, luxury living\n\n**Pro Tip:** 3BHK is the sweet spot - good resale value, comfortable for most families"
+  },
+  {
+    "id": "bathroom_field_help",
+    "question_variants": [
+      "bathroom field help", "bathroom count field", "toilet field help", "washroom field",
+      "bathroom kya dale", "toilet kitne dale", "bathroom number field", "washroom count",
+      "bathroom selection help", "toilet count field", "bathroom best option",
+      "bathroom kaise choose kare", "toilet field kaise bhare", "washroom kya select kare"
+    ],
+    "answer": "**Bathroom Field - Practical Planning:**\n\n**✅ DO:**\n• Plan 1 bathroom per bedroom minimum\n• Add 1 common bathroom for guests\n• Consider attached vs common bathrooms\n• Think about powder room near living area\n\n**❌ DON'T:**\n• Have too few bathrooms (morning rush!)\n• Make all bathrooms same size\n• Forget ventilation planning\n• Skip powder room in large houses\n\n**Best Bathroom Count:**\n• **1BHK:** 1 bathroom (attached to bedroom)\n• **2BHK:** 2 bathrooms (1 attached + 1 common)\n• **3BHK:** 3 bathrooms (2 attached + 1 common)\n• **4BHK:** 4-5 bathrooms (3 attached + 1-2 common)\n\n**Pro Tip:** Always have at least 1 bathroom on ground floor for guests and elderly"
+  },
+  {
+    "id": "floors_field_help",
+    "question_variants": [
+      "floors field help", "floors kya dale", "storey field help", "floors count field",
+      "kitne floors dale", "floors selection help", "floors number field", "storey count",
+      "floors best option", "floors kaise choose kare", "storey field kaise bhare",
+      "floors dropdown help", "building height field", "floors kya select kare"
+    ],
+    "answer": "**Floors Field - Height Planning:**\n\n**✅ DO:**\n• Check local building height limits\n• Consider elderly family members\n• Plan for future expansion\n• Think about natural light and ventilation\n\n**❌ DON'T:**\n• Exceed local regulations\n• Make too many floors on small plot\n• Forget about staircase space\n• Ignore structural costs\n\n**Best Floor Options:**\n• **Ground Floor Only:** Easy access, good for elderly, lower cost\n• **Ground + 1st Floor:** Most popular, good space utilization\n• **Ground + 2 Floors:** Maximum space, needs lift planning\n• **Basement + Ground + 1st:** Extra space, higher cost\n\n**Pro Tip:** Ground + 1st floor is ideal - balances space, cost, and accessibility"
+  },
+  {
+    "id": "parking_field_help",
+    "question_variants": [
+      "parking field help", "parking kya dale", "car parking field", "vehicle parking field",
+      "parking selection help", "parking space field", "garage field help", "parking count",
+      "parking best option", "parking kaise choose kare", "car space field",
+      "parking requirements field", "vehicle space field", "parking area field"
+    ],
+    "answer": "**Parking Field - Vehicle Planning:**\n\n**✅ DO:**\n• Plan for current + future vehicles\n• Consider 2-wheeler parking separately\n• Check local parking requirements\n• Think about guest parking\n\n**❌ DON'T:**\n• Underestimate parking needs\n• Forget about car size variations\n• Ignore turning radius space\n• Skip covered parking\n\n**Best Parking Options:**\n• **1 Car:** Small family, budget-conscious\n• **2 Cars:** Most families, future-ready\n• **3+ Cars:** Large family, business needs\n• **No Parking:** Only if public transport area\n\n**Space Requirements:**\n• 1 Car: 10×20 feet minimum\n• 2 Cars: 20×20 feet or 10×40 feet\n• Include turning space: +5 feet on sides\n\n**Pro Tip:** Always plan for 2 cars even if you have 1 - future resale value!"
+  },
+  {
+    "id": "location_field_help",
+    "question_variants": [
+      "location field help", "location kya dale", "city field help", "address field",
+      "location selection help", "city kya choose kare", "area field help", "location best",
+      "location kaise bhare", "city field kaise bhare", "address kya dale",
+      "location dropdown help", "city selection help", "area kya select kare"
+    ],
+    "answer": "**Location Field - Area Selection:**\n\n**✅ DO:**\n• Enter exact city/town name\n• Mention specific area if metro city\n• Consider future development plans\n• Check connectivity and amenities\n\n**❌ DON'T:**\n• Be too vague (just 'Delhi')\n• Forget to mention state\n• Choose very remote areas\n• Ignore infrastructure development\n\n**Best Location Practices:**\n• **Metro Cities:** Mention sector/area (e.g., 'Gurgaon, Sector 45')\n• **Tier 2 Cities:** City name + landmark (e.g., 'Indore, Vijay Nagar')\n• **Towns:** Town + district (e.g., 'Khargone, MP')\n\n**Location affects:**\n• Material costs (transport)\n• Labor availability\n• Approval processes\n• Architect selection\n\n**Pro Tip:** Specific location helps architects give accurate quotes"
+  },
+  {
+    "id": "house_style_field_help",
+    "question_variants": [
+      "house style field", "design style field", "architecture style field", "house type field",
+      "style kya choose kare", "design field help", "house style help", "architecture field",
+      "style selection help", "design kya dale", "house style best option",
+      "architecture style help", "design type field", "style field kaise bhare"
+    ],
+    "answer": "**House Style Field - Design Selection:**\n\n**✅ DO:**\n• Choose style that suits climate\n• Consider maintenance requirements\n• Think about resale appeal\n• Match with neighborhood\n\n**❌ DON'T:**\n• Choose trendy styles that date quickly\n• Ignore local climate conditions\n• Pick high-maintenance designs\n• Copy exactly from photos\n\n**Popular Style Options:**\n• **Modern/Contemporary:** Clean lines, large windows, minimalist\n• **Traditional Indian:** Courtyards, arches, cultural elements\n• **Colonial:** Pillars, balconies, classic appeal\n• **Mediterranean:** Warm colors, tiles, outdoor living\n• **Minimalist:** Simple, functional, low maintenance\n\n**Climate Considerations:**\n• Hot areas: Light colors, large overhangs\n• Rainy areas: Sloped roofs, covered areas\n• Cold areas: Compact design, south-facing windows\n\n**Pro Tip:** Modern style is most popular - good resale value and lower maintenance"
+  },
+  {
+    "id": "timeline_field_help",
+    "question_variants": [
+      "timeline field help", "construction time field", "completion time field", "duration field",
+      "timeline kya dale", "time field help", "construction duration field", "project time",
+      "timeline selection help", "completion timeline field", "construction timeline help",
+      "project duration field", "timeline best option", "time kya choose kare"
+    ],
+    "answer": "**Timeline Field - Realistic Planning:**\n\n**✅ DO:**\n• Be realistic about construction time\n• Add buffer for delays (weather, approvals)\n• Consider seasonal factors\n• Plan around festivals/monsoons\n\n**❌ DON'T:**\n• Set unrealistic short timelines\n• Forget about approval time\n• Ignore monsoon delays\n• Rush quality for speed\n\n**Realistic Timelines:**\n• **1000-1500 sqft:** 8-12 months\n• **1500-2500 sqft:** 12-18 months\n• **2500+ sqft:** 18-24 months\n• **Add 2-4 months:** For approvals\n\n**Factors Affecting Timeline:**\n• Plot accessibility\n• Design complexity\n• Material availability\n• Weather conditions\n• Local regulations\n\n**Pro Tip:** Start in October-November to avoid monsoon delays in main construction"
+  },
+  {
+    "id": "special_rooms_field_help",
+    "question_variants": [
+      "special rooms field", "additional rooms field", "extra rooms field", "other rooms field",
+      "special rooms kya dale", "extra rooms help", "additional rooms help", "other rooms help",
+      "special rooms selection", "extra rooms kya choose kare", "additional rooms best",
+      "special rooms options", "other rooms kya dale", "extra rooms field help"
+    ],
+    "answer": "**Special Rooms Field - Extra Spaces:**\n\n**✅ DO:**\n• Think about family lifestyle\n• Consider future needs\n• Plan for hobbies and interests\n• Think about work-from-home\n\n**❌ DON'T:**\n• Add too many special rooms\n• Forget about maintenance\n• Make rooms too small\n• Ignore natural light needs\n\n**Popular Special Rooms:**\n• **Study Room:** Kids education, WFH (8×10 feet min)\n• **Pooja Room:** Religious activities (6×8 feet min)\n• **Store Room:** Storage needs (6×8 feet min)\n• **Servant Room:** Domestic help (8×10 feet)\n• **Home Theater:** Entertainment (12×15 feet min)\n• **Gym:** Fitness (10×12 feet min)\n• **Guest Room:** Visitors (10×12 feet)\n\n**Priority Order:**\n1. Study Room (essential for families with kids)\n2. Store Room (everyone needs storage)\n3. Pooja Room (cultural importance)\n4. Guest Room (social needs)\n\n**Pro Tip:** Study room is most important - can double as office/guest room"
+  },
+  {
+    "id": "kitchen_type_field_help",
+    "question_variants": [
+      "kitchen type field", "kitchen style field", "kitchen design field", "kitchen layout field",
+      "kitchen type kya choose kare", "kitchen field help", "kitchen style help", "kitchen design help",
+      "kitchen layout help", "kitchen type best option", "kitchen kya select kare",
+      "kitchen style kya dale", "kitchen design kya choose kare", "kitchen layout best"
+    ],
+    "answer": "**Kitchen Type Field - Layout Selection:**\n\n**✅ DO:**\n• Consider family cooking habits\n• Think about kitchen size available\n• Plan for appliances and storage\n• Consider who will cook\n\n**❌ DON'T:**\n• Choose trendy over functional\n• Make kitchen too small\n• Ignore ventilation needs\n• Forget about dining connection\n\n**Kitchen Layout Options:**\n• **Straight/Linear:** Small spaces, budget-friendly\n• **L-Shaped:** Most popular, good corner utilization\n• **U-Shaped:** Maximum storage, larger families\n• **Island Kitchen:** Luxury, needs large space\n• **Parallel/Galley:** Efficient, medium spaces\n\n**Best Choices:**\n• **Small House (1-2BHK):** Straight or L-shaped\n• **Medium House (3BHK):** L-shaped or U-shaped\n• **Large House (4BHK+):** U-shaped or Island\n\n**Pro Tip:** L-shaped kitchen is most versatile - works in most house sizes and budgets"
+  },
+  {
+    "id": "form_filling_tips",
+    "question_variants": [
+      "form filling tips", "form tips", "best practices form", "form filling guide",
+      "form kaise bhare", "form tips batao", "form filling help", "form guide",
+      "form filling best practices", "form tips and tricks", "form filling do dont",
+      "form bharने ke tips", "form filling advice", "form completion tips"
+    ],
+    "answer": "**Form Filling - Pro Tips:**\n\n**✅ ALWAYS DO:**\n• Fill all mandatory fields completely\n• Double-check measurements and numbers\n• Upload clear, well-lit photos\n• Be honest about budget constraints\n• Mention special requirements clearly\n• Save draft before submitting\n\n**❌ NEVER DO:**\n• Leave required fields empty\n• Guess measurements or costs\n• Upload blurry or dark photos\n• Set unrealistic budgets\n• Hide important site conditions\n• Submit without reviewing\n\n**Photo Upload Tips:**\n• Take photos in good daylight\n• Show all 4 sides of plot\n• Include any existing structures\n• Show road access and surroundings\n• Max 5MB per photo, JPG/PNG format\n\n**Pro Tip:** Complete profile first, then create request - architects trust complete profiles more!"
+  },
+  {
+    "id": "construction_process_stages",
+    "question_variants": [
+      "construction process", "building process", "construction stages", "building stages",
+      "construction steps", "building steps", "construction sequence", "building sequence",
+      "construction process kya hai", "building process batao", "construction stages kya hai",
+      "construction process enthaanu", "building stages parayamo", "construction steps enthanu",
+      "how construction works", "construction workflow", "building workflow", "construction timeline",
+      "construction phases", "building phases", "construction methodology", "building methodology",
+      "construction procedure", "building procedure", "house construction process", "home construction process",
+      "veedu paniyan process", "construction engane nadakum", "building process ariyilla"
+    ],
+    "answer": "**Construction Process - Step by Step:**\n\n**Phase 1: Planning (1-2 months)**\n• Site survey and soil testing\n• Architectural design and approvals\n• Structural design and permits\n• Material planning and costing\n\n**Phase 2: Foundation (1-2 months)**\n• Excavation and foundation laying\n• Plumbing and electrical groundwork\n• Foundation curing and backfilling\n\n**Phase 3: Structure (3-4 months)**\n• Column and beam construction\n• Slab casting and curing\n• Wall construction and plastering\n\n**Phase 4: Finishing (2-3 months)**\n• Electrical and plumbing installation\n• Flooring, painting, and fixtures\n• Final inspections and handover\n\n**Total Time:** 8-12 months for average house"
+  },
+  {
+    "id": "architect_selection_help",
+    "question_variants": [
+      "how to choose architect", "architect selection", "best architect", "good architect",
+      "architect kaise choose kare", "architect selection help", "architect kaise select kare",
+      "architect enthaanu", "architect engane select cheyyam", "good architect engane kaanam",
+      "architect qualifications", "architect experience", "architect portfolio", "architect ratings",
+      "architect fees", "architect charges", "architect cost", "architect price",
+      "architect vs contractor", "architect vs builder", "architect necessity", "architect importance",
+      "do i need architect", "architect required", "architect benefits", "architect services",
+      "architect ariyilla", "architect venamoo", "architect engane select cheyyam"
+    ],
+    "answer": "**How to Choose the Right Architect:**\n\n**✅ Check These:**\n• Valid license and registration\n• 5+ years experience in residential projects\n• Portfolio of similar-sized houses\n• Good client reviews and ratings\n• Clear communication and responsiveness\n• Reasonable fees (8-12% of construction cost)\n\n**❌ Avoid These:**\n• No proper license or credentials\n• Only commercial experience\n• No portfolio or references\n• Poor communication or delays\n• Extremely low or high fees\n• No written agreement\n\n**Questions to Ask:**\n• How many houses have you designed?\n• Can I see your recent projects?\n• What's included in your fee?\n• How long will design take?\n• Do you help with approvals?\n\n**Pro Tip:** Choose architect based on portfolio similarity to your dream house, not just low price!"
+  },
+  {
+    "id": "construction_materials_guide",
+    "question_variants": [
+      "construction materials", "building materials", "house materials", "construction material list",
+      "materials needed", "building material list", "construction materials kya chahiye",
+      "building materials batao", "construction materials list", "house building materials",
+      "construction materials enthaanu", "building materials enthanu", "materials ethrayanu",
+      "cement", "steel", "bricks", "sand", "aggregate", "tiles", "paint", "wood",
+      "material quality", "material brands", "material cost", "material prices",
+      "best materials", "good materials", "material selection", "material planning",
+      "eco friendly materials", "sustainable materials", "green building materials",
+      "materials engane select cheyyam", "best materials enthanu", "materials list parayamo"
+    ],
+    "answer": "**Essential Construction Materials:**\n\n**Structural Materials:**\n• **Cement:** OPC 53 grade (best for strength)\n• **Steel:** TMT bars Fe500 grade\n• **Bricks:** Red clay or AAC blocks\n• **Sand:** River sand (fine aggregate)\n• **Aggregate:** 20mm and 10mm stones\n\n**Finishing Materials:**\n• **Tiles:** Vitrified for floors, ceramic for walls\n• **Paint:** Exterior (weather-resistant), Interior (washable)\n• **Wood:** Teak/Sal for doors, plywood for furniture\n• **Electrical:** ISI marked wires and switches\n• **Plumbing:** CPVC pipes, branded fittings\n\n**Quality Tips:**\n• Buy from authorized dealers only\n• Check ISI/BIS certification marks\n• Don't compromise on structural materials\n• Compare prices from 3-4 suppliers\n\n**Budget Allocation:**\n• Structural materials: 40-50%\n• Finishing materials: 30-40%\n• Labor: 20-30%"
+  },
+  {
+    "id": "loan_financing_help",
+    "question_variants": [
+      "home loan", "construction loan", "house loan", "building loan", "loan for construction",
+      "loan kaise le", "home loan kaise apply kare", "construction loan process",
+      "loan enthaanu", "home loan engane edukam", "loan process enthanu",
+      "loan eligibility", "loan documents", "loan interest rate", "loan amount",
+      "loan approval", "loan processing", "loan disbursement", "loan EMI",
+      "bank loan", "housing finance", "loan against property", "plot loan",
+      "loan requirements", "loan criteria", "loan application", "loan procedure",
+      "loan engane kittum", "home loan documents enthanu", "loan eligibility ariyilla"
+    ],
+    "answer": "**Home/Construction Loan Guide:**\n\n**Loan Types:**\n• **Plot + Construction Loan:** For land purchase + building\n• **Construction Loan:** Only for building on owned land\n• **Home Loan:** For ready-to-move houses\n• **Loan Against Property:** Using existing property as collateral\n\n**Eligibility Criteria:**\n• Age: 21-65 years\n• Income: ₹25,000+ per month (salaried)\n• Credit Score: 750+ (preferred)\n• Stable employment (2+ years)\n\n**Required Documents:**\n• Income proof (salary slips, ITR)\n• Identity and address proof\n• Property documents\n• Bank statements (6 months)\n• Construction estimates and approvals\n\n**Loan Features:**\n• **Amount:** Up to 80-90% of property value\n• **Interest Rate:** 8.5-11% per annum\n• **Tenure:** Up to 30 years\n• **Processing Fee:** 0.5-1% of loan amount\n\n**Pro Tip:** Compare rates from 3-4 banks, negotiate processing fees, maintain good credit score!"
+  },
+  {
+    "id": "common_construction_problems",
+    "question_variants": [
+      "construction problems", "building problems", "construction issues", "building issues",
+      "construction defects", "building defects", "construction mistakes", "building mistakes",
+      "construction problems kya hai", "building issues batao", "construction defects",
+      "construction problems enthaanu", "building issues enthanu", "construction mistakes",
+      "water leakage", "cracks in wall", "poor construction", "construction quality",
+      "construction delays", "cost overrun", "material issues", "labor problems",
+      "contractor problems", "architect problems", "construction disputes", "quality issues",
+      "construction problems engane solve cheyyam", "building issues ariyilla", "quality problems"
+    ],
+    "answer": "**Common Construction Problems & Solutions:**\n\n**Quality Issues:**\n• **Water Leakage:** Poor waterproofing, use quality materials\n• **Wall Cracks:** Poor foundation/materials, get structural check\n• **Uneven Floors:** Poor leveling, use laser leveling\n• **Electrical Issues:** Poor wiring, use ISI marked materials\n\n**Project Management Issues:**\n• **Cost Overrun:** Poor planning, get detailed estimates\n• **Delays:** Weather/approvals, add buffer time\n• **Material Shortage:** Poor planning, order in advance\n• **Labor Issues:** Seasonal shortage, plan accordingly\n\n**Contractor/Architect Issues:**\n• **Poor Communication:** Set regular review meetings\n• **Quality Compromise:** Regular site inspections\n• **Payment Disputes:** Clear payment milestones\n• **Design Changes:** Document all changes\n\n**Prevention Tips:**\n• Hire experienced professionals\n• Regular site visits and inspections\n• Clear contracts and agreements\n• Don't compromise on structural quality\n• Keep 10-15% contingency budget\n\n**Pro Tip:** Prevention is better than cure - invest in good professionals and regular monitoring!"
+  },
+  {
+    "id": "beginner_construction_guide",
+    "question_variants": [
+      "first time building house", "new to construction", "beginner construction guide",
+      "construction beginner", "first house construction", "new house builder",
+      "pehli baar ghar bana raha", "construction me naya hun", "beginner guide",
+      "first time construction enthaanu", "construction beginner guide", "new builder help",
+      "construction basics", "house building basics", "construction fundamentals",
+      "construction for dummies", "construction 101", "house building 101",
+      "construction guide for beginners", "first time home builder", "construction newbie",
+      "construction ariyilla", "veedu paniyunnathu first time", "construction basics parayamo"
+    ],
+    "answer": "**Complete Beginner's Construction Guide:**\n\n**Step 1: Planning Phase (2-3 months)**\n• Finalize plot and get clear title\n• Set realistic budget (add 20% buffer)\n• Research and hire architect\n• Get soil test done\n• Apply for building approvals\n\n**Step 2: Design Phase (1-2 months)**\n• Discuss requirements with architect\n• Review and approve house design\n• Get structural drawings\n• Finalize material specifications\n• Get construction estimates\n\n**Step 3: Pre-Construction (1 month)**\n• Hire reliable contractor\n• Arrange financing/loans\n• Order materials in advance\n• Set up site facilities\n• Get construction insurance\n\n**Step 4: Construction (8-12 months)**\n• Regular site visits (weekly)\n• Monitor quality and progress\n• Make payments as per milestones\n• Handle any design changes\n• Prepare for final inspections\n\n**Beginner Tips:**\n• Don't rush - good planning saves money\n• Always get multiple quotes\n• Document everything in writing\n• Visit other construction sites\n• Join online construction communities\n\n**Pro Tip:** Your first house is a learning experience - focus on functionality over fancy features!"
+  },
+  {
+    "id": "cost_saving_tips",
+    "question_variants": [
+      "cost saving tips", "save money construction", "reduce construction cost",
+      "budget construction", "cheap construction", "low cost construction",
+      "construction cost kaise kam kare", "paisa kaise bachaye", "budget me ghar",
+      "cost saving enthaanu", "paisa engane save cheyyam", "budget construction tips",
+      "affordable construction", "economical construction", "cost effective construction",
+      "construction cost reduction", "money saving tips", "budget friendly construction",
+      "low budget house", "cost cutting construction", "economical house building",
+      "paisa bachane ke tips", "cost kam kaise kare", "budget house construction"
+    ],
+    "answer": "**Smart Cost Saving Tips:**\n\n**Design Optimization:**\n• Keep design simple and functional\n• Avoid too many corners and cuts\n• Plan compact layout\n• Minimize structural complexity\n• Use standard door/window sizes\n\n**Material Savings:**\n• Buy materials directly from manufacturers\n• Purchase in bulk during off-season\n• Use local materials to save transport\n• Choose cost-effective alternatives (AAC blocks vs bricks)\n• Negotiate with multiple suppliers\n\n**Construction Savings:**\n• Hire local skilled labor\n• Avoid construction during peak season\n• Do some work yourself (painting, landscaping)\n• Use prefab elements where possible\n• Plan electrical/plumbing efficiently\n\n**Smart Choices:**\n• Start with basic finishes, upgrade later\n• Use energy-efficient materials (long-term savings)\n• Plan for future expansion\n• Choose low-maintenance materials\n• Avoid frequent design changes\n\n**Potential Savings:**\n• Design optimization: 10-15%\n• Material procurement: 15-20%\n• Construction efficiency: 10-15%\n• **Total possible savings: 30-40%**\n\n**Pro Tip:** Don't compromise on structural quality - save on finishes, not foundation!"
+  },
+  {
+    "id": "quality_control_tips",
+    "question_variants": [
+      "quality control", "construction quality", "quality check", "quality assurance",
+      "quality control kya hai", "construction quality kaise check kare", "quality tips",
+      "quality control enthaanu", "construction quality engane check cheyyam", "quality assurance",
+      "construction inspection", "quality monitoring", "construction supervision",
+      "quality standards", "construction quality control", "building quality",
+      "quality check points", "construction quality tips", "quality management",
+      "good construction quality", "quality construction", "construction standards"
+    ],
+    "answer": "**Construction Quality Control Guide:**\n\n**Foundation Quality Checks:**\n• Proper excavation depth and width\n• Correct concrete mix ratio (1:2:4)\n• Adequate steel reinforcement\n• Proper curing for 28 days\n• Level and alignment checks\n\n**Structural Quality Checks:**\n• Column and beam dimensions as per drawing\n• Correct steel placement and cover\n• Concrete slump test (75-100mm)\n• Proper vibration during casting\n• Water-cement ratio maintenance\n\n**Finishing Quality Checks:**\n• Wall plaster thickness (12-15mm)\n• Electrical points as per plan\n• Plumbing pressure testing\n• Tile alignment and level\n• Paint coverage and finish\n\n**Quality Control Schedule:**\n• **Daily:** Material quality, workmanship\n• **Weekly:** Progress vs plan, measurements\n• **Monthly:** Overall quality audit\n• **Milestone:** Professional inspection\n\n**Red Flags to Watch:**\n• Cracks in fresh concrete\n• Water seepage anywhere\n• Uneven surfaces\n• Poor material quality\n• Shortcuts in process\n\n**Pro Tip:** Hire independent quality inspector for major milestones - small cost, big peace of mind!"
+  },
+  {
+    "id": "monsoon_construction_tips",
+    "question_variants": [
+      "monsoon construction", "rainy season construction", "construction in rain",
+      "monsoon me construction", "barish me construction", "rainy season building",
+      "monsoon construction enthaanu", "mazha kaalath construction", "rain construction tips",
+      "wet weather construction", "construction during rains", "monsoon building tips",
+      "rainy season precautions", "monsoon construction problems", "rain construction issues",
+      "construction rain protection", "monsoon construction safety", "rain weather construction"
+    ],
+    "answer": "**Monsoon Construction Guidelines:**\n\n**What to AVOID During Monsoons:**\n• Fresh concrete work (poor quality)\n• Foundation excavation (water logging)\n• Brick/block laying (moisture issues)\n• Exterior painting (won't dry properly)\n• Electrical installations (safety risk)\n\n**What CAN BE DONE:**\n• Interior finishing work\n• Plumbing installations\n• Interior painting (with proper ventilation)\n• Planning and design work\n• Material procurement and storage\n\n**Monsoon Precautions:**\n• Cover all materials with tarpaulin\n• Ensure proper site drainage\n• Protect steel from rusting\n• Cover fresh concrete work\n• Maintain dry storage areas\n\n**Material Storage Tips:**\n• Cement: Store 6 inches above ground\n• Steel: Cover and keep dry\n• Bricks: Stack with proper drainage\n• Sand: Cover completely\n• Electrical items: Store in dry place\n\n**Emergency Measures:**\n• Have water pumps ready\n• Maintain emergency contact numbers\n• Keep site accessible\n• Regular inspection of temporary structures\n\n**Pro Tip:** Use monsoon time for interior work and planning - don't stop completely, just adapt!"
+  },
+  {
+    "id": "technology_smart_home",
+    "question_variants": [
+      "smart home", "home automation", "smart house", "technology in house",
+      "smart home kya hai", "home automation batao", "smart house features",
+      "smart home enthaanu", "home automation enthanu", "smart house engane cheyyam",
+      "smart switches", "smart lights", "smart security", "smart appliances",
+      "home automation system", "smart home technology", "intelligent home",
+      "connected home", "IoT home", "smart home devices", "home automation cost",
+      "smart home installation", "smart home benefits", "smart home planning"
+    ],
+    "answer": "**Smart Home Technology Guide:**\n\n**Basic Smart Home Features:**\n• **Smart Switches:** Control lights remotely (₹500-2000 each)\n• **Smart Lights:** Color changing, dimming (₹1000-3000 each)\n• **Smart Security:** Cameras, door locks (₹5000-20000)\n• **Smart Thermostat:** AC control (₹3000-8000)\n• **Voice Assistants:** Alexa, Google Home (₹3000-10000)\n\n**Advanced Features:**\n• **Smart Curtains:** Automated opening/closing\n• **Smart Irrigation:** Garden watering system\n• **Smart Doorbell:** Video calling feature\n• **Smart Appliances:** Refrigerator, washing machine\n• **Energy Monitoring:** Track power consumption\n\n**Planning During Construction:**\n• Extra electrical points for devices\n• Strong WiFi coverage throughout\n• Central control panel location\n• Conduits for future wiring\n• Adequate power backup\n\n**Cost Breakdown:**\n• **Basic Setup:** ₹50,000-1,00,000\n• **Advanced Setup:** ₹1,00,000-3,00,000\n• **Luxury Setup:** ₹3,00,000+\n\n**Benefits:**\n• Energy savings (20-30%)\n• Enhanced security\n• Convenience and comfort\n• Increased property value\n\n**Pro Tip:** Start with basic features and expand gradually - technology keeps evolving!"
+  },
+  {
+    "id": "house_plan_drawing_feature",
+    "question_variants": [
+      "house plan drawing", "custom house plan", "draw house plan", "house plan designer",
+      "house plan kaise banaye", "house plan drawing tool", "custom house design",
+      "house plan drawing feature", "interactive house plan", "house plan creator",
+      "house plan drawing enthaanu", "house plan engane draw cheyyam", "house plan designer tool",
+      "room placement", "drag and drop rooms", "house layout design", "floor plan creator",
+      "house plan drawing help", "custom floor plan", "interactive floor plan", "house design tool",
+      "architect house plan", "house plan submission", "house plan approval", "house plan review"
+    ],
+    "answer": "**House Plan Drawing Feature - BuildHub's Interactive Designer:**\n\n**What is it?**\n• Interactive drag-and-drop house plan designer\n• Create custom floor plans by placing rooms\n• Real-time area calculations and measurements\n• Professional architectural visualization\n\n**How to Use:**\n1. **Access:** Go to Architect Dashboard → 'House Plan Designer'\n2. **Setup:** Enter plot dimensions and scale\n3. **Design:** Drag rooms from template library onto plot\n4. **Customize:** Resize rooms, adjust positions\n5. **Review:** Check total area and room distribution\n6. **Submit:** Send to homeowner for approval\n\n**Key Features:**\n• **14 Room Templates:** Bedroom, Kitchen, Living Room, Bathroom, etc.\n• **Dual Measurements:** Layout view + Construction dimensions\n• **Smart Scaling:** Automatic scale ratio conversion\n• **Undo/Redo:** 50-step history with Ctrl+Z/Ctrl+Y\n• **Interactive Tour:** Built-in help and guidance\n• **Real-time Validation:** Area calculations and space optimization\n\n**Room Templates Available:**\n🛏️ Master Bedroom, 🛏️ Bedroom, 🍳 Kitchen, 🛁 Bathroom, 🛋️ Living Room, 🍽️ Dining Room, 📚 Study Room, 🙏 Pooja Room, 📦 Store Room, 🚗 Parking, 🏡 Balcony, 🚪 Entrance, 🌿 Garden, 🏠 Utility Room\n\n**Pro Tip:** Start with main rooms (bedrooms, kitchen, living) then add secondary spaces. Use the tour feature for step-by-step guidance!"
+  },
+  {
+    "id": "geo_tagged_photos_feature",
+    "question_variants": [
+      "geo tagged photos", "gps photos", "location photos", "construction photos with location",
+      "geo photo capture", "gps photo capture", "location based photos", "geo tagged images",
+      "geo photos kya hai", "gps photos kaise le", "location photos help", "geo tagged photos help",
+      "geo photos enthaanu", "gps photos engane edukam", "location photos enthanu",
+      "construction site photos", "progress photos with gps", "geo location photos", "tagged photos",
+      "photo with coordinates", "gps coordinates on photos", "location stamped photos", "geo photo system",
+      "contractor photos", "site documentation photos", "progress documentation", "geo photo capture help"
+    ],
+    "answer": "**Geo-Tagged Photos Feature - GPS-Enabled Construction Documentation:**\n\n**What is it?**\n• Photos automatically tagged with GPS coordinates\n• Real-time location embedding on images\n• Professional construction progress documentation\n• Secure photo sharing between contractor and homeowner\n\n**How Contractors Use It:**\n1. **Access:** Go to 'Construction Progress Update' section\n2. **Capture:** Click 'Take Geo Photo' button\n3. **Location:** Allow GPS access for automatic tagging\n4. **Review:** See coordinates displayed on photo overlay\n5. **Submit:** Include in progress reports to homeowner\n\n**Key Features:**\n• **Automatic GPS Tagging:** Latitude/longitude embedded in photos\n• **Visual Coordinates:** Bright overlay showing exact location\n• **Address Resolution:** Automatic address lookup from coordinates\n• **Progress Integration:** Photos linked to specific progress updates\n• **Secure Storage:** Encrypted photo storage and sharing\n• **Homeowner Access:** View all site photos with location data\n\n**Coordinate Display:**\n• **Green Text:** Latitude coordinates\n• **Cyan Text:** Longitude coordinates\n• **White Background:** High contrast for visibility\n• **Dual Display:** Main overlay + summary box\n\n**Benefits:**\n• **Proof of Work:** Verify work done at correct location\n• **Progress Tracking:** Visual timeline of construction\n• **Quality Assurance:** Document issues with exact location\n• **Legal Protection:** GPS-verified work documentation\n• **Remote Monitoring:** Homeowners can track progress remotely\n\n**Pro Tip:** Take photos in good daylight for best coordinate visibility. GPS coordinates help resolve any disputes about work location!"
+  },
+  {
+    "id": "progress_reports_feature",
+    "question_variants": [
+      "progress reports", "construction progress", "progress tracking", "project progress",
+      "progress reports kya hai", "construction progress kaise dekhe", "progress tracking help",
+      "progress reports enthaanu", "construction progress engane check cheyyam", "progress reports help",
+      "contractor progress", "homeowner progress", "progress updates", "construction updates",
+      "progress report generation", "progress report viewing", "progress report system",
+      "construction progress reports", "project status reports", "work progress reports",
+      "progress documentation", "construction tracking", "project monitoring", "progress report feature"
+    ],
+    "answer": "**Progress Reports Feature - Comprehensive Construction Tracking:**\n\n**What is it?**\n• Detailed construction progress documentation system\n• Real-time updates from contractors to homeowners\n• Photo-rich progress reports with timelines\n• Milestone tracking and completion verification\n\n**For Contractors:**\n1. **Generate Reports:** Go to 'Progress Report Generator'\n2. **Document Work:** Add photos, descriptions, completion %\n3. **Include Geo Photos:** Attach GPS-tagged construction photos\n4. **Set Milestones:** Mark completed phases and upcoming work\n5. **Send to Homeowner:** Submit for review and approval\n\n**For Homeowners:**\n1. **View Reports:** Go to 'Progress Reports' in dashboard\n2. **Review Updates:** See latest construction status\n3. **Check Photos:** View geo-tagged site photos\n4. **Track Timeline:** Monitor project milestones\n5. **Communicate:** Message contractor about progress\n\n**Report Components:**\n• **Work Completed:** Detailed description of finished tasks\n• **Photo Documentation:** Before/after images with GPS data\n• **Completion Percentage:** Overall project progress\n• **Timeline Updates:** Revised completion dates\n• **Material Usage:** Consumption tracking\n• **Quality Checks:** Inspection results and approvals\n• **Next Steps:** Upcoming work and requirements\n\n**Key Features:**\n• **Visual Timeline:** Progress tracking with photos\n• **Milestone Alerts:** Notifications for major completions\n• **Quality Verification:** Photo evidence of work quality\n• **Communication Hub:** Direct messaging between parties\n• **Document Storage:** All reports saved for reference\n• **Mobile Friendly:** Access from any device\n\n**Benefits:**\n• **Transparency:** Clear visibility into construction progress\n• **Quality Assurance:** Photo documentation of all work\n• **Timeline Management:** Track delays and accelerations\n• **Remote Monitoring:** Stay updated without site visits\n• **Dispute Resolution:** Photo evidence for any issues\n\n**Pro Tip:** Check progress reports weekly and communicate promptly with contractors about any concerns!"
+  },
+  {
+    "id": "enhanced_dashboard_features",
+    "question_variants": [
+      "new dashboard features", "enhanced dashboard", "dashboard updates", "new features dashboard",
+      "dashboard new features kya hai", "enhanced dashboard help", "dashboard improvements",
+      "dashboard new features enthaanu", "dashboard enhancements enthanu", "new dashboard help",
+      "notification system", "message center", "inbox messages", "dashboard notifications",
+      "toast notifications", "notification badges", "message alerts", "dashboard alerts",
+      "enhanced navigation", "improved dashboard", "dashboard upgrades", "new dashboard tools",
+      "dashboard feature updates", "latest dashboard features", "dashboard enhancements help"
+    ],
+    "answer": "**Enhanced Dashboard Features - Latest BuildHub Updates:**\n\n**New Notification System:**\n• **Toast Notifications:** Instant pop-up alerts for quick actions\n• **Inbox Messages:** Persistent messages for important updates\n• **Notification Badges:** Red dots showing unread count\n• **Smart Alerts:** Context-aware notifications based on activity\n\n**Message Center Improvements:**\n• **Unified Inbox:** All messages in one place\n• **Message Categories:** Architect messages, system alerts, progress updates\n• **Read/Unread Status:** Clear tracking of message status\n• **Quick Actions:** Reply, mark read, delete from inbox\n• **Search Function:** Find specific messages quickly\n\n**Enhanced Navigation:**\n• **Quick Access Buttons:** One-click access to common actions\n• **Breadcrumb Navigation:** Always know where you are\n• **Mobile Optimization:** Perfect experience on all devices\n• **Keyboard Shortcuts:** Power user features (Ctrl+Z, Delete key)\n• **Context Menus:** Right-click options for advanced users\n\n**Interactive Help System:**\n• **Built-in Tours:** Step-by-step guidance for new features\n• **Smart Help:** Context-sensitive help suggestions\n• **Search Help:** Find answers to specific questions\n• **Video Tutorials:** Visual learning for complex features\n• **Progressive Disclosure:** Show advanced features when ready\n\n**Notification Strategy:**\n• **Plan Saved:** Toast notification only (quick feedback)\n• **Plan Submitted:** Inbox message + toast (important action)\n• **Progress Updates:** Inbox message with photo count\n• **System Alerts:** Toast for immediate attention\n\n**Pro Tip:** Enable browser notifications to get real-time alerts even when BuildHub is not open!"
+  },
+  {
+    "id": "buildhub_platform_features",
+    "question_variants": [
+      "buildhub features", "platform features", "buildhub capabilities", "what can buildhub do",
+      "buildhub kya kar sakta hai", "platform features kya hai", "buildhub help",
+      "buildhub enthaanu", "buildhub features enthanu", "platform capabilities",
+      "buildhub services", "buildhub tools", "buildhub functionality", "platform tools",
+      "buildhub system", "construction platform", "building platform", "architecture platform",
+      "buildhub complete guide", "platform overview", "buildhub benefits", "why use buildhub"
+    ],
+    "answer": "**BuildHub Platform - Complete Construction Solution:**\n\n**Core Features:**\n• **Request Management:** Create detailed construction requests\n• **Architect Matching:** Connect with verified architects\n• **Proposal System:** Compare multiple architect proposals\n• **Project Tracking:** Monitor construction progress\n• **Communication Hub:** Direct messaging with professionals\n• **Payment Integration:** Secure milestone-based payments\n\n**Advanced Features:**\n• **House Plan Designer:** Interactive drag-and-drop floor plan creator\n• **Geo-Tagged Photos:** GPS-enabled construction documentation\n• **Progress Reports:** Detailed construction tracking with photos\n• **Quality Assurance:** Photo-verified work completion\n• **Timeline Management:** Milestone tracking and alerts\n• **Document Storage:** All project files in one place\n\n**For Homeowners:**\n• Submit construction requirements easily\n• Compare architect proposals side-by-side\n• Track construction progress remotely\n• Communicate directly with architects/contractors\n• Make secure payments based on milestones\n• Access all project documents anytime\n\n**For Architects:**\n• Receive qualified construction leads\n• Create interactive house plans\n• Submit professional proposals\n• Manage multiple projects efficiently\n• Generate detailed progress reports\n• Build portfolio and client reviews\n\n**For Contractors:**\n• Document work with geo-tagged photos\n• Submit progress reports with evidence\n• Communicate with homeowners directly\n• Track project milestones and payments\n• Build reputation through quality work\n\n**Platform Benefits:**\n• **Transparency:** All parties see same information\n• **Quality Control:** Photo documentation of all work\n• **Efficiency:** Streamlined communication and processes\n• **Security:** Verified professionals and secure payments\n• **Convenience:** Access from any device, anywhere\n\n**Pro Tip:** BuildHub handles the entire construction journey from initial request to final handover - everything in one platform!"
+  },
+  {
+    "id": "project_terminology_buildhub",
+    "question_variants": [
+      "buildhub terms", "construction terms buildhub", "platform terminology", "buildhub vocabulary",
+      "buildhub words meaning", "platform terms kya hai", "buildhub terminology help",
+      "buildhub terms enthaanu", "platform words enthanu", "buildhub glossary",
+      "construction terminology", "building terms", "architecture terms", "project terms",
+      "technical terms buildhub", "platform definitions", "buildhub dictionary", "construction vocabulary",
+      "building vocabulary", "project vocabulary", "construction glossary", "building glossary"
+    ],
+    "answer": "**BuildHub Terminology - Key Terms Explained:**\n\n**Project Terms:**\n• **Request:** Your construction requirement submission\n• **Proposal:** Architect's response with design and quote\n• **Active Project:** Ongoing construction work\n• **Milestone:** Key completion points in construction\n• **Progress Update:** Regular work status reports\n• **Handover:** Final project completion and delivery\n\n**User Roles:**\n• **Homeowner:** Person building the house (you!)\n• **Architect:** Professional who designs your house\n• **Contractor:** Person who builds/constructs your house\n• **Admin:** BuildHub support team\n\n**Feature Terms:**\n• **House Plan Designer:** Interactive floor plan creation tool\n• **Geo-Tagged Photos:** GPS-enabled construction photos\n• **Progress Reports:** Detailed construction status updates\n• **Message Center:** Communication hub for all parties\n• **Notification System:** Alert system for important updates\n\n**Technical Terms:**\n• **Plot Size:** Your land dimensions (length × width)\n• **Built-up Area:** Total floor area of your house\n• **BHK:** Bedroom-Hall-Kitchen (house type)\n• **Sqft:** Square feet (area measurement)\n• **Layout Dimensions:** Visual representation measurements\n• **Construction Dimensions:** Actual building measurements\n• **Scale Ratio:** Conversion factor between layout and construction\n\n**Process Terms:**\n• **Request Submission:** Sending your construction requirements\n• **Proposal Review:** Comparing architect offers\n• **Project Initiation:** Starting construction work\n• **Progress Tracking:** Monitoring construction status\n• **Quality Verification:** Checking work completion\n• **Final Approval:** Accepting completed work\n\n**Pro Tip:** Don't worry about technical terms - BuildHub explains everything in simple language!"
+  }
+]

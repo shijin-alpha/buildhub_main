@@ -1,0 +1,317 @@
+/* Construction Progress Visualization Styles */
+.progress-visualization {
+  background: var(--sb-card, #ffffff);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(18, 25, 35, 0.08);
+  border: 1px solid var(--sb-border, #e7e9f2);
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.progress-visualization.loading,
+.progress-visualization.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--sb-muted, #68708a);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--sb-border, #e7e9f2);
+  border-top: 3px solid var(--sb-primary, #8b5cf6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--sb-border, #e7e9f2);
+}
+
+.progress-header h3 {
+  margin: 0;
+  color: var(--sb-text, #2b2e3a);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.progress-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-percentage {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--sb-primary, #8b5cf6);
+  background: linear-gradient(135deg, var(--sb-primary, #8b5cf6), var(--sb-primary-600, #7c3aed));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.progress-stage {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sb-muted, #68708a);
+  background: var(--sb-primary-200, #e9ddff);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.house-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.house-svg {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(18, 25, 35, 0.1));
+}
+
+.house-layer {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.house-layer:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+  transform-origin: center;
+}
+
+.layer-complete {
+  opacity: 1 !important;
+}
+
+.layer-in-progress {
+  opacity: 0.6 !important;
+  filter: brightness(1.1);
+}
+
+.layer-incomplete {
+  opacity: 0.15 !important;
+}
+
+.layer-label {
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--sb-text, #2b2e3a);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+.roof-tiles {
+  opacity: 0.6;
+}
+
+.completion-celebration {
+  animation: celebrate 2s ease-in-out infinite;
+}
+
+@keyframes celebrate {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.progress-tooltip {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--sb-text, #2b2e3a);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(18, 25, 35, 0.2);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.tooltip-stage {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.tooltip-percentage {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8b5cf6;
+  margin-bottom: 2px;
+}
+
+.tooltip-status {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.progress-details {
+  margin-top: 20px;
+}
+
+.stage-progress {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.completed-stages {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sb-muted, #68708a);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--sb-border, #e7e9f2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sb-primary, #8b5cf6), var(--sb-primary-600, #7c3aed));
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.stage-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stage-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--sb-bg, #f5f6fb);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.stage-name {
+  font-weight: 500;
+  color: var(--sb-text, #2b2e3a);
+  text-transform: capitalize;
+}
+
+.stage-percent {
+  font-weight: 600;
+  color: var(--sb-primary, #8b5cf6);
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .progress-visualization {
+    padding: 16px;
+  }
+  
+  .progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .progress-summary {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+  
+  .house-svg {
+    max-width: 300px;
+  }
+  
+  .layer-label {
+    font-size: 8px;
+  }
+}
+
+/* Integration with sidebar */
+.soft-sidebar .progress-visualization {
+  margin: 0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.soft-sidebar.expanded .progress-visualization {
+  display: block;
+}
+
+.soft-sidebar:not(.expanded) .progress-visualization {
+  display: none;
+}
+
+.sidebar-progress-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--sb-border, #e7e9f2);
+}
+
+/* Compact mode for sidebar */
+.progress-visualization.compact {
+  padding: 12px;
+}
+
+.progress-visualization.compact .progress-header h3 {
+  font-size: 16px;
+}
+
+.progress-visualization.compact .progress-percentage {
+  font-size: 20px;
+}
+
+.progress-visualization.compact .house-svg {
+  max-width: 240px;
+}
+
+.progress-visualization.compact .layer-label {
+  font-size: 8px;
+}

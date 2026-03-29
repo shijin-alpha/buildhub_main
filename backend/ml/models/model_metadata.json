@@ -1,0 +1,184 @@
+{
+  "timestamp": "2026-03-17T21:22:53.577682",
+  "cost_features": [
+    "plot_size_sqft",
+    "building_size_sqft",
+    "num_floors",
+    "budget_amount",
+    "budget_per_sqft",
+    "plot_shape_code",
+    "topography_code",
+    "num_bedrooms",
+    "num_bathrooms",
+    "total_rooms",
+    "design_style_code",
+    "customization_level",
+    "design_complexity_score",
+    "development_constraint_level",
+    "kerala_district_code",
+    "construction_start_month",
+    "monsoon_exposure_score",
+    "district_risk_tier",
+    "terrain_code",
+    "rainfall_code",
+    "flood_risk_code",
+    "effective_monsoon_score"
+  ],
+  "time_features": [
+    "plot_size_sqft",
+    "building_size_sqft",
+    "num_floors",
+    "planned_duration_months",
+    "plot_shape_code",
+    "topography_code",
+    "design_complexity_score",
+    "customization_level",
+    "site_difficulty_score",
+    "kerala_district_code",
+    "construction_start_month",
+    "monsoon_exposure_score",
+    "district_risk_tier",
+    "terrain_code",
+    "rainfall_code",
+    "flood_risk_code",
+    "effective_monsoon_score"
+  ],
+  "risk_levels": {
+    "0": "Low",
+    "1": "Medium",
+    "2": "High"
+  },
+  "feature_importance": {
+    "cost_overrun": {
+      "effective_monsoon_score": 0.1735078038428495,
+      "design_complexity_score": 0.10617690464867308,
+      "monsoon_exposure_score": 0.10579607940073024,
+      "terrain_code": 0.07185354001983348,
+      "development_constraint_level": 0.06845191837103484,
+      "num_floors": 0.06552888188609252,
+      "budget_per_sqft": 0.06354973943499494,
+      "construction_start_month": 0.06347905185753369,
+      "district_risk_tier": 0.045843462091747084,
+      "budget_amount": 0.03687616208507337,
+      "rainfall_code": 0.030574840567727243,
+      "building_size_sqft": 0.027694996480757437,
+      "plot_size_sqft": 0.022154501396720115,
+      "kerala_district_code": 0.021892353918621488,
+      "topography_code": 0.020525877636625355,
+      "customization_level": 0.019299606795425,
+      "total_rooms": 0.012078867939500009,
+      "flood_risk_code": 0.009601693688057024,
+      "num_bedrooms": 0.009533498385734526,
+      "design_style_code": 0.008938378656776104,
+      "plot_shape_code": 0.008753863469314806,
+      "num_bathrooms": 0.007887977426178132
+    },
+    "time_delay": {
+      "effective_monsoon_score": 0.20861977032474524,
+      "monsoon_exposure_score": 0.11884660266175144,
+      "num_floors": 0.1052643254751639,
+      "construction_start_month": 0.07973915218234427,
+      "design_complexity_score": 0.06682715467478915,
+      "terrain_code": 0.06585633524897462,
+      "district_risk_tier": 0.06250884832598666,
+      "planned_duration_months": 0.060367835259894184,
+      "building_size_sqft": 0.041650605049449944,
+      "plot_size_sqft": 0.03448643188437998,
+      "site_difficulty_score": 0.03190078006168866,
+      "kerala_district_code": 0.03131611540106643,
+      "rainfall_code": 0.028599327864680238,
+      "customization_level": 0.018307268739826542,
+      "topography_code": 0.01773148676384708,
+      "flood_risk_code": 0.01724598289294892,
+      "plot_shape_code": 0.010731977188462687
+    }
+  },
+  "performance_metrics": {
+    "cost_overrun": {
+      "best_model": "random_forest",
+      "best_score": 0.9378185524974516,
+      "all_results": {
+        "random_forest": {
+          "f1_high_risk": 0.9378185524974516,
+          "f1_overall": 0.8970124494729211,
+          "classification_report": {
+            "0": {
+              "precision": 0.5714285714285714,
+              "recall": 0.21052631578947367,
+              "f1-score": 0.3076923076923077,
+              "support": 19.0
+            },
+            "1": {
+              "precision": 0.8509933774834437,
+              "recall": 0.8831615120274914,
+              "f1-score": 0.866779089376054,
+              "support": 291.0
+            },
+            "2": {
+              "precision": 0.9368635437881874,
+              "recall": 0.9387755102040817,
+              "f1-score": 0.9378185524974516,
+              "support": 490.0
+            },
+            "accuracy": 0.90125,
+            "macro avg": {
+              "precision": 0.786428497566734,
+              "recall": 0.6774877793403489,
+              "f1-score": 0.7040966498552711,
+              "support": 800.0
+            },
+            "weighted avg": {
+              "precision": 0.8969491902012959,
+              "recall": 0.90125,
+              "f1-score": 0.8970124494729211,
+              "support": 800.0
+            }
+          }
+        }
+      }
+    },
+    "time_delay": {
+      "best_model": "random_forest",
+      "best_score": 0.9417293233082706,
+      "all_results": {
+        "random_forest": {
+          "f1_high_risk": 0.9417293233082706,
+          "f1_overall": 0.9041882530472143,
+          "classification_report": {
+            "0": {
+              "precision": 0.8888888888888888,
+              "recall": 0.5714285714285714,
+              "f1-score": 0.6956521739130435,
+              "support": 28.0
+            },
+            "1": {
+              "precision": 0.8247011952191236,
+              "recall": 0.8661087866108786,
+              "f1-score": 0.8448979591836735,
+              "support": 239.0
+            },
+            "2": {
+              "precision": 0.943502824858757,
+              "recall": 0.9399624765478424,
+              "f1-score": 0.9417293233082706,
+              "support": 533.0
+            },
+            "accuracy": 0.905,
+            "macro avg": {
+              "precision": 0.8856976363222565,
+              "recall": 0.7924999448624308,
+              "f1-score": 0.8274264854683292,
+              "support": 800.0
+            },
+            "weighted avg": {
+              "precision": 0.906099350244971,
+              "recall": 0.905,
+              "f1-score": 0.9041882530472143,
+              "support": 800.0
+            }
+          }
+        }
+      }
+    }
+  }
+}

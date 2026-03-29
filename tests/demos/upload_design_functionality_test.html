@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Design Functionality Test</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+        
+        .test-section h2 {
+            margin: 0 0 1rem 0;
+            color: #1e293b;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .feature-item {
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .feature-item h3 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+        
+        .feature-item p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .demo-steps {
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .demo-steps h3 {
+            margin: 0 0 1rem 0;
+            color: #065f46;
+            font-size: 1.3rem;
+        }
+        
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            counter-reset: step-counter;
+        }
+        
+        .steps-list li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #10b981;
+            font-weight: 500;
+            color: #374151;
+            counter-increment: step-counter;
+        }
+        
+        .steps-list li::before {
+            content: counter(step-counter);
+            background: #10b981;
+            color: white;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            font-size: 0.8rem;
+        }
+        
+        .technical-specs {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .technical-specs h3 {
+            margin: 0 0 1rem 0;
+            color: #92400e;
+            font-size: 1.3rem;
+        }
+        
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .spec-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .spec-item strong {
+            color: #92400e;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .workflow-demo {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .workflow-demo h3 {
+            margin: 0 0 1rem 0;
+            color: #1e40af;
+            font-size: 1.3rem;
+        }
+        
+        .workflow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .workflow-step {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #dbeafe;
+            transition: all 0.2s ease;
+        }
+        
+        .workflow-step:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .workflow-step .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+        }
+        
+        .workflow-step h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1e40af;
+            font-size: 0.9rem;
+        }
+        
+        .workflow-step p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-new {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .footer {
+            background: #f1f5f9;
+            padding: 1.5rem;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .highlight {
+            background: #fef3c7;
+            padding: 0.125rem 0.25rem;
+            border-radius: 4px;
+            color: #92400e;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📤 Upload Design Functionality</h1>
+            <p>Technical details modal integration for architect dashboard</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-section">
+                <h2>🎯 Feature Overview <span class="status-badge status-completed">Implemented</span></h2>
+                <p>Added "Upload Design" button to architect dashboard that opens the existing TechnicalDetailsModal for comprehensive design submission with technical specifications.</p>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h3>📤 Upload Design Button</h3>
+                        <p>New green button added to project action buttons alongside "Create Design" for direct design upload workflow.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>📋 Technical Details Form</h3>
+                        <p>Reuses existing TechnicalDetailsModal component with comprehensive construction specifications and technical details.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>🔄 Seamless Integration</h3>
+                        <p>Integrates with existing backend API for house plan submission with technical details.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>✅ Professional Workflow</h3>
+                        <p>Provides complete design submission workflow from project assignment to homeowner delivery.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="workflow-demo">
+                <h3>🔄 Upload Design Workflow</h3>
+                <div class="workflow-steps">
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <h4>Select Project</h4>
+                        <p>Architect views accepted project in dashboard</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <h4>Click Upload Design</h4>
+                        <p>Green "📤 Upload Design" button opens technical modal</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <h4>Fill Technical Details</h4>
+                        <p>Complete comprehensive technical specifications form</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <h4>Submit to Homeowner</h4>
+                        <p>Design with technical details sent for homeowner review</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">5</div>
+                        <h4>Homeowner Review</h4>
+                        <p>Homeowner receives complete design package for approval</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-steps">
+                <h3>🚀 How to Use Upload Design</h3>
+                <ol class="steps-list">
+                    <li>Navigate to Architect Dashboard and view "Accepted Projects" section</li>
+                    <li>Find a project with "Accepted Project" status badge</li>
+                    <li>Click the green "📤 Upload Design" button in the action buttons</li>
+                    <li>Technical Details Modal opens with comprehensive form sections</li>
+                    <li>Fill out construction details (foundation, structure, materials)</li>
+                    <li>Specify technical specifications (dimensions, heights, thicknesses)</li>
+                    <li>Configure electrical and plumbing requirements</li>
+                    <li>Enter cost estimates and construction timeline</li>
+                    <li>Select materials and finishes preferences</li>
+                    <li>Add special features and construction notes</li>
+                    <li>Click "Submit to Homeowner" to send complete design package</li>
+                    <li>Homeowner receives design with technical details for review</li>
+                </ol>
+            </div>
+            
+            <div class="technical-specs">
+                <h3>⚙️ Technical Implementation</h3>
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <strong>Component Integration</strong>
+                        Added TechnicalDetailsModal import and state management to ArchitectDashboard component.
+                    </div>
+                    <div class="spec-item">
+                        <strong>Button Implementation</strong>
+                        Green "Upload Design" button added to action-buttons div with proper styling and icon.
+                    </div>
+                    <div class="spec-item">
+                        <strong>State Management</strong>
+                        Added showTechnicalModal, selectedRequestForUpload, and technicalSubmissionLoading states.
+                    </div>
+                    <div class="spec-item">
+                        <strong>Handler Function</strong>
+                        Created handleTechnicalDetailsSubmit function for processing form submission.
+                    </div>
+                    <div class="spec-item">
+                        <strong>API Integration</strong>
+                        Uses existing submit_house_plan_with_details.php endpoint for backend processing.
+                    </div>
+                    <div class="spec-item">
+                        <strong>Data Structure</strong>
+                        Creates proper plan_data object with project information and technical details.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h2>📋 Technical Details Form Sections</h2>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h3>🏗️ Construction Details</h3>
+                        <p>Foundation type, structure type, wall materials, and roofing specifications.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>📏 Specifications</h3>
+                        <p>Wall thickness, ceiling height, door and window dimensions.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>⚡ Electrical & Plumbing</h3>
+                        <p>Electrical load requirements, water connection, and sewage systems.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>💰 Cost & Timeline</h3>
+                        <p>Construction cost estimates and project duration planning.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>🎨 Materials & Finishes</h3>
+                        <p>Exterior finishes, kitchen type, and bathroom fittings selection.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>📝 Additional Details</h3>
+                        <p>Special features, construction notes, and compliance requirements.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h2>🧪 Testing Scenarios</h2>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h3>Basic Upload Flow</h3>
+                        <p>Test complete upload design workflow from button click to homeowner submission.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Form Validation</h3>
+                        <p>Verify required field validation and proper error handling for incomplete forms.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Modal Interaction</h3>
+                        <p>Test modal opening, closing, and proper state management during form interaction.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Backend Integration</h3>
+                        <p>Verify API calls and proper data submission to backend endpoints.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Homeowner Delivery</h3>
+                        <p>Confirm homeowner receives complete design package with technical details.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Error Handling</h3>
+                        <p>Test network errors, validation failures, and proper user feedback.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="technical-specs">
+                <h3>💻 Code Implementation</h3>
+                <p>Key code changes made to implement the upload design functionality:</p>
+                
+                <div class="code-block">
+// Import TechnicalDetailsModal
+import TechnicalDetailsModal from './TechnicalDetailsModal';
+
+// State management
+const [showTechnicalModal, setShowTechnicalModal] = useState(false);
+const [selectedRequestForUpload, setSelectedRequestForUpload] = useState(null);
+const [technicalSubmissionLoading, setTechnicalSubmissionLoading] = useState(false);
+
+// Upload Design button
+&lt;button 
+  className="btn btn-success"
+  onClick={() => {
+    setSelectedRequestForUpload(request);
+    setShowTechnicalModal(true);
+  }}
+  title="Upload design with technical details"
+&gt;
+  📤 Upload Design
+&lt;/button&gt;
+
+// Technical Details Modal
+&lt;TechnicalDetailsModal
+  isOpen={showTechnicalModal}
+  onClose={() => {
+    setShowTechnicalModal(false);
+    setSelectedRequestForUpload(null);
+  }}
+  onSubmit={handleTechnicalDetailsSubmit}
+  planData={{
+    plan_name: selectedRequestForUpload ? 
+      `${selectedRequestForUpload.homeowner_name || 'Client'} House Plan` : '',
+    rooms: [],
+    scale_ratio: 1.2
+  }}
+  loading={technicalSubmissionLoading}
+/&gt;
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Upload Design Functionality - BuildHub Architecture Platform</p>
+            <p>Implemented: January 2026 | Status: ✅ Complete and Ready for Testing</p>
+        </div>
+    </div>
+</body>
+</html>

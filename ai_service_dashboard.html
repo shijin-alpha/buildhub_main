@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Service Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-indicator.online {
+            background: #4caf50;
+            box-shadow: 0 0 10px #4caf50;
+        }
+        
+        .status-indicator.offline {
+            background: #f44336;
+        }
+        
+        .status-indicator.loading {
+            background: #ff9800;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .component-list {
+            list-style: none;
+        }
+        
+        .component-item {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .component-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .component-status.ok {
+            background: #4caf50;
+        }
+        
+        .component-status.error {
+            background: #f44336;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert.success {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            color: #2e7d32;
+        }
+        
+        .alert.error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+        
+        .alert.warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            color: #e65100;
+        }
+        
+        .instructions {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        .instructions code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🎨 BuildHub AI Service Dashboard</h1>
+            <p>Real-time monitoring of AI image generation system</p>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <div class="grid">
+            <!-- Service Status Card -->
+            <div class="card">
+                <h2>
+                    <span class="status-indicator loading" id="serviceIndicator"></span>
+                    Service Status
+                </h2>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" id="serviceStatus">Checking...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Endpoint:</span>
+                    <span class="info-value">http://127.0.0.1:8000</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Last Check:</span>
+                    <span class="info-value" id="lastCheck">-</span>
+                </div>
+                <button class="btn" onclick="checkHealth()">Refresh Status</button>
+            </div>
+            
+            <!-- Components Card -->
+            <div class="card">
+                <h2>AI Components</h2>
+                <ul class="component-list" id="componentList">
+                    <li class="component-item">
+                        <span class="component-status loading"></span>
+                        <span>Loading...</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Capabilities Card -->
+            <div class="card">
+                <h2>System Capabilities</h2>
+                <ul class="component-list" id="capabilitiesList">
+                    <li class="component-item">
+                        <span class="component-status loading"></span>
+                        <span>Loading...</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>🚀 Quick Start Guide</h3>
+            <ol>
+                <li><strong>Start AI Service:</strong> Run <code>start_ai_service.bat</code> in the project root</li>
+                <li><strong>Verify Health:</strong> Check that all components show green status above</li>
+                <li><strong>Test Generation:</strong> Open <code>test_real_ai_async_generation.html</code></li>
+                <li><strong>Upload Image:</strong> Select a room photo and submit for analysis</li>
+                <li><strong>Watch Progress:</strong> Real AI image will generate in 30-60 seconds</li>
+            </ol>
+            
+            <h3 style="margin-top: 20px;">📋 Requirements</h3>
+            <ul style="margin-left: 20px; color: #666; line-height: 1.8;">
+                <li>Python 3.8+ installed</li>
+                <li>Dependencies installed: <code>pip install -r ai_service/requirements.txt</code></li>
+                <li>Gemini API key configured in <code>ai_service/.env</code></li>
+                <li>8GB+ RAM (16GB recommended)</li>
+                <li>10GB+ free disk space for models</li>
+            </ul>
+            
+            <h3 style="margin-top: 20px;">🔧 Troubleshooting</h3>
+            <ul style="margin-left: 20px; color: #666; line-height: 1.8;">
+                <li>If service is offline, start it using the batch file</li>
+                <li>First run will download ~5-10GB of AI models (one-time)</li>
+                <li>Check Python console for error messages</li>
+                <li>Verify port 8000 is not in use by another application</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        async function checkHealth() {
+            const alertContainer = document.getElementById('alertContainer');
+            const serviceIndicator = document.getElementById('serviceIndicator');
+            const serviceStatus = document.getElementById('serviceStatus');
+            const lastCheck = document.getElementById('lastCheck');
+            const componentList = document.getElementById('componentList');
+            const capabilitiesList = document.getElementById('capabilitiesList');
+            
+            // Show loading state
+            serviceIndicator.className = 'status-indicator loading';
+            serviceStatus.textContent = 'Checking...';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/check_ai_service_health.php');
+                const result = await response.json();
+                
+                // Update last check time
+                lastCheck.textContent = new Date().toLocaleTimeString();
+                
+                if (result.service_available) {
+                    // Service is online
+                    serviceIndicator.className = 'status-indicator online';
+                    serviceStatus.textContent = 'Online & Healthy';
+                    
+                    // Show success alert
+                    alertContainer.innerHTML = `
+                        <div class="alert success">
+                            <strong>✅ AI Service is Running!</strong><br>
+                            All systems operational. Ready to generate real AI images.
+                        </div>
+                    `;
+                    
+                    // Update components
+                    if (result.components) {
+                        componentList.innerHTML = '';
+                        for (const [name, status] of Object.entries(result.components)) {
+                            const li = document.createElement('li');
+                            li.className = 'component-item';
+                            li.innerHTML = `
+                                <span class="component-status ${status ? 'ok' : 'error'}"></span>
+                                <span>${formatComponentName(name)}</span>
+                            `;
+                            componentList.appendChild(li);
+                        }
+                    }
+                    
+                    // Update capabilities
+                    if (result.capabilities) {
+                        capabilitiesList.innerHTML = '';
+                        for (const [name, status] of Object.entries(result.capabilities)) {
+                            const li = document.createElement('li');
+                            li.className = 'component-item';
+                            li.innerHTML = `
+                                <span class="component-status ${status ? 'ok' : 'error'}"></span>
+                                <span>${formatCapabilityName(name)}</span>
+                            `;
+                            capabilitiesList.appendChild(li);
+                        }
+                    }
+                    
+                } else {
+                    // Service is offline
+                    serviceIndicator.className = 'status-indicator offline';
+                    serviceStatus.textContent = 'Offline';
+                    
+                    // Show error alert
+                    alertContainer.innerHTML = `
+                        <div class="alert error">
+                            <strong>❌ AI Service is Not Running</strong><br>
+                            ${result.message || 'Please start the service to enable AI image generation.'}
+                        </div>
+                    `;
+                    
+                    componentList.innerHTML = `
+                        <li class="component-item">
+                            <span class="component-status error"></span>
+                            <span>Service not available</span>
+                        </li>
+                    `;
+                    
+                    capabilitiesList.innerHTML = `
+                        <li class="component-item">
+                            <span class="component-status error"></span>
+                            <span>Start service to check capabilities</span>
+                        </li>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Health check error:', error);
+                
+                serviceIndicator.className = 'status-indicator offline';
+                serviceStatus.textContent = 'Error';
+                lastCheck.textContent = new Date().toLocaleTimeString();
+                
+                alertContainer.innerHTML = `
+                    <div class="alert error">
+                        <strong>❌ Health Check Failed</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+                
+                componentList.innerHTML = `
+                    <li class="component-item">
+                        <span class="component-status error"></span>
+                        <span>Unable to check status</span>
+                    </li>
+                `;
+            }
+        }
+        
+        function formatComponentName(name) {
+            return name.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+        
+        function formatCapabilityName(name) {
+            return name.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+        
+        // Check health on page load
+        checkHealth();
+        
+        // Auto-refresh every 10 seconds
+        setInterval(checkHealth, 10000);
+    </script>
+</body>
+</html>

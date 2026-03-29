@@ -1,0 +1,146 @@
+/* Image Error Handling Styles */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.image-error-placeholder {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.image-error-placeholder:hover {
+  background: #f0f0f0 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.image-loading-placeholder {
+  transition: all 0.3s ease;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+.safe-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fix for black screen images */
+.design-image,
+.layout-image,
+.preview-image {
+  background-color: #f5f5f7;
+  transition: opacity 0.3s ease;
+}
+
+.design-image:not([src]),
+.layout-image:not([src]),
+.preview-image:not([src]) {
+  opacity: 0;
+}
+
+/* Fallback for broken images */
+img[src=""],
+img:not([src]) {
+  display: none;
+}
+
+/* Image placeholder styles */
+.image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f7;
+  border: 1px dashed #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 1rem;
+  flex-direction: column;
+  min-height: 120px;
+}
+
+.image-placeholder-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+
+.image-placeholder-text {
+  font-weight: 500;
+}
+
+/* Concept preview image fixes */
+.concept-preview-image {
+  background: #f3f4f6;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.concept-preview-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 49%, rgba(0,0,0,0.05) 50%, transparent 51%);
+  pointer-events: none;
+}
+
+/* Layout library image fixes */
+.layout-card-image {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.layout-card-image:hover {
+  transform: scale(1.02);
+}
+
+/* File card image fixes */
+.file-card img {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.file-card .image-error-placeholder {
+  border: 1px solid #e9ecef;
+  background: #f8f9fa;
+}
+
+/* Technical details modal image fixes */
+.technical-details-image {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+}
+
+/* Responsive image handling */
+@media (max-width: 768px) {
+  .image-placeholder {
+    min-height: 100px;
+    padding: 0.75rem;
+  }
+  
+  .image-placeholder-icon {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+  
+  .image-placeholder-text {
+    font-size: 0.7rem;
+  }
+}
+
+/* High DPI display fixes */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .image-error-placeholder,
+  .image-loading-placeholder {
+    border-width: 0.5px;
+  }
+}

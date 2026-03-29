@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Data Processing Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; max-height: 400px; }
+        .progress-item { padding: 10px; margin: 5px 0; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Frontend Data Processing Test</h1>
+    
+    <div class="section info">
+        <h2>Test Overview</h2>
+        <p>This test simulates exactly what the frontend HomeownerProgressReports component does to process progress data.</p>
+    </div>
+
+    <div class="section">
+        <h3>1. Test Session Establishment</h3>
+        <button onclick="testSession()">Establish Session</button>
+        <div id="session-results"></div>
+    </div>
+
+    <div class="section">
+        <h3>2. Test Progress Data Fetching</h3>
+        <button onclick="testProgressFetch()">Fetch Progress Data</button>
+        <div id="progress-results"></div>
+    </div>
+
+    <div class="section">
+        <h3>3. Test Data Transformation</h3>
+        <button onclick="testDataTransformation()">Transform Data Like Frontend</button>
+        <div id="transform-results"></div>
+    </div>
+
+    <script>
+        let sessionData = null;
+        let progressData = null;
+
+        async function testSession() {
+            const resultsDiv = document.getElementById('session-results');
+            resultsDiv.innerHTML = '<p>🔄 Establishing session...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/session_bridge.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                sessionData = data;
+                
+                if (data.success && data.user && data.user.id) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Session Established Successfully</h4>
+                            <p><strong>User ID:</strong> ${data.user.id}</p>
+                            <p><strong>Role:</strong> ${data.user.role}</p>
+                            <p><strong>Name:</strong> ${data.user.first_name} ${data.user.last_name}</p>
+                            <p><strong>Session ID:</strong> ${data.session_id}</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Session Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Session Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testProgressFetch() {
+            const resultsDiv = document.getElementById('progress-results');
+            resultsDiv.innerHTML = '<p>🔄 Fetching progress data...</p>';
+            
+            try {
+                // First establish session if not done
+                if (!sessionData) {
+                    await testSession();
+                }
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/get_progress_updates.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                progressData = data;
+                
+                if (data.success) {
+                    const updateCount = data.data?.progress_updates?.length || 0;
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Progress Data Fetched Successfully</h4>
+                            <p><strong>Updates Found:</strong> ${updateCount}</p>
+                            <p><strong>Projects:</strong> ${data.data?.projects?.length || 0}</p>
+                            <p><strong>Geo Photos:</strong> ${data.data?.geo_photos?.length || 0}</p>
+                            
+                            ${updateCount > 0 ? `
+                                <h5>Recent Updates:</h5>
+                                ${data.data.progress_updates.slice(0, 3).map(update => `
+                                    <div class="progress-item">
+                                        <strong>Update ${update.id}</strong> - Project ${update.project_id}<br>
+                                        <small>Stage: ${update.construction_stage} | Progress: ${update.cumulative_completion_percentage}%</small><br>
+                                        <small>Date: ${update.update_date} | Contractor: ${update.contractor_name}</small><br>
+                                        <small>Work: ${update.work_done_today.substring(0, 100)}...</small>
+                                    </div>
+                                `).join('')}
+                            ` : '<p>No updates found</p>'}
+                            
+                            <details>
+                                <summary>View Raw API Response</summary>
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Progress Fetch Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Progress Fetch Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testDataTransformation() {
+            const resultsDiv = document.getElementById('transform-results');
+            resultsDiv.innerHTML = '<p>🔄 Transforming data like frontend...</p>';
+            
+            try {
+                if (!progressData || !progressData.success) {
+                    await testProgressFetch();
+                }
+                
+                if (progressData && progressData.success && progressData.data.progress_updates) {
+                    // Transform the daily progress updates to match the expected report format
+                    // This is exactly what HomeownerProgressReports.jsx does
+                    const transformedReports = progressData.data.progress_updates.map(update => ({
+                        id: update.id,
+                        project_id: update.project_id,
+                        contractor_id: update.contractor_id,
+                        contractor_name: update.contractor_name,
+                        project_name: `Project ${update.project_id} - ${update.construction_stage}`,
+                        report_type: 'daily',
+                        period_start: update.update_date,
+                        period_end: update.update_date,
+                        created_at: update.created_at,
+                        status: 'sent', // All submitted reports are 'sent'
+                        viewed_at: null,
+                        acknowledged_at: null,
+                        summary: {
+                            total_days: 1,
+                            total_workers: update.total_workers || 0,
+                            total_hours: update.working_hours || 0,
+                            progress_percentage: update.cumulative_completion_percentage || 0,
+                            photos_count: update.photos ? update.photos.length : 0,
+                            stage: update.construction_stage,
+                            work_description: update.work_done_today,
+                            weather: update.weather_condition,
+                            incremental_progress: update.incremental_completion_percentage
+                        },
+                        has_photos: (update.photos && update.photos.length > 0) || false,
+                        // Add the full update data for detailed view
+                        full_update_data: update
+                    }));
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Data Transformation Successful</h4>
+                            <p><strong>Transformed Reports:</strong> ${transformedReports.length}</p>
+                            
+                            <h5>Transformed Report Structure:</h5>
+                            ${transformedReports.map(report => `
+                                <div class="progress-item">
+                                    <strong>${report.project_name}</strong><br>
+                                    <small>Type: ${report.report_type} | Status: ${report.status}</small><br>
+                                    <small>Period: ${report.period_start} to ${report.period_end}</small><br>
+                                    <small>Progress: ${report.summary.progress_percentage}% | Workers: ${report.summary.total_workers}</small><br>
+                                    <small>Work: ${report.summary.work_description.substring(0, 80)}...</small>
+                                </div>
+                            `).join('')}
+                            
+                            <details>
+                                <summary>View Transformed Data Structure</summary>
+                                <pre>${JSON.stringify(transformedReports, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ No Data to Transform</h4>
+                            <p>Progress data is not available or failed to fetch.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Transformation Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

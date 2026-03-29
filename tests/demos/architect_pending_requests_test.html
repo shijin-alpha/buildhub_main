@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architect Pending Requests Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .request-card { border: 1px solid #ccc; margin: 10px 0; padding: 10px; }
+        button { margin: 5px; padding: 8px 15px; }
+        .accept-btn { background: green; color: white; }
+        .decline-btn { background: red; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Architect Pending Requests Test</h1>
+    <p>This test simulates architect ID 31 viewing and responding to pending requests.</p>
+
+    <div class="test-section">
+        <h3>Step 1: Fetch Pending Assignments</h3>
+        <button onclick="fetchPendingRequests()">Load Pending Requests</button>
+        <div id="pending-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 2: Accept/Decline Requests</h3>
+        <div id="pending-requests-list"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 3: Verify Accepted Requests</h3>
+        <button onclick="fetchAcceptedRequests()">Load Accepted Requests</button>
+        <div id="accepted-results"></div>
+    </div>
+
+    <script>
+        // Simulate architect session (in real app, this would be handled by login)
+        const architectId = 31;
+
+        async function fetchPendingRequests() {
+            const resultsDiv = document.getElementById('pending-results');
+            const listDiv = document.getElementById('pending-requests-list');
+            
+            try {
+                resultsDiv.innerHTML = '<p class="info">Loading...</p>';
+                
+                const response = await fetch('/buildhub/backend/api/architect/get_assigned_requests.php', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const pendingAssignments = (data.assignments || []).filter(assignment => 
+                        assignment.assignment_status === 'sent'
+                    );
+                    
+                    resultsDiv.innerHTML = `<p class="success">Found ${pendingAssignments.length} pending assignments</p>`;
+                    
+                    if (pendingAssignments.length > 0) {
+                        listDiv.innerHTML = pendingAssignments.map(assignment => `
+                            <div class="request-card">
+                                <h4>Request #${assignment.layout_request.id}</h4>
+                                <p><strong>Homeowner:</strong> ${assignment.homeowner.name}</p>
+                                <p><strong>Plot Size:</strong> ${assignment.layout_request.plot_size}</p>
+                                <p><strong>Budget:</strong> ${assignment.layout_request.budget_range}</p>
+                                <p><strong>Requirements:</strong> ${assignment.layout_request.requirements}</p>
+                                <p><strong>Status:</strong> ${assignment.assignment_status}</p>
+                                <button class="accept-btn" onclick="respondToAssignment(${assignment.assignment_id}, 'accept')">
+                                    Accept Request
+                                </button>
+                                <button class="decline-btn" onclick="respondToAssignment(${assignment.assignment_id}, 'decline')">
+                                    Decline Request
+                                </button>
+                            </div>
+                        `).join('');
+                    } else {
+                        listDiv.innerHTML = '<p>No pending assignments found.</p>';
+                    }
+                } else {
+                    resultsDiv.innerHTML = `<p class="error">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">Network error: ${error.message}</p>`;
+            }
+        }
+
+        async function respondToAssignment(assignmentId, action) {
+            try {
+                const response = await fetch('/buildhub/backend/api/architect/respond_assignment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        assignment_id: assignmentId, 
+                        action: action 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Assignment ${action}ed successfully!`);
+                    // Refresh the lists
+                    fetchPendingRequests();
+                    fetchAcceptedRequests();
+                } else {
+                    alert(`Error: ${data.message}`);
+                }
+            } catch (error) {
+                alert(`Network error: ${error.message}`);
+            }
+        }
+
+        async function fetchAcceptedRequests() {
+            const resultsDiv = document.getElementById('accepted-results');
+            
+            try {
+                resultsDiv.innerHTML = '<p class="info">Loading...</p>';
+                
+                const response = await fetch('/buildhub/backend/api/architect/get_assigned_requests.php', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const acceptedAssignments = (data.assignments || []).filter(assignment => 
+                        assignment.assignment_status === 'accepted'
+                    );
+                    
+                    resultsDiv.innerHTML = `
+                        <p class="success">Found ${acceptedAssignments.length} accepted assignments</p>
+                        ${acceptedAssignments.map(assignment => `
+                            <div class="request-card">
+                                <h4>Request #${assignment.layout_request.id}</h4>
+                                <p><strong>Homeowner:</strong> ${assignment.homeowner.name}</p>
+                                <p><strong>Plot Size:</strong> ${assignment.layout_request.plot_size}</p>
+                                <p><strong>Budget:</strong> ${assignment.layout_request.budget_range}</p>
+                                <p><strong>Status:</strong> ${assignment.assignment_status}</p>
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<p class="error">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">Network error: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-load pending requests on page load
+        window.onload = function() {
+            fetchPendingRequests();
+        };
+    </script>
+</body>
+</html>

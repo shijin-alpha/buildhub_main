@@ -1,0 +1,49 @@
+-- Fix missing columns in layout_requests table
+-- Run this SQL in phpMyAdmin or MySQL command line
+
+ALTER TABLE layout_requests 
+ADD COLUMN IF NOT EXISTS user_id INT NULL AFTER id,
+ADD COLUMN IF NOT EXISTS homeowner_id INT NULL,
+ADD COLUMN IF NOT EXISTS plot_size VARCHAR(100) NOT NULL DEFAULT '',
+ADD COLUMN IF NOT EXISTS building_size VARCHAR(100) NULL,
+ADD COLUMN IF NOT EXISTS budget_range VARCHAR(100) NOT NULL DEFAULT '',
+ADD COLUMN IF NOT EXISTS requirements TEXT NULL,
+ADD COLUMN IF NOT EXISTS location VARCHAR(255) NULL,
+ADD COLUMN IF NOT EXISTS timeline VARCHAR(100) NULL,
+ADD COLUMN IF NOT EXISTS selected_layout_id INT NULL,
+ADD COLUMN IF NOT EXISTS layout_type VARCHAR(50) NULL DEFAULT 'custom',
+ADD COLUMN IF NOT EXISTS orientation VARCHAR(100) NULL,
+ADD COLUMN IF NOT EXISTS site_considerations TEXT NULL,
+ADD COLUMN IF NOT EXISTS material_preferences VARCHAR(255) NULL,
+ADD COLUMN IF NOT EXISTS budget_allocation LONGTEXT NULL,
+ADD COLUMN IF NOT EXISTS num_floors INT NULL,
+ADD COLUMN IF NOT EXISTS preferred_style VARCHAR(100) NULL,
+ADD COLUMN IF NOT EXISTS floor_rooms LONGTEXT NULL,
+ADD COLUMN IF NOT EXISTS site_images LONGTEXT NULL,
+ADD COLUMN IF NOT EXISTS reference_images LONGTEXT NULL,
+ADD COLUMN IF NOT EXISTS room_images LONGTEXT NULL;
+
+-- If you're on MySQL 5.7, use this instead (remove IF NOT EXISTS):
+-- ALTER TABLE layout_requests 
+-- ADD COLUMN user_id INT NULL AFTER id,
+-- ADD COLUMN homeowner_id INT NULL,
+-- ADD COLUMN plot_size VARCHAR(100) NOT NULL DEFAULT '',
+-- ADD COLUMN building_size VARCHAR(100) NULL,
+-- ADD COLUMN budget_range VARCHAR(100) NOT NULL DEFAULT '',
+-- ADD COLUMN requirements TEXT NULL,
+-- ADD COLUMN location VARCHAR(255) NULL,
+-- ADD COLUMN timeline VARCHAR(100) NULL,
+-- ADD COLUMN selected_layout_id INT NULL,
+-- ADD COLUMN layout_type VARCHAR(50) NULL DEFAULT 'custom',
+-- ADD COLUMN orientation VARCHAR(100) NULL,
+-- ADD COLUMN site_considerations TEXT NULL,
+-- ADD COLUMN material_preferences VARCHAR(255) NULL,
+-- ADD COLUMN budget_allocation LONGTEXT NULL,
+-- ADD COLUMN num_floors INT NULL,
+-- ADD COLUMN preferred_style VARCHAR(100) NULL,
+-- ADD COLUMN floor_rooms LONGTEXT NULL,
+-- ADD COLUMN site_images LONGTEXT NULL,
+-- ADD COLUMN reference_images LONGTEXT NULL,
+-- ADD COLUMN room_images LONGTEXT NULL;
+
+

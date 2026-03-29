@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Layout Submission Direct</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .canvas-container {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            background: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #testCanvas {
+            border: 1px solid #ccc;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Layout Submission Direct</h1>
+        <p>This test directly calls the submission API with a real layout image to verify the complete workflow.</p>
+        
+        <div class="canvas-container">
+            <h3>Test Layout Canvas</h3>
+            <canvas id="testCanvas" width="400" height="300"></canvas>
+            <br><br>
+            <button onclick="drawTestLayout()" class="btn">🎨 Draw Test Layout</button>
+            <button onclick="testSubmissionWithLayout()" class="btn" id="submitBtn">🚀 Test Submission</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Testing submission...</p>
+        </div>
+        
+        <div id="result"></div>
+        
+        <div class="container">
+            <h2>🔍 Check Results</h2>
+            <button onclick="checkSubmissionResults()" class="btn">📋 Check Database</button>
+            <button onclick="checkHomeownerView()" class="btn">👀 Check Homeowner View</button>
+            
+            <div id="checkResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let testImageData = null;
+        
+        function drawTestLayout() {
+            const canvas = document.getElementById('testCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas with white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw a simple house layout
+            // Living Room
+            ctx.fillStyle = '#e8f5e9';
+            ctx.fillRect(50, 50, 150, 100);
+            ctx.strokeStyle = '#4caf50';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(50, 50, 150, 100);
+            ctx.fillStyle = '#2e7d32';
+            ctx.font = '14px Arial';
+            ctx.fillText('Living Room', 60, 105);
+            
+            // Kitchen
+            ctx.fillStyle = '#fff3e0';
+            ctx.fillRect(220, 50, 100, 80);
+            ctx.strokeStyle = '#ff9800';
+            ctx.strokeRect(220, 50, 100, 80);
+            ctx.fillStyle = '#e65100';
+            ctx.fillText('Kitchen', 230, 95);
+            
+            // Bedroom
+            ctx.fillStyle = '#e3f2fd';
+            ctx.fillRect(50, 170, 120, 100);
+            ctx.strokeStyle = '#2196f3';
+            ctx.strokeRect(50, 170, 120, 100);
+            ctx.fillStyle = '#1976d2';
+            ctx.fillText('Bedroom', 60, 225);
+            
+            // Bathroom
+            ctx.fillStyle = '#f3e5f5';
+            ctx.fillRect(190, 170, 80, 100);
+            ctx.strokeStyle = '#9c27b0';
+            ctx.strokeRect(190, 170, 80, 100);
+            ctx.fillStyle = '#7b1fa2';
+            ctx.fillText('Bath', 200, 225);
+            
+            // Title
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('Test House Layout', 50, 30);
+            
+            // Capture the image data
+            testImageData = canvas.toDataURL('image/png');
+            console.log('Test layout drawn and captured');
+        }
+        
+        async function testSubmissionWithLayout() {
+            if (!testImageData) {
+                displayError('Please draw test layout first');
+                return;
+            }
+            
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+            
+            try {
+                // Get the most recent house plan ID for testing
+                const plansResponse = await fetch('/buildhub/backend/api/architect/get_house_plans.php', {
+                    credentials: 'include'
+                });
+                
+                const plansData = await plansResponse.json();
+                
+                if (!plansData.success || !plansData.plans || plansData.plans.length === 0) {
+                    throw new Error('No house plans found to test with');
+                }
+                
+                const testPlanId = plansData.plans[0].id;
+                console.log('Using plan ID for test:', testPlanId);
+                
+                // Prepare submission data with layout image
+                const submissionData = {
+                    plan_id: testPlanId,
+                    layout_image_data: testImageData,
+                    technical_details: {
+                        construction_cost: '18,00,000',
+                        construction_duration: '12-14 months',
+                        materials: 'Premium materials with layout design',
+                        specifications: 'Modern construction with visual layout',
+                        unlock_price: 8000
+                    },
+                    plan_data: {
+                        rooms: [
+                            {
+                                id: 1,
+                                name: 'Living Room',
+                                type: 'living_room',
+                                layout_width: 20,
+                                layout_height: 15
+                            },
+                            {
+                                id: 2,
+                                name: 'Kitchen',
+                                type: 'kitchen',
+                                layout_width: 15,
+                                layout_height: 12
+                            },
+                            {
+                                id: 3,
+                                name: 'Bedroom',
+                                type: 'bedroom',
+                                layout_width: 18,
+                                layout_height: 14
+                            },
+                            {
+                                id: 4,
+                                name: 'Bathroom',
+                                type: 'bathroom',
+                                layout_width: 10,
+                                layout_height: 12
+                            }
+                        ],
+                        scale_ratio: 1.2,
+                        total_layout_area: 634,
+                        total_construction_area: 912
+                    }
+                };
+                
+                console.log('Submitting with layout image data:', {
+                    ...submissionData,
+                    layout_image_data: 'Image data (' + Math.round(testImageData.length / 1024) + ' KB)'
+                });
+                
+                // Submit to API
+                const response = await fetch('/buildhub/backend/api/architect/submit_house_plan_with_details.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(submissionData)
+                });
+                
+                const result = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                
+                if (result.success) {
+                    displaySuccess(result);
+                } else {
+                    displayError('Submission failed: ' + (result.message || 'Unknown error'));
+                }
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                displayError('Error: ' + error.message);
+            }
+        }
+        
+        async function checkSubmissionResults() {
+            const resultDiv = document.getElementById('checkResult');
+            
+            try {
+                // Check the database for layout images
+                const response = await fetch('/buildhub/debug_house_plan_layout.php');
+                const text = await response.text();
+                
+                resultDiv.innerHTML = `<div class="result success">
+                    <h3>📋 Database Check Results</h3>
+                    <pre>${text}</pre>
+                </div>`;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">
+                    <h3>❌ Database Check Failed</h3>
+                    <p>${error.message}</p>
+                </div>`;
+            }
+        }
+        
+        async function checkHomeownerView() {
+            const resultDiv = document.getElementById('checkResult');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const designs = data.designs || [];
+                    const housePlanDesigns = designs.filter(d => d.source_type === 'house_plan');
+                    const designsWithLayout = housePlanDesigns.filter(d => {
+                        const files = d.files || [];
+                        return files.some(f => f.type === 'layout_image');
+                    });
+                    
+                    let html = `<div class="result success">
+                        <h3>👀 Homeowner View Check</h3>
+                        <p><strong>Total Designs:</strong> ${designs.length}</p>
+                        <p><strong>House Plan Designs:</strong> ${housePlanDesigns.length}</p>
+                        <p><strong>Designs with Layout Images:</strong> ${designsWithLayout.length}</p>
+                    `;
+                    
+                    if (designsWithLayout.length > 0) {
+                        html += `<h4>🎨 Layout Images Found:</h4>`;
+                        designsWithLayout.forEach(design => {
+                            const layoutFiles = design.files.filter(f => f.type === 'layout_image');
+                            html += `<div style="border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                                <strong>${design.design_title}</strong><br>
+                                <small>Layout Images: ${layoutFiles.length}</small><br>`;
+                            
+                            layoutFiles.forEach(f => {
+                                html += `<div style="margin: 5px 0;">
+                                    <small>📸 ${f.name || f.stored}</small><br>
+                                    <small>Path: ${f.path}</small>
+                                </div>`;
+                            });
+                            
+                            html += `</div>`;
+                        });
+                        
+                        html += `<p style="color: #28a745; font-weight: bold;">✅ SUCCESS: Layout images are visible to homeowners!</p>`;
+                    } else {
+                        html += `<p style="color: #ffc107; font-weight: bold;">⚠️ No layout images found in homeowner view</p>`;
+                    }
+                    
+                    html += '</div>';
+                    resultDiv.innerHTML = html;
+                    
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">
+                        <h3>❌ Homeowner View Check Failed</h3>
+                        <p>${data.message || 'Unknown error'}</p>
+                    </div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">
+                    <h3>❌ Network Error</h3>
+                    <p>${error.message}</p>
+                </div>`;
+            }
+        }
+        
+        function displaySuccess(result) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result success">
+                <h3>✅ Submission Successful!</h3>
+                <p><strong>Message:</strong> ${result.message}</p>
+                <p><strong>Plan ID:</strong> ${result.plan_id}</p>
+                <p><strong>Layout Image Saved:</strong> ${result.layout_image_saved ? 'Yes' : 'No'}</p>
+                ${result.layout_image_filename ? `<p><strong>Image Filename:</strong> ${result.layout_image_filename}</p>` : ''}
+                <p><strong>Homeowner ID:</strong> ${result.homeowner_id || 'N/A'}</p>
+                <p><strong>Layout Request ID:</strong> ${result.layout_request_id || 'N/A'}</p>
+                
+                <h4>🎯 Next Steps:</h4>
+                <ul>
+                    <li>Click "Check Database" to verify the layout image was saved</li>
+                    <li>Click "Check Homeowner View" to see if it appears in received designs</li>
+                </ul>
+            </div>`;
+        }
+        
+        function displayError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result error">
+                <h3>❌ Error</h3>
+                <p>${message}</p>
+            </div>`;
+        }
+        
+        // Initialize
+        window.onload = function() {
+            drawTestLayout();
+        };
+    </script>
+</body>
+</html>

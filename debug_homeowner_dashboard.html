@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Homeowner Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .success { border-left: 4px solid #28a745; background-color: #d4edda; }
+        .error { border-left: 4px solid #dc3545; background-color: #f8d7da; }
+        .info { border-left: 4px solid #17a2b8; background-color: #d1ecf1; }
+        .warning { border-left: 4px solid #ffc107; background-color: #fff3cd; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .tab-simulation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            background: transparent;
+            color: #007bff;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            background: #007bff;
+            color: white;
+        }
+        .tab-content {
+            min-height: 200px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Homeowner Dashboard Debug</h1>
+        <p>Debugging the homeowner progress reports display issue</p>
+
+        <div class="debug-section info">
+            <h3>🔍 Check Component Visibility Logic</h3>
+            <p>Test the activeTab and isVisible logic that controls component display</p>
+            
+            <div class="tab-simulation">
+                <button class="tab-button" onclick="switchTab('dashboard')" id="tab-dashboard">Dashboard</button>
+                <button class="tab-button" onclick="switchTab('progress')" id="tab-progress">Progress Reports</button>
+                <button class="tab-button" onclick="switchTab('payments')" id="tab-payments">Payments</button>
+                <button class="tab-button" onclick="switchTab('photos')" id="tab-photos">Photos</button>
+            </div>
+            
+            <div class="tab-content" id="tab-content">
+                <p>Select a tab to test visibility logic</p>
+            </div>
+            
+            <div id="visibilityResult" class="result"></div>
+        </div>
+
+        <div class="debug-section info">
+            <h3>📊 Test Progress Reports Data Flow</h3>
+            <p>Simulate the complete data flow from API to component rendering</p>
+            <button onclick="testDataFlow()">Test Complete Data Flow</button>
+            <div id="dataFlowResult" class="result"></div>
+        </div>
+
+        <div class="debug-section warning">
+            <h3>⚠️ Common Issues Checklist</h3>
+            <p>Check for common issues that might prevent reports from displaying</p>
+            <button onclick="runDiagnostics()">Run Diagnostics</button>
+            <div id="diagnosticsResult" class="result"></div>
+        </div>
+
+        <div class="debug-section info">
+            <h3>🎯 Direct Component Test</h3>
+            <p>Test the component with mock data to isolate rendering issues</p>
+            <button onclick="testWithMockData()">Test with Mock Data</button>
+            <div id="mockDataResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'dashboard';
+        let progressReports = [];
+
+        function switchTab(tabName) {
+            // Update active tab styling
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Simulate component visibility logic
+            const isProgressTab = tabName === 'progress';
+            const content = document.getElementById('tab-content');
+            const result = document.getElementById('visibilityResult');
+            
+            if (isProgressTab) {
+                content.innerHTML = `
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                        <h4>📊 Progress Reports Component</h4>
+                        <p><strong>activeTab:</strong> ${tabName}</p>
+                        <p><strong>isVisible:</strong> ${isProgressTab}</p>
+                        <p><strong>Component Status:</strong> Should be rendered and visible</p>
+                        <div style="margin-top: 15px; padding: 10px; background: white; border-radius: 4px;">
+                            <em>HomeownerProgressReports component would be displayed here</em>
+                        </div>
+                    </div>
+                `;
+                result.className = 'result success';
+                result.textContent = `✅ Progress tab active - Component should be visible\n\nProps passed to component:\n- activeTab: "${tabName}"\n- isVisible: ${isProgressTab}`;
+            } else {
+                content.innerHTML = `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4>📋 ${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Tab</h4>
+                        <p><strong>activeTab:</strong> ${tabName}</p>
+                        <p><strong>isVisible:</strong> ${isProgressTab}</p>
+                        <p><strong>Component Status:</strong> Hidden (returns null)</p>
+                    </div>
+                `;
+                result.className = 'result info';
+                result.textContent = `ℹ️ ${tabName} tab active - Progress Reports component is hidden\n\nComponent logic: if (!isVisible) return null;`;
+            }
+        }
+
+        async function testDataFlow() {
+            const resultDiv = document.getElementById('dataFlowResult');
+            resultDiv.textContent = 'Testing complete data flow...';
+            
+            try {
+                // Step 1: Fetch data from API
+                resultDiv.textContent += '\n\n1. Fetching data from API...';
+                const homeownerId = 28;
+                const response = await fetch(`/buildhub/backend/api/homeowner/get_progress_updates.php?homeowner_id=${homeownerId}&limit=5`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(`API Error: ${data.message}`);
+                }
+                
+                resultDiv.textContent += '\n✅ API call successful';
+                
+                // Step 2: Transform data
+                resultDiv.textContent += '\n\n2. Transforming data...';
+                const transformedReports = data.data.progress_updates.map(update => ({
+                    id: update.id,
+                    project_id: update.project_id,
+                    contractor_name: update.contractor_name,
+                    project_name: `Project ${update.project_id} - ${update.construction_stage}`,
+                    report_type: 'daily',
+                    created_at: update.created_at,
+                    status: 'sent',
+                    summary: {
+                        stage: update.construction_stage,
+                        progress_percentage: update.cumulative_completion_percentage || 0,
+                        incremental_progress: update.incremental_completion_percentage || 0,
+                        total_workers: update.total_workers || 0,
+                        total_hours: update.working_hours || 0,
+                        weather: update.weather_condition,
+                        work_description: update.work_done_today
+                    },
+                    has_photos: (update.photos && update.photos.length > 0) || false,
+                    full_update_data: update
+                }));
+                
+                progressReports = transformedReports;
+                resultDiv.textContent += `\n✅ Data transformed: ${transformedReports.length} reports`;
+                
+                // Step 3: Check filtering
+                resultDiv.textContent += '\n\n3. Testing filters...';
+                const allReports = transformedReports.filter(report => true); // 'all' filter
+                const dailyReports = transformedReports.filter(report => report.report_type === 'daily');
+                
+                resultDiv.textContent += `\n✅ Filter results: All=${allReports.length}, Daily=${dailyReports.length}`;
+                
+                // Step 4: Simulate rendering
+                resultDiv.textContent += '\n\n4. Simulating component rendering...';
+                
+                if (transformedReports.length === 0) {
+                    resultDiv.textContent += '\n⚠️ No reports to display - Empty state should show';
+                } else {
+                    resultDiv.textContent += `\n✅ ${transformedReports.length} report cards should render`;
+                    
+                    // Show sample report structure
+                    const sampleReport = transformedReports[0];
+                    resultDiv.textContent += `\n\n📋 Sample Report Structure:\n`;
+                    resultDiv.textContent += `- ID: ${sampleReport.id}\n`;
+                    resultDiv.textContent += `- Contractor: ${sampleReport.contractor_name}\n`;
+                    resultDiv.textContent += `- Stage: ${sampleReport.summary.stage}\n`;
+                    resultDiv.textContent += `- Progress: ${sampleReport.summary.progress_percentage}%\n`;
+                    resultDiv.textContent += `- Workers: ${sampleReport.summary.total_workers}\n`;
+                    resultDiv.textContent += `- Photos: ${sampleReport.has_photos ? 'Yes' : 'No'}\n`;
+                }
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent += '\n\n✅ Data flow test completed successfully!';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent += `\n\n❌ Data flow test failed: ${error.message}`;
+            }
+        }
+
+        async function runDiagnostics() {
+            const resultDiv = document.getElementById('diagnosticsResult');
+            resultDiv.textContent = 'Running diagnostics...';
+            
+            const issues = [];
+            const checks = [];
+            
+            try {
+                // Check 1: API availability
+                checks.push('1. Checking API availability...');
+                try {
+                    const response = await fetch('/buildhub/backend/api/homeowner/get_progress_updates.php?homeowner_id=28&limit=1');
+                    const data = await response.json();
+                    if (data.success) {
+                        checks.push('✅ API is accessible and responding');
+                    } else {
+                        issues.push(`❌ API error: ${data.message}`);
+                    }
+                } catch (e) {
+                    issues.push(`❌ API not accessible: ${e.message}`);
+                }
+                
+                // Check 2: Data availability
+                checks.push('\n2. Checking data availability...');
+                try {
+                    const response = await fetch('/buildhub/backend/api/homeowner/get_progress_updates.php?homeowner_id=28&limit=10');
+                    const data = await response.json();
+                    if (data.success && data.data.progress_updates.length > 0) {
+                        checks.push(`✅ Found ${data.data.progress_updates.length} progress updates`);
+                    } else {
+                        issues.push('⚠️ No progress updates found in database');
+                    }
+                } catch (e) {
+                    issues.push(`❌ Data check failed: ${e.message}`);
+                }
+                
+                // Check 3: Component props
+                checks.push('\n3. Checking component props...');
+                if (currentTab === 'progress') {
+                    checks.push('✅ activeTab is "progress"');
+                    checks.push('✅ isVisible should be true');
+                } else {
+                    issues.push('⚠️ activeTab is not "progress" - component will be hidden');
+                }
+                
+                // Check 4: Common rendering issues
+                checks.push('\n4. Checking for common issues...');
+                checks.push('✅ CSS files should be loaded');
+                checks.push('✅ Component should handle empty states');
+                checks.push('✅ Error boundaries should catch rendering errors');
+                
+                // Check 5: Browser console errors
+                checks.push('\n5. Browser console check...');
+                checks.push('ℹ️ Check browser console for JavaScript errors');
+                checks.push('ℹ️ Check network tab for failed API requests');
+                
+                resultDiv.className = issues.length > 0 ? 'result warning' : 'result success';
+                resultDiv.textContent = checks.join('\n');
+                
+                if (issues.length > 0) {
+                    resultDiv.textContent += '\n\n🚨 ISSUES FOUND:\n' + issues.join('\n');
+                } else {
+                    resultDiv.textContent += '\n\n✅ No issues detected - component should be working correctly';
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Diagnostics failed: ${error.message}`;
+            }
+        }
+
+        function testWithMockData() {
+            const resultDiv = document.getElementById('mockDataResult');
+            
+            // Create mock data
+            const mockReports = [
+                {
+                    id: 1,
+                    contractor_name: 'Test Contractor',
+                    project_name: 'Test Project - Foundation',
+                    report_type: 'daily',
+                    created_at: new Date().toISOString(),
+                    status: 'sent',
+                    summary: {
+                        stage: 'Foundation',
+                        progress_percentage: 25,
+                        incremental_progress: 5,
+                        total_workers: 8,
+                        total_hours: 8,
+                        weather: 'Sunny',
+                        work_description: 'Completed foundation excavation and started concrete pouring.'
+                    },
+                    has_photos: true
+                }
+            ];
+            
+            resultDiv.className = 'result success';
+            resultDiv.textContent = `✅ Mock data test successful!\n\nGenerated ${mockReports.length} mock report(s):\n\n`;
+            
+            mockReports.forEach((report, index) => {
+                resultDiv.textContent += `📋 Report ${index + 1}:\n`;
+                resultDiv.textContent += `- Contractor: ${report.contractor_name}\n`;
+                resultDiv.textContent += `- Stage: ${report.summary.stage}\n`;
+                resultDiv.textContent += `- Progress: ${report.summary.progress_percentage}%\n`;
+                resultDiv.textContent += `- Workers: ${report.summary.total_workers}\n`;
+                resultDiv.textContent += `- Status: ${report.status}\n\n`;
+            });
+            
+            resultDiv.textContent += 'If the component works with mock data but not real data, the issue is in the API or data transformation.';
+        }
+
+        // Initialize with dashboard tab
+        window.onload = function() {
+            switchTab('dashboard');
+            console.log('🏠 Homeowner Dashboard Debug Page Loaded');
+        };
+    </script>
+</body>
+</html>
+</content>

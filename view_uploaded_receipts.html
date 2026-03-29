@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Uploaded Receipts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        .receipt-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #fafafa;
+        }
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        .payment-id {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .status-verified { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .receipt-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .files-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .file-icon {
+            font-size: 1.5em;
+        }
+        .file-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .file-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .file-meta {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .view-button {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        .view-button:hover {
+            background: #0056b3;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .summary {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Uploaded Receipts Viewer</h1>
+            <p>View all uploaded payment receipts and their storage locations</p>
+        </div>
+        
+        <div id="loading" class="loading">
+            🔄 Loading receipts...
+        </div>
+        
+        <div id="content" style="display: none;">
+            <div class="summary">
+                <h3>📊 Summary</h3>
+                <div id="summary-content"></div>
+            </div>
+            
+            <div id="receipts-container"></div>
+        </div>
+        
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function loadReceipts() {
+            try {
+                const response = await fetch('/buildhub/check_uploaded_receipts.php');
+                const text = await response.text();
+                
+                // Since the PHP script outputs text, we'll parse it
+                // For a real implementation, you'd want to modify the PHP to return JSON
+                
+                // For now, let's fetch the data via a simple API call
+                const apiResponse = await fetch('/buildhub/backend/api/homeowner/get_bills_receipts.php', {
+                    credentials: 'include'
+                });
+                
+                if (!apiResponse.ok) {
+                    throw new Error('Failed to fetch receipts');
+                }
+                
+                const data = await apiResponse.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.success) {
+                    displayReceipts(data.data);
+                    document.getElementById('content').style.display = 'block';
+                } else {
+                    throw new Error(data.message || 'Failed to load receipts');
+                }
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        function displayReceipts(data) {
+            const receipts = data.receipts || [];
+            const stats = data.statistics || {};
+            
+            // Display summary
+            const summaryHtml = `
+                <p><strong>Total Receipts:</strong> ${stats.total_receipts || 0}</p>
+                <p><strong>Verified:</strong> ${stats.verified_count || 0}</p>
+                <p><strong>Pending:</strong> ${stats.pending_count || 0}</p>
+                <p><strong>Total Amount:</strong> ₹${(stats.total_amount || 0).toLocaleString()}</p>
+                <p><strong>Storage Location:</strong> backend/uploads/payment_receipts/[payment_id]/</p>
+                <p><strong>Database Tables:</strong> stage_payment_requests, custom_payment_requests</p>
+            `;
+            document.getElementById('summary-content').innerHTML = summaryHtml;
+            
+            // Display receipts
+            const container = document.getElementById('receipts-container');
+            
+            if (receipts.length === 0) {
+                container.innerHTML = '<p>No receipts found. Upload a receipt first to see it here.</p>';
+                return;
+            }
+            
+            let receiptsHtml = '';
+            
+            receipts.forEach(receipt => {
+                const statusClass = `status-${receipt.verification_status || 'pending'}`;
+                const files = receipt.receipt_files || [];
+                
+                receiptsHtml += `
+                    <div class="receipt-card">
+                        <div class="receipt-header">
+                            <div class="payment-id">Payment #${receipt.id} - ${receipt.request_title}</div>
+                            <div class="status-badge ${statusClass}">
+                                ${receipt.verification_badge?.text || receipt.verification_status || 'Unknown'}
+                            </div>
+                        </div>
+                        
+                        <div class="receipt-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Amount:</span>
+                                <span class="detail-value">₹${parseFloat(receipt.requested_amount || 0).toLocaleString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Payment Method:</span>
+                                <span class="detail-value">${receipt.payment_method || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Transaction Ref:</span>
+                                <span class="detail-value">${receipt.transaction_reference || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Payment Date:</span>
+                                <span class="detail-value">${receipt.payment_date || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Contractor:</span>
+                                <span class="detail-value">${receipt.contractor_first_name || ''} ${receipt.contractor_last_name || ''}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Payment Type:</span>
+                                <span class="detail-value">${receipt.payment_type_badge?.text || receipt.payment_type || 'N/A'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="files-section">
+                            <h4>📎 Uploaded Files (${files.length})</h4>
+                            ${files.map(file => `
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <div class="file-icon">
+                                            ${file.file_type?.includes('image') ? '🖼️' : 
+                                              file.file_type?.includes('pdf') ? '📄' : '📎'}
+                                        </div>
+                                        <div class="file-details">
+                                            <div class="file-name">${file.original_name}</div>
+                                            <div class="file-meta">
+                                                ${file.file_type} • ${(file.file_size / 1024).toFixed(1)} KB
+                                            </div>
+                                            <div class="file-meta">
+                                                <strong>Storage:</strong> ${file.file_path}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a href="/buildhub/backend/${file.file_path}" 
+                                       target="_blank" 
+                                       class="view-button">
+                                        View File
+                                    </a>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = receiptsHtml;
+        }
+        
+        // Load receipts when page loads
+        loadReceipts();
+    </script>
+</body>
+</html>

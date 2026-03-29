@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Tracking System - Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+        }
+
+        .test-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .response-box {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .response-box.success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+
+        .response-box.error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+         px;
+        }
+
+        .status-success {
+            background: #d4e;
+            color: #155724;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        {
+            background: #f8d7da
+            color: #721c24;
+        }
+
+        ox {
+            backf1;
+            border-left: 4px sob8;
+            padding: 12px;
+            border-radius: 4px;
+         16px;
+        
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+         fr;
+        
+        }
+    </style>
+</head>
+<body>
+    <div 
+        
+            <h1>🗓️ Sche</h1>
+            <p>Test the backward>
+        </div>
+
+        <-->
+        tion">
+            <h2>Test 2>
+            <div class="info-box>
+                Tests the read-only scn).
+            </div>
+            
+        p">
+                <label >
+                <input type="">
+            </div>
+
+        
+                Get Scheduy
+            </button>
+
+         
+        
+
+        <!-- Test 2: Updaty) -->
+        <div class="test-seion">
+            <h2>Test 2: Updaten></h2>
+            <div class="info-box">
+         ed).
+        
+
+            <div class="form-group
+                <label f>
+                <input ty">
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+         abel>
+        
+                </div>
+
+         
+            l>
+       9-01">
+      >
+            </div>
+
+            <button class="btn btn-primary" onclick="">
+                Update Planned Schedule
+            </tton>
+
+            <div id="response-2" c/div>
+        </div>
+
+        <!-- Test 3: Update Actual Da) -->
+        <div class="test-section">
+            <h2>Test 3: Update Actual Dates <span class="status-badge status-warning">Contran></h2>
+            <div class="info-box">
+                Tests recording actual dates. Setting actual_start_date locks plaation.
+            </div>
+
+            <div class="form-group">
+                <>
+              "1">
+iv>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="actubel>
+                    <input type="date" id
+                </div>
+
+                <div class="form-group">
+                    <label forbel>
+                    <l-end">
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="testUpdateActu>
+              tes
+
+
+            <div id="response-3" c>
+        </div>
+
+        <!-- Test 4: Complete Project Workflow -->
+        <div classtion">
+            <h2>Test 4: Complete Pro>
+            <div class="info-box">
+                Tests the complete workflow: Set planned dates → Startrics
+            </div>
+
+            <div class="form-group">
+                <label for="project-id-4">Project ID:</label>
+                <i1">
+            </div>
+
+            <button class="btn btn-primary" onclick="tetep1()">
+                Ste
+            </button>
+            <button class="btn bt
+                Step t
+            </button>
+            <button class="btn btn-warning" on>
+                Stect
+            </button>
+">
+                Step 4: View Final Metrics
+            </button>
+
+            <div id="response-4" class="respo></div>
+        </div>
+
+        <!-- Test 5: Verify Backwardty -->
+        <div class="test-section">
+            <h2>Test 5: Verify Backward Compatibility</h2>
+            <div c-box">
+                Tests that projects y).
+            </div>
+
+            <div c
+                <label for="project-id-5">Project ID (without schedule)</label>
+                <input type="number="1">
+            </div>
+
+            <button class="btn btn-primary" onclic
+                Teity
+            </tton>
+
+            <div id="response-5" class="r
+        </div>
+    </div>
+
+    <script>
+        const API_/api';
+
+        async function apiCall(url, metholl) {
+            const options = {
+                me,
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+
+                const data = await respson();
+                return { success:  };
+            } catch (error) {
+                return { success: fage };
+            }
+        }
+
+        function displayResponse(elementId, result) {
+            const element = do;
+            element.sock';
+            
+            if (result.success) {
+                el
+              
+          lse {
+ error';
+            ;
+            }
+ }
+
+        async function testGetSchedu
+            const projectId = documen;
+            const result = await apiCall(`${API_BASE}/project/get_schedule_summar);
+            displayResponse('response-1', result);
+        }
+
+        async function testUpdatePlanned() {
+            const projectId = document.getElementById('project-id-2').value;
+            const plannedStart = document.getElementById('planned-start').value;
+          
+
+            const result = await apiCall(
+                `${API_BASE}/contractor/update_planned_schedule.php`,
+                'POST',
+                {
+                    project_id: parseInt(projectId),
+            
+                 nd,
+                    change_reason: 'Test via web interface'
+                }
+            );
+            displayResponse('response-2', result);
+        }
+
+        async function testUpdateAcal() {
+            const projectId = document.getEleme).value;
+            const actualStart = document.getElementByIdvalue;
+            const
+
+            const body = {
+                project_id: parseInt(projectId),
+             rface'
+         
+
+            if (actualStart) body.actual_start_d
+            if (actualEnd) body.actual_end_date = actualEnd;
+
+            
+                `${API_BASE}/contractor/update_actual_dap`,
+            'POST',
+                body
+            );
+            displayResponse('response-3', r;
+        }
+
+        async function testWorkflowStep1() {
+            const projectId = document.getElementById('project-id-4').value;
+            const result = await apiCall(
+                `${API`,
+              T',
+            
+                    project_idd),
+                    p01',
+                    planned_end_date: '2026
+                    change_reason: 'Workflowule'
+                }
+            );
+            displayResponse('response-4', result);
+        }
+
+        async 
+            4').value;
+            const result =apiCall(
+                `${API_BASE}/contractor/update_actual_dates.php`,
+                'POST',
+                {
+                    project_id: parseInt(projectId),
+                    actual_start_date: '2026-04-05',
+                    change_reason: 'Workflow test - project s'
+                }
+            );
+            displayResponse('response-4', result);
+        }
+
+        async func() {
+            calue;
+            
+                `${API_BASE}/,
+                'POST',
+         
+ojectId),
+                    actual_end_date: '202
+                    change_reason: 'Workflow tted'
+                }
+            );
+         ult);
+
+
+        async function testWorkflowStep4() {
+            const projectId = document.getElementById('project-id-4').value;
+            const result = await apiCall(`${API_BASE}/project/get_schedule_summ`);
+            displayResponse('response-4', result);
+        }
+
+        async function testBackwardCompatibity() {
+            const projectId = document.getElementById('project
+            const result = await apiCall(`${API_BASE});
+            displayResponse('response-5', result);
+        }
+    </script>
+</body>
+</html>

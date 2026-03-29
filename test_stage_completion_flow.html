@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Stage Completion Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 16px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-secondary { background: #6c757d; color: white; }
+        input, select { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: inline-block; width: 150px; font-weight: 500; }
+        .progress-bar { width: 100%; height: 20px; background: #e9ecef; border-radius: 10px; overflow: hidden; margin: 5px 0; }
+        .progress-fill { height: 100%; background: #28a745; transition: width 0.3s ease; }
+        .stage-info { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; }
+        .helper-buttons { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+        .helper-btn { padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: none; cursor: pointer; }
+        .helper-btn.complete { background: #28a745; color: white; }
+        .helper-btn.half { background: #007bff; color: white; }
+        .helper-btn.small { background: #ffc107; color: #212529; }
+        .helper-btn.clear { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Stage Completion Flow Test</h1>
+        <p>This tool helps you test and understand the stage completion process.</p>
+
+        <div class="test-section info">
+            <h3>📋 How It Works</h3>
+            <ul>
+                <li>Each construction stage has exactly <strong>12.5%</strong> allocation</li>
+                <li>8 stages total: Foundation → Structure → Brickwork → Roofing → Electrical → Plumbing → Finishing → Final</li>
+                <li>You can only work on the current incomplete stage</li>
+                <li>Use helper buttons to set the right percentage quickly</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Project Selection</h3>
+            <div class="form-group">
+                <label>Project ID:</label>
+                <input type="number" id="projectId" value="38" min="1">
+                <label>Contractor ID:</label>
+                <input type="number" id="contractorId" value="29" min="1">
+                <button class="btn-primary" onclick="loadProject()">Load Project</button>
+            </div>
+            <div id="projectStatus"></div>
+        </div>
+
+        <div class="test-section" id="stageSection" style="display: none;">
+            <h3>🔧 Stage Progress</h3>
+            <div id="stageProgress"></div>
+            
+            <div class="form-group">
+                <label>Current Stage:</label>
+                <select id="stageSelect" onchange="updateStageInfo()">
+                    <option value="">Select Stage</option>
+                    <option value="Foundation">🏗️ Foundation</option>
+                    <option value="Structure">🔨 Structure</option>
+                    <option value="Brickwork">🧱 Brickwork</option>
+                    <option value="Roofing">🏠 Roofing</option>
+                    <option value="Electrical">⚡ Electrical</option>
+                    <option value="Plumbing">🚿 Plumbing</option>
+                    <option value="Finishing">🎨 Finishing</option>
+                    <option value="Final">✨ Final</option>
+                </select>
+            </div>
+
+            <div id="currentStageInfo"></div>
+
+            <div class="form-group">
+                <label>Progress %:</label>
+                <input type="number" id="progressPercent" step="0.1" min="0" max="100" oninput="validateProgress()">
+                <div class="helper-buttons" id="helperButtons"></div>
+            </div>
+
+            <div id="validationResult"></div>
+
+            <div class="form-group">
+                <label>Work Done:</label>
+                <input type="text" id="workDone" value="Daily construction progress update" style="width: 300px;">
+            </div>
+
+            <div class="form-group">
+                <label>Weather:</label>
+                <select id="weather">
+                    <option value="Sunny">☀️ Sunny</option>
+                    <option value="Cloudy">☁️ Cloudy</option>
+                    <option value="Rainy">🌧️ Rainy</option>
+                </select>
+            </div>
+
+            <button class="btn-success" onclick="submitProgress()">Submit Daily Progress</button>
+            <div id="submitResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let projectData = {};
+        let stageProgress = {};
+
+        async function loadProject() {
+            const projectId = document.getElementById('projectId').value;
+            const contractorId = document.getElementById('contractorId').value;
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/contractor/get_project_progress.php?project_id=${projectId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    projectData = data;
+                    calculateStageProgress();
+                    displayProjectStatus();
+                    document.getElementById('stageSection').style.display = 'block';
+                } else {
+                    document.getElementById('projectStatus').innerHTML = 
+                        `<div class="error">❌ Failed to load project: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('projectStatus').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function calculateStageProgress() {
+            const stages = ['Foundation', 'Structure', 'Brickwork', 'Roofing', 'Electrical', 'Plumbing', 'Finishing', 'Final'];
+            stageProgress = {};
+            
+            stages.forEach(stage => {
+                stageProgress[stage] = { current: 0, remaining: 12.5, status: 'not_started' };
+            });
+            
+            if (projectData.progress_updates) {
+                projectData.progress_updates.forEach(update => {
+                    const stage = update.construction_stage;
+                    if (stageProgress[stage]) {
+                        stageProgress[stage].current += parseFloat(update.incremental_completion_percentage || 0);
+                    }
+                });
+            }
+            
+            // Update remaining and status
+            stages.forEach(stage => {
+                const data = stageProgress[stage];
+                data.remaining = Math.max(0, 12.5 - data.current);
+                
+                if (data.current >= 12.5) {
+                    data.status = 'completed';
+                } else if (data.current > 0) {
+                    data.status = 'in_progress';
+                } else {
+                    data.status = 'not_started';
+                }
+            });
+        }
+
+        function displayProjectStatus() {
+            let html = '<div class="success">✅ Project loaded successfully!</div>';
+            html += '<div id="stageProgressDisplay"></div>';
+            document.getElementById('projectStatus').innerHTML = html;
+            updateStageProgressDisplay();
+        }
+
+        function updateStageProgressDisplay() {
+            const stages = ['Foundation', 'Structure', 'Brickwork', 'Roofing', 'Electrical', 'Plumbing', 'Finishing', 'Final'];
+            let html = '<h4>📊 Stage Progress Overview:</h4>';
+            
+            stages.forEach(stage => {
+                const data = stageProgress[stage];
+                const progressPercent = (data.current / 12.5) * 100;
+                const statusIcon = data.status === 'completed' ? '✅' : data.status === 'in_progress' ? '🔄' : '⏳';
+                const statusColor = data.status === 'completed' ? '#28a745' : data.status === 'in_progress' ? '#007bff' : '#6c757d';
+                
+                html += `
+                    <div class="stage-info">
+                        <span>${statusIcon} ${stage}</span>
+                        <span>${data.current.toFixed(1)}% / 12.5%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${Math.min(progressPercent, 100)}%; background: ${statusColor};"></div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('stageProgressDisplay').innerHTML = html;
+        }
+
+        function updateStageInfo() {
+            const selectedStage = document.getElementById('stageSelect').value;
+            if (!selectedStage) {
+                document.getElementById('currentStageInfo').innerHTML = '';
+                document.getElementById('helperButtons').innerHTML = '';
+                return;
+            }
+            
+            const data = stageProgress[selectedStage];
+            let html = `
+                <div class="info">
+                    <h4>📋 ${selectedStage} Stage Info</h4>
+                    <p><strong>Current Progress:</strong> ${data.current.toFixed(1)}%</p>
+                    <p><strong>Remaining:</strong> ${data.remaining.toFixed(1)}%</p>
+                    <p><strong>Status:</strong> ${data.status.replace('_', ' ').toUpperCase()}</p>
+                </div>
+            `;
+            
+            document.getElementById('currentStageInfo').innerHTML = html;
+            
+            // Update helper buttons
+            updateHelperButtons(data.remaining);
+        }
+
+        function updateHelperButtons(remaining) {
+            let html = '';
+            
+            if (remaining > 0) {
+                html += `<button class="helper-btn complete" onclick="setProgress(${remaining.toFixed(1)})">Complete Stage (${remaining.toFixed(1)}%)</button>`;
+                
+                if (remaining >= 2) {
+                    const half = (remaining / 2).toFixed(1);
+                    html += `<button class="helper-btn half" onclick="setProgress(${half})">Half Progress (${half}%)</button>`;
+                }
+                
+                const small = Math.min(2, remaining).toFixed(1);
+                html += `<button class="helper-btn small" onclick="setProgress(${small})">Small Progress (${small}%)</button>`;
+            }
+            
+            html += '<button class="helper-btn clear" onclick="setProgress(\'\')">Clear</button>';
+            
+            document.getElementById('helperButtons').innerHTML = html;
+        }
+
+        function setProgress(value) {
+            document.getElementById('progressPercent').value = value;
+            validateProgress();
+        }
+
+        function validateProgress() {
+            const selectedStage = document.getElementById('stageSelect').value;
+            const progressValue = parseFloat(document.getElementById('progressPercent').value) || 0;
+            
+            if (!selectedStage) {
+                document.getElementById('validationResult').innerHTML = '';
+                return;
+            }
+            
+            const data = stageProgress[selectedStage];
+            let html = '';
+            
+            if (progressValue <= 0) {
+                html = '<div class="warning">⚠️ Progress must be greater than 0%</div>';
+            } else if (progressValue > data.remaining + 0.1) {
+                html = `<div class="error">❌ Exceeds stage limit! Maximum ${data.remaining.toFixed(1)}% allowed</div>`;
+            } else if (progressValue > data.remaining) {
+                html = `<div class="warning">⚠️ Will be auto-capped to ${data.remaining.toFixed(1)}%</div>`;
+            } else {
+                const newTotal = data.current + progressValue;
+                const willComplete = newTotal >= 12.4; // 99% of 12.5
+                
+                if (willComplete) {
+                    html = `<div class="success">✅ This will complete the ${selectedStage} stage!</div>`;
+                } else {
+                    html = `<div class="info">ℹ️ Valid progress. New total: ${newTotal.toFixed(1)}%</div>`;
+                }
+            }
+            
+            document.getElementById('validationResult').innerHTML = html;
+        }
+
+        async function submitProgress() {
+            const projectId = document.getElementById('projectId').value;
+            const contractorId = document.getElementById('contractorId').value;
+            const stage = document.getElementById('stageSelect').value;
+            const progress = document.getElementById('progressPercent').value;
+            const workDone = document.getElementById('workDone').value;
+            const weather = document.getElementById('weather').value;
+            
+            if (!stage || !progress || !workDone) {
+                document.getElementById('submitResult').innerHTML = 
+                    '<div class="error">❌ Please fill all required fields</div>';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('project_id', projectId);
+            formData.append('contractor_id', contractorId);
+            formData.append('update_date', new Date().toISOString().split('T')[0]);
+            formData.append('construction_stage', stage);
+            formData.append('work_done_today', workDone);
+            formData.append('incremental_completion_percentage', progress);
+            formData.append('working_hours', '8');
+            formData.append('weather_condition', weather);
+            formData.append('site_issues', '');
+            formData.append('labour_data', JSON.stringify([]));
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/submit_daily_progress.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('submitResult').innerHTML = 
+                        `<div class="success">✅ Progress submitted successfully! 
+                         Incremental: ${data.data.incremental_progress}%, 
+                         Cumulative: ${data.data.cumulative_progress}%</div>`;
+                    
+                    // Reload project to see updates
+                    setTimeout(loadProject, 1000);
+                } else {
+                    document.getElementById('submitResult').innerHTML = 
+                        `<div class="error">❌ Submission failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('submitResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-load project on page load
+        window.onload = function() {
+            loadProject();
+        };
+    </script>
+</body>
+</html>

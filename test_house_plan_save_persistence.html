@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Plan Save Persistence Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .test-steps {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-steps h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        
+        .test-steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .test-steps li {
+            margin-bottom: 8px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.pending {
+            background-color: #ffc107;
+        }
+        
+        .status-indicator.success {
+            background-color: #28a745;
+        }
+        
+        .status-indicator.error {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 House Plan Save Persistence Test</h1>
+            <p>Test to verify that house plan changes are properly saved and persist when re-editing</p>
+        </div>
+        
+        <div class="test-steps">
+            <h3>🧪 Test Procedure</h3>
+            <ol>
+                <li>Create a new house plan with some rooms</li>
+                <li>Save the plan</li>
+                <li>Make changes to the plan (add/modify rooms)</li>
+                <li>Save the changes</li>
+                <li>Close and reopen the plan for editing</li>
+                <li>Verify that the latest changes are preserved</li>
+            </ol>
+            <p><strong>Expected Result:</strong> The plan should show the latest saved changes, not the original state.</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Test House Plan Persistence</h2>
+            
+            <div id="testStatus">
+                <p><span class="status-indicator pending"></span>Ready to start test</p>
+            </div>
+            
+            <button onclick="testCreatePlan()" class="btn">1. Create Test Plan</button>
+            <button onclick="testUpdatePlan()" class="btn" disabled id="updateBtn">2. Update Plan</button>
+            <button onclick="testReloadPlan()" class="btn" disabled id="reloadBtn">3. Reload & Verify</button>
+            <button onclick="resetTest()" class="btn">🔄 Reset Test</button>
+            
+            <div id="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔍 Debug Information</h2>
+            <p>This section will show detailed information about the save/load process:</p>
+            <div id="debugInfo" style="font-family: monospace; font-size: 12px; background: #f8f9fa; padding: 15px; border-radius: 6px; min-height: 100px;">
+                Debug information will appear here...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testPlanId = null;
+        let originalRoomCount = 0;
+        let updatedRoomCount = 0;
+        
+        function updateStatus(message, type = 'pending') {
+            const statusDiv = document.getElementById('testStatus');
+            const indicator = type === 'success' ? 'success' : type === 'error' ? 'error' : 'pending';
+            statusDiv.innerHTML = `<p><span class="status-indicator ${indicator}"></span>${message}</p>`;
+        }
+        
+        function addDebugInfo(message) {
+            const debugDiv = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+        }
+        
+        async function testCreatePlan() {
+            updateStatus('Creating test plan...', 'pending');
+            addDebugInfo('Starting plan creation test...');
+            
+            try {
+                const testPlan = {
+                    plan_name: `Test Plan ${Date.now()}`,
+                    plot_width: 100,
+                    plot_height: 100,
+                    plan_data: {
+                        rooms: [
+                            {
+                                id: 1,
+                                name: 'Living Room',
+                                type: 'living_room',
+                                x: 10,
+                                y: 10,
+                                layout_width: 20,
+                                layout_height: 15,
+                                actual_width: 24,
+                                actual_height: 18
+                            },
+                            {
+                                id: 2,
+                                name: 'Kitchen',
+                                type: 'kitchen',
+                                x: 35,
+                                y: 10,
+                                layout_width: 15,
+                                layout_height: 12,
+                                actual_width: 18,
+                                actual_height: 14.4
+                            }
+                        ],
+                        scale_ratio: 1.2,
+                        total_layout_area: 480,
+                        total_construction_area: 691.2
+                    },
+                    notes: 'Initial test plan',
+                    status: 'draft'
+                };
+                
+                originalRoomCount = testPlan.plan_data.rooms.length;
+                addDebugInfo(`Creating plan with ${originalRoomCount} rooms`);
+                
+                const response = await fetch('/buildhub/backend/api/architect/create_house_plan.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(testPlan)
+                });
+                
+                const result = await response.json();
+                addDebugInfo(`Create response: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success) {
+                    testPlanId = result.plan_id;
+                    updateStatus(`Plan created successfully (ID: ${testPlanId})`, 'success');
+                    addDebugInfo(`Plan created with ID: ${testPlanId}`);
+                    
+                    document.getElementById('updateBtn').disabled = false;
+                    displayResult('success', `Plan created successfully!\nPlan ID: ${testPlanId}\nRooms: ${originalRoomCount}`);
+                } else {
+                    throw new Error(result.message || 'Failed to create plan');
+                }
+                
+            } catch (error) {
+                updateStatus(`Failed to create plan: ${error.message}`, 'error');
+                addDebugInfo(`Error creating plan: ${error.message}`);
+                displayResult('error', `Error creating plan: ${error.message}`);
+            }
+        }
+        
+        async function testUpdatePlan() {
+            if (!testPlanId) {
+                displayResult('error', 'No test plan created yet');
+                return;
+            }
+            
+            updateStatus('Updating test plan...', 'pending');
+            addDebugInfo('Starting plan update test...');
+            
+            try {
+                const updatedPlan = {
+                    plan_id: testPlanId,
+                    plan_name: `Updated Test Plan ${Date.now()}`,
+                    plot_width: 120,
+                    plot_height: 110,
+                    plan_data: {
+                        rooms: [
+                            {
+                                id: 1,
+                                name: 'Living Room',
+                                type: 'living_room',
+                                x: 10,
+                                y: 10,
+                                layout_width: 25, // Changed from 20
+                                layout_height: 18, // Changed from 15
+                                actual_width: 30,
+                                actual_height: 21.6
+                            },
+                            {
+                                id: 2,
+                                name: 'Kitchen',
+                                type: 'kitchen',
+                                x: 40, // Changed from 35
+                                y: 10,
+                                layout_width: 15,
+                                layout_height: 12,
+                                actual_width: 18,
+                                actual_height: 14.4
+                            },
+                            {
+                                id: 3,
+                                name: 'Master Bedroom', // NEW ROOM
+                                type: 'master_bedroom',
+                                x: 10,
+                                y: 35,
+                                layout_width: 18,
+                                layout_height: 16,
+                                actual_width: 21.6,
+                                actual_height: 19.2
+                            }
+                        ],
+                        scale_ratio: 1.2,
+                        total_layout_area: 738,
+                        total_construction_area: 1062.72
+                    },
+                    notes: 'Updated test plan with changes',
+                    status: 'draft'
+                };
+                
+                updatedRoomCount = updatedPlan.plan_data.rooms.length;
+                addDebugInfo(`Updating plan with ${updatedRoomCount} rooms (was ${originalRoomCount})`);
+                addDebugInfo(`Changes: Living room size increased, Kitchen moved, Master bedroom added`);
+                
+                const response = await fetch('/buildhub/backend/api/architect/update_house_plan.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(updatedPlan)
+                });
+                
+                const result = await response.json();
+                addDebugInfo(`Update response: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success) {
+                    updateStatus(`Plan updated successfully`, 'success');
+                    addDebugInfo(`Plan updated successfully`);
+                    
+                    document.getElementById('reloadBtn').disabled = false;
+                    displayResult('success', `Plan updated successfully!\nOriginal rooms: ${originalRoomCount}\nUpdated rooms: ${updatedRoomCount}\nChanges: Living room enlarged, Kitchen moved, Master bedroom added`);
+                } else {
+                    throw new Error(result.message || 'Failed to update plan');
+                }
+                
+            } catch (error) {
+                updateStatus(`Failed to update plan: ${error.message}`, 'error');
+                addDebugInfo(`Error updating plan: ${error.message}`);
+                displayResult('error', `Error updating plan: ${error.message}`);
+            }
+        }
+        
+        async function testReloadPlan() {
+            if (!testPlanId) {
+                displayResult('error', 'No test plan to reload');
+                return;
+            }
+            
+            updateStatus('Reloading and verifying plan...', 'pending');
+            addDebugInfo('Starting plan reload verification...');
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/architect/get_house_plan.php?id=${testPlanId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                addDebugInfo(`Reload response: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success && result.plan) {
+                    const plan = result.plan;
+                    let planData = plan.plan_data;
+                    
+                    if (typeof planData === 'string') {
+                        planData = JSON.parse(planData);
+                    }
+                    
+                    const currentRoomCount = planData.rooms ? planData.rooms.length : 0;
+                    addDebugInfo(`Reloaded plan has ${currentRoomCount} rooms`);
+                    
+                    // Check if the changes persisted
+                    const hasMasterBedroom = planData.rooms.some(room => room.name === 'Master Bedroom');
+                    const livingRoom = planData.rooms.find(room => room.name === 'Living Room');
+                    const kitchen = planData.rooms.find(room => room.name === 'Kitchen');
+                    
+                    addDebugInfo(`Master bedroom exists: ${hasMasterBedroom}`);
+                    addDebugInfo(`Living room size: ${livingRoom ? livingRoom.layout_width + 'x' + livingRoom.layout_height : 'not found'}`);
+                    addDebugInfo(`Kitchen position: ${kitchen ? kitchen.x + ',' + kitchen.y : 'not found'}`);
+                    
+                    if (currentRoomCount === updatedRoomCount && hasMasterBedroom) {
+                        updateStatus('✅ Test PASSED - Changes persisted correctly!', 'success');
+                        displayResult('success', `✅ PERSISTENCE TEST PASSED!\n\nExpected rooms: ${updatedRoomCount}\nActual rooms: ${currentRoomCount}\n\nChanges verified:\n- Master bedroom added: ${hasMasterBedroom}\n- Living room enlarged: ${livingRoom ? livingRoom.layout_width === 25 : false}\n- Kitchen moved: ${kitchen ? kitchen.x === 40 : false}\n\nThe house plan save functionality is working correctly!`);
+                    } else {
+                        updateStatus('❌ Test FAILED - Changes not persisted!', 'error');
+                        displayResult('error', `❌ PERSISTENCE TEST FAILED!\n\nExpected rooms: ${updatedRoomCount}\nActual rooms: ${currentRoomCount}\n\nIssues found:\n- Master bedroom missing: ${!hasMasterBedroom}\n- Room count mismatch: ${currentRoomCount !== updatedRoomCount}\n\nThe house plan is reverting to an earlier state after save!`);
+                    }
+                } else {
+                    throw new Error(result.message || 'Failed to reload plan');
+                }
+                
+            } catch (error) {
+                updateStatus(`Failed to reload plan: ${error.message}`, 'error');
+                addDebugInfo(`Error reloading plan: ${error.message}`);
+                displayResult('error', `Error reloading plan: ${error.message}`);
+            }
+        }
+        
+        function resetTest() {
+            testPlanId = null;
+            originalRoomCount = 0;
+            updatedRoomCount = 0;
+            
+            document.getElementById('updateBtn').disabled = true;
+            document.getElementById('reloadBtn').disabled = true;
+            
+            updateStatus('Ready to start test', 'pending');
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('debugInfo').innerHTML = 'Debug information will appear here...\n';
+            
+            addDebugInfo('Test reset - ready to start new test');
+        }
+        
+        function displayResult(type, message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .notification-toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 10px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            min-width: 300px;
+            cursor: pointer;
+            animation: slideIn 0.3s ease-out;
+        }
+        .notification-toast.success {
+            border-left: 4px solid #10b981;
+        }
+        .notification-toast.error {
+            border-left: 4px solid #ef4444;
+        }
+        .notification-toast.warning {
+            border-left: 4px solid #f59e0b;
+        }
+        .notification-toast.info {
+            border-left: 4px solid #3b82f6;
+        }
+        .notification-icon {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        .notification-content {
+            flex: 1;
+        }
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .notification-message {
+            color: #666;
+            font-size: 14px;
+        }
+        .notification-close {
+            margin-left: 12px;
+            font-size: 18px;
+            color: #999;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔔 Notification System Test</h1>
+        <p>Test the notification system to ensure it works correctly:</p>
+        
+        <div>
+            <button class="test-button" onclick="showSuccess()">✅ Success Notification</button>
+            <button class="test-button" onclick="showError()">❌ Error Notification</button>
+            <button class="test-button" onclick="showWarning()">⚠️ Warning Notification</button>
+            <button class="test-button" onclick="showInfo()">ℹ️ Info Notification</button>
+        </div>
+        
+        <h3>Test Results:</h3>
+        <ul>
+            <li>✅ Notifications should appear in top-right corner</li>
+            <li>✅ Each notification should have proper icon and styling</li>
+            <li>✅ Clicking notification should dismiss it</li>
+            <li>✅ Notifications should auto-dismiss after 5 seconds</li>
+        </ul>
+    </div>
+
+    <div class="notification-container" id="notifications"></div>
+
+    <script>
+        let notifications = [];
+        let notificationId = 1;
+
+        function addNotification(type, title, message) {
+            const notification = {
+                id: notificationId++,
+                type: type,
+                title: title,
+                message: message
+            };
+            
+            notifications.push(notification);
+            renderNotifications();
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                removeNotification(notification.id);
+            }, 5000);
+        }
+
+        function removeNotification(id) {
+            notifications = notifications.filter(n => n.id !== id);
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notifications');
+            container.innerHTML = '';
+            
+            notifications.forEach(notification => {
+                const toast = document.createElement('div');
+                toast.className = `notification-toast ${notification.type}`;
+                toast.onclick = () => removeNotification(notification.id);
+                
+                const icon = getIcon(notification.type);
+                
+                toast.innerHTML = `
+                    <div class="notification-icon">${icon}</div>
+                    <div class="notification-content">
+                        <div class="notification-title">${notification.title}</div>
+                        <div class="notification-message">${notification.message}</div>
+                    </div>
+                    <div class="notification-close">×</div>
+                `;
+                
+                container.appendChild(toast);
+            });
+        }
+
+        function getIcon(type) {
+            switch(type) {
+                case 'success': return '✅';
+                case 'error': return '❌';
+                case 'warning': return '⚠️';
+                case 'info': return 'ℹ️';
+                default: return 'ℹ️';
+            }
+        }
+
+        function showSuccess() {
+            addNotification('success', 'Plan Deleted', 'Plan "Modern Villa" deleted successfully! The homeowner has been notified.');
+        }
+
+        function showError() {
+            addNotification('error', 'Delete Failed', 'Failed to delete plan. Please try again.');
+        }
+
+        function showWarning() {
+            addNotification('warning', 'Plan Submitted', 'Plan submitted successfully! The homeowner has been notified.');
+        }
+
+        function showInfo() {
+            addNotification('info', 'Plan Saved', 'Your house plan has been saved successfully!');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Payment Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .issue { border-left: 4px solid #dc3545; background: #f8d7da; }
+        .fix { border-left: 4px solid #28a745; background: #d4edda; }
+        .debug { border-left: 4px solid #ffc107; background: #fff3cd; }
+        .code { background: #f8f9fa; padding: 10px; border-radius: 6px; font-family: monospace; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Payment Receipt Upload Issue</h1>
+    <p>Analyzing why receipt upload works from "View Details" but not from "Pay Now" flow.</p>
+
+    <div class="section debug">
+        <h2>🔍 Issue Analysis</h2>
+        <p><strong>Problem:</strong> Receipt upload works from "View Details" but fails from "Pay Now" flow.</p>
+        
+        <h3>Two Different Paths:</h3>
+        <div class="code">
+            <strong>Path 1 - View Details (Working):</strong><br>
+            HomeownerProgressReports → PaymentReceiptUpload<br>
+            paymentId = selectedPaymentRequest?.id (stage_payment_requests.id)
+        </div>
+        
+        <div class="code">
+            <strong>Path 2 - Pay Now (Not Working):</strong><br>
+            HomeownerProgressReports → PaymentMethodSelector → PaymentReceiptUpload<br>
+            paymentId = alternativePaymentId (alternative_payments.id)
+        </div>
+    </div>
+
+    <div class="section issue">
+        <h2>❌ Root Cause Identified</h2>
+        <p>The issue is that the PaymentReceiptUpload component and the backend API expect different types of payment IDs:</p>
+        
+        <ul>
+            <li><strong>View Details path:</strong> Uses <code>stage_payment_requests.id</code> (original payment request)</li>
+            <li><strong>Pay Now path:</strong> Uses <code>alternative_payments.id</code> (alternative payment record)</li>
+        </ul>
+        
+        <p>The backend API <code>upload_payment_receipt.php</code> likely expects the original payment request ID, not the alternative payment ID.</p>
+    </div>
+
+    <div class="section fix">
+        <h2>✅ Solution</h2>
+        <p>We need to modify the PaymentMethodSelector to pass the original payment request ID instead of the alternative payment ID:</p>
+        
+        <div class="code">
+            <strong>Current (Broken):</strong><br>
+            &lt;PaymentReceiptUpload<br>
+            &nbsp;&nbsp;paymentId={alternativePaymentId} // ❌ Wrong ID<br>
+            /&gt;
+        </div>
+        
+        <div class="code">
+            <strong>Fixed:</strong><br>
+            &lt;PaymentReceiptUpload<br>
+            &nbsp;&nbsp;paymentId={paymentRequest?.id} // ✅ Original payment request ID<br>
+            /&gt;
+        </div>
+    </div>
+
+    <div class="section debug">
+        <h2>🔧 Additional Considerations</h2>
+        <ul>
+            <li>The <code>alternativePaymentId</code> is used for tracking the alternative payment method initiation</li>
+            <li>The receipt upload should still reference the original payment request</li>
+            <li>The backend API should handle both scenarios properly</li>
+        </ul>
+    </div>
+
+    <script>
+        console.log('🐛 Payment Flow Debug Analysis');
+        console.log('Issue: Receipt upload fails from Pay Now flow');
+        console.log('Cause: Wrong payment ID type being passed');
+        console.log('Solution: Use original payment request ID instead of alternative payment ID');
+    </script>
+</body>
+</html>

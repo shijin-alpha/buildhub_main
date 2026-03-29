@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Progress Documents Integration</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .progress-view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .toggle-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #495057;
+        }
+        .toggle-btn:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+        .toggle-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .content-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .demo-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .demo-info h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Progress Documents Integration Demo</h1>
+            <p>Document Management System integrated into Progress Updates section</p>
+        </div>
+
+        <div class="demo-info">
+            <h4>📋 Integration Overview</h4>
+            <p>The Stage Documents Manager has been successfully integrated into the Progress Updates section as a new toggle button. This provides a unified workflow for contractors to manage both progress updates and related documentation.</p>
+        </div>
+
+        <!-- Simulated Progress View Toggle -->
+        <div class="progress-view-toggle">
+            <button class="toggle-btn" onclick="setActiveView('submit')">
+                📝 Submit Update
+            </button>
+            <button class="toggle-btn" onclick="setActiveView('timeline')">
+                📊 View Timeline
+            </button>
+            <button class="toggle-btn" onclick="setActiveView('payment')">
+                💰 Stage Payment
+            </button>
+            <button class="toggle-btn" onclick="setActiveView('custom-payment')">
+                💳 Custom Payment
+            </button>
+            <button class="toggle-btn" onclick="setActiveView('history')">
+                📋 Payment History
+            </button>
+            <button class="toggle-btn active" onclick="setActiveView('documents')">
+                📁 Stage Documents
+            </button>
+            <button class="toggle-btn" onclick="setActiveView('reports')">
+                📊 Generate Reports
+            </button>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content-section">
+            <div id="content-area">
+                <div class="documents-section">
+                    <div class="documents-header" style="margin-bottom: 24px;">
+                        <h2>📁 Stage Documents Manager</h2>
+                        <p>Upload, organize, and manage receipts, bills, and documents for each construction stage</p>
+                    </div>
+                    
+                    <div class="demo-info">
+                        <h4>🎯 Key Features Available</h4>
+                        <ul class="feature-list">
+                            <li>Project-specific document organization</li>
+                            <li>Stage-based document categorization (Foundation, Structure, Brickwork, etc.)</li>
+                            <li>Multiple document types (Receipts, Bills, Invoices, Certificates)</li>
+                            <li>Drag-and-drop file upload interface</li>
+                            <li>Document verification workflow</li>
+                            <li>Progress tracking and completion statistics</li>
+                            <li>Integration with payment requests</li>
+                            <li>Comprehensive audit trail</li>
+                        </ul>
+                    </div>
+
+                    <div class="demo-info">
+                        <h4>🔄 Workflow Integration</h4>
+                        <p><strong>Unified Progress Management:</strong> Contractors can now seamlessly switch between submitting progress updates, managing payments, and organizing documents all within the same interface.</p>
+                        
+                        <p><strong>Document-Payment Linking:</strong> Documents can be directly linked to stage payment requests, creating a complete audit trail for each construction phase.</p>
+                        
+                        <p><strong>Real-time Updates:</strong> Document upload status and verification progress are reflected in real-time across all related sections.</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <a href="/buildhub/test_document_management_system.html" class="btn btn-success">
+                            🧪 Test Full Document System
+                        </a>
+                        <a href="/buildhub/apply_document_management_schema.php" class="btn">
+                            🗄️ Apply Database Schema
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-info">
+            <h4>📱 User Experience Benefits</h4>
+            <ul class="feature-list">
+                <li>Single interface for all progress-related activities</li>
+                <li>Contextual document management per construction stage</li>
+                <li>Reduced navigation between different sections</li>
+                <li>Streamlined workflow for contractors</li>
+                <li>Better organization of project documentation</li>
+                <li>Enhanced audit trail and compliance tracking</li>
+            </ul>
+        </div>
+
+        <div class="demo-info">
+            <h4>🔧 Technical Implementation</h4>
+            <p><strong>Frontend Integration:</strong> Added new toggle button in the progress view with dedicated content section</p>
+            <p><strong>Component Reuse:</strong> StageDocumentManager component integrated with project selection</p>
+            <p><strong>State Management:</strong> Unified state handling within the progress updates context</p>
+            <p><strong>API Integration:</strong> All existing document management APIs work seamlessly</p>
+        </div>
+    </div>
+
+    <script>
+        function setActiveView(view) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Update content area
+            const contentArea = document.getElementById('content-area');
+            
+            switch(view) {
+                case 'documents':
+                    contentArea.innerHTML = `
+                        <div class="documents-section">
+                            <div class="documents-header" style="margin-bottom: 24px;">
+                                <h2>📁 Stage Documents Manager</h2>
+                                <p>Upload, organize, and manage receipts, bills, and documents for each construction stage</p>
+                            </div>
+                            <div style="text-align: center; padding: 40px; background: white; border-radius: 8px;">
+                                <div style="font-size: 48px; margin-bottom: 16px;">📁</div>
+                                <h3>Document Management Active</h3>
+                                <p>This section would show the full StageDocumentManager component with project selection, upload interface, document viewing, and summary statistics.</p>
+                                <a href="/buildhub/test_document_management_system.html" class="btn btn-success">Test Full Functionality</a>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'submit':
+                    contentArea.innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                            <h3>Submit Progress Update</h3>
+                            <p>This would show the EnhancedProgressUpdate component for submitting daily progress reports.</p>
+                        </div>
+                    `;
+                    break;
+                case 'timeline':
+                    contentArea.innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                            <h3>Construction Timeline</h3>
+                            <p>This would show the ContractorConstructionTimeline component for viewing project progress.</p>
+                        </div>
+                    `;
+                    break;
+                case 'payment':
+                    contentArea.innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
+                            <h3>Stage Payment Requests</h3>
+                            <p>This would show the SimplePaymentRequestForm component for requesting stage payments.</p>
+                        </div>
+                    `;
+                    break;
+                case 'custom-payment':
+                    contentArea.innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">💳</div>
+                            <h3>Custom Payment Requests</h3>
+                            <p>This would show the CustomPaymentRequestForm component for custom payment requests.</p>
+                        </div>
+                    `;
+                    break;
+                case 'history':
+                    contentArea.innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                            <h3>Payment History</h3>
+                            <p>This would show the PaymentHistory component for viewing payment request history.</p>
+                        </div>
+                    `;
+                    break;
+                case 'reports':
+                    contentArea.innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                            <h3>Generate Reports</h3>
+                            <p>This would show the ProgressReportGenerator component for creating audit reports.</p>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Conceptual Image Visibility</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-button {
+            background: #dc3545;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #c82333;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .debug-step {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .test-image {
+            max-width: 300px;
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .url-display {
+            font-family: monospace;
+            font-size: 11px;
+            background: #e9ecef;
+            padding: 5px;
+            border-radius: 3px;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Debug Conceptual Image Visibility</h1>
+            <p>Systematic Debugging of Image Display Failure</p>
+        </div>
+
+        <div class="debug-section">
+            <h3>🎯 Debug Checklist</h3>
+            <div class="debug-step">
+                <div class="step-title">Step 1: Backend Verification</div>
+                <p>✅ Added logging to Python AI service for file path and existence</p>
+                <p>✅ Added logging to background task completion</p>
+                <p>✅ Added logging to status endpoint response</p>
+            </div>
+            
+            <div class="debug-step">
+                <div class="step-title">Step 2: API Response Verification</div>
+                <p>✅ Added logging to PHP status check API</p>
+                <p>✅ Added comprehensive frontend response logging</p>
+            </div>
+            
+            <div class="debug-step">
+                <div class="step-title">Step 3: Frontend URL Construction</div>
+                <p>✅ Added detailed URL construction logging</p>
+                <p>✅ Added conditional rendering debug checks</p>
+            </div>
+            
+            <div class="debug-step">
+                <div class="step-title">Step 4: Browser Accessibility Test</div>
+                <button class="test-button" onclick="testImageAccessibility()">Test Image URL Accessibility</button>
+                <div id="accessibilityResult" class="result" style="display: none;"></div>
+            </div>
+            
+            <div class="debug-step">
+                <div class="step-title">Step 5: React Rendering Check</div>
+                <p>✅ Added detailed conditional rendering debug</p>
+                <p>✅ Added step-by-step boolean condition logging</p>
+            </div>
+            
+            <div class="debug-step">
+                <div class="step-title">Step 6: CORS / Network Check</div>
+                <button class="test-button" onclick="testCORSAndNetwork()">Test CORS and Network</button>
+                <div id="corsResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🧪 Manual Image URL Test</h3>
+            <p>Test a sample conceptual image URL directly:</p>
+            <div class="url-display" id="sampleUrl">http://localhost/buildhub/uploads/conceptual_images/conceptual_living_room_20240115_143022.png</div>
+            <button class="test-button" onclick="testSampleImage()">Test Sample Image</button>
+            <div id="imageTestResult" class="result" style="display: none;"></div>
+            <div id="imageContainer" style="text-align: center; margin: 20px 0;"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>📋 Debug Instructions</h3>
+            <div class="info result">
+<strong>To complete the debugging process:</strong>
+
+1. <strong>Start the AI service:</strong>
+   cd ai_service
+   python main.py
+
+2. <strong>Generate a conceptual image:</strong>
+   - Use the Room Improvement Assistant
+   - Upload a room image and generate concept
+   - Watch the console logs carefully
+
+3. <strong>Check console logs for each step:</strong>
+   - Python logs: Look for "🔍 [DEBUG]" messages
+   - PHP logs: Check Apache error logs for "🔍 [DEBUG]" messages  
+   - Frontend logs: Open browser DevTools console
+
+4. <strong>Identify the failure point:</strong>
+   - Backend: File not saved or wrong path?
+   - API: Response not containing image_url?
+   - Frontend: Conditional rendering failing?
+   - Browser: Network request failing?
+
+5. <strong>Test image URL directly:</strong>
+   - Copy the logged Apache URL
+   - Open it directly in browser
+   - Check if it loads or returns 404/403
+
+<strong>Expected Debug Output:</strong>
+- Python: "🔍 [DEBUG] Real AI image saved successfully"
+- Python: "🔍 [DEBUG] - Full absolute path: C:/xampp/htdocs/..."
+- Python: "🔍 [DEBUG] - File exists check: True"
+- PHP: "🔍 [DEBUG] - image_url: /buildhub/uploads/..."
+- Frontend: "🔍 [DEBUG] - Should render image: true"
+- Frontend: "🔍 [DEBUG] - Final Apache URL for &lt;img src&gt;: http://localhost/..."
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🔍 Common Failure Points</h3>
+            <div class="warning result">
+<strong>Potential Issues to Check:</strong>
+
+1. <strong>File System Issues:</strong>
+   - Directory permissions on C:/xampp/htdocs/buildhub/uploads/conceptual_images/
+   - File not actually saved despite success message
+   - Antivirus blocking file creation
+
+2. <strong>Apache Configuration:</strong>
+   - Apache not running on port 80
+   - Directory not accessible via HTTP
+   - .htaccess blocking access
+
+3. <strong>API Response Issues:</strong>
+   - image_url field missing or null in response
+   - JSON structure different than expected
+   - PHP not passing through the correct data
+
+4. <strong>Frontend Conditional Logic:</strong>
+   - analysisResult.ai_enhancements is null/undefined
+   - conceptual_visualization.success is false
+   - image_url is empty string or null
+
+5. <strong>Browser/Network Issues:</strong>
+   - CORS blocking cross-origin requests
+   - Mixed content (HTTPS/HTTP) blocking
+   - Network request timing out
+
+6. <strong>React State Issues:</strong>
+   - State not updating after async completion
+   - Component not re-rendering after state change
+   - Conditional rendering logic error
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testImageAccessibility() {
+            const result = document.getElementById('accessibilityResult');
+            result.style.display = 'block';
+            result.className = 'result info';
+            result.textContent = 'Testing image URL accessibility...';
+
+            const testUrls = [
+                'http://localhost/buildhub/',
+                'http://localhost/buildhub/uploads/',
+                'http://localhost/buildhub/uploads/conceptual_images/',
+                'http://localhost/buildhub/uploads/conceptual_images/conceptual_living_room_20240115_143022.png'
+            ];
+
+            let testResults = 'Image Accessibility Test Results:\n\n';
+
+            for (const url of testUrls) {
+                try {
+                    console.log(`🔍 [DEBUG] Testing URL: ${url}`);
+                    const response = await fetch(url, { method: 'HEAD' });
+                    
+                    if (response.ok) {
+                        testResults += `✅ ${url} - Accessible (${response.status})\n`;
+                        console.log(`✅ [DEBUG] ${url} - Accessible (${response.status})`);
+                    } else {
+                        testResults += `❌ ${url} - HTTP ${response.status}\n`;
+                        console.error(`❌ [DEBUG] ${url} - HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    testResults += `❌ ${url} - Error: ${error.message}\n`;
+                    console.error(`❌ [DEBUG] ${url} - Error:`, error);
+                }
+            }
+
+            testResults += `\n🔍 Debug Notes:
+- If base directories are accessible but image returns 404, the file doesn't exist
+- If directories return 403, check Apache configuration and permissions
+- If all return connection errors, Apache is not running`;
+
+            result.className = 'result info';
+            result.textContent = testResults;
+        }
+
+        async function testCORSAndNetwork() {
+            const result = document.getElementById('corsResult');
+            result.style.display = 'block';
+            result.className = 'result info';
+            result.textContent = 'Testing CORS and network issues...';
+
+            const testUrl = 'http://localhost/buildhub/uploads/conceptual_images/conceptual_living_room_20240115_143022.png';
+            
+            let testResults = 'CORS and Network Test Results:\n\n';
+
+            try {
+                // Test with fetch
+                console.log(`🔍 [DEBUG] Testing CORS with fetch: ${testUrl}`);
+                const response = await fetch(testUrl);
+                
+                testResults += `Fetch Test:\n`;
+                testResults += `- Status: ${response.status}\n`;
+                testResults += `- Status Text: ${response.statusText}\n`;
+                testResults += `- Headers: ${JSON.stringify([...response.headers.entries()])}\n\n`;
+                
+                // Test CORS headers
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Content-Type': response.headers.get('Content-Type')
+                };
+                
+                testResults += `CORS Headers:\n`;
+                testResults += `- Access-Control-Allow-Origin: ${corsHeaders['Access-Control-Allow-Origin'] || 'Not set'}\n`;
+                testResults += `- Content-Type: ${corsHeaders['Content-Type'] || 'Not set'}\n\n`;
+                
+                // Test with Image object
+                testResults += `Image Object Test:\n`;
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                const imageLoadPromise = new Promise((resolve, reject) => {
+                    img.onload = () => resolve('Image loaded successfully');
+                    img.onerror = (e) => reject(new Error('Image failed to load'));
+                    setTimeout(() => reject(new Error('Image load timeout')), 5000);
+                });
+                
+                img.src = testUrl;
+                
+                try {
+                    const imageResult = await imageLoadPromise;
+                    testResults += `- ${imageResult}\n`;
+                    testResults += `- Image dimensions: ${img.naturalWidth}x${img.naturalHeight}\n`;
+                } catch (imageError) {
+                    testResults += `- Image load failed: ${imageError.message}\n`;
+                }
+                
+            } catch (error) {
+                testResults += `Network Error: ${error.message}\n`;
+                console.error('🔍 [DEBUG] Network test error:', error);
+            }
+
+            result.className = 'result info';
+            result.textContent = testResults;
+        }
+
+        function testSampleImage() {
+            const result = document.getElementById('imageTestResult');
+            const container = document.getElementById('imageContainer');
+            const sampleUrl = document.getElementById('sampleUrl').textContent;
+            
+            result.style.display = 'block';
+            result.className = 'result info';
+            result.textContent = `Testing sample image URL: ${sampleUrl}`;
+            
+            console.log(`🔍 [DEBUG] Testing sample image: ${sampleUrl}`);
+            
+            container.innerHTML = `
+                <h4>Sample Image Test:</h4>
+                <img src="${sampleUrl}" 
+                     alt="Sample conceptual image test" 
+                     class="test-image"
+                     onload="handleImageLoad(this, '${sampleUrl}')"
+                     onerror="handleImageError(this, '${sampleUrl}')">
+                <div id="imageStatus" style="margin-top: 10px; font-weight: bold;">Loading...</div>
+            `;
+        }
+
+        function handleImageLoad(img, url) {
+            console.log(`✅ [DEBUG] Sample image loaded successfully: ${url}`);
+            console.log(`✅ [DEBUG] Image dimensions: ${img.naturalWidth}x${img.naturalHeight}`);
+            
+            document.getElementById('imageStatus').innerHTML = `
+                <span style="color: green;">✅ Image loaded successfully</span><br>
+                <small>Dimensions: ${img.naturalWidth}x${img.naturalHeight}</small>
+            `;
+            
+            const result = document.getElementById('imageTestResult');
+            result.className = 'result success';
+            result.textContent = `✅ Sample image loaded successfully!
+URL: ${url}
+Dimensions: ${img.naturalWidth}x${img.naturalHeight}
+This confirms Apache can serve images from the conceptual_images directory.`;
+        }
+
+        function handleImageError(img, url) {
+            console.error(`❌ [DEBUG] Sample image failed to load: ${url}`);
+            
+            document.getElementById('imageStatus').innerHTML = `
+                <span style="color: red;">❌ Image failed to load</span>
+            `;
+            
+            const result = document.getElementById('imageTestResult');
+            result.className = 'result error';
+            result.textContent = `❌ Sample image failed to load!
+URL: ${url}
+This indicates either:
+1. The file doesn't exist at the expected location
+2. Apache cannot serve files from this directory
+3. Permissions issue preventing access
+4. Apache is not running on port 80`;
+        }
+
+        // Auto-run accessibility test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testImageAccessibility, 1000);
+        });
+    </script>
+</body>
+</html>

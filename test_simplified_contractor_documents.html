@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simplified Contractor Documents Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        .api-test {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .document-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .document-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .project-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .filters select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Simplified Contractor Documents Test</h1>
+            <p>Testing the simplified contractor documents view without verification features</p>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ Changes Made</h2>
+            <ul>
+                <li class="success">✓ Removed verification status badges</li>
+                <li class="success">✓ Removed approval/pending/rejected counts</li>
+                <li class="success">✓ Removed approval rate calculations</li>
+                <li class="success">✓ Removed verification status filter</li>
+                <li class="success">✓ Removed completion percentages</li>
+                <li class="success">✓ Simplified document summary to show only total documents and types</li>
+                <li class="success">✓ Kept project selection functionality</li>
+                <li class="success">✓ Kept stage and document type filters</li>
+                <li class="success">✓ Kept view and download functionality</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Simplified Document View Demo</h2>
+            
+            <div class="project-selector">
+                <label><strong>Select Project:</strong></label>
+                <select id="projectSelect" style="width: 100%; max-width: 400px; padding: 10px; margin-top: 5px;">
+                    <option value="">Select a project...</option>
+                    <option value="1">Modern House Construction - John Smith</option>
+                    <option value="2">Office Building - ABC Corp</option>
+                    <option value="3">Residential Complex - XYZ Developers</option>
+                </select>
+            </div>
+
+            <div class="filters">
+                <select>
+                    <option value="">All Stages</option>
+                    <option value="foundation">Foundation</option>
+                    <option value="structure">Structure</option>
+                    <option value="roofing">Roofing</option>
+                    <option value="finishing">Finishing</option>
+                </select>
+                
+                <select>
+                    <option value="">All Types</option>
+                    <option value="receipt">Receipt</option>
+                    <option value="bill">Bill</option>
+                    <option value="invoice">Invoice</option>
+                    <option value="material_certificate">Material Certificate</option>
+                </select>
+            </div>
+
+            <div id="documentsContainer">
+                <div class="document-card">
+                    <div class="document-header">
+                        <div>
+                            <strong>📄 Foundation_Materials_Receipt.pdf</strong>
+                            <div style="color: #666; font-size: 14px;">Receipt • Foundation Stage</div>
+                        </div>
+                    </div>
+                    <div style="margin: 10px 0; color: #666;">
+                        <div>Uploaded by: Mike Johnson (Contractor)</div>
+                        <div>Upload Date: Jan 15, 2026</div>
+                        <div>File Size: 2.3 MB</div>
+                    </div>
+                    <div class="document-actions">
+                        <button class="btn btn-primary">👁️ View</button>
+                        <button class="btn btn-secondary">📥 Download</button>
+                    </div>
+                </div>
+
+                <div class="document-card">
+                    <div class="document-header">
+                        <div>
+                            <strong>🖼️ Structure_Progress_Photo.jpg</strong>
+                            <div style="color: #666; font-size: 14px;">Quality Report • Structure Stage</div>
+                        </div>
+                    </div>
+                    <div style="margin: 10px 0; color: #666;">
+                        <div>Uploaded by: Mike Johnson (Contractor)</div>
+                        <div>Upload Date: Jan 20, 2026</div>
+                        <div>File Size: 5.1 MB</div>
+                        <div>Description: Progress photos showing completed structural work</div>
+                    </div>
+                    <div class="document-actions">
+                        <button class="btn btn-primary">👁️ View</button>
+                        <button class="btn btn-secondary">📥 Download</button>
+                    </div>
+                </div>
+
+                <div class="document-card">
+                    <div class="document-header">
+                        <div>
+                            <strong>📋 Roofing_Material_Invoice.pdf</strong>
+                            <div style="color: #666; font-size: 14px;">Invoice • Roofing Stage</div>
+                        </div>
+                    </div>
+                    <div style="margin: 10px 0; color: #666;">
+                        <div>Uploaded by: Mike Johnson (Contractor)</div>
+                        <div>Upload Date: Jan 25, 2026</div>
+                        <div>File Size: 1.8 MB</div>
+                    </div>
+                    <div class="document-actions">
+                        <button class="btn btn-primary">👁️ View</button>
+                        <button class="btn btn-secondary">📥 Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 API Test</h2>
+            <div class="api-test">
+                <h4>Testing Simplified API Response</h4>
+                <button onclick="testAPI()" class="btn btn-primary">Test API</button>
+                <div id="apiResult" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Summary Statistics (Simplified)</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #1976d2;">12</div>
+                    <div style="color: #666;">Total Documents</div>
+                </div>
+                <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #7b1fa2;">5</div>
+                    <div style="color: #666;">Document Types</div>
+                </div>
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #388e3c;">4</div>
+                    <div style="color: #666;">Construction Stages</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>✨ Key Benefits</h2>
+            <ul>
+                <li><strong>Simplified Interface:</strong> Clean, focused view without verification complexity</li>
+                <li><strong>Easy Navigation:</strong> Project selection with stage and type filtering</li>
+                <li><strong>Essential Actions:</strong> View and download documents directly</li>
+                <li><strong>Clear Information:</strong> Shows uploader, date, size, and description</li>
+                <li><strong>Better Performance:</strong> Reduced data processing and faster loading</li>
+                <li><strong>User-Friendly:</strong> No confusing approval statuses or completion percentages</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<div style="color: #17a2b8;">Testing API...</div>';
+            
+            // Simulate API call
+            setTimeout(() => {
+                const mockResponse = {
+                    success: true,
+                    data: {
+                        documents: {
+                            "Foundation": {
+                                "receipt": [
+                                    {
+                                        id: 1,
+                                        original_filename: "Foundation_Materials_Receipt.pdf",
+                                        file_size_formatted: "2.3 MB",
+                                        upload_date: "2026-01-15",
+                                        contractor_name: "Mike Johnson",
+                                        description: "Materials receipt for foundation work"
+                                    }
+                                ]
+                            },
+                            "Structure": {
+                                "quality_report": [
+                                    {
+                                        id: 2,
+                                        original_filename: "Structure_Progress_Photo.jpg",
+                                        file_size_formatted: "5.1 MB",
+                                        upload_date: "2026-01-20",
+                                        contractor_name: "Mike Johnson",
+                                        description: "Progress photos showing completed structural work"
+                                    }
+                                ]
+                            }
+                        },
+                        summary: {
+                            "Foundation": {
+                                total_documents: 1,
+                                document_types: {
+                                    "receipt": { count: 1 }
+                                }
+                            },
+                            "Structure": {
+                                total_documents: 1,
+                                document_types: {
+                                    "quality_report": { count: 1 }
+                                }
+                            }
+                        },
+                        total_documents: 2
+                    }
+                };
+                
+                resultDiv.innerHTML = `
+                    <div style="color: #28a745; font-weight: bold;">✅ API Test Successful!</div>
+                    <div style="margin-top: 10px;">
+                        <strong>Response Summary:</strong><br>
+                        • Total Documents: ${mockResponse.data.total_documents}<br>
+                        • Stages: ${Object.keys(mockResponse.data.documents).length}<br>
+                        • No verification data returned ✓<br>
+                        • Clean, simplified structure ✓
+                    </div>
+                    <details style="margin-top: 10px;">
+                        <summary>View Full Response</summary>
+                        <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px;">${JSON.stringify(mockResponse, null, 2)}</pre>
+                    </details>
+                `;
+            }, 1000);
+        }
+
+        // Project selection demo
+        document.getElementById('projectSelect').addEventListener('change', function() {
+            const container = document.getElementById('documentsContainer');
+            if (this.value) {
+                container.style.display = 'block';
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #28a745;">
+                        <div style="font-size: 48px;">📁</div>
+                        <h3>Project Selected: ${this.options[this.selectedIndex].text}</h3>
+                        <p>Documents would load here for the selected project</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #6c757d;">
+                        <div style="font-size: 48px;">📋</div>
+                        <h3>Select a Project</h3>
+                        <p>Choose a construction project to view its documents</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

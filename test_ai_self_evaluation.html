@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Self-Evaluation Framework - Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .metric-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .confusion-cell {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .confusion-cell .label {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+        
+        .confusion-cell .value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        
+        .info-box strong {
+            color: #2196F3;
+        }
+        
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Self-Evaluation Framework - Test Interface</h1>
+        
+        <!-- Test 1: Save Predictions -->
+        <div class="test-section">
+            <h2>Test 1: Save AI Predictions</h2>
+            <div class="info-box">
+                <strong>Purpose:</strong> Test saving AI predictions to database. Predictions will be locked when project starts.
+            </div>
+            
+            <div class="form-group">
+                <label>Project ID:</label>
+                <input type="number" id="save-project-id" value="1" min="1">
+            </div>
+            
+            <div class="form-group">
+                <label>Cost Risk Level:</label>
+                <select id="save-cost-risk">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High" selected>High</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Cost Probability (%):</label>
+                <input type="number" id="save-cost-prob" value="95.5" min="0" max="100" step="0.1">
+            </div>
+            
+            <div class="form-group">
+                <label>Time Risk Level:</label>
+                <select id="save-time-risk">
+                    <option value="Low" selected>Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Time Probability (%):</label>
+                <input type="number" id="save-time-prob" value="15.2" min="0" max="100" step="0.1">
+            </div>
+            
+            <button onclick="testSavePredictions()">💾 Save Predictions</button>
+            <div id="save-result" class="result-box" style="display:none;"></div>
+        </div>
+        
+        <!-- Test 2: View Metrics -->
+        <div class="test-section">
+            <h2>Test 2: View AI Evaluation Metrics</h2>
+            <div class="info-box">
+                <strong>Purpose:</strong> View real-world performance metrics including confusion matrix and accuracy scores.
+            </div>
+            
+            <div class="form-group">
+                <label>Metric Type:</label>
+                <select id="metric-type">
+                    <option value="both" selected>Both (Cost & Time)</option>
+                    <option value="cost">Cost Only</option>
+                    <option value="time">Time Only</option>
+                </select>
+            </div>
+            
+            <button onclick="testGetMetrics()">📊 Get Metrics</button>
+            <div id="metrics-result" class="result-box" style="display:none;"></div>
+            <div id="metrics-display"></div>
+        </div>
+        
+        <!-- Test 3: Trigger Evaluation -->
+        <div class="test-section">
+            <h2>Test 3: Trigger Manual Evaluation</h2>
+            <div class="info-box">
+                <strong>Purpose:</strong> Manually trigger evaluation for completed projects. Normally happens automatically.
+            </div>
+            
+            <div class="form-group">
+                <label>Project ID (leave empty for all eligible):</label>
+                <input type="number" id="eval-project-id" placeholder="Leave empty for all" min="1">
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="eval-force"> Force re-evaluation (even if already evaluated)
+                </label>
+            </div>
+            
+            <button onclick="testTriggerEvaluation()">⚡ Trigger Evaluation</button>
+            <div id="eval-result" class="result-box" style="display:none;"></div>
+        </div>
+        
+        <!-- Test 4: View Configuration -->
+        <div class="test-section">
+            <h2>Test 4: View System Configuration</h2>
+            <div class="info-box">
+                <strong>Purpose:</strong> View current thresholds and configuration settings.
+            </div>
+            
+            <button onclick="testGetConfig()">⚙️ Get Configuration</button>
+            <div id="config-result" class="result-box" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/buildhub/backend/api/ml';
+        
+        // Test 1: Save Predictions
+        async function testSavePredictions() {
+            const projectId = document.getElementById('save-project-id').value;
+            const costRisk = document.getElementById('save-cost-risk').value;
+            const costProb = document.getElementById('save-cost-prob').value;
+            const timeRisk = document.getElementById('save-time-risk').value;
+            const timeProb = document.getElementById('save-time-prob').value;
+            
+            const resultDiv = document.getElementById('save-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = 'Saving predictions...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/save_ai_predictions.php`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        project_id: parseInt(projectId),
+                        cost_risk_level: costRisk,
+                        cost_probability: parseFloat(costProb),
+                        time_risk_level: timeRisk,
+                        time_probability: parseFloat(timeProb)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result-box success';
+                    resultDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result-box error';
+                    resultDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                resultDiv.className = 'result-box error';
+                resultDiv.textContent = 'Network error: ' + error.message;
+            }
+        }
+        
+        // Test 2: Get Metrics
+        async function testGetMetrics() {
+            const metricType = document.getElementById('metric-type').value;
+            const resultDiv = document.getElementById('metrics-result');
+            const displayDiv = document.getElementById('metrics-display');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = 'Loading metrics...';
+            displayDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE}/get_ai_evaluation_metrics.php?metric_type=${metricType}&include_breakdown=true`
+                );
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result-box success';
+                    resultDiv.textContent = JSON.stringify(data, null, 2);
+                    
+                    // Display metrics visually
+                    if (data.data.metrics && data.data.metrics.length > 0) {
+                        displayDiv.innerHTML = '<div class="metrics-grid">' +
+                            data.data.metrics.map(metric => createMetricCard(metric)).join('') +
+                            '</div>';
+                    }
+                } else {
+                    resultDiv.className = 'result-box error';
+                    resultDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                resultDiv.className = 'result-box error';
+                resultDiv.textContent = 'Network error: ' + error.message;
+            }
+        }
+        
+        function createMetricCard(metric) {
+            const cm = metric.confusion_matrix;
+            const perf = metric.performance_metrics;
+            
+            return `
+                <div class="metric-card">
+                    <h3>${metric.metric_type.toUpperCase()} Predictions</h3>
+                    <div class="metric-label">F1 Score</div>
+                    <div class="metric-value">${perf.f1_score}%</div>
+                    
+                    <div class="confusion-matrix">
+                        <div class="confusion-cell">
+                            <div class="label">True Negative</div>
+                            <div class="value">${cm.true_negatives}</div>
+                        </div>
+                        <div class="confusion-cell">
+                            <div class="label">False Positive</div>
+                            <div class="value">${cm.false_positives}</div>
+                        </div>
+                        <div class="confusion-cell">
+                            <div class="label">False Negative</div>
+                            <div class="value">${cm.false_negatives}</div>
+                        </div>
+                        <div class="confusion-cell">
+                            <div class="label">True Positive</div>
+                            <div class="value">${cm.true_positives}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; font-size: 0.9em;">
+                        <div>Accuracy: ${perf.accuracy}%</div>
+                        <div>Precision: ${perf.precision}%</div>
+                        <div>Recall: ${perf.recall}%</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Test 3: Trigger Evaluation
+        async function testTriggerEvaluation() {
+            const projectId = document.getElementById('eval-project-id').value;
+            const force = document.getElementById('eval-force').checked;
+            const resultDiv = document.getElementById('eval-result');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = 'Triggering evaluation...';
+            
+            try {
+                const body = {force: force};
+                if (projectId) {
+                    body.project_id = parseInt(projectId);
+                }
+                
+                const response = await fetch(`${API_BASE}/trigger_evaluation.php`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result-box success';
+                    resultDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result-box error';
+                    resultDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                resultDiv.className = 'result-box error';
+                resultDiv.textContent = 'Network error: ' + error.message;
+            }
+        }
+        
+        // Test 4: Get Configuration
+        async function testGetConfig() {
+            const resultDiv = document.getElementById('config-result');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = 'Loading configuration...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/get_ai_evaluation_metrics.php?metric_type=cost`);
+                const data = await response.json();
+                
+                if (data.success && data.data.configuration) {
+                    resultDiv.className = 'result-box success';
+                    resultDiv.textContent = JSON.stringify(data.data.configuration, null, 2);
+                } else {
+                    resultDiv.className = 'result-box error';
+                    resultDiv.textContent = 'Error: ' + (data.error || 'Unknown error');
+                }
+            } catch (error) {
+                resultDiv.className = 'result-box error';
+                resultDiv.textContent = 'Network error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

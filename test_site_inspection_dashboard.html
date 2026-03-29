@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Inspection Dashboard Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .loading { color: #f59e0b; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .project-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8fafc;
+        }
+        .progress-update {
+            border-left: 4px solid #3b82f6;
+            padding: 10px;
+            margin: 10px 0;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Site Inspection Dashboard Test</h1>
+    <p>This page tests the site inspection dashboard APIs and displays progress data.</p>
+
+    <div class="test-section">
+        <h2>1. Test Assigned Projects API</h2>
+        <button onclick="testAssignedProjects()">Load Assigned Projects</button>
+        <div id="assignedProjectsResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Project Progress Details API</h2>
+        <button onclick="testProgressDetails(1)">Load Progress for Project 1</button>
+        <button onclick="testProgressDetails(2)">Load Progress for Project 2</button>
+        <div id="progressDetailsResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Site Inspection Dashboard Integration</h2>
+        <p>The site inspection dashboard should now show:</p>
+        <ul>
+            <li>✅ Project list with assigned projects</li>
+            <li>✅ Daily progress tab with detailed progress updates</li>
+            <li>✅ Stage-wise progress breakdown</li>
+            <li>✅ Site issues and weather conditions</li>
+            <li>✅ Progress statistics and completion percentages</li>
+        </ul>
+        <p><strong>Note:</strong> The actual React dashboard is available at the main application URL.</p>
+    </div>
+
+    <script>
+        async function testAssignedProjects() {
+            const resultDiv = document.getElementById('assignedProjectsResult');
+            resultDiv.innerHTML = '<p class="loading">Loading assigned projects...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/inspector/get_assigned_projects.php', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = '<p class="success">✅ Successfully loaded assigned projects!</p>';
+                    html += `<p><strong>Statistics:</strong> ${result.stats.total_assigned} total, ${result.stats.active_projects} active, ${result.stats.completed_projects} completed</p>`;
+                    
+                    if (result.projects && result.projects.length > 0) {
+                        html += '<h3>Assigned Projects:</h3>';
+                        result.projects.forEach(project => {
+                            html += `
+                                <div class="project-card">
+                                    <h4>${project.project_name}</h4>
+                                    <p><strong>Status:</strong> ${project.project_status}</p>
+                                    <p><strong>Stage:</strong> ${project.current_stage}</p>
+                                    <p><strong>Progress:</strong> ${project.completion_percentage}%</p>
+                                    <p><strong>Location:</strong> ${project.project_location || 'Not specified'}</p>
+                                    <p><strong>Homeowner:</strong> ${project.homeowner_first_name}</p>
+                                    <p><strong>Contractor:</strong> ${project.contractor_first_name}</p>
+                                    <p><strong>Inspections:</strong> ${project.total_inspections} total, ${project.pending_inspections} pending</p>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        html += '<p>No projects assigned.</p>';
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Error: ${result.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Network Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testProgressDetails(projectId) {
+            const resultDiv = document.getElementById('progressDetailsResult');
+            resultDiv.innerHTML = `<p class="loading">Loading progress details for project ${projectId}...</p>`;
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/inspector/get_project_progress_details.php?project_id=${projectId}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = `<p class="success">✅ Successfully loaded progress details for project ${projectId}!</p>`;
+                    
+                    // Project info
+                    html += `<h3>Project: ${result.project.project_name}</h3>`;
+                    html += `<p><strong>Status:</strong> ${result.project.status}, <strong>Stage:</strong> ${result.project.current_stage}, <strong>Progress:</strong> ${result.project.completion_percentage}%</p>`;
+                    
+                    // Statistics
+                    const stats = result.statistics;
+                    html += `<p><strong>Statistics:</strong> ${stats.total_updates} updates, ${stats.stages_worked} stages, ${stats.total_working_hours}h total, ${stats.updates_with_issues} issues</p>`;
+                    
+                    // Progress updates
+                    if (result.progress_updates && result.progress_updates.length > 0) {
+                        html += '<h4>Daily Progress Updates:</h4>';
+                        result.progress_updates.forEach(update => {
+                            html += `
+                                <div class="progress-update">
+                                    <h5>${update.update_date} - ${update.construction_stage}</h5>
+                                    <p><strong>Progress:</strong> +${update.incremental_completion_percentage}% (Total: ${update.cumulative_completion_percentage}%)</p>
+                                    <p><strong>Work Done:</strong> ${update.work_done_today}</p>
+                                    <p><strong>Hours:</strong> ${update.working_hours}h, <strong>Weather:</strong> ${update.weather_condition}</p>
+                                    <p><strong>Contractor:</strong> ${update.contractor.name}</p>
+                                    ${update.site_issues ? `<p><strong>Issues:</strong> ${update.site_issues}</p>` : ''}
+                                </div>
+                            `;
+                        });
+                    } else {
+                        html += '<p>No progress updates found.</p>';
+                    }
+                    
+                    // Stage breakdown
+                    if (result.stage_breakdown && result.stage_breakdown.length > 0) {
+                        html += '<h4>Stage Breakdown:</h4>';
+                        result.stage_breakdown.forEach(stage => {
+                            html += `<p><strong>${stage.stage_name}:</strong> ${stage.update_count} updates, ${stage.total_progress}% progress, ${stage.avg_working_hours}h avg</p>`;
+                        });
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Error: ${result.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Network Error: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-load assigned projects on page load
+        window.addEventListener('load', () => {
+            testAssignedProjects();
+        });
+    </script>
+</body>
+</html>

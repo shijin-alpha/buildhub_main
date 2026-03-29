@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test ML Analytics API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .success {
+            border-left: 4px solid #10b981;
+            background: #d1fae5;
+        }
+        .error {
+            border-left: 4px solid #ef4444;
+            background: #fee2e2;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #10b981;
+            color: white;
+        }
+        .status.error {
+            background: #ef4444;
+            color: white;
+        }
+        input {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 200px;
+            margin-right: 10px;
+        }
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 ML Analytics API Test</h1>
+        
+        <div class="info-box">
+            <h3>📋 Test Instructions</h3>
+            <p>This page tests the ML Analytics API endpoint to ensure it's working correctly before integrating into the dashboards.</p>
+            <ul>
+                <li>Enter a project ID that exists in your database</li>
+                <li>Click "Test API" to fetch analytics data</li>
+                <li>Check if the response includes prediction, cost analysis, and charts data</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>Test API Endpoint</h2>
+            <p>Endpoint: <code>/buildhub/backend/api/ml/get_project_analytics.php</code></p>
+            
+            <div style="margin: 20px 0;">
+                <label for="projectId">Project ID:</label>
+                <input type="number" id="projectId" value="1" min="1">
+                <button onclick="testAPI()">🚀 Test API</button>
+                <button onclick="testMultiple()">🔄 Test Multiple Projects</button>
+            </div>
+
+            <div id="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Quick Tests</h2>
+            <button onclick="testProject(1)">Test Project 1</button>
+            <button onclick="testProject(2)">Test Project 2</button>
+            <button onclick="testProject(3)">Test Project 3</button>
+            <button onclick="checkDatabase()">Check Database</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Expected Response Structure</h2>
+            <pre>{
+  "success": true,
+  "data": {
+    "project": {
+      "id": 1,
+      "name": "Project Name",
+      "status": "in_progress",
+      "budget": 2500000
+    },
+    "prediction": {
+      "cost_risk_level": "High",
+      "cost_risk_probability": 0.85,
+      "time_risk_level": "Medium",
+      "time_risk_probability": 0.62
+    },
+    "cost_analysis": {
+      "predicted_budget": 2500000,
+      "actual_spent": 1812500,
+      "remaining": 687500
+    },
+    "time_analysis": {
+      "current_progress": 45.0,
+      "days_elapsed": 67
+    },
+    "model_performance": {
+      "overall_accuracy": 96.3
+    },
+    "insights": [...]
+  }
+}</pre>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const projectId = document.getElementById('projectId').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<p>⏳ Testing API...</p>';
+            
+            try {
+                const response = await fetch(`/buildhub/backend/api/ml/get_project_analytics.php?project_id=${projectId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ API Test Successful <span class="status success">SUCCESS</span></h3>
+                        <h4>Response Data:</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        
+                        <h4>Data Validation:</h4>
+                        <ul>
+                            <li>✅ Project data: ${data.data.project ? 'Found' : 'Missing'}</li>
+                            <li>✅ Prediction data: ${data.data.prediction ? 'Found' : 'Missing'}</li>
+                            <li>✅ Cost analysis: ${data.data.cost_analysis ? 'Found' : 'Missing'}</li>
+                            <li>✅ Time analysis: ${data.data.time_analysis ? 'Found' : 'Missing'}</li>
+                            <li>✅ Model performance: ${data.data.model_performance ? 'Found' : 'Missing'}</li>
+                            <li>✅ Insights: ${data.data.insights ? data.data.insights.length + ' insights' : 'None'}</li>
+                        </ul>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ API Test Failed <span class="status error">ERROR</span></h3>
+                        <p><strong>Message:</strong> ${data.message || 'Unknown error'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Request Failed <span class="status error">ERROR</span></h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p>Make sure the backend server is running and the API endpoint exists.</p>
+                `;
+            }
+        }
+
+        async function testProject(id) {
+            document.getElementById('projectId').value = id;
+            await testAPI();
+        }
+
+        async function testMultiple() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>⏳ Testing multiple projects...</p>';
+            
+            const results = [];
+            for (let i = 1; i <= 5; i++) {
+                try {
+                    const response = await fetch(`/buildhub/backend/api/ml/get_project_analytics.php?project_id=${i}`);
+                    const data = await response.json();
+                    results.push({
+                        projectId: i,
+                        success: data.success,
+                        hasData: !!data.data
+                    });
+                } catch (error) {
+                    results.push({
+                        projectId: i,
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+            
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = `
+                <h3>📊 Multiple Project Test Results</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f3f4f6;">
+                            <th style="padding: 10px; text-align: left;">Project ID</th>
+                            <th style="padding: 10px; text-align: left;">Status</th>
+                            <th style="padding: 10px; text-align: left;">Has Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map(r => `
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <td style="padding: 10px;">Project ${r.projectId}</td>
+                                <td style="padding: 10px;">${r.success ? '✅ Success' : '❌ Failed'}</td>
+                                <td style="padding: 10px;">${r.hasData ? '✅ Yes' : '❌ No'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function checkDatabase() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>⏳ Checking database tables...</p>';
+            
+            const tables = [
+                'ai_predictions',
+                'projects',
+                'payments',
+                'daily_progress_reports',
+                'ai_evaluation_metrics'
+            ];
+            
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = `
+                <h3>🗄️ Database Check</h3>
+                <p>Required tables for ML Analytics:</p>
+                <ul>
+                    ${tables.map(table => `<li><code>${table}</code></li>`).join('')}
+                </ul>
+                <p><strong>Note:</strong> Make sure these tables exist in your database with data.</p>
+                <p>You can check by running:</p>
+                <pre>SELECT COUNT(*) FROM ai_predictions;
+SELECT COUNT(*) FROM projects;
+SELECT COUNT(*) FROM payments;
+SELECT COUNT(*) FROM daily_progress_reports;</pre>
+            `;
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            console.log('ML Analytics API Test Page Loaded');
+            console.log('Ready to test the API endpoint');
+        });
+    </script>
+</body>
+</html>

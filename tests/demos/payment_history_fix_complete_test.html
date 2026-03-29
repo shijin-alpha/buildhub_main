@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History Fix - Complete Test - BuildHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-1px);
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .payment-history {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stage-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .receipt-info {
+            background: #e3f2fd;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin-top: 15px;
+        }
+
+        .receipt-info h4 {
+            color: #1976d2;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .receipt-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .receipt-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #bbdefb;
+        }
+
+        .receipt-item strong {
+            display: block;
+            font-size: 12px;
+            color: #1565c0;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .receipt-item span {
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        .files-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #bbdefb;
+            margin-top: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .file-icon {
+            font-size: 20px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .view-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .view-btn:hover {
+            background: #1976d2;
+        }
+
+        .verification-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .verification-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .pending-receipt {
+            background: #fff3cd;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pending-icon {
+            font-size: 24px;
+        }
+
+        .pending-text strong {
+            display: block;
+            color: #856404;
+            margin-bottom: 4px;
+        }
+
+        .pending-text p {
+            margin: 0;
+            color: #856404;
+            font-size: 13px;
+        }
+
+        .json-display {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Payment History Fix - Complete Test</h1>
+            <p>Testing the FIXED payment history system with receipt display functionality</p>
+        </div>
+
+        <div class="content">
+            <div class="test-section">
+                <h3>🎉 Issues Fixed</h3>
+                <ul style="padding-left: 20px; margin: 10px 0; line-height: 1.8;">
+                    <li>✅ <strong>Project Not Found Error:</strong> Fixed API to check both construction_projects and layout_requests tables</li>
+                    <li>✅ <strong>Receipt Display:</strong> Added comprehensive receipt information display in payment history</li>
+                    <li>✅ <strong>File Viewing:</strong> Added direct links to view uploaded receipt files</li>
+                    <li>✅ <strong>Verification Status:</strong> Added visual indicators for receipt verification status</li>
+                    <li>✅ <strong>Payment Methods:</strong> Display payment method with appropriate icons</li>
+                    <li>✅ <strong>Mobile Responsive:</strong> Receipt information displays properly on all devices</li>
+                </ul>
+                <button class="btn" onclick="testPaymentHistory()">Test Payment History API</button>
+                <button class="btn" onclick="testProjectLookup()">Test Project Lookup</button>
+                <div id="testResult"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>📊 Live Payment History Data</h3>
+                <div id="paymentHistoryDisplay"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔧 Technical Details</h3>
+                <p><strong>Root Cause:</strong> The payment history API was only checking the <code>layout_requests</code> table for project existence, but the project (ID: 1) exists in the <code>construction_projects</code> table.</p>
+                <p><strong>Solution:</strong> Updated the API to check both tables using a LEFT JOIN query that returns the project source and details from whichever table contains the project.</p>
+                <p><strong>Receipt Integration:</strong> Enhanced the payment history response to include all receipt-related fields and formatted them for display in the frontend components.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testPaymentHistory() {
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_payment_history.php?project_id=1', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const requests = data.data.payment_requests || [];
+                    const summary = data.data.summary || {};
+                    const projectInfo = data.data.project_info || {};
+                    
+                    document.getElementById('testResult').innerHTML = 
+                        `<div class="test-result success">
+                            ✅ Payment history loaded successfully!<br>
+                            📋 Project found in: <strong>${projectInfo.project_source}</strong><br>
+                            📊 Payment requests: <strong>${requests.length}</strong><br>
+                            💰 Total requested: <strong>₹${summary.total_requested?.toLocaleString() || '0'}</strong><br>
+                            📄 Receipts found: <strong>${requests.filter(r => r.receipt_file_path).length}</strong>
+                        </div>`;
+                    
+                    displayPaymentHistory(requests);
+                } else {
+                    document.getElementById('testResult').innerHTML = 
+                        '<div class="test-result error">❌ Failed to load payment history: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = 
+                    '<div class="test-result error">❌ Error loading payment history: ' + error.message + '</div>';
+            }
+        }
+
+        async function testProjectLookup() {
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=29', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const projects = data.data.projects || [];
+                    
+                    document.getElementById('testResult').innerHTML = 
+                        `<div class="test-result success">
+                            ✅ Project lookup successful!<br>
+                            📋 Projects found: <strong>${projects.length}</strong><br>
+                            🏗️ Project names: <strong>${projects.map(p => p.project_name).join(', ')}</strong>
+                        </div>`;
+                } else {
+                    document.getElementById('testResult').innerHTML = 
+                        '<div class="test-result error">❌ Failed to load projects: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = 
+                    '<div class="test-result error">❌ Error loading projects: ' + error.message + '</div>';
+            }
+        }
+
+        function displayPaymentHistory(requests) {
+            const container = document.getElementById('paymentHistoryDisplay');
+            
+            if (requests.length === 0) {
+                container.innerHTML = '<div class="info">No payment requests found</div>';
+                return;
+            }
+
+            let html = '<div class="payment-history">';
+            
+            requests.forEach(request => {
+                html += `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="stage-name">🏗️ ${request.stage_name} Stage</div>
+                            <span class="status-badge status-${request.status}">${request.status.toUpperCase()}</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong>Amount:</strong> ₹${request.requested_amount.toLocaleString()} | 
+                            <strong>Completion:</strong> ${request.completion_percentage}% |
+                            <strong>Workers:</strong> ${request.labor_count}
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong>Work Description:</strong> ${request.work_description}
+                        </div>
+                `;
+                
+                if (request.receipt_file_path && request.receipt_file_path.length > 0) {
+                    html += `
+                        <div class="receipt-info">
+                            <h4>📄 Payment Receipt Information</h4>
+                            <div class="receipt-details">
+                                <div class="receipt-item">
+                                    <strong>Payment Method</strong>
+                                    <span>${getPaymentMethodDisplay(request.payment_method)}</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Transaction Reference</strong>
+                                    <span>${request.transaction_reference || 'N/A'}</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Payment Date</strong>
+                                    <span>${request.payment_date ? new Date(request.payment_date).toLocaleDateString('en-IN') : 'N/A'}</span>
+                                </div>
+                                <div class="receipt-item">
+                                    <strong>Verification Status</strong>
+                                    <span class="verification-status verification-${request.verification_status || 'pending'}">
+                                        ${getVerificationStatusDisplay(request.verification_status)}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="files-section">
+                                <strong style="display: block; margin-bottom: 12px; color: #1976d2;">Uploaded Files:</strong>
+                    `;
+                    
+                    request.receipt_file_path.forEach(file => {
+                        html += `
+                            <div class="file-item">
+                                <span class="file-icon">${file.file_type && file.file_type.startsWith('image/') ? '🖼️' : '📄'}</span>
+                                <div class="file-details">
+                                    <div class="file-name">${file.original_name}</div>
+                                    <div class="file-size">${(file.file_size / 1024 / 1024).toFixed(2)} MB</div>
+                                </div>
+                                <a href="/buildhub/backend/${file.file_path}" target="_blank" class="view-btn">👁️ View</a>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="pending-receipt">
+                            <span class="pending-icon">⏳</span>
+                            <div class="pending-text">
+                                <strong>Awaiting Payment Receipt</strong>
+                                <p>Homeowner needs to upload payment receipt for verification</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function getPaymentMethodDisplay(method) {
+            switch (method) {
+                case 'bank_transfer': return '🏦 Bank Transfer';
+                case 'upi': return '📱 UPI Payment';
+                case 'cash': return '💵 Cash Payment';
+                case 'cheque': return '📝 Cheque Payment';
+                case 'other': return '💳 Other';
+                default: return '💳 Not specified';
+            }
+        }
+
+        function getVerificationStatusDisplay(status) {
+            switch (status) {
+                case 'verified': return '✅ Verified';
+                case 'rejected': return '❌ Rejected';
+                case 'pending':
+                default: return '⏳ Pending Verification';
+            }
+        }
+
+        // Auto-load on page load
+        window.onload = function() {
+            console.log('Payment History Fix Complete Test loaded - ready to test!');
+            testPaymentHistory(); // Auto-load payment history
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Homeowner Received Designs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .design-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        
+        .design-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .design-meta {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-submitted {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Test Homeowner Received Designs</h1>
+            <p>Test the fix for house plan submission visibility to homeowners</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Received Designs Test</h2>
+            <p>This test verifies that house plans submitted by architects are visible to homeowners in their "Received Designs" section.</p>
+            
+            <button onclick="testReceivedDesigns()" class="btn">🔍 Test Received Designs API</button>
+            <button onclick="clearResults()" class="btn">🗑️ Clear Results</button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Loading received designs...</p>
+            </div>
+            
+            <div id="result"></div>
+        </div>
+        
+        <div class="container">
+            <h2>🔧 Fix Applied</h2>
+            <p><strong>Issue:</strong> House plans submitted by architects weren't showing up in homeowner's "Received Designs" section.</p>
+            <p><strong>Root Cause:</strong> Database query was using <code>lr.user_id</code> instead of <code>lr.homeowner_id</code> to match homeowners.</p>
+            <p><strong>Fix:</strong> Changed the query in <code>backend/api/homeowner/get_received_designs.php</code> to use the correct column.</p>
+            
+            <h3>Before Fix:</h3>
+            <pre style="background: #f8d7da; padding: 10px; border-radius: 4px; color: #721c24;">WHERE lr.user_id = :homeowner_id</pre>
+            
+            <h3>After Fix:</h3>
+            <pre style="background: #d4edda; padding: 10px; border-radius: 4px; color: #155724;">WHERE lr.homeowner_id = :homeowner_id</pre>
+        </div>
+    </div>
+
+    <script>
+        async function testReceivedDesigns() {
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_received_designs.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                
+                if (data.success) {
+                    displaySuccess(data);
+                } else {
+                    displayError(data.message || 'Failed to fetch received designs');
+                }
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                displayError('Network error: ' + error.message);
+            }
+        }
+        
+        function displaySuccess(data) {
+            const resultDiv = document.getElementById('result');
+            const designs = data.designs || [];
+            const housePlanDesigns = designs.filter(d => d.source_type === 'house_plan');
+            
+            let html = `<div class="result success">
+                <h3>✅ API Call Successful</h3>
+                <p><strong>Total Designs:</strong> ${designs.length}</p>
+                <p><strong>House Plan Designs:</strong> ${housePlanDesigns.length}</p>
+                <p><strong>Regular Designs:</strong> ${designs.length - housePlanDesigns.length}</p>
+            `;
+            
+            if (housePlanDesigns.length > 0) {
+                html += `<h4>🏠 House Plan Designs Found:</h4>`;
+                housePlanDesigns.forEach(design => {
+                    html += `
+                    <div class="design-card">
+                        <div class="design-title">${design.design_title}</div>
+                        <div class="design-meta">Architect: ${design.architect.name}</div>
+                        <div class="design-meta">Created: ${new Date(design.created_at).toLocaleString()}</div>
+                        <div class="design-meta">Updated: ${new Date(design.updated_at).toLocaleString()}</div>
+                        <div class="design-meta">
+                            Status: <span class="status-badge status-${design.house_plan_status}">${design.house_plan_status}</span>
+                        </div>
+                        <div class="design-meta">Total Area: ${design.total_area} sq ft</div>
+                        <div class="design-meta">Unlock Price: ₹${design.unlock_price}</div>
+                    </div>`;
+                });
+                
+                html += `<p style="color: #28a745; font-weight: bold;">✅ SUCCESS: House plans are visible to homeowners!</p>`;
+            } else {
+                html += `<p style="color: #ffc107; font-weight: bold;">⚠️ No house plan designs found. This could mean:</p>
+                <ul>
+                    <li>No house plans have been submitted yet</li>
+                    <li>You're not logged in as a homeowner</li>
+                    <li>The submitted plans don't have technical details</li>
+                </ul>`;
+            }
+            
+            if (designs.length - housePlanDesigns.length > 0) {
+                html += `<h4>🎨 Regular Designs:</h4>`;
+                designs.filter(d => d.source_type !== 'house_plan').forEach(design => {
+                    html += `
+                    <div class="design-card">
+                        <div class="design-title">${design.design_title}</div>
+                        <div class="design-meta">Architect: ${design.architect.name}</div>
+                        <div class="design-meta">Status: <span class="status-badge status-${design.status}">${design.status}</span></div>
+                        <div class="design-meta">Files: ${design.files.length}</div>
+                    </div>`;
+                });
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+        
+        function displayError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result error">
+                <h3>❌ Error</h3>
+                <p>${message}</p>
+                <p><strong>Possible causes:</strong></p>
+                <ul>
+                    <li>Not logged in as a homeowner</li>
+                    <li>Database connection issues</li>
+                    <li>API endpoint not accessible</li>
+                </ul>
+            </div>`;
+        }
+        
+        function clearResults() {
+            document.getElementById('result').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

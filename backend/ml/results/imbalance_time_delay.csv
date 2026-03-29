@@ -1,0 +1,3 @@
+model,P_Low,R_Low,F1_Low,P_Medium,R_Medium,F1_Medium,P_High,R_High,F1_High,Weighted_F1,Accuracy
+RF_unbalanced,1.0,0.25,0.4,0.8156,0.8326,0.824,0.9271,0.955,0.9409,0.887,0.8938
+RF_balanced,0.8889,0.5714,0.6957,0.8247,0.8661,0.8449,0.9435,0.94,0.9417,0.9042,0.905

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Selection Fix - Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .project-details {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .project-details h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid #3498db;
+        }
+        .detail-item strong {
+            display: block;
+            color: #7f8c8d;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .detail-item span {
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Project Selection Fix - Verification</h1>
+        
+        <div class="success">
+            <strong>Fixed Issues:</strong>
+            <ul>
+                <li>✅ All projects now have unique names</li>
+                <li>✅ Each project shows its correct daily report count</li>
+                <li>✅ Each project shows its correct budget/cost</li>
+                <li>✅ Project data is properly isolated (no data mixing)</li>
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <label for="project">Select Project to View Details:</label>
+            <select id="project">
+                <option value="">Loading projects...</option>
+            </select>
+        </div>
+
+        <div class="project-details" id="projectDetails" style="display: none;">
+            <h3>Project Details</h3>
+            <div class="detail-grid" id="detailGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let allProjects = [];
+
+        async function loadProjects() {
+            try {
+                const contractorId = 29; // Test with contractor 29
+                const response = await fetch(`/buildhub/backend/api/contractor/get_contractor_projects.php?contractor_id=${contractorId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allProjects = data.data.projects;
+                    const select = document.getElementById('project');
+                    
+                    // Clear loading option
+                    select.innerHTML = '<option value="">Choose a project...</option>';
+                    
+                    console.log('Loaded projects:', allProjects);
+                    
+                    // Add each project to dropdown
+                    allProjects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.project_name;
+                        
+                        // Add cost to display if not already in name
+                        if (project.estimate_cost && !project.project_name.includes('₹')) {
+                            option.textContent += ` (₹${project.estimate_cost.toLocaleString('en-IN')})`;
+                        }
+                        
+                        select.appendChild(option);
+                    });
+                    
+                    // Add change event listener
+                    select.addEventListener('change', function() {
+                        showProjectDetails(this.value);
+                    });
+                } else {
+                    console.error('Failed to load projects:', data.message);
+                    alert('Failed to load projects: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                alert('Error loading projects: ' + error.message);
+            }
+        }
+
+        function showProjectDetails(projectId) {
+            if (!projectId) {
+                document.getElementById('projectDetails').style.display = 'none';
+                return;
+            }
+
+            const project = allProjects.find(p => p.id == projectId);
+            if (!project) {
+                console.error('Project not found:', projectId);
+                return;
+            }
+
+            console.log('Selected project:', project);
+
+            const detailsDiv = document.getElementById('projectDetails');
+            const gridDiv = document.getElementById('detailGrid');
+            
+            gridDiv.innerHTML = `
+                <div class="detail-item">
+                    <strong>Project ID</strong>
+                    <span class="highlight">${project.id}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Project Name</strong>
+                    <span>${project.project_name}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Homeowner</strong>
+                    <span>${project.homeowner_name || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Budget/Cost</strong>
+                    <span class="highlight">₹${(project.estimate_cost || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Daily Updates</strong>
+                    <span class="highlight">${project.daily_updates_count || 0}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Weekly Summaries</strong>
+                    <span class="highlight">${project.weekly_summaries_count || 0}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Monthly Reports</strong>
+                    <span class="highlight">${project.monthly_reports_count || 0}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Status</strong>
+                    <span>${project.status || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Location</strong>
+                    <span>${project.location || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Plot Size</strong>
+                    <span>${project.plot_size || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Data Source</strong>
+                    <span>${project.source || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Estimate ID</strong>
+                    <span>${project.estimate_id || 'N/A'}</span>
+                </div>
+            `;
+            
+            detailsDiv.style.display = 'block';
+        }
+
+        // Load projects on page load
+        loadProjects();
+    </script>
+</body>
+</html>

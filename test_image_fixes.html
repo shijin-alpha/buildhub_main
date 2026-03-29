@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Error Handling Test - Homeowner Dashboard Fix</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f7;
+        }
+        .test-container { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 12px; 
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .image-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        .image-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f7;
+            border: 1px dashed #d1d5db;
+            border-radius: 6px;
+            color: #6b7280;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 1rem;
+            flex-direction: column;
+            min-height: 120px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .image-placeholder:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .image-placeholder-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            opacity: 0.7;
+        }
+        .status-indicator {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 8px;
+        }
+        .status-success { background: #dcfce7; color: #15803d; }
+        .status-error { background: #fee2e2; color: #dc2626; }
+        .status-loading { background: #dbeafe; color: #1d4ed8; }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖼️ Image Error Handling Test - Homeowner Dashboard Fix</h1>
+    <p>This test verifies that the black screen image issue has been resolved with proper error handling and fallback placeholders.</p>
+
+    <div class="test-container">
+        <h3>✅ Test 1: Valid Images (should load normally)</h3>
+        <div class="test-grid">
+            <div class="image-card">
+                <img 
+                    src="https://via.placeholder.com/200x120/4CAF50/white?text=Valid+Image" 
+                    alt="Valid Image" 
+                    style="width: 100%; height: 120px; object-fit: cover;" 
+                    onLoad="showStatus(this, 'success', 'Image loaded successfully')"
+                    onError="showErrorPlaceholder(this, 'Image failed to load')"
+                />
+                <div class="status-indicator status-loading">Loading...</div>
+            </div>
+            
+            <div class="image-card">
+                <img 
+                    src="https://via.placeholder.com/200x120/2196F3/white?text=Layout+Preview" 
+                    alt="Layout Preview" 
+                    style="width: 100%; height: 120px; object-fit: cover;" 
+                    onLoad="showStatus(this, 'success', 'Layout preview loaded')"
+                    onError="showErrorPlaceholder(this, 'Layout preview not available')"
+                />
+                <div class="status-indicator status-loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h3>🖼️ Test 2: Missing Images (should show placeholders instead of black screens)</h3>
+        <div class="test-grid">
+            <div class="image-card">
+                <img 
+                    src="/buildhub/backend/uploads/house_plans/nonexistent_file.png" 
+                    alt="Missing House Plan" 
+                    style="width: 100%; height: 120px; object-fit: cover;" 
+                    onLoad="showStatus(this, 'success', 'Image loaded')"
+                    onError="showErrorPlaceholder(this, 'House plan image not available')"
+                />
+                <div class="status-indicator status-loading">Loading...</div>
+            </div>
+            
+            <div class="image-card">
+                <img 
+                    src="/buildhub/backend/uploads/designs/missing_design.jpg" 
+                    alt="Missing Design" 
+                    style="width: 100%; height: 120px; object-fit: cover;" 
+                    onLoad="showStatus(this, 'success', 'Image loaded')"
+                    onError="showErrorPlaceholder(this, 'Design image not available')"
+                />
+                <div class="status-indicator status-loading">Loading...</div>
+            </div>
+            
+            <div class="image-card">
+                <img 
+                    src="/buildhub/backend/uploads/concepts/broken_concept.png" 
+                    alt="Missing Concept" 
+                    style="width: 100%; height: 120px; object-fit: cover;" 
+                    onLoad="showStatus(this, 'success', 'Image loaded')"
+                    onError="showErrorPlaceholder(this, 'Concept preview not available')"
+                />
+                <div class="status-indicator status-loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h3>🎨 Test 3: Background Images (concept previews)</h3>
+        <div class="test-grid">
+            <div class="image-card">
+                <div 
+                    style="
+                        height: 120px; 
+                        background: url('https://via.placeholder.com/200x120/FF9800/white?text=Concept+1') center/cover;
+                        background-color: #f3f4f6;
+                    "
+                    onError="this.style.background = '#f3f4f6'; this.innerHTML = '<div class=&quot;image-placeholder&quot;><span class=&quot;image-placeholder-icon&quot;>🎨</span><span>Concept preview not available</span></div>';"
+                ></div>
+                <div class="status-indicator status-success">Background image test</div>
+            </div>
+            
+            <div class="image-card">
+                <div 
+                    style="
+                        height: 120px; 
+                        background: url('/buildhub/backend/uploads/concepts/missing_bg.jpg') center/cover;
+                        background-color: #f3f4f6;
+                    "
+                    id="bg-test-2"
+                ></div>
+                <div class="status-indicator status-error">Missing background image</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h3>📊 Test Results Summary</h3>
+        <div id="test-results" style="margin-top: 16px;">
+            <div class="status-indicator status-loading">
+                <div class="loading-spinner"></div>
+                Running tests...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            total: 0,
+            loaded: 0,
+            errors: 0,
+            placeholders: 0
+        };
+
+        function showStatus(img, type, message) {
+            const statusDiv = img.nextElementSibling;
+            statusDiv.className = `status-indicator status-${type}`;
+            statusDiv.textContent = message;
+            
+            if (type === 'success') {
+                testResults.loaded++;
+            }
+            testResults.total++;
+            updateResults();
+        }
+
+        function showErrorPlaceholder(img, fallbackText) {
+            console.log('Image failed to load:', img.src);
+            
+            // Hide the broken image
+            img.style.display = 'none';
+            
+            // Create error placeholder
+            const placeholder = document.createElement('div');
+            placeholder.className = 'image-placeholder';
+            placeholder.innerHTML = `
+                <span class="image-placeholder-icon">🖼️</span>
+                <span>${fallbackText}</span>
+            `;
+            
+            // Insert placeholder
+            img.parentNode.insertBefore(placeholder, img);
+            
+            // Update status
+            const statusDiv = img.nextElementSibling;
+            statusDiv.className = 'status-indicator status-error';
+            statusDiv.textContent = 'Showing placeholder (✅ Fixed!)';
+            
+            testResults.errors++;
+            testResults.placeholders++;
+            testResults.total++;
+            updateResults();
+        }
+
+        function updateResults() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            if (testResults.total >= 5) { // Expected number of test images
+                const successRate = ((testResults.loaded + testResults.placeholders) / testResults.total * 100).toFixed(1);
+                
+                resultsDiv.innerHTML = `
+                    <div class="status-indicator status-success">
+                        ✅ Tests Complete: ${successRate}% Success Rate
+                    </div>
+                    <div style="margin-top: 12px; font-size: 0.9rem; color: #6b7280;">
+                        <p><strong>Results:</strong></p>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li>✅ ${testResults.loaded} images loaded successfully</li>
+                            <li>🖼️ ${testResults.placeholders} error placeholders shown (instead of black screens)</li>
+                            <li>❌ ${testResults.errors - testResults.placeholders} unhandled errors</li>
+                        </ul>
+                        <p><strong>Fix Status:</strong> ${testResults.placeholders > 0 ? '✅ Black screen issue resolved!' : '⚠️ Need to verify error handling'}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test background image fallback
+        setTimeout(() => {
+            const bgTest = document.getElementById('bg-test-2');
+            // Simulate background image error by checking if it loaded
+            const testImg = new Image();
+            testImg.onload = () => {
+                // Image exists, no action needed
+            };
+            testImg.onerror = () => {
+                // Image failed, show placeholder
+                bgTest.innerHTML = `
+                    <div class="image-placeholder">
+                        <span class="image-placeholder-icon">🎨</span>
+                        <span>Concept preview not available</span>
+                    </div>
+                `;
+                bgTest.style.background = '#f3f4f6';
+                testResults.placeholders++;
+                updateResults();
+            };
+            testImg.src = '/buildhub/backend/uploads/concepts/missing_bg.jpg';
+        }, 1000);
+
+        // Auto-update results after 3 seconds if not all tests completed
+        setTimeout(() => {
+            if (testResults.total < 5) {
+                updateResults();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

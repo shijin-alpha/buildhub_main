@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Progress Input Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .form-group { margin: 20px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { padding: 10px; width: 200px; font-size: 16px; border: 1px solid #ccc; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px; }
+        .log { font-family: monospace; font-size: 12px; background: #f8f8f8; padding: 10px; margin: 10px 0; border-radius: 4px; max-height: 200px; overflow-y: auto; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple Progress Input Test</h1>
+        <p>This test simulates the exact input behavior from the contractor dashboard.</p>
+        
+        <form id="testForm">
+            <div class="form-group">
+                <label for="incremental_completion_percentage">Daily Progress % *</label>
+                <input
+                    type="number"
+                    id="incremental_completion_percentage"
+                    name="incremental_completion_percentage"
+                    min="0"
+                    step="0.01"
+                    required
+                    placeholder="0.0"
+                />
+                <span>%</span>
+            </div>
+            
+            <div class="form-group">
+                <button type="button" onclick="testSubmit()">Test Submit</button>
+                <button type="button" onclick="clearLog()">Clear Log</button>
+            </div>
+        </form>
+        
+        <div class="result" id="result">
+            <strong>Current Value:</strong> <span id="currentValue">""</span><br>
+            <strong>Form Data Value:</strong> <span id="formDataValue">""</span>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const input = document.getElementById('incremental_completion_percentage');
+        const result = document.getElementById('result');
+        const log = document.getElementById('log');
+        const currentValueSpan = document.getElementById('currentValue');
+        const formDataValueSpan = document.getElementById('formDataValue');
+        
+        let eventLog = [];
+        
+        function logEvent(eventType, value, additionalInfo = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `${timestamp} - ${eventType}: "${value}" ${additionalInfo}`;
+            eventLog.push(logEntry);
+            updateLog();
+            updateResult();
+        }
+        
+        function updateLog() {
+            log.innerHTML = eventLog.slice(-20).join('<br>');
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateResult() {
+            currentValueSpan.textContent = `"${input.value}"`;
+            
+            const formData = new FormData(document.getElementById('testForm'));
+            const formValue = formData.get('incremental_completion_percentage');
+            formDataValueSpan.textContent = `"${formValue}"`;
+        }
+        
+        function clearLog() {
+            eventLog = [];
+            updateLog();
+        }
+        
+        function testSubmit() {
+            const formData = new FormData(document.getElementById('testForm'));
+            const value = formData.get('incremental_completion_percentage');
+            
+            logEvent('FORM_SUBMIT', value, `(Type: ${typeof value})`);
+            
+            // Simulate backend processing
+            const processed = parseFloat(value);
+            const rounded = Math.round(processed * 100) / 100; // Round to 2 decimal places
+            
+            logEvent('BACKEND_PROCESSED', processed, `-> Rounded: ${rounded}`);
+            
+            // Test what would be sent to server
+            const postData = {
+                incremental_completion_percentage: value
+            };
+            
+            logEvent('POST_DATA', JSON.stringify(postData));
+        }
+        
+        // Event listeners
+        input.addEventListener('input', function(e) {
+            logEvent('input', this.value, `(Length: ${this.value.length})`);
+        });
+        
+        input.addEventListener('change', function(e) {
+            logEvent('change', this.value);
+        });
+        
+        input.addEventListener('blur', function(e) {
+            logEvent('blur', this.value);
+        });
+        
+        input.addEventListener('focus', function(e) {
+            logEvent('focus', this.value);
+        });
+        
+        input.addEventListener('keydown', function(e) {
+            if (e.key !== 'Tab' && e.key !== 'Shift') {
+                logEvent('keydown', `Key: ${e.key}`, `Current: "${this.value}"`);
+            }
+        });
+        
+        input.addEventListener('keyup', function(e) {
+            if (e.key !== 'Tab' && e.key !== 'Shift') {
+                logEvent('keyup', this.value);
+            }
+        });
+        
+        // Initial state
+        updateResult();
+        logEvent('INIT', input.value, 'Page loaded');
+    </script>
+</body>
+</html>

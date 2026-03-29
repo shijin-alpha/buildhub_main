@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Progress Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; max-height: 300px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Simple Progress Fix Test</h1>
+    
+    <div class="section">
+        <h3>Test Homeowner Progress (User 28)</h3>
+        <button onclick="testHomeownerFlow()">Test Complete Homeowner Flow</button>
+        <div id="homeowner-results"></div>
+    </div>
+
+    <div class="section">
+        <h3>Test Contractor Progress (User 29)</h3>
+        <button onclick="testContractorFlow()">Test Complete Contractor Flow</button>
+        <div id="contractor-results"></div>
+    </div>
+
+    <script>
+        async function testHomeownerFlow() {
+            const resultsDiv = document.getElementById('homeowner-results');
+            resultsDiv.innerHTML = '<p>Testing homeowner flow...</p>';
+            
+            try {
+                // Step 1: Establish homeowner session
+                console.log('Step 1: Establishing homeowner session...');
+                const sessionResponse = await fetch('/buildhub/backend/api/homeowner/session_bridge.php', {
+                    credentials: 'include'
+                });
+                const sessionData = await sessionResponse.json();
+                
+                if (!sessionData.success) {
+                    throw new Error('Session establishment failed: ' + sessionData.message);
+                }
+                
+                console.log('Session established:', sessionData);
+                
+                // Step 2: Get progress updates
+                console.log('Step 2: Getting progress updates...');
+                const progressResponse = await fetch('/buildhub/backend/api/homeowner/get_progress_updates.php', {
+                    credentials: 'include'
+                });
+                const progressData = await progressResponse.json();
+                
+                if (progressData.success) {
+                    const updateCount = progressData.data?.progress_updates?.length || 0;
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Homeowner Flow Success!</h4>
+                            <p><strong>Session User:</strong> ${sessionData.user.first_name} ${sessionData.user.last_name} (ID: ${sessionData.user.id})</p>
+                            <p><strong>Progress Updates Found:</strong> ${updateCount}</p>
+                            ${updateCount > 0 ? `
+                                <h5>Recent Updates:</h5>
+                                <ul>
+                                    ${progressData.data.progress_updates.slice(0, 3).map(update => 
+                                        `<li>Project ${update.project_id}: ${update.construction_stage} - ${update.cumulative_completion_percentage}% complete (${update.update_date})</li>`
+                                    ).join('')}
+                                </ul>
+                            ` : ''}
+                            <details>
+                                <summary>Full Response</summary>
+                                <pre>${JSON.stringify(progressData, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Progress Data Failed</h4>
+                            <p>Session worked but progress data failed: ${progressData.message}</p>
+                            <pre>${JSON.stringify(progressData, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Homeowner Flow Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testContractorFlow() {
+            const resultsDiv = document.getElementById('contractor-results');
+            resultsDiv.innerHTML = '<p>Testing contractor flow...</p>';
+            
+            try {
+                // Step 1: Establish contractor session
+                console.log('Step 1: Establishing contractor session...');
+                const sessionResponse = await fetch('/buildhub/backend/api/contractor/login_contractor_session.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ contractor_id: 29 })
+                });
+                const sessionData = await sessionResponse.json();
+                
+                if (!sessionData.success) {
+                    throw new Error('Session establishment failed: ' + sessionData.message);
+                }
+                
+                console.log('Session established:', sessionData);
+                
+                // Step 2: Get progress updates (should use session now)
+                console.log('Step 2: Getting progress updates...');
+                const progressResponse = await fetch('/buildhub/backend/api/contractor/get_progress_updates.php', {
+                    credentials: 'include'
+                });
+                const progressData = await progressResponse.json();
+                
+                if (progressData.success) {
+                    const updateCount = progressData.data?.progress_updates?.length || 0;
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Contractor Flow Success!</h4>
+                            <p><strong>Session User:</strong> ${sessionData.data.first_name} ${sessionData.data.last_name} (ID: ${sessionData.data.contractor_id})</p>
+                            <p><strong>Progress Updates Found:</strong> ${updateCount}</p>
+                            ${updateCount > 0 ? `
+                                <h5>Recent Updates:</h5>
+                                <ul>
+                                    ${progressData.data.progress_updates.slice(0, 3).map(update => 
+                                        `<li>Project ${update.project_id}: ${update.construction_stage || 'N/A'} - ${update.completion_percentage || 0}% complete</li>`
+                                    ).join('')}
+                                </ul>
+                            ` : ''}
+                            <details>
+                                <summary>Full Response</summary>
+                                <pre>${JSON.stringify(progressData, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Progress Data Failed</h4>
+                            <p>Session worked but progress data failed: ${progressData.message}</p>
+                            <pre>${JSON.stringify(progressData, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Contractor Flow Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

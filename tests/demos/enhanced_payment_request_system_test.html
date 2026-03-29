@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Payment Request System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        .btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            background: #218838;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .stage-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .stage-card:hover {
+            border-color: #28a745;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+        }
+        .stage-card.selected {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .stage-percentage {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .payment-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+        }
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-paid {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .cost-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 Enhanced Payment Request System Test</h1>
+        <p>Test the enhanced stage-specific payment request system with detailed fields and homeowner integration</p>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>🏗️ Step 1: Submit Enhanced Payment Request (Contractor)</h3>
+            
+            <!-- Stage Selection -->
+            <div class="form-group">
+                <label>Select Construction Stage:</label>
+                <div id="stage-selection">
+                    <!-- Stages will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Payment Request Form -->
+            <div id="payment-form" style="display: none;">
+                <h4 id="selected-stage-title">Payment Request Form</h4>
+                
+                <!-- Basic Information -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Project ID:</label>
+                        <input type="number" id="project_id" value="1" placeholder="Enter project ID">
+                    </div>
+                    <div class="form-group">
+                        <label>Contractor ID:</label>
+                        <input type="number" id="contractor_id" value="1" placeholder="Enter contractor ID">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Requested Amount (₹):</label>
+                        <input type="number" id="requested_amount" placeholder="Enter total amount" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Completion Percentage:</label>
+                        <input type="number" id="completion_percentage" min="0" max="100" step="0.1" placeholder="0-100">
+                    </div>
+                </div>
+                
+                <!-- Cost Breakdown -->
+                <h5>💰 Cost Breakdown</h5>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Labor Cost (₹):</label>
+                        <input type="number" id="labor_cost" placeholder="0.00" step="0.01" onchange="calculateTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label>Material Cost (₹):</label>
+                        <input type="number" id="material_cost" placeholder="0.00" step="0.01" onchange="calculateTotal()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Equipment Cost (₹):</label>
+                        <input type="number" id="equipment_cost" placeholder="0.00" step="0.01" onchange="calculateTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label>Other Expenses (₹):</label>
+                        <input type="number" id="other_expenses" placeholder="0.00" step="0.01" onchange="calculateTotal()">
+                    </div>
+                </div>
+                
+                <!-- Work Details -->
+                <h5>🏗️ Work Details</h5>
+                <div class="form-group">
+                    <label>Work Description:</label>
+                    <textarea id="work_description" rows="4" placeholder="Describe the work completed for this stage in detail..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Materials Used:</label>
+                    <textarea id="materials_used" rows="3" placeholder="List all materials used in this stage..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Work Start Date:</label>
+                        <input type="date" id="work_start_date">
+                    </div>
+                    <div class="form-group">
+                        <label>Work End Date:</label>
+                        <input type="date" id="work_end_date">
+                    </div>
+                </div>
+                
+                <!-- Quality and Safety -->
+                <h5>✅ Quality & Safety</h5>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quality Check Status:</label>
+                        <select id="quality_check_status">
+                            <option value="pending">Pending</option>
+                            <option value="passed">Passed</option>
+                            <option value="failed">Failed</option>
+                            <option value="not_applicable">Not Applicable</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Next Stage Readiness:</label>
+                        <select id="next_stage_readiness">
+                            <option value="ready">Ready</option>
+                            <option value="not_ready">Not Ready</option>
+                            <option value="partial">Partially Ready</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="safety_compliance">
+                    <label for="safety_compliance">Safety compliance confirmed for this stage</label>
+                </div>
+                
+                <!-- Team and Timeline -->
+                <h5>👥 Team & Timeline</h5>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Number of Workers:</label>
+                        <input type="number" id="workers_count" min="1" placeholder="Enter number of workers">
+                    </div>
+                    <div class="form-group">
+                        <label>Supervisor Name:</label>
+                        <input type="text" id="supervisor_name" placeholder="Name of supervising person">
+                    </div>
+                    <div class="form-group">
+                        <label>Weather Delays (days):</label>
+                        <input type="number" id="weather_delays" min="0" value="0" placeholder="0">
+                    </div>
+                </div>
+                
+                <!-- Additional Notes -->
+                <div class="form-group">
+                    <label>Contractor Notes:</label>
+                    <textarea id="contractor_notes" rows="3" placeholder="Any additional notes for the homeowner..."></textarea>
+                </div>
+                
+                <button class="btn" onclick="submitEnhancedPaymentRequest()">💰 Submit Enhanced Payment Request</button>
+                <button class="btn btn-secondary" onclick="resetForm()">🔄 Reset Form</button>
+            </div>
+            
+            <div id="step1-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👤 Step 2: View Payment Requests (Homeowner)</h3>
+            <div class="form-group">
+                <label>Homeowner ID:</label>
+                <input type="number" id="homeowner_id" value="1" placeholder="Enter homeowner ID">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Status Filter:</label>
+                    <select id="status_filter">
+                        <option value="all">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="paid">Paid</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Project Filter:</label>
+                    <input type="number" id="project_filter" placeholder="Leave empty for all projects">
+                </div>
+            </div>
+            <button class="btn" onclick="loadPaymentRequests()">📋 Load Payment Requests</button>
+            <div id="step2-result" class="result" style="display: none;"></div>
+            <div id="payment-requests-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Step 3: Approve/Reject Payment Request (Homeowner)</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Payment Request ID:</label>
+                    <input type="number" id="payment_request_id" placeholder="Enter payment request ID">
+                </div>
+                <div class="form-group">
+                    <label>Action:</label>
+                    <select id="payment_action">
+                        <option value="approve">Approve</option>
+                        <option value="reject">Reject</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes/Reason:</label>
+                <textarea id="homeowner_notes" rows="3" placeholder="Enter approval notes or rejection reason..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Approved Amount (if different from requested):</label>
+                <input type="number" id="approved_amount" placeholder="Leave empty to approve full amount" step="0.01">
+            </div>
+            <button class="btn" onclick="respondToPaymentRequest()">✅ Submit Response</button>
+            <div id="step3-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Complete Workflow Test</h3>
+            <p>Run the complete enhanced payment request workflow automatically:</p>
+            <button class="btn" onclick="runCompleteWorkflow()">🚀 Run Complete Enhanced Workflow</button>
+            <div id="workflow-progress" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedStage = '';
+        let workflowData = {};
+
+        const constructionStages = [
+            { 
+                name: 'Foundation', 
+                typical_percentage: 20, 
+                description: 'Excavation, foundation laying, and base preparation',
+                typical_materials: 'Cement, Steel bars, Sand, Aggregate, Water'
+            },
+            { 
+                name: 'Structure', 
+                typical_percentage: 25, 
+                description: 'Column, beam, and slab construction',
+                typical_materials: 'Cement, Steel bars, Bricks, Sand, Aggregate'
+            },
+            { 
+                name: 'Brickwork', 
+                typical_percentage: 15, 
+                description: 'Wall construction and masonry work',
+                typical_materials: 'Bricks, Cement, Sand, Mortar'
+            },
+            { 
+                name: 'Roofing', 
+                typical_percentage: 15, 
+                description: 'Roof construction and waterproofing',
+                typical_materials: 'Roofing sheets, Tiles, Waterproofing, Insulation'
+            },
+            { 
+                name: 'Electrical', 
+                typical_percentage: 8, 
+                description: 'Electrical wiring and fixture installation',
+                typical_materials: 'Wires, Switches, Sockets, MCB, Conduits'
+            },
+            { 
+                name: 'Plumbing', 
+                typical_percentage: 7, 
+                description: 'Plumbing installation and testing',
+                typical_materials: 'Pipes, Fittings, Valves, Fixtures, Sealants'
+            },
+            { 
+                name: 'Finishing', 
+                typical_percentage: 10, 
+                description: 'Painting, flooring, and final touches',
+                typical_materials: 'Paint, Tiles, Fixtures, Hardware, Sealants'
+            }
+        ];
+
+        // Initialize stage selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const stageSelection = document.getElementById('stage-selection');
+            constructionStages.forEach(stage => {
+                const stageCard = document.createElement('div');
+                stageCard.className = 'stage-card';
+                stageCard.onclick = () => selectStage(stage.name);
+                stageCard.innerHTML = `
+                    <div class="stage-header">
+                        <h5>${stage.name}</h5>
+                        <span class="stage-percentage">${stage.typical_percentage}%</span>
+                    </div>
+                    <p>${stage.description}</p>
+                    <small><strong>Typical Materials:</strong> ${stage.typical_materials}</small>
+                `;
+                stageSelection.appendChild(stageCard);
+            });
+            
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('work_start_date').value = today;
+            document.getElementById('work_end_date').value = nextWeek;
+        });
+
+        function selectStage(stageName) {
+            selectedStage = stageName;
+            const stage = constructionStages.find(s => s.name === stageName);
+            
+            // Update UI
+            document.querySelectorAll('.stage-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.stage-card').classList.add('selected');
+            
+            // Show form and populate defaults
+            document.getElementById('payment-form').style.display = 'block';
+            document.getElementById('selected-stage-title').textContent = `Payment Request: ${stageName} Stage`;
+            document.getElementById('completion_percentage').value = stage.typical_percentage;
+            document.getElementById('materials_used').value = stage.typical_materials;
+            document.getElementById('work_description').value = `Completed ${stageName.toLowerCase()} work including ${stage.description.toLowerCase()}. All work has been done according to specifications and quality standards.`;
+            document.getElementById('workers_count').value = Math.floor(Math.random() * 5) + 3; // 3-7 workers
+            document.getElementById('supervisor_name').value = 'John Supervisor';
+            
+            // Set safety compliance for stages that require it
+            const safetyRequiredStages = ['Foundation', 'Structure', 'Electrical', 'Roofing'];
+            document.getElementById('safety_compliance').checked = safetyRequiredStages.includes(stageName);
+        }
+
+        function calculateTotal() {
+            const labor = parseFloat(document.getElementById('labor_cost').value) || 0;
+            const material = parseFloat(document.getElementById('material_cost').value) || 0;
+            const equipment = parseFloat(document.getElementById('equipment_cost').value) || 0;
+            const other = parseFloat(document.getElementById('other_expenses').value) || 0;
+            const total = labor + material + equipment + other;
+            
+            if (total > 0) {
+                document.getElementById('requested_amount').value = total.toFixed(2);
+            }
+        }
+
+        async function submitEnhancedPaymentRequest() {
+            if (!selectedStage) {
+                showResult('step1-result', 'Please select a construction stage first', 'error');
+                return;
+            }
+
+            const formData = {
+                project_id: parseInt(document.getElementById('project_id').value),
+                contractor_id: parseInt(document.getElementById('contractor_id').value),
+                stage_name: selectedStage,
+                requested_amount: parseFloat(document.getElementById('requested_amount').value),
+                completion_percentage: parseFloat(document.getElementById('completion_percentage').value),
+                work_description: document.getElementById('work_description').value,
+                materials_used: document.getElementById('materials_used').value,
+                labor_cost: parseFloat(document.getElementById('labor_cost').value) || 0,
+                material_cost: parseFloat(document.getElementById('material_cost').value) || 0,
+                equipment_cost: parseFloat(document.getElementById('equipment_cost').value) || 0,
+                other_expenses: parseFloat(document.getElementById('other_expenses').value) || 0,
+                work_start_date: document.getElementById('work_start_date').value,
+                work_end_date: document.getElementById('work_end_date').value,
+                quality_check_status: document.getElementById('quality_check_status').value,
+                safety_compliance: document.getElementById('safety_compliance').checked,
+                weather_delays: parseInt(document.getElementById('weather_delays').value) || 0,
+                workers_count: parseInt(document.getElementById('workers_count').value),
+                supervisor_name: document.getElementById('supervisor_name').value,
+                next_stage_readiness: document.getElementById('next_stage_readiness').value,
+                contractor_notes: document.getElementById('contractor_notes').value
+            };
+
+            try {
+                const response = await fetch('/buildhub/backend/api/contractor/submit_enhanced_stage_payment_request.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('step1-result', `✅ Enhanced payment request submitted successfully!\n\nRequest ID: ${data.data.payment_request_id}\nStage: ${data.data.stage_name}\nAmount: ₹${data.data.requested_amount}\nHomeowner: ${data.data.homeowner_name}\n\nCost Breakdown:\nLabor: ₹${data.data.cost_breakdown.labor_cost}\nMaterial: ₹${data.data.cost_breakdown.material_cost}\nEquipment: ₹${data.data.cost_breakdown.equipment_cost}\nOther: ₹${data.data.cost_breakdown.other_expenses}\nTotal: ₹${data.data.cost_breakdown.total}`, 'success');
+                    workflowData.paymentRequestId = data.data.payment_request_id;
+                    document.getElementById('payment_request_id').value = data.data.payment_request_id;
+                } else {
+                    showResult('step1-result', `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('step1-result', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadPaymentRequests() {
+            const homeownerId = document.getElementById('homeowner_id').value;
+            const statusFilter = document.getElementById('status_filter').value;
+            const projectFilter = document.getElementById('project_filter').value;
+
+            if (!homeownerId) {
+                showResult('step2-result', 'Please enter homeowner ID', 'error');
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({
+                    homeowner_id: homeownerId,
+                    status: statusFilter
+                });
+                
+                if (projectFilter) {
+                    params.append('project_id', projectFilter);
+                }
+
+                const response = await fetch(`/buildhub/backend/api/homeowner/get_enhanced_payment_requests.php?${params}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('step2-result', `✅ Found ${data.data.requests.length} payment requests`, 'success');
+                    displayPaymentRequests(data.data);
+                } else {
+                    showResult('step2-result', `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('step2-result', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        function displayPaymentRequests(data) {
+            const container = document.getElementById('payment-requests-display');
+            const { requests, summary, stage_breakdown } = data;
+            
+            let html = '<h4>📊 Payment Summary</h4>';
+            html += `<div class="cost-breakdown">
+                <div class="cost-item"><span>Total Requests:</span><span>${summary.total_requests}</span></div>
+                <div class="cost-item"><span>Pending:</span><span>${summary.pending_requests} (₹${summary.pending_amount.toLocaleString()})</span></div>
+                <div class="cost-item"><span>Approved:</span><span>${summary.approved_requests} (₹${summary.approved_amount.toLocaleString()})</span></div>
+                <div class="cost-item"><span>Paid:</span><span>${summary.paid_requests} (₹${summary.paid_amount.toLocaleString()})</span></div>
+            </div>`;
+            
+            html += '<h4>📋 Payment Requests</h4>';
+            
+            if (requests.length === 0) {
+                html += '<p>No payment requests found.</p>';
+            } else {
+                requests.forEach(request => {
+                    html += `
+                        <div class="payment-card">
+                            <div class="payment-header">
+                                <div>
+                                    <h5>🏗️ ${request.stage_name} Stage</h5>
+                                    <p>by ${request.contractor_name} • ${request.request_date_formatted}</p>
+                                </div>
+                                <div>
+                                    <div class="status-badge status-${request.status}">
+                                        ${request.status.toUpperCase()}
+                                    </div>
+                                    <div style="font-size: 1.2rem; font-weight: bold; margin-top: 5px;">
+                                        ₹${request.requested_amount.toLocaleString()}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="cost-breakdown">
+                                <div class="cost-item"><span>Completion:</span><span>${request.completion_percentage}%</span></div>
+                                <div class="cost-item"><span>Workers:</span><span>${request.workers_count}</span></div>
+                                <div class="cost-item"><span>Quality Check:</span><span>${request.quality_check_status}</span></div>
+                                <div class="cost-item"><span>Safety:</span><span>${request.safety_compliance ? '✅ Yes' : '❌ No'}</span></div>
+                            </div>
+                            
+                            ${request.cost_breakdown_total > 0 ? `
+                            <h6>💰 Cost Breakdown</h6>
+                            <div class="cost-breakdown">
+                                <div class="cost-item"><span>Labor:</span><span>₹${request.labor_cost.toLocaleString()}</span></div>
+                                <div class="cost-item"><span>Materials:</span><span>₹${request.material_cost.toLocaleString()}</span></div>
+                                <div class="cost-item"><span>Equipment:</span><span>₹${request.equipment_cost.toLocaleString()}</span></div>
+                                <div class="cost-item"><span>Other:</span><span>₹${request.other_expenses.toLocaleString()}</span></div>
+                            </div>
+                            ` : ''}
+                            
+                            <h6>🏗️ Work Description</h6>
+                            <p>${request.work_description}</p>
+                            
+                            ${request.materials_used ? `
+                            <h6>📦 Materials Used</h6>
+                            <p>${request.materials_used}</p>
+                            ` : ''}
+                            
+                            ${request.contractor_notes ? `
+                            <h6>📝 Contractor Notes</h6>
+                            <p>${request.contractor_notes}</p>
+                            ` : ''}
+                            
+                            ${request.status === 'pending' ? `
+                            <div style="margin-top: 15px;">
+                                <button class="btn" onclick="quickApprove(${request.id})">✅ Quick Approve</button>
+                                <button class="btn btn-danger" onclick="quickReject(${request.id})">❌ Quick Reject</button>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            }
+            
+            container.innerHTML = html;
+        }
+
+        async function respondToPaymentRequest() {
+            const requestId = document.getElementById('payment_request_id').value;
+            const action = document.getElementById('payment_action').value;
+            const notes = document.getElementById('homeowner_notes').value;
+            const approvedAmount = document.getElementById('approved_amount').value;
+
+            if (!requestId) {
+                showResult('step3-result', 'Please enter payment request ID', 'error');
+                return;
+            }
+
+            const requestData = {
+                payment_request_id: parseInt(requestId),
+                action: action,
+                homeowner_notes: notes
+            };
+
+            if (action === 'approve' && approvedAmount) {
+                requestData.approved_amount = parseFloat(approvedAmount);
+            }
+
+            if (action === 'reject') {
+                requestData.rejection_reason = notes;
+            }
+
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/respond_payment_request.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('step3-result', `✅ Payment request ${action}d successfully!`, 'success');
+                } else {
+                    showResult('step3-result', `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('step3-result', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function quickApprove(requestId) {
+            document.getElementById('payment_request_id').value = requestId;
+            document.getElementById('payment_action').value = 'approve';
+            document.getElementById('homeowner_notes').value = 'Payment approved - work completed satisfactorily';
+            await respondToPaymentRequest();
+            setTimeout(() => loadPaymentRequests(), 1000);
+        }
+
+        async function quickReject(requestId) {
+            const reason = prompt('Please provide a reason for rejection:');
+            if (reason) {
+                document.getElementById('payment_request_id').value = requestId;
+                document.getElementById('payment_action').value = 'reject';
+                document.getElementById('homeowner_notes').value = reason;
+                await respondToPaymentRequest();
+                setTimeout(() => loadPaymentRequests(), 1000);
+            }
+        }
+
+        async function runCompleteWorkflow() {
+            const progressDiv = document.getElementById('workflow-progress');
+            progressDiv.innerHTML = '<h4>🚀 Running Complete Enhanced Payment Workflow...</h4>';
+            
+            try {
+                // Step 1: Select Foundation stage and submit request
+                progressDiv.innerHTML += '<p>Step 1: Selecting Foundation stage and submitting enhanced payment request...</p>';
+                selectStage('Foundation');
+                
+                // Fill in sample data
+                document.getElementById('requested_amount').value = '150000';
+                document.getElementById('labor_cost').value = '80000';
+                document.getElementById('material_cost').value = '60000';
+                document.getElementById('equipment_cost').value = '8000';
+                document.getElementById('other_expenses').value = '2000';
+                document.getElementById('work_description').value = 'Foundation work completed including excavation, steel reinforcement, concrete pouring, and curing. All work meets structural specifications and quality standards.';
+                document.getElementById('workers_count').value = '6';
+                document.getElementById('supervisor_name').value = 'Rajesh Kumar';
+                document.getElementById('contractor_notes').value = 'Foundation work completed ahead of schedule. Ready to proceed with structure work.';
+                
+                await submitEnhancedPaymentRequest();
+                await sleep(2000);
+                
+                // Step 2: Load payment requests
+                progressDiv.innerHTML += '<p>Step 2: Loading payment requests for homeowner...</p>';
+                await loadPaymentRequests();
+                await sleep(2000);
+                
+                // Step 3: Auto-approve the request
+                if (workflowData.paymentRequestId) {
+                    progressDiv.innerHTML += '<p>Step 3: Auto-approving payment request...</p>';
+                    document.getElementById('payment_action').value = 'approve';
+                    document.getElementById('homeowner_notes').value = 'Foundation work looks excellent. Payment approved.';
+                    await respondToPaymentRequest();
+                    await sleep(2000);
+                    
+                    // Refresh the payment requests
+                    progressDiv.innerHTML += '<p>Step 4: Refreshing payment requests to show updated status...</p>';
+                    await loadPaymentRequests();
+                }
+                
+                progressDiv.innerHTML += '<h4 style="color: green;">✅ Complete Enhanced Payment Workflow Test Finished!</h4>';
+                progressDiv.innerHTML += '<p>The enhanced payment request system with stage-specific fields is working correctly!</p>';
+                
+            } catch (error) {
+                progressDiv.innerHTML += `<h4 style="color: red;">❌ Workflow Test Failed: ${error.message}</h4>`;
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('payment-form').reset();
+            selectedStage = '';
+            document.querySelectorAll('.stage-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById('payment-form').style.display = 'none';
+        }
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>

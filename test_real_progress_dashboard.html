@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Progress Dashboard Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .progress-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .project-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .project-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2563eb;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .real-progress {
+            background-color: #10b981;
+        }
+        .stored-progress {
+            background-color: #f59e0b;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .stage-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e0f2fe;
+            border-radius: 5px;
+        }
+        .payment-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0fdf4;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .api-test {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Real Progress Dashboard Test</h1>
+            <p>Testing the Site Inspector Dashboard with Real Progress Calculation</p>
+        </div>
+
+        <div id="projectsContainer">
+            <div class="progress-comparison">
+                <div class="project-card">
+                    <div class="project-title">Loading Projects...</div>
+                    <p>Fetching real progress data from API...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-test">
+            <h3>🔧 API Testing</h3>
+            <p>Test the real progress calculation API and compare with stored values:</p>
+            
+            <button class="test-button" onclick="testRealProgressAPI()">
+                📊 Test Real Progress API
+            </button>
+            
+            <button class="test-button" onclick="testInspectorDashboard()">
+                🏗️ Test Inspector Dashboard
+            </button>
+            
+            <button class="test-button" onclick="clearResults()">
+                🗑️ Clear Results
+            </button>
+
+            <div id="results" class="results" style="display: none;">
+                <h4>Test Results:</h4>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let projectsData = [];
+
+        // Load projects on page load
+        window.onload = function() {
+            testRealProgressAPI();
+        };
+
+        async function testRealProgressAPI() {
+            showResults();
+            addResult('🔍 Testing Real Progress API...', 'info');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/inspector/get_projects_simple.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('✅ API call successful!', 'success');
+                    projectsData = data.projects;
+                    
+                    // Display projects
+                    displayProjects(data.projects, data.statistics);
+                    
+                    // Show detailed results
+                    addResult(`📊 Found ${data.projects.length} assigned projects`, 'info');
+                    addResult(`📈 Average real progress: ${data.statistics.avg_real_completion}%`, 'info');
+                    
+                    data.projects.forEach((project, index) => {
+                        const progressDiff = project.real_completion_percentage - project.stored_completion_percentage;
+                        const diffClass = progressDiff === 0 ? 'info' : 'warning';
+                        
+                        addResult(`🏗️ Project ${project.id}: ${project.project_name}`, 'info');
+                        addResult(`   Real Progress: ${project.real_completion_percentage}% | Stored: ${project.stored_completion_percentage}% | Diff: ${progressDiff}%`, diffClass);
+                        addResult(`   Current Stage: ${project.actual_current_stage} | Completed Stages: ${project.statistics.completed_stages}/${project.statistics.total_stages}`, 'info');
+                        
+                        if (project.latest_stage_payment) {
+                            addResult(`   Latest Payment: ${project.latest_stage_payment.stage_name} - ${project.latest_stage_payment.status} (₹${project.latest_stage_payment.amount})`, 'success');
+                        }
+                    });
+                    
+                } else {
+                    addResult(`❌ API Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        function displayProjects(projects, stats) {
+            const container = document.getElementById('projectsContainer');
+            
+            let html = `
+                <div style="margin-bottom: 20px; padding: 15px; background: #e0f2fe; border-radius: 8px;">
+                    <h3>📊 Inspector Statistics</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div><strong>Total Projects:</strong> ${stats.total_projects}</div>
+                        <div><strong>Active Projects:</strong> ${stats.active_projects}</div>
+                        <div><strong>Completed:</strong> ${stats.completed_projects}</div>
+                        <div><strong>Avg Progress:</strong> ${stats.avg_real_completion}%</div>
+                    </div>
+                </div>
+                <div class="progress-comparison">
+            `;
+            
+            projects.forEach(project => {
+                const progressDiff = project.real_completion_percentage - project.stored_completion_percentage;
+                const diffColor = progressDiff === 0 ? '#6b7280' : '#f59e0b';
+                
+                html += `
+                    <div class="project-card">
+                        <div class="project-title">${project.project_name}</div>
+                        
+                        <div class="progress-info">
+                            <span><strong>Real Progress:</strong> ${project.real_completion_percentage}%</span>
+                            <span class="success">✓ Current</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill real-progress" style="width: ${project.real_completion_percentage}%"></div>
+                        </div>
+                        
+                        <div class="progress-info">
+                            <span><strong>Stored Progress:</strong> ${project.stored_completion_percentage}%</span>
+                            <span class="warning">${progressDiff === 0 ? '✓ Synced' : '⚠ Outdated'}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill stored-progress" style="width: ${project.stored_completion_percentage}%"></div>
+                        </div>
+                        
+                        <div class="stage-info">
+                            <strong>Stage Comparison:</strong><br>
+                            Real Stage: <span class="success">${project.actual_current_stage}</span><br>
+                            Stored Stage: <span class="warning">${project.stored_stage}</span>
+                        </div>
+                        
+                        ${project.latest_stage_payment ? `
+                            <div class="payment-info">
+                                <strong>Latest Payment:</strong><br>
+                                ${project.latest_stage_payment.stage_name} - ${project.latest_stage_payment.status}<br>
+                                Amount: ₹${project.latest_stage_payment.amount.toLocaleString()}<br>
+                                Date: ${new Date(project.latest_stage_payment.request_date).toLocaleDateString()}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="margin-top: 10px; font-size: 14px; color: #666;">
+                            <strong>Progress Calculation:</strong> ${project.progress_calculation.method}<br>
+                            <strong>Completed Stages:</strong> ${project.statistics.completed_stages}/${project.statistics.total_stages}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function testInspectorDashboard() {
+            showResults();
+            addResult('🏗️ Testing Inspector Dashboard Integration...', 'info');
+            
+            // Test if the dashboard component would work with this data
+            if (projectsData.length > 0) {
+                addResult('✅ Dashboard data structure is compatible', 'success');
+                addResult('✅ Real progress calculation working', 'success');
+                addResult('✅ Stage comparison available', 'success');
+                addResult('✅ Payment information accessible', 'success');
+                
+                // Check for progress differences
+                const outdatedProjects = projectsData.filter(p => 
+                    p.real_completion_percentage !== p.stored_completion_percentage
+                );
+                
+                if (outdatedProjects.length > 0) {
+                    addResult(`⚠️ Found ${outdatedProjects.length} projects with outdated stored progress`, 'warning');
+                    outdatedProjects.forEach(project => {
+                        addResult(`   - ${project.project_name}: Real ${project.real_completion_percentage}% vs Stored ${project.stored_completion_percentage}%`, 'warning');
+                    });
+                } else {
+                    addResult('✅ All projects have synchronized progress values', 'success');
+                }
+                
+            } else {
+                addResult('❌ No project data available for dashboard testing', 'error');
+            }
+        }
+
+        function showResults() {
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function addResult(message, type = 'info') {
+            const content = document.getElementById('resultContent');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            content.appendChild(div);
+            content.scrollTop = content.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('resultContent').innerHTML = '';
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

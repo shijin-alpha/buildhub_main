@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexible Payment Amounts Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .payment-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #fafafa;
+        }
+        .amount-input {
+            width: 200px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background: #1565c0;
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .button.test-btn {
+            background: #2e7d32;
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        .button.test-btn:hover {
+            background: #1b5e20;
+        }
+        .success {
+            color: #2e7d32;
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            color: #d32f2f;
+            background: #ffeaea;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #1976d2;
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .test-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background: white;
+        }
+        .test-item.pass {
+            border-color: #4caf50;
+            background: #f1f8e9;
+        }
+        .test-item.fail {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+        .amount-display {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .limit-info {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Flexible Payment Amounts Test</h1>
+        <p>Test the new flexible payment system - pay any amount up to the limit!</p>
+        
+        <div class="payment-card">
+            <h3>Payment Request Information</h3>
+            <div id="paymentInfo">Loading payment information...</div>
+        </div>
+        
+        <div class="payment-card">
+            <h3>Custom Amount Payment Test</h3>
+            <div class="info">
+                <strong>How it works:</strong> You can now pay any amount from ₹1 up to the maximum limit. 
+                No need to pay the exact amount shown in the database!
+            </div>
+            
+            <div>
+                <label for="customAmount">Enter Payment Amount (₹):</label><br>
+                <input type="number" id="customAmount" class="amount-input" placeholder="Enter amount" min="1" step="0.01">
+                <button class="button" onclick="testCustomPayment()">Test Payment</button>
+            </div>
+            
+            <div id="customPaymentResult"></div>
+        </div>
+        
+        <div class="payment-card">
+            <h3>Quick Amount Tests</h3>
+            <p>Test common payment amounts with one click:</p>
+            
+            <div class="test-results" id="quickTests">
+                <!-- Quick test buttons will be populated here -->
+            </div>
+        </div>
+        
+        <div class="payment-card">
+            <h3>Test Results</h3>
+            <div id="testResults"></div>
+        </div>
+    </div>
+
+    <script>
+        let paymentRequestData = null;
+        let maxAmount = 0;
+        
+        // Load payment request information
+        async function loadPaymentInfo() {
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_payment_requests.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    paymentRequestData = data.data[0];
+                    maxAmount = parseFloat(paymentRequestData.requested_amount);
+                    
+                    document.getElementById('paymentInfo').innerHTML = `
+                        <div class="limit-info">
+                            <h4>Payment Limits</h4>
+                            <p><strong>Stage:</strong> ${paymentRequestData.stage_name}</p>
+                            <p><strong>Maximum Amount:</strong> ₹${maxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</p>
+                            <p><strong>Contractor:</strong> ${paymentRequestData.contractor_first_name} ${paymentRequestData.contractor_last_name}</p>
+                            <p><strong>Status:</strong> ${paymentRequestData.status}</p>
+                        </div>
+                        <div class="info">
+                            <strong>Flexible Payment:</strong> You can pay any amount from ₹1.00 to ₹${maxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                        </div>
+                    `;
+                    
+                    setupQuickTests();
+                } else {
+                    document.getElementById('paymentInfo').innerHTML = '<div class="error">No payment requests found</div>';
+                }
+                
+            } catch (error) {
+                document.getElementById('paymentInfo').innerHTML = '<div class="error">Error loading payment info: ' + error.message + '</div>';
+            }
+        }
+        
+        // Setup quick test buttons
+        function setupQuickTests() {
+            const quickTestsDiv = document.getElementById('quickTests');
+            const testAmounts = [
+                { amount: 10000, label: '₹10,000', description: 'Small payment' },
+                { amount: 50000, label: '₹50,000', description: 'Original amount' },
+                { amount: 250000, label: '₹2.5 Lakhs', description: 'Quarter payment' },
+                { amount: 500000, label: '₹5 Lakhs', description: 'Half payment' },
+                { amount: 750000, label: '₹7.5 Lakhs', description: 'Three-quarter payment' },
+                { amount: maxAmount, label: '₹10 Lakhs', description: 'Maximum amount' },
+                { amount: maxAmount + 200000, label: '₹12 Lakhs', description: 'Over limit (should fail)' },
+                { amount: 0, label: '₹0', description: 'Zero amount (should fail)' }
+            ];
+            
+            quickTestsDiv.innerHTML = testAmounts.map(test => `
+                <div class="test-item">
+                    <div class="amount-display">${test.label}</div>
+                    <div>${test.description}</div>
+                    <button class="button test-btn" onclick="testQuickPayment(${test.amount})">Test</button>
+                    <div id="result-${test.amount}" style="margin-top: 10px;"></div>
+                </div>
+            `).join('');
+        }
+        
+        // Test custom payment amount
+        async function testCustomPayment() {
+            const amountInput = document.getElementById('customAmount');
+            const amount = parseFloat(amountInput.value);
+            
+            if (isNaN(amount)) {
+                document.getElementById('customPaymentResult').innerHTML = '<div class="error">Please enter a valid amount</div>';
+                return;
+            }
+            
+            await testPaymentAmount(amount, 'customPaymentResult');
+        }
+        
+        // Test quick payment amount
+        async function testQuickPayment(amount) {
+            await testPaymentAmount(amount, `result-${amount}`);
+            
+            // Update test item styling
+            const testItem = document.querySelector(`#result-${amount}`).closest('.test-item');
+            const resultDiv = document.getElementById(`result-${amount}`);
+            
+            if (resultDiv.innerHTML.includes('✅')) {
+                testItem.classList.add('pass');
+                testItem.classList.remove('fail');
+            } else {
+                testItem.classList.add('fail');
+                testItem.classList.remove('pass');
+            }
+        }
+        
+        // Test payment amount
+        async function testPaymentAmount(amount, resultDivId) {
+            if (!paymentRequestData) {
+                document.getElementById(resultDivId).innerHTML = '<div class="error">Payment request data not loaded</div>';
+                return;
+            }
+            
+            const resultDiv = document.getElementById(resultDivId);
+            resultDiv.innerHTML = '<div class="info">Testing payment...</div>';
+            
+            try {
+                const paymentData = {
+                    payment_request_id: paymentRequestData.id,
+                    amount: amount
+                };
+                
+                const response = await fetch('/buildhub/backend/api/homeowner/initiate_stage_payment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(paymentData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ SUCCESS</strong><br>
+                            Amount: ₹${(result.data.amount / 100).toLocaleString('en-IN', {minimumFractionDigits: 2})}<br>
+                            Order ID: ${result.data.razorpay_order_id}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ FAILED</strong><br>
+                            ${result.message}
+                        </div>
+                    `;
+                }
+                
+                // Update overall test results
+                updateTestResults(amount, result.success, result.message);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ ERROR</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Update test results summary
+        function updateTestResults(amount, success, message) {
+            const testResultsDiv = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const status = success ? '✅ PASS' : '❌ FAIL';
+            const amountFormatted = '₹' + amount.toLocaleString('en-IN', {minimumFractionDigits: 2});
+            
+            const resultHtml = `
+                <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                    <strong>[${timestamp}] ${amountFormatted}: ${status}</strong><br>
+                    <small>${message}</small>
+                </div>
+            `;
+            
+            testResultsDiv.innerHTML = resultHtml + testResultsDiv.innerHTML;
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPaymentInfo();
+        });
+    </script>
+</body>
+</html>

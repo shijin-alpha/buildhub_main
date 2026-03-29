@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Self-Evaluation System - Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .success {
+            border-left-color: #28a745;
+        }
+        
+        .error {
+            border-left-color: #dc3545;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .metric-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .metric-box .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .metric-box .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .cm-cell {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .cm-cell.tp { background: #d4edda; }
+        .cm-cell.fp { background: #f8d7da; }
+        .cm-cell.tn { background: #d1ecf1; }
+        .cm-cell.fn { background: #fff3cd; }
+        
+        .cm-cell .label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .cm-cell .value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #2196F3;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Self-Evaluation System - Test Interface</h1>
+            <p>
+                Test the complete AI self-evaluation framework including prediction saving, 
+                automatic locking, evaluation on completion, and metrics calculation.
+            </p>
+        </div>
+        
+        <div class="grid">
+            <!-- Test 1: Save Prediction -->
+            <div class="card">
+                <h2>1. Save AI Prediction</h2>
+                <div class="form-group">
+                    <label>Project ID:</label>
+                    <input type="number" id="projectId1" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Cost Risk Level:</label>
+                    <select id="costRisk">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High" selected>High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cost Probability (0-1):</label>
+                    <input type="number" id="costProb" value="0.85" step="0.01" min="0" max="1">
+                </div>
+                <div class="form-group">
+                    <label>Time Risk Level:</label>
+                    <select id="timeRisk">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Time Probability (0-1):</label>
+                    <input type="number" id="timeProb" value="0.62" step="0.01" min="0" max="1">
+                </div>
+                <button onclick="savePrediction()">Save Prediction</button>
+                <div id="result1" class="result" style="display:none;"></div>
+            </div>
+            
+            <!-- Test 2: Get Evaluation Metrics -->
+            <div class="card">
+                <h2>2. Get Evaluation Metrics</h2>
+                <div class="form-group">
+                    <label>Action:</label>
+                    <select id="metricsAction">
+                        <option value="latest">Latest Metrics</option>
+                        <option value="confusion_matrix">Confusion Matrix</option>
+                        <option value="calculate">Calculate Now</option>
+                        <option value="history">Historical Data</option>
+                        <option value="project_performance">Project Performance</option>
+                        <option value="config">Configuration</option>
+                    </select>
+                </div>
+                <button onclick="getMetrics()">Get Metrics</button>
+                <div id="result2" class="result" style="display:none;"></div>
+            </div>
+            
+            <!-- Test 3: View Project Performance -->
+            <div class="card">
+                <h2>3. View Project Performance</h2>
+                <div class="form-group">
+                    <label>Project ID (optional):</label>
+                    <input type="number" id="projectId3" placeholder="Leave empty for all">
+                </div>
+                <div class="form-group">
+                    <label>Filter:</label>
+                    <select id="performanceFilter">
+                        <option value="">All Projects</option>
+                        <option value="correct">Correct Predictions Only</option>
+                        <option value="incorrect">Incorrect Predictions Only</option>
+                        <option value="completed">Completed Only</option>
+                    </select>
+                </div>
+                <button onclick="viewPerformance()">View Performance</button>
+                <div id="result3" class="result" style="display:none;"></div>
+            </div>
+            
+            <!-- Test 4: Confusion Matrix Visualization -->
+            <div class="card">
+                <h2>4. Confusion Matrix</h2>
+                <button onclick="showConfusionMatrix()">Load Confusion Matrix</button>
+                <div id="confusionMatrix" style="display:none;">
+                    <h3 style="margin-top: 15px; color: #667eea;">Cost Predictions</h3>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">
+                            <div class="label">True Positive</div>
+                            <div class="value" id="cost-tp">-</div>
+                        </div>
+                        <div class="cm-cell fp">
+                            <div class="label">False Positive</div>
+                            <div class="value" id="cost-fp">-</div>
+                        </div>
+                        <div class="cm-cell fn">
+                            <div class="label">False Negative</div>
+                            <div class="value" id="cost-fn">-</div>
+                        </div>
+                        <div class="cm-cell tn">
+                            <div class="label">True Negative</div>
+                            <div class="value" id="cost-tn">-</div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 15px; color: #667eea;">Time Predictions</h3>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">
+                            <div class="label">True Positive</div>
+                            <div class="value" id="time-tp">-</div>
+                        </div>
+                        <div class="cm-cell fp">
+                            <div class="label">False Positive</div>
+                            <div class="value" id="time-fp">-</div>
+                        </div>
+                        <div class="cm-cell fn">
+                            <div class="label">False Negative</div>
+                            <div class="value" id="time-fn">-</div>
+                        </div>
+                        <div class="cm-cell tn">
+                            <div class="label">True Negative</div>
+                            <div class="value" id="time-tn">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Test 5: Performance Metrics -->
+            <div class="card">
+                <h2>5. Performance Metrics</h2>
+                <button onclick="showMetrics()">Load Performance Metrics</button>
+                <div id="metricsDisplay" style="display:none;">
+                    <h3 style="margin-top: 15px; color: #667eea;">Cost Predictions</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="label">Accuracy</div>
+                            <div class="value" id="cost-accuracy">-</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="label">Precision</div>
+                            <div class="value" id="cost-precision">-</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="label">Recall</div>
+                            <div class="value" id="cost-recall">-</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="label">F1 Score</div>
+                            <div class="value" id="cost-f1">-</div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 15px; color: #667eea;">Time Predictions</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="label">Accuracy</div>
+                            <div class="value" id="time-accuracy">-</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="label">Precision</div>
+                            <div class="value" id="time-precision">-</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="label">Recall</div>
+                            <div class="value" id="time-recall">-</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="label">F1 Score</div>
+                            <div class="value" id="time-f1">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Info Box -->
+            <div class="card">
+                <h2>ℹ️ System Information</h2>
+                <div class="info-box">
+                    <h3>How It Works</h3>
+                    <ul>
+                        <li>Predictions are saved when homeowner confirms project</li>
+                        <li>Predictions lock automatically when work begins</li>
+                        <li>Projects are evaluated automatically on completion</li>
+                        <li>Metrics are calculated using confusion matrix</li>
+                        <li>All changes are backward compatible</li>
+                    </ul>
+                </div>
+                
+                <div class="info-box" style="margin-top: 15px;">
+                    <h3>Classification Logic</h3>
+                    <ul>
+                        <li><strong>TP:</strong> Predicted High/Med + Actual Overrun</li>
+                        <li><strong>FP:</strong> Predicted High/Med + No Overrun</li>
+                        <li><strong>TN:</strong> Predicted Low + No Overrun</li>
+                        <li><strong>FN:</strong> Predicted Low + Actual Overrun</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '/buildhub/backend/api/ml';
+        
+        async function savePrediction() {
+            const projectId = document.getElementById('projectId1').value;
+            const costRisk = document.getElementById('costRisk').value;
+            const costProb = parseFloat(document.getElementById('costProb').value);
+            const timeRisk = document.getElementById('timeRisk').value;
+            const timeProb = parseFloat(document.getElementById('timeProb').value);
+            
+            const data = {
+                project_id: parseInt(projectId),
+                cost_risk_level: costRisk,
+                cost_probability: costProb,
+                time_risk_level: timeRisk,
+                time_probability: timeProb,
+                model_version: 'v1.0.0'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/save_ai_prediction.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                displayResult('result1', result, response.ok);
+            } catch (error) {
+                displayResult('result1', { error: error.message }, false);
+            }
+        }
+        
+        async function getMetrics() {
+            const action = document.getElementById('metricsAction').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/get_evaluation_metrics.php?action=${action}`);
+                const result = await response.json();
+                displayResult('result2', result, response.ok);
+            } catch (error) {
+                displayResult('result2', { error: error.message }, false);
+            }
+        }
+        
+        async function viewPerformance() {
+            const projectId = document.getElementById('projectId3').value;
+            const filter = document.getElementById('performanceFilter').value;
+            
+            let url = `${API_BASE}/get_evaluation_metrics.php?action=project_performance`;
+            
+            if (projectId) url += `&project_id=${projectId}`;
+            if (filter === 'correct') url += '&correct_only=true';
+            if (filter === 'incorrect') url += '&incorrect_only=true';
+            if (filter === 'completed') url += '&status=completed';
+            
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+                displayResult('result3', result, response.ok);
+            } catch (error) {
+                displayResult('result3', { error: error.message }, false);
+            }
+        }
+        
+        async function showConfusionMatrix() {
+            try {
+                const response = await fetch(`${API_BASE}/get_evaluation_metrics.php?action=confusion_matrix`);
+                const result = await response.json();
+                
+                if (result.success && result.data.confusion_matrices) {
+                    const matrices = result.data.confusion_matrices;
+                    
+                    matrices.forEach(matrix => {
+                        const prefix = matrix.prediction_type.includes('Cost') ? 'cost' : 'time';
+                        document.getElementById(`${prefix}-tp`).textContent = matrix.true_positives;
+                        document.getElementById(`${prefix}-fp`).textContent = matrix.false_positives;
+                        document.getElementById(`${prefix}-tn`).textContent = matrix.true_negatives;
+                        document.getElementById(`${prefix}-fn`).textContent = matrix.false_negatives;
+                    });
+                    
+                    document.getElementById('confusionMatrix').style.display = 'block';
+                }
+            } catch (error) {
+                alert('Error loading confusion matrix: ' + error.message);
+            }
+        }
+        
+        async function showMetrics() {
+            try {
+                const response = await fetch(`${API_BASE}/get_evaluation_metrics.php?action=latest`);
+                const result = await response.json();
+                
+                if (result.success && result.data.metrics) {
+                    result.data.metrics.forEach(metric => {
+                        const prefix = metric.metric_type;
+                        document.getElementById(`${prefix}-accuracy`).textContent = metric.accuracy_pct + '%';
+                        document.getElementById(`${prefix}-precision`).textContent = metric.precision_pct + '%';
+                        document.getElementById(`${prefix}-recall`).textContent = metric.recall_pct + '%';
+                        document.getElementById(`${prefix}-f1`).textContent = metric.f1_score_pct + '%';
+                    });
+                    
+                    document.getElementById('metricsDisplay').style.display = 'block';
+                }
+            } catch (error) {
+                alert('Error loading metrics: ' + error.message);
+            }
+        }
+        
+        function displayResult(elementId, data, success) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result ' + (success ? 'success' : 'error');
+            element.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+    </script>
+</body>
+</html>

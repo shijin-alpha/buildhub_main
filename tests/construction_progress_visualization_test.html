@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Progress Visualization Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f6fb;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        
+        .sidebar-test {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(18, 25, 35, 0.08);
+            height: fit-content;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(18, 25, 35, 0.08);
+        }
+        
+        .progress-visualization {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(18, 25, 35, 0.08);
+            border: 1px solid #e7e9f2;
+            margin-bottom: 20px;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e7e9f2;
+        }
+        
+        .progress-header h3 {
+            margin: 0;
+            color: #2b2e3a;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .progress-summary {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .progress-percentage {
+            font-size: 24px;
+            font-weight: 700;
+            color: #8b5cf6;
+        }
+        
+        .progress-stage {
+            font-size: 14px;
+            font-weight: 500;
+            color: #68708a;
+            background: #e9ddff;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+        
+        .house-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .house-svg {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            filter: drop-shadow(0 4px 12px rgba(18, 25, 35, 0.1));
+        }
+        
+        .house-layer {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .house-layer:hover {
+            filter: brightness(1.1);
+        }
+        
+        .layer-complete {
+            opacity: 1 !important;
+        }
+        
+        .layer-incomplete {
+            opacity: 0.15 !important;
+        }
+        
+        .layer-label {
+            font-size: 10px;
+            font-weight: 600;
+            fill: #2b2e3a;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+        }
+        
+        .progress-details {
+            margin-top: 20px;
+        }
+        
+        .stage-progress {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        
+        .completed-stages {
+            font-size: 14px;
+            font-weight: 500;
+            color: #68708a;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e7e9f2;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+        
+        .test-controls {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .test-controls button {
+            margin: 4px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #8b5cf6;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-controls button:hover {
+            background: #7c3aed;
+        }
+        
+        .stage-info {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stage-info h4 {
+            margin: 0 0 12px 0;
+            color: #2b2e3a;
+        }
+        
+        .stage-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .stage-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e7e9f2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stage-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .stage-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .stage-status.completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .stage-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .stage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        
+        .stage-name {
+            font-weight: 500;
+            color: #2b2e3a;
+            text-transform: capitalize;
+        }
+        
+        .stage-percent {
+            font-weight: 600;
+            color: #8b5cf6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="sidebar-test">
+            <h2>Sidebar Integration Test</h2>
+            <div id="sidebar-progress"></div>
+        </div>
+        
+        <div class="main-content">
+            <h1>Construction Progress Visualization Test</h1>
+            
+            <div class="test-controls">
+                <h3>Test Different Progress States:</h3>
+                <button onclick="setProgress(0)">No Progress</button>
+                <button onclick="setProgress(20)">Foundation Complete</button>
+                <button onclick="setProgress(40)">Structure Complete</button>
+                <button onclick="setProgress(60)">Walls Complete</button>
+                <button onclick="setProgress(80)">Roofing Complete</button>
+                <button onclick="setProgress(100)">Project Complete</button>
+            </div>
+            
+            <div id="main-progress"></div>
+            
+            <div class="stage-info">
+                <h4>Stage Mapping:</h4>
+                <ul class="stage-list">
+                    <li>
+                        <span>Foundation</span>
+                        <span class="stage-status" id="foundation-status">Pending</span>
+                    </li>
+                    <li>
+                        <span>Structure</span>
+                        <span class="stage-status" id="structure-status">Pending</span>
+                    </li>
+                    <li>
+                        <span>Walls</span>
+                        <span class="stage-status" id="walls-status">Pending</span>
+                    </li>
+                    <li>
+                        <span>Roofing</span>
+                        <span class="stage-status" id="roofing-status">Pending</span>
+                    </li>
+                    <li>
+                        <span>Finishing</span>
+                        <span class="stage-status" id="finishing-status">Pending</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProgress = 0;
+        
+        function createProgressVisualization(containerId, isCompact = false) {
+            const container = document.getElementById(containerId);
+            
+            const progressData = {
+                overall_percentage: currentProgress,
+                current_stage: getCurrentStage(currentProgress),
+                completed_count: Math.floor(currentProgress / 20),
+                total_stages: 5
+            };
+            
+            // Calculate layer percentages based on current progress
+            const layerPercentages = {
+                foundation: Math.min(100, Math.max(0, (currentProgress - 0) * 5)),
+                structure: Math.min(100, Math.max(0, (currentProgress - 20) * 5)),
+                walls: Math.min(100, Math.max(0, (currentProgress - 40) * 5)),
+                roofing: Math.min(100, Math.max(0, (currentProgress - 60) * 5)),
+                finishing: Math.min(100, Math.max(0, (currentProgress - 80) * 5))
+            };
+            
+            const visualLayers = {
+                foundation: layerPercentages.foundation / 100,
+                structure: layerPercentages.structure / 100,
+                walls: layerPercentages.walls / 100,
+                roofing: layerPercentages.roofing / 100,
+                finishing: layerPercentages.finishing / 100
+            };
+            
+            container.innerHTML = `
+                <div class="progress-visualization ${isCompact ? 'compact' : ''}">
+                    <div class="progress-header">
+                        <h3>Construction Progress</h3>
+                        <div class="progress-summary">
+                            <div class="progress-percentage">${progressData.overall_percentage}%</div>
+                            <div class="progress-stage">${progressData.current_stage}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="house-container">
+                        <svg viewBox="0 0 400 300" class="house-svg" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Foundation Layer -->
+                            <g class="house-layer foundation" 
+                               opacity="${0.15 + (visualLayers.foundation * 0.85)}">
+                                <rect x="50" y="220" width="300" height="40" fill="#8B4513" stroke="#654321" stroke-width="2"/>
+                                <rect x="40" y="250" width="320" height="20" fill="#A0522D" stroke="#654321" stroke-width="1"/>
+                                <text x="200" y="245" text-anchor="middle" class="layer-label">Foundation</text>
+                            </g>
+                            
+                            <!-- Structure Layer -->
+                            <g class="house-layer structure" 
+                               opacity="${0.15 + (visualLayers.structure * 0.85)}">
+                                <rect x="70" y="120" width="8" height="100" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <rect x="120" y="120" width="8" height="100" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <rect x="170" y="120" width="8" height="100" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <rect x="220" y="120" width="8" height="100" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <rect x="270" y="120" width="8" height="100" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <rect x="320" y="120" width="8" height="100" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <rect x="70" y="120" width="258" height="6" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <rect x="70" y="160" width="258" height="6" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <rect x="70" y="200" width="258" height="6" fill="#D2691E" stroke="#8B4513" stroke-width="1"/>
+                                <text x="200" y="190" text-anchor="middle" class="layer-label">Structure</text>
+                            </g>
+                            
+                            <!-- Walls Layer -->
+                            <g class="house-layer walls" 
+                               opacity="${0.15 + (visualLayers.walls * 0.85)}">
+                                <rect x="70" y="120" width="260" height="100" fill="#F5DEB3" stroke="#D2B48C" stroke-width="2"/>
+                                <rect x="180" y="180" width="40" height="40" fill="#8B4513" stroke="#654321" stroke-width="2"/>
+                                <circle cx="210" cy="200" r="2" fill="#FFD700"/>
+                                <rect x="100" y="140" width="40" height="30" fill="#87CEEB" stroke="#4682B4" stroke-width="2"/>
+                                <rect x="260" y="140" width="40" height="30" fill="#87CEEB" stroke="#4682B4" stroke-width="2"/>
+                                <text x="200" y="155" text-anchor="middle" class="layer-label">Walls</text>
+                            </g>
+                            
+                            <!-- Roofing Layer -->
+                            <g class="house-layer roofing" 
+                               opacity="${0.15 + (visualLayers.roofing * 0.85)}">
+                                <polygon points="50,120 200,40 350,120" fill="#8B0000" stroke="#654321" stroke-width="2"/>
+                                <polygon points="60,115 200,50 340,115" fill="#DC143C" stroke="#8B0000" stroke-width="1"/>
+                                <text x="200" y="85" text-anchor="middle" class="layer-label">Roofing</text>
+                            </g>
+                            
+                            <!-- Finishing Layer -->
+                            <g class="house-layer finishing" 
+                               opacity="${0.15 + (visualLayers.finishing * 0.85)}">
+                                <rect x="102" y="142" width="36" height="26" fill="#E0F6FF" stroke="#4682B4" stroke-width="1"/>
+                                <rect x="262" y="142" width="36" height="26" fill="#E0F6FF" stroke="#4682B4" stroke-width="1"/>
+                                <line x1="120" y1="142" x2="120" y2="168" stroke="#4682B4" stroke-width="1"/>
+                                <line x1="102" y1="155" x2="138" y2="155" stroke="#4682B4" stroke-width="1"/>
+                                <line x1="280" y1="142" x2="280" y2="168" stroke="#4682B4" stroke-width="1"/>
+                                <line x1="262" y1="155" x2="298" y2="155" stroke="#4682B4" stroke-width="1"/>
+                                <rect x="182" y="182" width="36" height="36" fill="#A0522D" stroke="#654321" stroke-width="1"/>
+                                <rect x="185" y="185" width="30" height="30" fill="#D2691E"/>
+                                <circle cx="210" cy="200" r="3" fill="#FFD700" stroke="#DAA520" stroke-width="1"/>
+                                <text x="200" y="210" text-anchor="middle" class="layer-label">Finishing</text>
+                            </g>
+                            
+                            ${progressData.overall_percentage === 100 ? 
+                                '<g class="completion-celebration"><text x="200" y="30" text-anchor="middle" font-size="16" fill="#FFD700">🎉 Complete! 🎉</text></g>' : 
+                                ''
+                            }
+                        </svg>
+                    </div>
+                    
+                    <div class="progress-details">
+                        <div class="stage-progress">
+                            <span class="completed-stages">
+                                ${progressData.completed_count} of ${progressData.total_stages} stages completed
+                            </span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressData.overall_percentage}%"></div>
+                        </div>
+                        
+                        <div class="stage-breakdown">
+                            <div class="stage-item">
+                                <span class="stage-name">Foundation</span>
+                                <span class="stage-percent">${Math.round(layerPercentages.foundation)}%</span>
+                            </div>
+                            <div class="stage-item">
+                                <span class="stage-name">Structure</span>
+                                <span class="stage-percent">${Math.round(layerPercentages.structure)}%</span>
+                            </div>
+                            <div class="stage-item">
+                                <span class="stage-name">Walls</span>
+                                <span class="stage-percent">${Math.round(layerPercentages.walls)}%</span>
+                            </div>
+                            <div class="stage-item">
+                                <span class="stage-name">Roofing</span>
+                                <span class="stage-percent">${Math.round(layerPercentages.roofing)}%</span>
+                            </div>
+                            <div class="stage-item">
+                                <span class="stage-name">Finishing</span>
+                                <span class="stage-percent">${Math.round(layerPercentages.finishing)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getCurrentStage(progress) {
+            if (progress === 0) return 'Foundation';
+            if (progress < 20) return 'Foundation';
+            if (progress < 40) return 'Structure';
+            if (progress < 60) return 'Walls';
+            if (progress < 80) return 'Roofing';
+            if (progress < 100) return 'Finishing';
+            return 'Project Complete';
+        }
+        
+        function updateStageStatus() {
+            const stages = ['foundation', 'structure', 'walls', 'roofing', 'finishing'];
+            stages.forEach((stage, index) => {
+                const element = document.getElementById(`${stage}-status`);
+                const isCompleted = currentProgress >= (index + 1) * 20;
+                element.textContent = isCompleted ? 'Completed' : 'Pending';
+                element.className = `stage-status ${isCompleted ? 'completed' : 'pending'}`;
+            });
+        }
+        
+        function setProgress(progress) {
+            currentProgress = progress;
+            createProgressVisualization('main-progress');
+            createProgressVisualization('sidebar-progress', true);
+            updateStageStatus();
+        }
+        
+        // Initialize with no progress
+        setProgress(0);
+    </script>
+</body>
+</html>

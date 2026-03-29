@@ -1,0 +1,949 @@
+/* Enhanced Inbox Estimation Form Styles */
+
+/* Draft indicator styling */
+.draft-indicator {
+  font-size: 12px;
+  color: #10b981;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  padding: 4px 12px;
+  border-radius: 16px;
+  border: 1px solid #a7f3d0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  animation: draftPulse 2s infinite;
+}
+
+@keyframes draftPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.draft-indicator::before {
+  content: '💾';
+  font-size: 10px;
+}
+
+/* Auto-save status */
+.auto-save-status {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.auto-save-status.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Interactive Details/Summary Styling */
+details {
+  margin-top: 16px !important;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+details:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  border-color: #667eea;
+}
+
+details[open] {
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+  border-color: #667eea;
+}
+
+details summary {
+  cursor: pointer !important;
+  padding: 16px 24px !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  user-select: none;
+}
+
+details summary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+details summary:hover::before {
+  left: 100%;
+}
+
+details summary:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+details summary:active {
+  transform: translateY(0);
+}
+
+/* Custom arrow for details */
+details summary::marker,
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::after {
+  content: '▼';
+  margin-left: auto;
+  font-size: 14px;
+  transition: transform 0.3s ease;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+details[open] summary::after {
+  transform: rotate(180deg);
+  color: white;
+}
+
+/* Pulse animation for the summary */
+@keyframes summaryPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+  }
+}
+
+details summary {
+  animation: summaryPulse 3s infinite;
+}
+
+details[open] summary {
+  animation: none;
+}
+
+/* Enhanced Inbox Estimation Form Styles */
+
+/* Smooth scrolling for the entire form */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Form container with smooth scrolling */
+.estimate-form {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 0 0 16px 16px;
+  padding: 24px;
+  margin-top: 0;
+  box-shadow: none;
+  border: none;
+  transition: all 0.3s ease;
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
+}
+
+/* Custom scrollbar for webkit browsers */
+.estimate-form::-webkit-scrollbar {
+  width: 8px;
+}
+
+.estimate-form::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.5);
+  border-radius: 10px;
+}
+
+.estimate-form::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.estimate-form::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Smooth transitions for all form elements */
+.estimate-form * {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced section transitions */
+.estimate-form .section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 24px 0 16px 0;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+  opacity: 1;
+  animation: slideInFromLeft 0.6s ease-out;
+}
+
+/* Smooth slide-in animation for sections */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Staggered animation for form elements */
+.estimate-form .grid-2 > *:nth-child(1) { animation-delay: 0.1s; }
+.estimate-form .grid-2 > *:nth-child(2) { animation-delay: 0.2s; }
+.estimate-form .grid-2 > *:nth-child(3) { animation-delay: 0.3s; }
+.estimate-form .grid-2 > *:nth-child(4) { animation-delay: 0.4s; }
+.estimate-form .grid-2 > *:nth-child(5) { animation-delay: 0.5s; }
+.estimate-form .grid-2 > *:nth-child(6) { animation-delay: 0.6s; }
+.estimate-form .grid-2 > *:nth-child(7) { animation-delay: 0.7s; }
+.estimate-form .grid-2 > *:nth-child(8) { animation-delay: 0.8s; }
+
+.estimate-form .grid-3 .estimate-line:nth-child(1) { animation-delay: 0.1s; }
+.estimate-form .grid-3 .estimate-line:nth-child(2) { animation-delay: 0.2s; }
+.estimate-form .grid-3 .estimate-line:nth-child(3) { animation-delay: 0.3s; }
+.estimate-form .grid-3 .estimate-line:nth-child(4) { animation-delay: 0.4s; }
+.estimate-form .grid-3 .estimate-line:nth-child(5) { animation-delay: 0.5s; }
+
+/* Smooth input animations */
+.estimate-form input,
+.estimate-form select,
+.estimate-form textarea {
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  background: white;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(0);
+  opacity: 1;
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced focus states with smooth transitions */
+.estimate-form input:focus,
+.estimate-form select:focus,
+.estimate-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 
+    0 0 0 4px rgba(102, 126, 234, 0.1), 
+    0 8px 25px rgba(102, 126, 234, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px) scale(1.02);
+  background: #fefefe;
+}
+
+/* Smooth hover effects */
+.estimate-form input:hover:not(:focus),
+.estimate-form select:hover:not(:focus),
+.estimate-form textarea:hover:not(:focus) {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Enhanced estimate line animations */
+.estimate-form .estimate-line {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+  opacity: 1;
+  animation: slideInUp 0.6s ease-out both;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.estimate-form .estimate-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transform: scaleY(0);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom;
+}
+
+.estimate-form .estimate-line:hover {
+  box-shadow: 
+    0 12px 40px rgba(102, 126, 234, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px) scale(1.01);
+  border-color: #667eea;
+}
+
+.estimate-form .estimate-line:hover::before {
+  transform: scaleY(1);
+}
+
+/* Smooth totals section animation */
+.estimate-form .totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+  padding: 24px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 16px;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+  animation: bounceIn 0.8s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced button animations */
+.estimate-form .btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0) scale(1);
+}
+
+.estimate-form .btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.estimate-form .btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.estimate-form .btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.estimate-form .btn:active {
+  transform: translateY(-1px) scale(1.02);
+  transition: all 0.1s ease;
+}
+
+/* Smooth section title shimmer effect */
+.estimate-form .section-title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.estimate-form .section-title:hover::before {
+  left: 100%;
+}
+
+/* Smooth readonly field animations */
+.estimate-form input[readonly] {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #10b981;
+  color: #065f46;
+  font-weight: 700;
+  text-align: right;
+  cursor: default;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.estimate-form input[readonly]:hover {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Smooth textarea resize */
+.estimate-form textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.estimate-form textarea:focus {
+  min-height: 120px;
+}
+
+/* Smooth actions section */
+.estimate-form .actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  border: 2px solid #e2e8f0;
+  animation: slideInUp 0.8s ease-out;
+}
+
+/* Smooth grid layouts */
+.estimate-form .grid-2,
+.estimate-form .grid-3,
+.estimate-form .grid-4 {
+  transition: all 0.3s ease;
+}
+
+/* Performance optimizations */
+.estimate-form {
+  will-change: scroll-position;
+  contain: layout style paint;
+}
+
+.estimate-form .estimate-line {
+  will-change: transform;
+  contain: layout style paint;
+}
+
+/* Smooth focus navigation */
+.estimate-form input:focus,
+.estimate-form select:focus,
+.estimate-form textarea:focus {
+  scroll-margin-top: 100px;
+}
+
+/* Momentum scrolling for mobile */
+.estimate-form {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .estimate-form,
+  .estimate-form *,
+  .estimate-form::before,
+  .estimate-form::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* BuildHub Seal Enhancement */
+.buildhub-seal {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  transition: all 0.3s ease;
+}
+
+.buildhub-seal:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+}
+
+/* Section Titles */
+.estimate-form .section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 24px 0 16px 0;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.estimate-form .section-title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.estimate-form .section-title:hover::before {
+  left: 100%;
+}
+
+/* Grid Layouts */
+.estimate-form .grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.estimate-form .grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.estimate-form .grid-4 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Enhanced Input Styles */
+.estimate-form input,
+.estimate-form select,
+.estimate-form textarea {
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  background: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.estimate-form input:focus,
+.estimate-form select:focus,
+.estimate-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+  background: #fefefe;
+}
+
+.estimate-form input:hover,
+.estimate-form select:hover,
+.estimate-form textarea:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Estimate Line Enhancement */
+.estimate-form .estimate-line {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.estimate-form .estimate-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.estimate-form .estimate-line:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #667eea;
+}
+
+.estimate-form .estimate-line:hover::before {
+  transform: scaleY(1);
+}
+
+/* Readonly Project Info Fields */
+.estimate-form input[readonly]:not([name*="amount"]):not([name*="total"]) {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+  border-color: #3b82f6 !important;
+  color: #1e40af !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  cursor: default !important;
+}
+
+.estimate-form input[readonly]:not([name*="amount"]):not([name*="total"]):hover {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  transform: none !important;
+}
+
+/* Readonly Amount Fields */
+.estimate-form input[readonly] {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #10b981;
+  color: #065f46;
+  font-weight: 700;
+  text-align: right;
+  cursor: default;
+}
+
+.estimate-form input[readonly]:hover {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  transform: none;
+}
+
+/* Totals Section */
+.estimate-form .totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+  padding: 24px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 16px;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+}
+
+.estimate-form .totals input {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  background: white;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.estimate-form .grand-total {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  color: white !important;
+  border-color: #1e293b !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3) !important;
+}
+
+/* Textarea Enhancements */
+.estimate-form textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.estimate-form textarea:focus {
+  min-height: 120px;
+}
+
+/* Labels */
+.estimate-form label {
+  font-weight: 700;
+  color: #374151;
+  font-size: 15px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Muted Text */
+.estimate-form .muted {
+  color: #6b7280;
+  font-size: 14px;
+  font-style: italic;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 4px solid #d1d5db;
+}
+
+/* Action Buttons */
+.estimate-form .actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  border: 2px solid #e2e8f0;
+}
+
+.estimate-form .btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.estimate-form .btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.estimate-form .btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.estimate-form .btn-secondary {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #475569;
+  border: 2px solid #cbd5e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.estimate-form .btn-secondary:hover {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+  border-color: #94a3b8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.estimate-form .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: 2px solid #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.estimate-form .btn-primary:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  border-color: #5a67d8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Preview Section */
+.estimate-form div[style*="background: rgb(248, 250, 252)"] {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+  border: 2px solid #3b82f6 !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  margin: 20px 0 !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* File Input Enhancement */
+.estimate-form input[type="file"] {
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.estimate-form input[type="file"]:hover {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  transform: translateY(-1px);
+}
+
+/* Datalist Styling */
+.estimate-form input[list]::-webkit-calendar-picker-indicator {
+  background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23667eea' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") no-repeat;
+  background-size: 16px 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .estimate-form .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .estimate-form .grid-4 {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .estimate-form .actions {
+    flex-direction: column;
+  }
+  
+  .estimate-form .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .estimate-form .totals {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animation for form appearance */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.estimate-form {
+  animation: slideInUp 0.5s ease-out;
+}
+
+/* Interactive calculation feedback */
+.estimate-form input[name*="[qty]"],
+.estimate-form input[name*="[rate]"] {
+  position: relative;
+}
+
+.estimate-form input[name*="[qty]"]:focus + * + input[name*="[rate]"],
+.estimate-form input[name*="[rate]"]:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Enhanced section numbering */
+.estimate-form .section-title::before {
+  counter-increment: section;
+}
+
+/* Hover effects for better interactivity */
+.estimate-form .estimate-line:hover input {
+  border-color: #667eea;
+}
+
+.estimate-form .estimate-line:hover input[readonly] {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+}
+
+/* Loading state for calculations */
+.estimate-form input[readonly].calculating {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.estimate-form input[readonly].calculating::after {
+  content: '⏳';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}

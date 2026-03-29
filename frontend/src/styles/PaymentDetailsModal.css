@@ -1,0 +1,164 @@
+/* Payment Details Modal - Fixed positioning and z-index */
+.payment-details-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important; /* Higher than any header/footer */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  padding: 20px !important;
+  overflow-y: auto !important;
+}
+
+.payment-details-modal .modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  overflow-y: auto !important;
+}
+
+.payment-details-modal .modal-content {
+  position: relative !important;
+  background: white !important;
+  border-radius: 16px !important;
+  max-width: 800px !important;
+  width: 100% !important;
+  max-height: calc(100vh - 40px) !important; /* Account for padding */
+  overflow-y: auto !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  z-index: 10000 !important;
+  margin: auto !important;
+}
+
+.payment-details-modal .modal-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10001 !important;
+  padding: 24px !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-radius: 16px 16px 0 0 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.payment-details-modal .modal-body {
+  padding: 24px !important;
+  overflow-y: auto !important;
+  max-height: calc(100vh - 200px) !important; /* Account for header and actions */
+}
+
+.payment-details-modal .modal-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 10001 !important;
+  background: white !important;
+  padding: 20px 24px !important;
+  border-top: 1px solid #e9ecef !important;
+  border-radius: 0 0 16px 16px !important;
+}
+
+/* Close button styling */
+.payment-details-modal .close-btn {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: none !important;
+  color: white !important;
+  font-size: 24px !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background-color 0.2s !important;
+}
+
+.payment-details-modal .close-btn:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Ensure modal appears above everything */
+.payment-details-modal {
+  z-index: 999999 !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .payment-details-modal .modal-content {
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100vh - 20px) !important;
+    margin: 10px !important;
+  }
+  
+  .payment-details-modal .modal-header {
+    padding: 16px 20px !important;
+  }
+  
+  .payment-details-modal .modal-body {
+    padding: 20px !important;
+    max-height: calc(100vh - 160px) !important;
+  }
+  
+  .payment-details-modal .modal-actions {
+    padding: 16px 20px !important;
+  }
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+}
+
+/* Additional fixes for specific modal content */
+.payment-details-modal .payment-summary {
+  background: #f8f9fa !important;
+  padding: 20px !important;
+  border-radius: 12px !important;
+  margin-bottom: 24px !important;
+  text-align: center !important;
+}
+
+.payment-details-modal .work-details,
+.payment-details-modal .quality-checks {
+  margin-bottom: 24px !important;
+}
+
+.payment-details-modal .payment-actions {
+  display: flex !important;
+  gap: 15px !important;
+  justify-content: center !important;
+  margin-top: 30px !important;
+}
+
+/* Scrollbar styling for better UX */
+.payment-details-modal .modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.payment-details-modal .modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.payment-details-modal .modal-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.payment-details-modal .modal-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

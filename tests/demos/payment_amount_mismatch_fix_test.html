@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Amount Mismatch Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .amount-input {
+            width: 200px;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💳 Payment Amount Mismatch Fix Test</h1>
+        <p>Testing the fixed payment amount validation logic</p>
+        
+        <div class="test-section">
+            <h3>Current Payment Request</h3>
+            <p><strong>Payment ID:</strong> 1</p>
+            <p><strong>Stage:</strong> Foundation</p>
+            <p><strong>Expected Amount:</strong> ₹50,000.00</p>
+            <p><strong>Status:</strong> Approved</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test Different Amount Formats</h3>
+            <p>The API should now handle these common frontend issues:</p>
+            
+            <div style="margin: 10px 0;">
+                <label>Amount to test:</label>
+                <input type="text" id="testAmount" class="amount-input" value="50000" placeholder="Enter amount">
+                <button onclick="testPaymentAmount()">Test Payment</button>
+            </div>
+            
+            <div style="margin: 10px 0;">
+                <button onclick="testAmount('50000')">Test: Exact (50000)</button>
+                <button onclick="testAmount('50000.00')">Test: With Decimals</button>
+                <button onclick="testAmount('50,000')">Test: With Commas</button>
+                <button onclick="testAmount('5000000')">Test: In Paise</button>
+                <button onclick="testAmount('50000.001')">Test: Precision Error</button>
+            </div>
+        </div>
+        
+        <div id="results" class="test-section">
+            <h3>Test Results</h3>
+            <div id="output">Click a test button to see results...</div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+        
+        function clearResults() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        function testAmount(amount) {
+            document.getElementById('testAmount').value = amount;
+            testPaymentAmount();
+        }
+        
+        async function testPaymentAmount() {
+            const amount = document.getElementById('testAmount').value;
+            clearResults();
+            
+            log(`🔄 Testing payment initiation with amount: ${amount}`, 'info');
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/initiate_stage_payment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        payment_request_id: 1,
+                        amount: amount
+                    })
+                });
+                
+                log(`Response status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                const responseText = await response.text();
+                log(`Raw response: ${responseText.substring(0, 200)}...`, 'info');
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    log(`❌ JSON parsing failed: ${parseError.message}`, 'error');
+                    return;
+                }
+                
+                if (data.success) {
+                    log(`✅ Payment initiation successful!`, 'success');
+                    log(`💳 Razorpay Order ID: ${data.data.razorpay_order_id}`, 'success');
+                    log(`💰 Amount: ₹${(data.data.amount / 100).toLocaleString()}`, 'success');
+                    log(`🏗️ Stage: ${data.data.stage_name}`, 'info');
+                } else {
+                    log(`❌ Payment initiation failed: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Set up session simulation (you may need to login first)
+        window.onload = function() {
+            log('🚀 Payment Amount Mismatch Fix Test Started', 'info');
+            log('ℹ️ Make sure you are logged in as homeowner (ID: 28)', 'info');
+            log('ℹ️ Expected payment amount in database: ₹50,000.00', 'info');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Homeowner Contractor Documents</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .document-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .document-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏗️ Homeowner Contractor Documents Test</h1>
+    
+    <div class="test-section">
+        <h2>API Test</h2>
+        <button onclick="testAPI()">Test Contractor Documents API</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Documents Display</h2>
+        <div id="documents-container">
+            <p>Click "Test API" to load contractor documents</p>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            const containerDiv = document.getElementById('documents-container');
+            
+            resultDiv.innerHTML = '<p>Testing API...</p>';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/get_contractor_stage_documents.php', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ API Test Successful</div>
+                        <p><strong>Documents found:</strong> ${data.data.documents.length}</p>
+                        <p><strong>Statistics:</strong></p>
+                        <ul>
+                            <li>Total: ${data.data.statistics.total_documents || 0}</li>
+                            <li>Approved: ${data.data.statistics.approved_count || 0}</li>
+                            <li>Pending: ${data.data.statistics.pending_count || 0}</li>
+                            <li>Rejected: ${data.data.statistics.rejected_count || 0}</li>
+                        </ul>
+                    `;
+                    
+                    displayDocuments(data.data.documents);
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ API Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Network Error: ${error.message}</div>`;
+            }
+        }
+        
+        function displayDocuments(documents) {
+            const container = document.getElementById('documents-container');
+            
+            if (documents.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🏗️</div>
+                        <h3>No Contractor Documents</h3>
+                        <p>No documents have been uploaded by contractors yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="document-grid">';
+            
+            documents.forEach(doc => {
+                const statusClass = `status-${doc.verification_status}`;
+                const statusText = 
+                    doc.verification_status === 'approved' ? '✅ Approved' :
+                    doc.verification_status === 'rejected' ? '❌ Rejected' : '⏳ Pending';
+                
+                html += `
+                    <div class="document-card">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <div style="
+                                width: 40px; height: 40px; 
+                                background: ${doc.stage_badge?.color || '#667eea'}; 
+                                border-radius: 8px; 
+                                display: flex; align-items: center; justify-content: center; 
+                                font-size: 16px;
+                            ">
+                                ${doc.stage_badge?.icon || '🏗️'}
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600;">
+                                    ${doc.original_filename}
+                                </h3>
+                                <p style="margin: 0; color: #6c757d; font-size: 12px;">
+                                    ${doc.file_size_kb} KB • ${doc.document_type}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">
+                                ${doc.stage_name} - ${doc.document_type_icon} ${doc.document_type}
+                            </h4>
+                            ${doc.description ? `<p style="margin: 0 0 8px 0; color: #6c757d; font-size: 13px;">${doc.description}</p>` : ''}
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-size: 12px; color: #6c757d;">
+                                    👷 ${doc.contractor_name}
+                                </span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 12px; color: #6c757d;">
+                                    📅 ${doc.upload_date_formatted}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div style="
+                            display: flex; align-items: center; justify-content: space-between; 
+                            padding-top: 15px; border-top: 1px solid #e9ecef;
+                        ">
+                            <span class="status-badge ${statusClass}">
+                                ${statusText}
+                            </span>
+                            <button onclick="window.open('/buildhub/backend/${doc.file_path}', '_blank')" style="
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white; border: none; padding: 6px 12px; border-radius: 6px;
+                                font-size: 12px; cursor: pointer; font-weight: 500;
+                            ">
+                                📄 View
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

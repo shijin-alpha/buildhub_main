@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Inspector Frontend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #005a87;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Inspector Frontend Test</h1>
+        <p>Testing the inspector API endpoints and authentication</p>
+        
+        <div class="test-section">
+            <h3>1. Authentication Test</h3>
+            <button onclick="testLogin()">Test Inspector Login</button>
+            <button onclick="checkSession()">Check Session</button>
+            <div id="auth-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. API Endpoint Test</h3>
+            <button onclick="testGetProjects()">Get Assigned Projects</button>
+            <button onclick="testGetProjectsWithAuth()">Get Projects (with auth headers)</button>
+            <div id="api-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Direct API Test</h3>
+            <button onclick="testDirectAPI()">Test Direct API Call</button>
+            <div id="direct-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Session Debug</h3>
+            <button onclick="debugSession()">Debug Session Info</button>
+            <div id="session-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function testLogin() {
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Testing inspector login...';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/admin/enhanced_admin_login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'inspector@buildhub.com',
+                        password: 'inspector123'
+                    })
+                });
+                
+                const result = await response.json();
+                resultDiv.className = result.success ? 'result success' : 'result error';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success) {
+                    // Store session info
+                    localStorage.setItem('admin_logged_in', 'true');
+                    localStorage.setItem('admin_email', result.user.email);
+                    localStorage.setItem('admin_scope', result.user.scope);
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function checkSession() {
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            
+            const sessionInfo = {
+                localStorage: {
+                    admin_logged_in: localStorage.getItem('admin_logged_in'),
+                    admin_email: localStorage.getItem('admin_email'),
+                    admin_scope: localStorage.getItem('admin_scope')
+                },
+                cookies: document.cookie
+            };
+            
+            resultDiv.textContent = JSON.stringify(sessionInfo, null, 2);
+        }
+        
+        async function testGetProjects() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Fetching assigned projects...';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/inspector/get_assigned_projects.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                resultDiv.className = result.success ? 'result success' : 'result error';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testGetProjectsWithAuth() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Fetching projects with auth headers...';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/inspector/get_assigned_projects.php', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer inspector-token'
+                    },
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                resultDiv.className = result.success ? 'result success' : 'result error';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testDirectAPI() {
+            const resultDiv = document.getElementById('direct-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Testing direct API access...';
+            
+            try {
+                // First login, then get projects
+                const loginResponse = await fetch('/buildhub/backend/api/admin/enhanced_admin_login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'inspector@buildhub.com',
+                        password: 'inspector123'
+                    })
+                });
+                
+                const loginResult = await loginResponse.json();
+                
+                if (loginResult.success) {
+                    // Now try to get projects
+                    const projectsResponse = await fetch('/buildhub/backend/api/inspector/get_assigned_projects.php', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    const projectsResult = await projectsResponse.json();
+                    
+                    resultDiv.className = projectsResult.success ? 'result success' : 'result error';
+                    resultDiv.textContent = 'Login Result:\n' + JSON.stringify(loginResult, null, 2) + 
+                                          '\n\nProjects Result:\n' + JSON.stringify(projectsResult, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'Login failed:\n' + JSON.stringify(loginResult, null, 2);
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function debugSession() {
+            const resultDiv = document.getElementById('session-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = 'Debugging session...';
+            
+            try {
+                const response = await fetch('/buildhub/backend/api/admin/test_session.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const result = await response.text();
+                resultDiv.className = 'result info';
+                resultDiv.textContent = result;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

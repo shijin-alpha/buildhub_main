@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Improvement Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .debug-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .debug-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        
+        .debug-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        
+        .debug-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .debug-item.success {
+            border-left-color: #10b981;
+        }
+        
+        .debug-item.error {
+            border-left-color: #ef4444;
+        }
+        
+        .debug-item.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .console-output {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .instructions {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🏠 Room Improvement Assistant Debug Tool</h1>
+        
+        <div class="instructions">
+            <strong>Instructions:</strong>
+            <ol>
+                <li>Open your browser's Developer Tools (F12)</li>
+                <li>Go to the Console tab</li>
+                <li>Navigate to your Homeowner Dashboard</li>
+                <li>Click the "Start Room Analysis" button</li>
+                <li>Check the console for debug messages</li>
+            </ol>
+        </div>
+        
+        <div class="debug-section">
+            <div class="debug-title">🔧 System Checks</div>
+            <div id="systemChecks">
+                <div class="debug-item">Checking system status...</div>
+            </div>
+            <button class="test-button" onclick="runSystemChecks()">Run System Checks</button>
+        </div>
+        
+        <div class="debug-section">
+            <div class="debug-title">🌐 API Tests</div>
+            <div id="apiTests">
+                <div class="debug-item">Ready to test API endpoints...</div>
+            </div>
+            <button class="test-button" onclick="testRoomImprovementAPI()">Test Room Improvement API</button>
+            <button class="test-button" onclick="testFileUpload()">Test File Upload</button>
+        </div>
+        
+        <div class="debug-section">
+            <div class="debug-title">⚛️ React App Tests</div>
+            <div id="reactTests">
+                <div class="debug-item">Ready to test React app...</div>
+            </div>
+            <button class="test-button" onclick="testReactApp()">Test React App</button>
+            <button class="test-button" onclick="openDashboard()">Open Homeowner Dashboard</button>
+        </div>
+        
+        <div class="debug-section">
+            <div class="debug-title">📋 Debug Console Output</div>
+            <div class="console-output" id="consoleOutput">
+                Console output will appear here...
+            </div>
+            <button class="test-button" onclick="clearConsole()">Clear Console</button>
+        </div>
+    </div>
+
+    <script>
+        let consoleOutput = document.getElementById('consoleOutput');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            
+            console.log(logEntry);
+            
+            const div = document.createElement('div');
+            div.textContent = logEntry;
+            div.style.color = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#f9fafb';
+            div.style.marginBottom = '5px';
+            
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        function clearConsole() {
+            consoleOutput.innerHTML = 'Console cleared...';
+        }
+        
+        function updateSection(sectionId, content, type = 'info') {
+            const section = document.getElementById(sectionId);
+            section.innerHTML = `<div class="debug-item ${type}">${content}</div>`;
+        }
+        
+        async function runSystemChecks() {
+            log('🔧 Running system checks...');
+            updateSection('systemChecks', 'Running system checks...', 'info');
+            
+            const checks = [];
+            
+            // Check if server is running
+            try {
+                const response = await fetch('http://localhost:3000');
+                if (response.ok) {
+                    checks.push('✅ React development server is running');
+                    log('✅ React development server is running', 'success');
+                } else {
+                    checks.push('❌ React development server returned error');
+                    log('❌ React development server returned error', 'error');
+                }
+            } catch (error) {
+                checks.push('❌ React development server is not accessible');
+                log('❌ React development server is not accessible: ' + error.message, 'error');
+            }
+            
+            // Check backend API
+            try {
+                const response = await fetch('/buildhub/backend/api/homeowner/analyze_room_improvement.php', {
+                    method: 'OPTIONS'
+                });
+                checks.push('✅ Backend API endpoint is accessible');
+                log('✅ Backend API endpoint is accessible', 'success');
+            } catch (error) {
+                checks.push('❌ Backend API endpoint is not accessible');
+                log('❌ Backend API endpoint is not accessible: ' + error.message, 'error');
+            }
+            
+            // Check upload directory
+            try {
+                const response = await fetch('/buildhub/backend/uploads/room_improvements/');
+                checks.push('✅ Upload directory is accessible');
+                log('✅ Upload directory is accessible', 'success');
+            } catch (error) {
+                checks.push('⚠️ Upload directory check failed (may be normal)');
+                log('⚠️ Upload directory check failed: ' + error.message, 'warning');
+            }
+            
+            updateSection('systemChecks', checks.join('<br>'), 'success');
+        }
+        
+        async function testRoomImprovementAPI() {
+            log('🌐 Testing Room Improvement API...');
+            updateSection('apiTests', 'Testing Room Improvement API...', 'info');
+            
+            try {
+                // Test with minimal data
+                const formData = new FormData();
+                formData.append('room_type', 'bedroom');
+                formData.append('improvement_notes', 'Test notes from debug tool');
+                
+                // Create a small test image
+                const canvas = document.createElement('canvas');
+                canvas.width = 100;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(0, 0, 100, 100);
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.fillText('TEST', 35, 55);
+                
+                canvas.toBlob(async (blob) => {
+                    formData.append('room_image', blob, 'test_room.png');
+                    
+                    const response = await fetch('/buildhub/backend/api/homeowner/analyze_room_improvement.php', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+                    
+                    const responseText = await response.text();
+                    log('API Response: ' + responseText);
+                    
+                    if (response.ok) {
+                        try {
+                            const data = JSON.parse(responseText);
+                            if (data.success) {
+                                updateSection('apiTests', '✅ Room Improvement API is working correctly!', 'success');
+                                log('✅ Room Improvement API test successful', 'success');
+                            } else {
+                                updateSection('apiTests', '⚠️ API returned error: ' + data.message, 'warning');
+                                log('⚠️ API returned error: ' + data.message, 'warning');
+                            }
+                        } catch (parseError) {
+                            updateSection('apiTests', '❌ API returned invalid JSON', 'error');
+                            log('❌ API returned invalid JSON: ' + parseError.message, 'error');
+                        }
+                    } else {
+                        updateSection('apiTests', '❌ API request failed with status: ' + response.status, 'error');
+                        log('❌ API request failed with status: ' + response.status, 'error');
+                    }
+                }, 'image/png');
+                
+            } catch (error) {
+                updateSection('apiTests', '❌ API test failed: ' + error.message, 'error');
+                log('❌ API test failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function testFileUpload() {
+            log('📁 Testing file upload functionality...');
+            
+            // Create a test file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    log('✅ File selected: ' + file.name + ' (' + file.size + ' bytes)', 'success');
+                    
+                    // Test file validation
+                    if (file.size > 5 * 1024 * 1024) {
+                        log('⚠️ File size exceeds 5MB limit', 'warning');
+                    }
+                    
+                    if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+                        log('⚠️ File type not supported: ' + file.type, 'warning');
+                    } else {
+                        log('✅ File type is supported: ' + file.type, 'success');
+                    }
+                } else {
+                    log('❌ No file selected', 'error');
+                }
+            };
+            
+            input.click();
+        }
+        
+        async function testReactApp() {
+            log('⚛️ Testing React app...');
+            updateSection('reactTests', 'Testing React app...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3000');
+                if (response.ok) {
+                    const html = await response.text();
+                    
+                    if (html.includes('react')) {
+                        updateSection('reactTests', '✅ React app is running and accessible', 'success');
+                        log('✅ React app is running and accessible', 'success');
+                    } else {
+                        updateSection('reactTests', '⚠️ Server is running but may not be React app', 'warning');
+                        log('⚠️ Server is running but may not be React app', 'warning');
+                    }
+                } else {
+                    updateSection('reactTests', '❌ React app returned error: ' + response.status, 'error');
+                    log('❌ React app returned error: ' + response.status, 'error');
+                }
+            } catch (error) {
+                updateSection('reactTests', '❌ Cannot connect to React app: ' + error.message, 'error');
+                log('❌ Cannot connect to React app: ' + error.message, 'error');
+            }
+        }
+        
+        function openDashboard() {
+            log('🏠 Opening Homeowner Dashboard...');
+            window.open('http://localhost:3000/homeowner-dashboard', '_blank');
+        }
+        
+        // Auto-run system checks on load
+        window.addEventListener('load', function() {
+            setTimeout(runSystemChecks, 1000);
+        });
+    </script>
+</body>
+</html>

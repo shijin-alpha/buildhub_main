@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Assessment Service Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .risk-high { color: #dc3545; font-weight: bold; }
+        .risk-medium { color: #fd7e14; font-weight: bold; }
+        .risk-low { color: #28a745; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🏗️ Construction Risk Assessment Service</h1>
+    <p>Test the ML-driven risk prediction system for cost overrun and time delay risks.</p>
+
+    <form id="riskForm">
+        <div class="form-group">
+            <label for="plot_size_sqft">Plot Size (sq ft):</label>
+            <input type="number" id="plot_size_sqft" name="plot_size_sqft" value="2500" required>
+        </div>
+
+        <div class="form-group">
+            <label for="building_size_sqft">Building Size (sq ft):</label>
+            <input type="number" id="building_size_sqft" name="building_size_sqft" value="2000" required>
+        </div>
+
+        <div class="form-group">
+            <label for="num_floors">Number of Floors:</label>
+            <input type="number" id="num_floors" name="num_floors" value="2" required>
+        </div>
+
+        <div class="form-group">
+            <label for="budget_amount">Budget Amount (₹):</label>
+            <input type="number" id="budget_amount" name="budget_amount" value="2500000" required>
+        </div>
+
+        <div class="form-group">
+            <label for="num_bedrooms">Number of Bedrooms:</label>
+            <input type="number" id="num_bedrooms" name="num_bedrooms" value="3" required>
+        </div>
+
+        <div class="form-group">
+            <label for="num_bathrooms">Number of Bathrooms:</label>
+            <input type="number" id="num_bathrooms" name="num_bathrooms" value="2" required>
+        </div>
+
+        <div class="form-group">
+            <label for="plot_shape">Plot Shape:</label>
+            <select id="plot_shape" name="plot_shape">
+                <option value="rectangular">Rectangular</option>
+                <option value="square">Square</option>
+                <option value="irregular">Irregular</option>
+                <option value="l_shaped">L-shaped</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="topography">Topography:</label>
+            <select id="topography" name="topography">
+                <option value="flat">Flat</option>
+                <option value="gentle_slope">Gentle Slope</option>
+                <option value="steep_slope">Steep Slope</option>
+                <option value="hilly">Hilly</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="design_style">Design Style:</label>
+            <select id="design_style" name="design_style">
+                <option value="modern">Modern</option>
+                <option value="traditional">Traditional</option>
+                <option value="contemporary">Contemporary</option>
+                <option value="colonial">Colonial</option>
+            </select>
+        </div>
+
+        <button type="submit">🔍 Assess Risk</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('riskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {};
+            
+            // Convert form data to object
+            for (let [key, value] of formData.entries()) {
+                if (['plot_size_sqft', 'building_size_sqft', 'num_floors', 'budget_amount', 'num_bedrooms', 'num_bathrooms'].includes(key)) {
+                    data[key] = parseInt(value);
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            // Add optional fields
+            data.special_features = 'Swimming pool, Garden';
+            data.custom_requirements = 'Smart home automation';
+            data.basement = false;
+            data.terrace = true;
+            data.parking = true;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>⏳ Analyzing risk factors...</p>';
+            
+            try {
+                const response = await fetch('backend/api/ml/predict_construction_risks.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const costRisk = result.data.cost_overrun_risk;
+                    const timeRisk = result.data.time_delay_risk;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>📊 Risk Assessment Results</h3>
+                            
+                            <h4>💰 Cost Overrun Risk</h4>
+                            <p>Risk Level: <span class="risk-${costRisk.risk_level.toLowerCase()}">${costRisk.risk_level}</span></p>
+                            <p>High Risk Probability: ${(costRisk.probabilities.High * 100).toFixed(1)}%</p>
+                            <p><strong>Key Factors:</strong></p>
+                            <ul>
+                                ${costRisk.explanation.slice(0, 3).map(exp => `<li>${exp}</li>`).join('')}
+                            </ul>
+                            
+                            <h4>⏰ Time Delay Risk</h4>
+                            <p>Risk Level: <span class="risk-${timeRisk.risk_level.toLowerCase()}">${timeRisk.risk_level}</span></p>
+                            <p>High Risk Probability: ${(timeRisk.probabilities.High * 100).toFixed(1)}%</p>
+                            <p><strong>Key Factors:</strong></p>
+                            <ul>
+                                ${timeRisk.explanation.slice(0, 3).map(exp => `<li>${exp}</li>`).join('')}
+                            </ul>
+                            
+                            <p><small>Assessment completed at: ${result.timestamp}</small></p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error</h3>
+                            <p>${result.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Network Error</h3>
+                        <p>Failed to connect to the risk assessment service: ${error.message}</p>
+                        <p>Make sure your web server is running and the API endpoint is accessible.</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

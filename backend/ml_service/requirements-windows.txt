@@ -1,0 +1,8 @@
+# Windows-compatible requirements with pre-built wheels
+fastapi
+uvicorn[standard]
+pydantic
+numpy
+pandas
+scikit-learn
+joblib

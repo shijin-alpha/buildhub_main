@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Save Draft Estimation Form - Test</title>
+    <style>
+        /* Enhanced Inbox Estimation Form Styles */
+
+        /* Draft indicator styling */
+        .draft-indicator {
+          font-size: 12px;
+          color: #10b981;
+          font-weight: 600;
+          background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+          padding: 4px 12px;
+          border-radius: 16px;
+          border: 1px solid #a7f3d0;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          animation: draftPulse 2s infinite;
+        }
+
+        @keyframes draftPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+
+        .draft-indicator::before {
+          content: '💾';
+          font-size: 10px;
+        }
+
+        /* Auto-save status */
+        .auto-save-status {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+          z-index: 1000;
+          opacity: 0;
+          transform: translateY(-10px);
+          transition: all 0.3s ease;
+        }
+
+        .auto-save-status.show {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        details {
+          margin-top: 16px !important;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+          border: 2px solid #e2e8f0;
+          transition: all 0.3s ease;
+          background: white;
+        }
+
+        details:hover {
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+          transform: translateY(-2px);
+          border-color: #667eea;
+        }
+
+        details[open] {
+          box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+          border-color: #667eea;
+        }
+
+        details summary {
+          cursor: pointer !important;
+          padding: 16px 24px !important;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          border: none !important;
+          border-radius: 0 !important;
+          font-size: 18px !important;
+          font-weight: 700 !important;
+          color: white !important;
+          transition: all 0.3s ease !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          position: relative !important;
+          overflow: hidden !important;
+          user-select: none;
+        }
+
+        details summary::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s ease;
+        }
+
+        details summary:hover::before {
+          left: 100%;
+        }
+
+        details summary:hover {
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Custom arrow for details */
+        details summary::marker,
+        details summary::-webkit-details-marker {
+          display: none;
+        }
+
+        details summary::after {
+          content: '▼';
+          font-size: 14px;
+          transition: transform 0.3s ease;
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        details[open] summary::after {
+          transform: rotate(180deg);
+          color: white;
+        }
+
+        .estimate-form {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-radius: 0 0 16px 16px;
+          padding: 24px;
+          margin-top: 0;
+          box-shadow: none;
+          border: none;
+          transition: all 0.3s ease;
+        }
+
+        /* Section Titles */
+        .estimate-form .section-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 24px 0 16px 0;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        /* Grid Layouts */
+        .estimate-form .grid-2 {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+
+        /* Enhanced Input Styles */
+        .estimate-form input,
+        .estimate-form select,
+        .estimate-form textarea {
+          padding: 14px 16px;
+          border: 2px solid #e2e8f0;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 500;
+          background: white;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .estimate-form input:focus,
+        .estimate-form select:focus,
+        .estimate-form textarea:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+          transform: translateY(-1px);
+          background: #fefefe;
+        }
+
+        /* Action Buttons */
+        .estimate-form .actions {
+          display: flex;
+          justify-content: center;
+          gap: 16px;
+          margin-top: 32px;
+          padding: 24px;
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-radius: 16px;
+          border: 2px solid #e2e8f0;
+        }
+
+        .estimate-form .btn {
+          padding: 14px 28px;
+          border: none;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+        }
+
+        .estimate-form .btn-secondary {
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+          color: #475569;
+          border: 2px solid #cbd5e0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .estimate-form .btn-secondary:hover {
+          background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+          border-color: #94a3b8;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .estimate-form .btn-primary {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: 2px solid #667eea;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .estimate-form .btn-primary:hover {
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          border-color: #5a67d8;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Demo page styling */
+        body {
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          margin: 0;
+          padding: 20px;
+          min-height: 100vh;
+        }
+
+        .demo-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 20px;
+          padding: 30px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .demo-header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        .demo-header h1 {
+          color: #1e293b;
+          font-size: 2.5rem;
+          font-weight: 900;
+          margin: 0 0 10px 0;
+        }
+
+        .demo-header p {
+          color: #64748b;
+          font-size: 1.1rem;
+          margin: 0;
+        }
+
+        .inbox-item {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+
+        .inbox-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .inbox-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0;
+        }
+
+        .inbox-meta {
+          color: #64748b;
+          font-size: 14px;
+        }
+
+        .buildhub-seal {
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 900;
+          font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>💾 Auto-Save Draft Estimation Form</h1>
+            <p>Form automatically saves as you type and restores when reopened</p>
+        </div>
+
+        <div class="inbox-item">
+            <div class="inbox-header">
+                <div class="buildhub-seal">BH</div>
+                <div>
+                    <h3 class="inbox-title">Construction Project Request</h3>
+                    <div class="inbox-meta">From: John Doe • Project: 2BHK Villa • Location: Bangalore</div>
+                </div>
+            </div>
+
+            <details id="estimateDetails">
+                <summary>
+                    <span>📝 Create Estimate</span>
+                    <span class="draft-indicator" id="draftIndicator" style="display: none;">
+                        Draft • <span id="lastSaved"></span>
+                    </span>
+                </summary>
+                
+                <form class="estimate-form" id="estimateForm">
+                    <!-- 1. Basic Project Information -->
+                    <div class="section-title">1. Basic Project Information</div>
+                    <div class="grid-2">
+                        <input name="project_name" placeholder="Project Name" />
+                        <input name="project_address" placeholder="Project Address / Location" />
+                        <input name="plot_size" placeholder="Plot Size (sq.ft / sq.m)" />
+                        <input name="built_up_area" placeholder="Built-up Area (sq.ft / sq.m)" />
+                        <select name="floors">
+                            <option value="" disabled selected>Number of Floors</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                        <input name="estimation_date" type="date" />
+                        <input name="client_name" placeholder="Client / Homeowner Name" />
+                        <input name="client_contact" placeholder="Contact Info" />
+                    </div>
+
+                    <!-- 2. Material Costs -->
+                    <div class="section-title">2. Material Costs</div>
+                    <div class="grid-2">
+                        <input name="cement" placeholder="Cement (bags)" />
+                        <input name="sand" placeholder="Sand (m³)" />
+                        <input name="bricks" placeholder="Bricks (nos)" />
+                        <input name="steel" placeholder="Steel (kg)" />
+                        <input name="aggregate" placeholder="Aggregate (m³)" />
+                        <input name="tiles" placeholder="Tiles (m²)" />
+                    </div>
+
+                    <!-- 3. Labor Charges -->
+                    <div class="section-title">3. Labor Charges</div>
+                    <div class="grid-2">
+                        <input name="masonry" placeholder="Masonry work" />
+                        <input name="plumbing" placeholder="Plumbing work" />
+                        <input name="electrical" placeholder="Electrical work" />
+                        <input name="painting" placeholder="Painting work" />
+                    </div>
+
+                    <!-- 4. Notes -->
+                    <div class="section-title">4. Notes</div>
+                    <textarea name="notes" placeholder="Additional notes and specifications" rows="4"></textarea>
+
+                    <!-- Actions -->
+                    <div class="actions">
+                        <button class="btn btn-secondary" type="button" onclick="resetForm()">🔄 Reset</button>
+                        <button class="btn btn-secondary" type="button" onclick="clearDraft()" id="clearDraftBtn" style="display: none;">🗑️ Clear Draft</button>
+                        <button class="btn btn-primary" type="button" onclick="downloadPDF()">📄 Download PDF</button>
+                        <button class="btn btn-primary" type="submit">✅ Submit Estimate</button>
+                    </div>
+                </form>
+            </details>
+        </div>
+    </div>
+
+    <!-- Auto-save status indicator -->
+    <div class="auto-save-status" id="autoSaveStatus">💾 Draft saved</div>
+
+    <script>
+        let autoSaveTimeout;
+        let draftData = {};
+        const STORAGE_KEY = 'estimate_draft_demo';
+
+        // Load draft from localStorage on page load
+        function loadDraft() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    draftData = JSON.parse(saved);
+                    showDraftIndicator();
+                    return draftData;
+                } catch (e) {
+                    console.error('Error loading draft:', e);
+                }
+            }
+            return null;
+        }
+
+        // Save draft to localStorage
+        function saveDraft(formData) {
+            draftData = formData;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById('lastSaved').textContent = timeString;
+            
+            showDraftIndicator();
+            showAutoSaveStatus();
+        }
+
+        // Show draft indicator
+        function showDraftIndicator() {
+            const indicator = document.getElementById('draftIndicator');
+            const clearBtn = document.getElementById('clearDraftBtn');
+            if (Object.keys(draftData).length > 0) {
+                indicator.style.display = 'inline-flex';
+                clearBtn.style.display = 'inline-flex';
+            } else {
+                indicator.style.display = 'none';
+                clearBtn.style.display = 'none';
+            }
+        }
+
+        // Show auto-save status
+        function showAutoSaveStatus() {
+            const status = document.getElementById('autoSaveStatus');
+            status.classList.add('show');
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, 2000);
+        }
+
+        // Populate form from draft data
+        function populateFormFromDraft(draft) {
+            if (!draft) return;
+            
+            Object.entries(draft).forEach(([name, value]) => {
+                const input = document.querySelector(`[name="${name}"]`);
+                if (input) {
+                    input.value = value;
+                }
+            });
+        }
+
+        // Handle form changes
+        function handleFormChange() {
+            // Clear existing timeout
+            if (autoSaveTimeout) {
+                clearTimeout(autoSaveTimeout);
+            }
+
+            // Auto-save after 2 seconds of inactivity
+            autoSaveTimeout = setTimeout(() => {
+                const form = document.getElementById('estimateForm');
+                const formData = {};
+                
+                // Collect form data
+                const inputs = form.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                    if (input.name && input.value) {
+                        formData[input.name] = input.value;
+                    }
+                });
+
+                // Only save if there's actual data
+                if (Object.keys(formData).length > 0) {
+                    saveDraft(formData);
+                }
+            }, 2000);
+        }
+
+        // Reset form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form? This will clear all data.')) {
+                document.getElementById('estimateForm').reset();
+                draftData = {};
+                localStorage.removeItem(STORAGE_KEY);
+                showDraftIndicator();
+            }
+        }
+
+        // Clear draft
+        function clearDraft() {
+            if (confirm('Are you sure you want to clear the saved draft?')) {
+                draftData = {};
+                localStorage.removeItem(STORAGE_KEY);
+                document.getElementById('estimateForm').reset();
+                showDraftIndicator();
+                alert('Draft cleared successfully!');
+            }
+        }
+
+        // Download PDF (demo)
+        function downloadPDF() {
+            alert('PDF download functionality would be implemented here.');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('estimateForm');
+            const details = document.getElementById('estimateDetails');
+            
+            // Load existing draft
+            const draft = loadDraft();
+            
+            // Add event listeners for auto-save
+            form.addEventListener('input', handleFormChange);
+            form.addEventListener('change', handleFormChange);
+            
+            // Handle details toggle
+            details.addEventListener('toggle', function(e) {
+                if (e.target.open && draft) {
+                    // Populate form when details is opened
+                    setTimeout(() => {
+                        populateFormFromDraft(draft);
+                    }, 100);
+                }
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Estimate submitted successfully! Draft has been cleared.');
+                
+                // Clear draft after successful submission
+                draftData = {};
+                localStorage.removeItem(STORAGE_KEY);
+                showDraftIndicator();
+                form.reset();
+            });
+
+            console.log('Auto-save draft functionality initialized');
+        });
+    </script>
+</body>
+</html>

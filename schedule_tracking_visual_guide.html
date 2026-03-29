@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Tracking Visual Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .section {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .workflow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .workflow-step {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 10px;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        
+        .workflow-step::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            color: #667eea;
+        }
+        
+        .workflow-step:last-child::after {
+            content: '';
+        }
+        
+        .workflow-step .step-number {
+            background: rgba(255,255,255,0.3);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .workflow-step h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .workflow-step p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #667eea;
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            flex-direction: row;
+        }
+        
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+        
+        .timeline-content {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 0 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-content h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        
+        .timeline-content p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .timeline-marker {
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            border: 5px solid white;
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .comparison-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .comparison-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        
+        .comparison-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .comparison-card li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+        
+        .comparison-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .comparison-card li::before {
+            content: '✓ ';
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .formula-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .formula-box h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .formula {
+            font-size: 20px;
+            font-family: 'Courier New', monospace;
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .example-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-top: 5px solid #667eea;
+        }
+        
+        .example-card h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .example-card .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .example-card .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .example-card .metric .label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .example-card .metric .value {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .example-card .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .example-card .result.delayed {
+            color: #dc3545;
+            border: 2px solid #dc3545;
+        }
+        
+        .example-card .result.early {
+            color: #28a745;
+            border: 2px solid #28a745;
+        }
+        
+        .example-card .result.ontime {
+            color: #17a2b8;
+            border: 2px solid #17a2b8;
+        }
+        
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .role-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        
+        .role-card h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .role-card h3 .icon {
+            font-size: 36px;
+            margin-right: 15px;
+        }
+        
+        .role-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .role-card li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .role-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .role-card li::before {
+            content: '→ ';
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .workflow {
+                flex-direction: column;
+            }
+            
+            .workflow-step::after {
+                content: '↓';
+                right: 50%;
+                top: auto;
+                bottom: -40px;
+                transform: translateX(50%);
+            }
+            
+            .comparison-grid,
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline::before {
+                left: 30px;
+            }
+            
+            .timeline-item {
+                flex-direction: row !important;
+            }
+            
+            .timeline-marker {
+                left: 30px;
+            }
+            
+            .timeline-content {
+                margin-left: 70px;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Schedule Tracking Visual Guide</h1>
+            <p>Understanding Planned vs Actual Schedule Management</p>
+        </div>
+
+        <!-- Workflow Section -->
+        <div class="section">
+            <h2>🔄 Complete Workflow</h2>
+            <div class="workflow">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <h3>Project Approval</h3>
+                    <p>Project created and approved. All schedule fields are NULL.</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <h3>Set Planned Dates</h3>
+                    <p>Contractor sets planned start and end dates.</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <h3>Record Actual Start</h3>
+                    <p>Work begins. Planned dates lock automatically.</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <h3>Complete Project</h3>
+                    <p>Record actual end. Overrun calculated automatically.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="section">
+            <h2>📊 Project Timeline Visualization</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3>Phase 1: Planning</h3>
+                        <p><strong>Contractor Action:</strong> Set planned_start_date = Feb 1, 2026</p>
+                        <p><strong>Contractor Action:</strong> Set planned_end_date = May 1, 2026</p>
+                        <p><strong>System:</strong> Planned duration = 90 days</p>
+                        <p><strong>Status:</strong> Dates can still be modified</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3>Phase 2: Project Start</h3>
+                        <p><strong>Contractor Action:</strong> Record actual_start_date = Feb 5, 2026</p>
+                        <p><strong>System:</strong> Set planned_dates_locked = 1</p>
+                        <p><strong>Status:</strong> Planned dates now immutable</p>
+                        <p><strong>Note:</strong> Started 4 days late</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3>Phase 3: Project Completion</h3>
+                        <p><strong>Contractor Action:</strong> Record actual_end_date = May 15, 2026</p>
+                        <p><strong>System:</strong> Calculate actual duration = 100 days</p>
+                        <p><strong>System:</strong> Calculate overrun = ((100-90)/90) × 100 = +11.11%</p>
+                        <p><strong>System:</strong> Calculate delay = 14 days</p>
+                        <p><strong>Status:</strong> Project completed (delayed)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formula Section -->
+        <div class="section">
+            <h2>🧮 Calculation Formulas</h2>
+            
+            <div class="formula-box">
+                <h3>Time Overrun Percentage</h3>
+                <div class="formula">
+                    ((actual_duration - planned_duration) / planned_duration) × 100
+                </div>
+                <p style="margin-top: 15px; opacity: 0.9;">
+                    Positive = Delayed | Negative = Early | Zero = On Time
+                </p>
+            </div>
+            
+            <div class="formula-box">
+                <h3>Delay in Days</h3>
+                <div class="formula">
+                    actual_end_date - planned_end_date
+                </div>
+                <p style="margin-top: 15px; opacity: 0.9;">
+                    Positive = Late | Negative = Early | Zero = On Time
+                </p>
+            </div>
+        </div>
+
+        <!-- Examples Section -->
+        <div class="section">
+            <h2>📈 Real-World Examples</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h4>Example 1: Delayed Project</h4>
+                    <div class="metric">
+                        <span class="label">Planned Duration:</span>
+                        <span class="value">90 days</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Actual Duration:</span>
+                        <span class="value">100 days</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Difference:</span>
+                        <span class="value">+10 days</span>
+                    </div>
+                    <div class="result delayed">
+                        Time Overrun: +11.11%<br>
+                        Status: 10 days late
+                    </div>
+                </div>
+                
+                <div class="example-card">
+                    <h4>Example 2: Early Completion</h4>
+                    <div class="metric">
+                        <span class="label">Planned Duration:</span>
+                        <span class="value">120 days</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Actual Duration:</span>
+                        <span class="value">105 days</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Difference:</span>
+                        <span class="value">-15 days</span>
+                    </div>
+                    <div class="result early">
+                        Time Overrun: -12.50%<br>
+                        Status: 15 days early
+                    </div>
+                </div>
+                
+                <div class="example-card">
+                    <h4>Example 3: On Schedule</h4>
+                    <div class="metric">
+                        <span class="label">Planned Duration:</span>
+                        <span class="value">60 days</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Actual Duration:</span>
+                        <span class="value">60 days</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Difference:</span>
+                        <span class="value">0 days</span>
+                    </div>
+                    <div class="result ontime">
+                        Time Overrun: 0.00%<br>
+                        Status: On time
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role-Based Access Section -->
+        <div class="section">
+            <h2>👥 Role-Based Permissions</h2>
+            <div class="role-grid">
+                <div class="role-card">
+                    <h3><span class="icon">👷</span> Contractor</h3>
+                    <ul>
+                        <li>Set planned start and end dates</li>
+                        <li>Modify planned dates (before actual start)</li>
+                        <li>Record actual start date</li>
+                        <li>Record actual end date</li>
+                        <li>View all schedule data</li>
+                        <li>View audit logs</li>
+                    </ul>
+                </div>
+                
+                <div class="role-card">
+                    <h3><span class="icon">🏠</span> Homeowner</h3>
+                    <ul>
+                        <li>View planned schedule (read-only)</li>
+                        <li>View actual dates (read-only)</li>
+                        <li>View time overrun percentage</li>
+                        <li>View delay information</li>
+                        <li>Cannot modify any dates</li>
+                        <li>Receive schedule updates</li>
+                    </ul>
+                </div>
+                
+                <div class="role-card">
+                    <h3><span class="icon">⚙️</span> Admin</h3>
+                    <ul>
+                        <li>View all project schedules</li>
+                        <li>Override actual end dates</li>
+                        <li>Access complete audit trails</li>
+                        <li>Generate schedule reports</li>
+                        <li>Monitor time overruns</li>
+                        <li>System-wide analytics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Before/After Comparison -->
+        <div class="section">
+            <h2>🔄 System Comparison</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>❌ Before Enhancement</h3>
+                    <ul>
+                        <li>No structured schedule tracking</li>
+                        <li>Manual timeline management</li>
+                        <li>No overrun calculations</li>
+                        <li>Limited accountability</li>
+                        <li>No audit trail</li>
+                        <li>Difficult to measure delays</li>
+                    </ul>
+                </div>
+                
+                <div class="comparison-card">
+                    <h3>✅ After Enhancement</h3>
+                    <ul>
+                        <li>Structured planned vs actual tracking</li>
+                        <li>Automated schedule management</li>
+                        <li>Automatic overrun calculations</li>
+                        <li>Complete accountability</li>
+                        <li>Full audit trail</li>
+                        <li>Precise delay measurements</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Benefits -->
+        <div class="section">
+            <h2>✨ Key Benefits</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>For Contractors</h3>
+                    <ul>
+                        <li>Clear schedule baseline</li>
+                        <li>Performance tracking</li>
+                        <li>Improved planning</li>
+                        <li>Professional accountability</li>
+                        <li>Data-driven insights</li>
+                    </ul>
+                </div>
+                
+                <div class="comparison-card">
+                    <h3>For Homeowners</h3>
+                    <ul>
+                        <li>Transparent timeline</li>
+                        <li>Real-time progress visibility</li>
+                        <li>Delay awareness</li>
+                        <li>Better communication</li>
+                        <li>Trust and confidence</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

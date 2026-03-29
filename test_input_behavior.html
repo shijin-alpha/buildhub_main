@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Behavior Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        input { padding: 8px; margin: 10px; width: 200px; font-size: 16px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+        .log { font-family: monospace; font-size: 12px; background: #f8f8f8; padding: 5px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Input Behavior Test - Progress Percentage Issue</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Current Configuration (step="0.01")</h3>
+        <label>Enter 5:</label>
+        <input type="number" id="test1" step="0.01" min="0" placeholder="Enter 5">
+        <div class="result" id="result1"></div>
+        <div class="log" id="log1"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 2: No step attribute</h3>
+        <label>Enter 5:</label>
+        <input type="number" id="test2" min="0" placeholder="Enter 5">
+        <div class="result" id="result2"></div>
+        <div class="log" id="log2"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 3: step="1"</h3>
+        <label>Enter 5:</label>
+        <input type="number" id="test3" step="1" min="0" placeholder="Enter 5">
+        <div class="result" id="result3"></div>
+        <div class="log" id="log3"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 4: step="0.1"</h3>
+        <label>Enter 5:</label>
+        <input type="number" id="test4" step="0.1" min="0" placeholder="Enter 5">
+        <div class="result" id="result4"></div>
+        <div class="log" id="log4"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 5: Text input (for comparison)</h3>
+        <label>Enter 5:</label>
+        <input type="text" id="test5" placeholder="Enter 5">
+        <div class="result" id="result5"></div>
+        <div class="log" id="log5"></div>
+    </div>
+
+    <script>
+        function setupTest(inputId, resultId, logId) {
+            const input = document.getElementById(inputId);
+            const result = document.getElementById(resultId);
+            const log = document.getElementById(logId);
+            
+            let eventLog = [];
+            
+            function updateDisplay() {
+                result.innerHTML = `
+                    <strong>Current Value:</strong> "${input.value}"<br>
+                    <strong>Type:</strong> ${input.type}<br>
+                    <strong>Step:</strong> ${input.step || 'default'}<br>
+                    <strong>Valid:</strong> ${input.checkValidity()}<br>
+                    <strong>Value Length:</strong> ${input.value.length}
+                `;
+                
+                log.innerHTML = eventLog.slice(-10).join('<br>');
+            }
+            
+            function logEvent(eventType, value) {
+                const timestamp = new Date().toLocaleTimeString();
+                eventLog.push(`${timestamp} - ${eventType}: "${value}"`);
+                updateDisplay();
+            }
+            
+            input.addEventListener('input', function(e) {
+                logEvent('input', this.value);
+            });
+            
+            input.addEventListener('change', function(e) {
+                logEvent('change', this.value);
+            });
+            
+            input.addEventListener('blur', function(e) {
+                logEvent('blur', this.value);
+            });
+            
+            input.addEventListener('focus', function(e) {
+                logEvent('focus', this.value);
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                logEvent('keydown', `key: ${e.key}, value: ${this.value}`);
+            });
+            
+            input.addEventListener('keyup', function(e) {
+                logEvent('keyup', this.value);
+            });
+            
+            // Initial display
+            updateDisplay();
+        }
+        
+        // Setup all tests
+        for (let i = 1; i <= 5; i++) {
+            setupTest(`test${i}`, `result${i}`, `log${i}`);
+        }
+    </script>
+</body>
+</html>
